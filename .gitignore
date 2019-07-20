@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+x64
+.vs
+NateParser.tab.h
+lex.yy.cpp
+lex.yy.h
+location.hpp
+parser.cpp

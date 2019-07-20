@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Output">
+      <UniqueIdentifier>{270a00e2-501a-4f46-94c7-e1b7bb7a8463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Reflex">
+      <UniqueIdentifier>{b2adabd1-5fb1-4e3d-8e61-3b42ef4902b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Bison">
+      <UniqueIdentifier>{3dc0e656-329a-4be7-854f-168354274d38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{c9e5f4e8-301d-4873-b29f-845687f14233}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Structs">
+      <UniqueIdentifier>{917a30cc-3955-4d05-9126-e1886b99085d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Nate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lex.yy.cpp">
+      <Filter>Source Files\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\matcher.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\block_scripts.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\convert.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\debug.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\error.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\input.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\language_scripts.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\pattern.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\posix.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\unicode.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\utf8.cpp">
+      <Filter>Source Files\Reflex</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>Source Files\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="NateParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Expr.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="ExprNode.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Identifier.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="NateFunctions.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Scope.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeArg.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Code.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="WithFlags.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NateLexer.l">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="D:\nate.import">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="D:\nate.in">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="D:\nate.code">
+      <Filter>Source Files\Input</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lex.yy.h">
+      <Filter>Source Files\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="NateParser.tab.h">
+      <Filter>Source Files\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="location.hpp">
+      <Filter>Source Files\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="NateParser.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="ExprNode.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Identifier.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="NateFunctions.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Scope.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeArg.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Code.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="WithFlags.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Bison Include="NateParser.y">
+      <Filter>Source Files</Filter>
+    </Bison>
+  </ItemGroup>
+</Project>
