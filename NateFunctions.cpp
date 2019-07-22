@@ -2,6 +2,9 @@
 #include <vector>
 #include <inttypes.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include "utf8.h"
 
 std::wstring u16(const std::string& str)
 {
@@ -33,37 +36,51 @@ bool strtodbl(const char* aString, double& aResult)
 
 std::string toCodeName(const std::string& aName)
 {
-	std::string result;
-	for (auto const& kar : aName)
+	std::stringstream buf;
+	utf8::iterator<std::string::const_iterator> iter(aName.cbegin(), aName.cbegin(), aName.cend());
+	utf8::iterator<std::string::const_iterator> end(aName.cend(), aName.cbegin(), aName.cend());
+
+	//std::cerr << aName << " ";
+	for (; iter != end; ++iter)
 	{
-		if (kar == '-')
+		if (*iter == '-')
 		{
-			result += '_';
+			buf << '_';
+		}
+		else if (*iter > 255)
+		{
+			buf << "U" << std::hex << *iter;
 		}
 		else
 		{
-			result += kar;
+			buf << static_cast<char>(*iter);
 		}
 	}
 
-	return result;
+	//std::cerr << buf.str() << std::endl;
+	return buf.str();
+}
+
+std::string toCodeWord(const std::string& aWord)
+{
+	return toCodeName(aWord);
 }
 
 extern std::string escapedMatch(const std::string& aString)
 {
-	std::string result;
+	std::stringstream buf;
 
 	for (auto const& kar : aString)
 	{
 		if (strchr(".\\?*+|()[]{}^$\"/", kar) != nullptr)
 		{
-			result += '\\';
+			buf << '\\';
 		}
 
-		result += kar;
+		buf << kar;
 	}
 
-	return result;
+	return buf.str();
 }
 
 std::string replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo)

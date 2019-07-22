@@ -20,6 +20,9 @@
     <Filter Include="Source Files\Structs">
       <UniqueIdentifier>{917a30cc-3955-4d05-9126-e1886b99085d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utf8">
+      <UniqueIdentifier>{0b68d01d-7cf6-47cf-9121-0d202473c8d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Nate.cpp">
@@ -88,13 +91,19 @@
     <ClCompile Include="Type.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
-    <ClCompile Include="CodeArg.cpp">
-      <Filter>Source Files\Structs</Filter>
-    </ClCompile>
     <ClCompile Include="Code.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
     <ClCompile Include="WithFlags.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Arg.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Define.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Method.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,6 +118,9 @@
       <Filter>Source Files\Input</Filter>
     </None>
     <None Include="D:\nate.code">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="D:\nate.define">
       <Filter>Source Files\Input</Filter>
     </None>
   </ItemGroup>
@@ -143,13 +155,31 @@
     <ClInclude Include="Type.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
-    <ClInclude Include="CodeArg.h">
-      <Filter>Source Files\Structs</Filter>
-    </ClInclude>
     <ClInclude Include="Code.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
     <ClInclude Include="WithFlags.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Arg.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8\checked.h">
+      <Filter>Source Files\Utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8\core.h">
+      <Filter>Source Files\Utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8\unchecked.h">
+      <Filter>Source Files\Utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8.h">
+      <Filter>Source Files\Utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="Method.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
   </ItemGroup>

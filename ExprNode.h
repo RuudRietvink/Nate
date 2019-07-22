@@ -23,9 +23,10 @@ public:
 	const Type&        type()            const;
 	bool               isEmpty()         const;
 	
-	static const size_t Word    = 0;
-	static const size_t Output  = 1;
-	static const size_t Literal = 2;
+	static const size_t Word      = 0;
+	static const size_t Output    = 1;
+	static const size_t Literal   = 2;
+	static const size_t ConstExpr = 3;
 
 private:
 	std::string       mText;

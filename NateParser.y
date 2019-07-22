@@ -24,30 +24,31 @@
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
 
   int stateExprValue = yy::Lexer::EXPR_VALUE;
-
+  bool outputEnd = true;
+  
   void pushState(yy::Lexer& lexer, int aState)
   {
+	  if (lexer.debug()) std::cerr << "Push " << aState << std::endl;
 	  lexer.push_state(aState);
-	  //std::cerr << "Push " << aState << std::endl;
   }
 
   void popState(yy::Lexer& lexer)
   {
-    //std::cerr << "Pop from " << lexer.top_state();
+    if (lexer.debug()) std::cerr << "Pop from " << lexer.start();
 	  if (!lexer.states_empty())
 	  {
 		  lexer.pop_state();
 	  }
 
-	  if (!lexer.states_empty())
-	  {
-		  //std::cerr << " to " << lexer.top_state() << std::endl;
-	  }
-	  else
-	  {
-		  //std::cerr << std::endl;
-	  }
+	  if (lexer.debug()) std::cerr << " to " << lexer.start() << std::endl;
   }
+
+  void setState(yy::Lexer& lexer, int aState)
+  {
+	  if (lexer.debug()) std::cerr << "Set " << aState << " from " << lexer.start() << std::endl;    
+	  lexer.start(aState);
+  }
+
 }
 
 %define api.token.prefix {TOK_}
@@ -63,6 +64,7 @@
 %token ERR "error"
 %token VAR "var"
 %token CODE "code"
+%token DEFINE "define"
 %token IF "if"
 %token ELSE "else"
 %token OUTPUT "output"
@@ -74,10 +76,12 @@
 %token DOWNTO "down-to"
 %token TO "to"
 %token STEP "step"
+%token RETURN "return"
 %token COL ":"
 %token ASSIGN ":="
 %token EOS "\n"
 %token COMMA ","
+%token CONCAT "&"
 %token OPENPAR "("
 %token CLOSEPAR ")"
 
@@ -114,6 +118,7 @@ prog-statement-list:
 prog-statement:
 	  program
   | code
+  | define
   | BEGIN 
   | END
   | EOS
@@ -128,15 +133,52 @@ program:
 	  END
 		  { nate.codeEndProgram(); }
   ;
+  
+statement-list:
+    statement
+  | statement-list statement
+  ;
+
+statement: 
+	  var-statement
+  | assign-statement
+  | output-statement
+  | if-statement
+  | loop-statement
+  | return-statement
+  | BEGIN statement-list END
+  | EOS
+  ;
+
+define:
+	  DEFINE 
+		  { 
+			  nate.addDefine();
+			  pushState(lexer, Lexer::ARGS);
+		  }
+	  arg-list IS call-return COL
+		  { 
+			  popState(lexer);
+			  pushState(lexer, Lexer::DEFINE);
+			  nate.declareDefine();
+		  }
+	  EOS BEGIN
+		  statement-list
+	  END
+		  { 
+			  popState(lexer); 
+			  nate.endDefine();
+		  }
+  ;
 
 code:
 	  CODE 
 		  { 
 			  nate.addCode();
-			  pushState(lexer, Lexer::CODEARG);
+			  pushState(lexer, Lexer::ARGS);
 		  }
 	  code-start
-	  code-arg-list IS code-return COL
+	  arg-list IS call-return COL
 		  { 
 			  popState(lexer);
 			  pushState(lexer, Lexer::CODE);
@@ -162,68 +204,6 @@ code-start:
 		  }
   ;
 	
-code-return:
-	  type
-		  { 
-			  nate.curCode().setType($1);
-		  }
-  | code-return-flags 
-  ;
-  
-code-return-flags:
-    OPENPAR 
-		code-return-flag-list 
-	  CLOSEPAR
-  ;
-
-code-return-flag-list:
-	  code-return-flag
-  | code-return-flag-list COMMA code-return-flag
-  ;
-
-code-return-flag:
-	  WORD
-		  { nate.curCode().setReturnFlag($1); }
-  ;
-
-code-arg-list:
-    code-arg
-  | code-arg-list code-arg
-  ;
-
-code-arg:
-    WORD
-		  { nate.curCode().addCodeArgWord($1); }
-  | id IS type
-		  { 
-			  auto id = Identifier($1, Type($3));
-			  nate.addIdentifier(id);
-		    nate.curCode().addCodeArgId(id);
-		  }
-  | code-arg-flags
-  ;
-
-code-arg-flags:
-    id IS OPENPAR 
-		{ 
-			auto id = Identifier($1, Type(""));
-			nate.addIdentifier(id);
-		  nate.curCode().addCodeArgId(id);
-		}
-		code-arg-flag-list 
-	  CLOSEPAR
-  ;
-
-code-arg-flag-list:
-	  code-arg-flag
-  | code-arg-flag-list COMMA code-arg-flag
-  ;
-
-code-arg-flag:
-	  WORD
-		  { nate.curCode().curCodeArg().setArgFlag($1); }
-  ;
-
 code-stat-list:
     code-stat
   | code-stat-list code-stat
@@ -236,20 +216,81 @@ code-stat:
   | id
 		  { nate.curCode().addCodeStatId($1); }
   ;
-
-statement-list:
-    statement
-  | statement-list statement
+  
+arg-list:
+    arg
+  | arg-list arg
   ;
 
-statement: 
-	  var-statement
-  | assign-statement
-  | output-statement
-  | if-statement
-  | loop-statement
-  | BEGIN statement-list END
-  | EOS
+arg:
+    WORD
+		  { nate.curWithArgs().addArgWord($1); }
+  | id IS type 
+		  { 
+			  auto id = Identifier($1, Type($3));
+			  nate.addIdentifier(id);
+		    nate.curWithArgs().addArgId(id);
+		  }
+    opt-arg-flags
+  | id-with-arg-flags
+  ;
+
+id-with-arg-flags:
+    id IS
+		{ 
+			auto id = Identifier($1, Type(""));
+			nate.addIdentifier(id);
+		  nate.curWithArgs().addArgId(id);
+		}
+		arg-flags 
+  ;
+  
+arg-flags:
+    OPENPAR arg-flag-list CLOSEPAR
+  ;
+
+opt-arg-flags:
+    %empty
+  | arg-flags
+  ;
+
+arg-flag-list:
+	  arg-flag
+  | arg-flag-list COMMA arg-flag
+  ;
+
+arg-flag:
+	  WORD
+		  { 
+        if (!nate.curWithArgs().curArg().setArgFlag($1))
+        {
+				  nate.error("Unknown argument type: " + $1);
+        }
+      }
+  ;
+  
+call-return:
+	  type
+		  { 
+			  nate.curWithArgs().setType($1);
+		  }
+  | call-return-flags 
+  ;
+  
+call-return-flags:
+    OPENPAR 
+		call-return-flag-list 
+	  CLOSEPAR
+  ;
+
+call-return-flag-list:
+	  call-return-flag
+  | call-return-flag-list COMMA call-return-flag
+  ;
+
+call-return-flag:
+	  WORD
+		  { nate.curWithArgs().setReturnFlag($1); }
   ;
 
 var-statement:
@@ -324,15 +365,32 @@ assign-statement:
 
 output-statement:
 	  OUTPUT 
-		  { nate.codeOutputStart("std::cout"); }
-	  output-list 
-		  { nate.codeOutputEnd(); }
+		  { 
+        nate.codeOutputStart("std::cout");
+        stateExprValue = yy::Lexer::OUTPUT_EXPR_VALUE;
+      }
+	  output-list
+		  { 
+        stateExprValue = yy::Lexer::EXPR_VALUE;
+        nate.codeOutputEnd(outputEnd);
+        outputEnd = true;
+      }
   ;
 
 output-list:
 	  %empty
-  | output-part
-  | output-list output-sep output-part
+  | output-part-list
+  ;
+
+output-part-list:
+	  output-part
+  | output-part output-sep output-part-rest
+  ;
+
+output-part-rest:
+	  %empty
+		  { outputEnd = false; }
+  | output-part-list
   ;
 
 output-part:
@@ -343,8 +401,9 @@ output-part:
 output-sep:
 	  COMMA
 		  { nate.codeOutput("\" \""); }
+	| CONCAT
   ;
-
+      
 if-statement:
 	  IF expr COL
 		  { nate.codeIf($2); }
@@ -370,11 +429,19 @@ else-statement:
 
 loop-statement:
 	  LOOP 
+		  { 
+        pushState(lexer, Lexer::LOOP);
+        nate.codeInitLoop();
+      }
 	  for-part
-	  EOS opt-while BEGIN
+	  EOS opt-while 
+    BEGIN
 		loop-part-statement-list
-		  { nate.codeEndLoop(); }
-	  END
+		  { 
+        nate.codeEndLoop();
+        popState(lexer);
+      }
+    END
   ;
 
 for-part:
@@ -397,7 +464,7 @@ loop-part-statement:
 while-loop-statement:
 	  WHILE expr COL
 		  { 
-		      nate.codeStartLoop();
+		    nate.codeStartLoop();
 			  nate.codeLoopWhile($2);
 		  }
   ;
@@ -411,7 +478,7 @@ opt-while:
 	  %empty
   | while-statement EOS
   ;
-
+ 
 for-loop-statement:
 	  FOR var 
 		  { pushState(lexer, Lexer::VAR_DECL); }
@@ -444,6 +511,11 @@ step:
 for-loop-part-end:
 	  while-statement
   | COL
+  ;
+
+return-statement:
+    RETURN expr
+      { nate.codeReturn($2); }
   ;
 
 expr:
@@ -487,7 +559,7 @@ expr-value-next:
 
 expr-value-part:
 	  expr-value
-		  { $$ = $1; popState(lexer); pushState(lexer, stateExprValue); }
+		  { $$ = $1; setState(lexer, stateExprValue); }
   ;
 
 expr-value:
@@ -498,12 +570,12 @@ expr-value:
 		  }
   | string
 		  { 
-			  $$ = Expr(ExprNode($1, $1, Type::makeType($1)));
+			  $$ = Expr(ExprNode($1, $1, Type("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | BOOL
 		  { 
-			  $$ = Expr(ExprNode($1, $1, Type::makeType($1)));
+			  $$ = Expr(ExprNode($1, $1, Type("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | id
@@ -535,11 +607,11 @@ expr-word-next:
 
 expr-word-part:
 	  expr-word
-		  { $$ = $1; popState(lexer); pushState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = $1; setState(lexer, Lexer::EXPR_WORD); }
   | IF
-		  { $$ = Expr(ExprNode("if")); popState(lexer); pushState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = Expr(ExprNode("if")); setState(lexer, Lexer::EXPR_WORD); }
   | ELSE
-		  { $$ = Expr(ExprNode("else")); popState(lexer); pushState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = Expr(ExprNode("else")); setState(lexer, Lexer::EXPR_WORD); }
   ;
 
 expr-word:

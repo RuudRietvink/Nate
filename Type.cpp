@@ -128,11 +128,19 @@ bool Type::isCompatibleWith(const Type& aType) const
 {
 	bool result = false;
 
-	if (aType.is(Number) && is(Number))
+	if ( is(Number) && aType.is(Number))
 	{
 		result = true;
 	}
-	else if (aType.name() == name())
+	else if (is(String) && aType.is(Number))
+	{
+		result = true;
+	}
+	else if (is(String) && aType.is(Boolean))
+	{
+		result = true;
+	}
+	else if (name() == aType.name())
 	{
 		result = true;
 	}

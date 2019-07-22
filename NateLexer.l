@@ -65,13 +65,21 @@ public:
 		return isId ? yy::parser::make_IDENTIFIER(str(), aLocation)
 		            : yy::parser::make_WORD(str(), aLocation);
 	}
+
+  void outIndents(const std::string& aString)
+  {
+    if (debug())
+    {
+      std::cerr << aString << matcher().stops().size() << " " << matcher().last_stop() << std::endl;
+    }
+  }
 %}
 
 %option bison-complete
 %option bison-cc-namespace=yy
 %option bison-cc-parser=parser
 %option bison-locations
-%option exception="yy::parser::syntax_error(location(), \"Unknown token.\" + str())"
+%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token.\") + matcher().text())"
 %option namespace=yy
 %option lexer=Lexer
 %option unicode
@@ -81,96 +89,108 @@ public:
 
 %x EXPR_VALUE
 %s EXPR_WORD
+%s LOOP
+%s DEFINE
 %x CODE
-%x CODEARG
+%x ARGS
 %x VAR_DECL
 %x FOR_EXPR_VALUE
+%x OUTPUT_EXPR_VALUE
 
 idName [\p{Ll}\p{Lu}]([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
 number [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?
 oper   [^\p{Ll}\p{Lu}0-9\h\n]
 
 %%
-
+<*>{
 (?^^\h*\n)                // eat empty lines without affecting indent stops
 (?^^\h*"/*"(.|\n)*"*/")   // eat /*-comments that start a line without affecting indent stops
 "/*"(.|\n)*"*/"           // eat /*-comments
-(?^^\h*"//".*\n)          // eat //-comments that start a line without affecting indent stops
-"//".*\n                  // eat //-comments
+(?^^\h*"//".*)            // eat //-comments that start a line without affecting indent stops
+"//".*                    // eat //-comments
 (?^\\\n\h*)               // lines ending in \ will continue on the next line
-(?^^\h+/while\b)		  // ignore indent changes
+}
 
-// std::cerr << "h " << matcher().stops().size() << " " << matcher().last_stop() << std::endl; 
-^\h+            /* ignore */
-^\h*\i			return yy::parser::make_BEGIN(location()); // indent
-^\h*\j			return yy::parser::make_END(location());   // dedent
-\j				return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
+<LOOP>{
+\bwhile\b     |
+(?^^\h+/while\b)	return yy::parser::make_WHILE(location());
+}
+ 
+^\h*\i			  outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
+^\h*\j			  outIndents("j "); return yy::parser::make_END(location());   // dedent
+\j				    outIndents("j+ "); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
+<*>\h+        // ignore
 
-<EXPR_WORD>\n   return yy::parser::make_EOS(location());
-<INITIAL>\n     return yy::parser::make_EOS(location());
-<*>\h+          // ignore
+<INITIAL,LOOP,EXPR_WORD,EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE,DEFINE>\n return yy::parser::make_EOS(location());
 
 include\h*\".*?\"    includeFile();
 
 \bprogram\b		return yy::parser::make_PROGRAM(location());
-\bvar\b			return yy::parser::make_VAR(location());
-\bcode\b		return yy::parser::make_CODE(location());
+\bvar\b			  return yy::parser::make_VAR(location());
+\bcode\b		  return yy::parser::make_CODE(location());
+\bdefine\b	  return yy::parser::make_DEFINE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
-\bif\b   		return yy::parser::make_IF(location());
-\belse\b 		return yy::parser::make_ELSE(location());
-\bloop\b 		return yy::parser::make_LOOP(location());
-\bwhile\b 		return yy::parser::make_WHILE(location());
-\bfor\b 		return yy::parser::make_FOR(location());
-":="			return yy::parser::make_ASSIGN(location());
-":"				return yy::parser::make_COL(location());
-","				return yy::parser::make_COMMA(location());
-";"				return yy::parser::make_EOS(location());
-"("				return yy::parser::make_OPENPAR(location());
-")"				return yy::parser::make_CLOSEPAR(location());
-
-{number}			return yy::parser::make_NUMBER(str(), location());
-["][^"]*[""]		return yy::parser::make_STRING(str(), location());
-"true"|"false"		return yy::parser::make_BOOL(str(), location());
-{idName}			return makeIdOrWord(str(), location());
-[$]{idName}			return yy::parser::make_IDENTIFIER(str(), location());
-{oper}				return yy::parser::make_WORD(str(), location());
-
-<FOR_EXPR_VALUE>{
-\bdown-to\b	 return yy::parser::make_DOWNTO(location());
-\bto\b		 return yy::parser::make_TO(location());
-\bstep\b	 return yy::parser::make_STEP(location());
-\bwhile\b 	 return yy::parser::make_WHILE(location());
-}
-
-<EXPR_VALUE,FOR_EXPR_VALUE>{
-","					return yy::parser::make_COMMA(location());
-":"				    return yy::parser::make_COL(location());
-")"					return yy::parser::make_CLOSEPAR(location());
-{idName}			return yy::parser::make_WORD(str(), location());
-{oper}				return yy::parser::make_WORD(str(), location());
-\n					return yy::parser::make_EOS(location());
-}
-
-<CODEARG>{
-\bright\b		    return yy::parser::make_RIGHT(location());
-\bis\b			    return yy::parser::make_IS(location());
+\bif\b   		  return yy::parser::make_IF(location());
+\belse\b 		  return yy::parser::make_ELSE(location());
+\bloop\b 		  return yy::parser::make_LOOP(location());
+\bfor\b 		  return yy::parser::make_FOR(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
-"("					return yy::parser::make_OPENPAR(location());
-")"					return yy::parser::make_CLOSEPAR(location());
-","					return yy::parser::make_COMMA(location());
-[$]{idName}			return yy::parser::make_IDENTIFIER(str(), location());
+","				    return yy::parser::make_COMMA(location());
+";"				    return yy::parser::make_EOS(location());
+"("				    return yy::parser::make_OPENPAR(location());
+")"				    return yy::parser::make_CLOSEPAR(location());
+
+{number}			return yy::parser::make_NUMBER(str(), location());
+["][^"]*[""]	return yy::parser::make_STRING(str(), location());
+"true"|"false" return yy::parser::make_BOOL(str(), location());
+{idName}			return makeIdOrWord(str(), location());
+[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
+{oper}				return yy::parser::make_WORD(str(), location());
+
+<DEFINE>{
+\breturn\b	  return yy::parser::make_RETURN(location());
+}
+
+<FOR_EXPR_VALUE>{
+\bdown-to\b	  return yy::parser::make_DOWNTO(location());
+\bto\b		    return yy::parser::make_TO(location());
+\bstep\b	    return yy::parser::make_STEP(location());
+\bwhile\b 	  return yy::parser::make_WHILE(location());
+}
+
+<OUTPUT_EXPR_VALUE>{
+"&"					  return yy::parser::make_CONCAT(location());
+}
+
+<EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE>{
+","					  return yy::parser::make_COMMA(location());
+":"				    return yy::parser::make_COL(location());
+")"					  return yy::parser::make_CLOSEPAR(location());
+{idName}			return yy::parser::make_WORD(str(), location());
+{oper}				return yy::parser::make_WORD(str(), location());
+}
+
+<ARGS>{
+\bright\b		  return yy::parser::make_RIGHT(location());
+\bis\b			  return yy::parser::make_IS(location());
+":="			    return yy::parser::make_ASSIGN(location());
+":"				    return yy::parser::make_COL(location());
+"("					  return yy::parser::make_OPENPAR(location());
+")"					  return yy::parser::make_CLOSEPAR(location());
+","					  return yy::parser::make_COMMA(location());
+[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {idName}			return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
-(?^^\h*)            // ignore indent changes
-\n					// ignore
+(?^^\h*)      // ignore indent changes
+\n					  // ignore
 }
 
 <CODE>{
-^\h*\i		  return yy::parser::make_BEGIN(location());
-^\h*\j        return yy::parser::make_END(location()); 
-\j            return yy::parser::make_END(location());
+^\h*\i		    outIndents("code i "); return yy::parser::make_BEGIN(location());
+^\h*\j        outIndents("code j "); return yy::parser::make_END(location()); 
+\j            outIndents("code j+ "); return yy::parser::make_END(location());
 [\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
 [^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
@@ -178,21 +198,21 @@ include\h*\".*?\"    includeFile();
 }
 
 <VAR_DECL>{
-\bis\b		 return yy::parser::make_IS(location());
-[$]?{idName} return yy::parser::make_IDENTIFIER(str(), location());
-":="		 return yy::parser::make_ASSIGN(location());
-","			 return yy::parser::make_COMMA(location());
+\bis\b		    return yy::parser::make_IS(location());
+[$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
+":="		      return yy::parser::make_ASSIGN(location());
+","			      return yy::parser::make_COMMA(location());
 }
 
 <<EOF>>		 if (!matcher().stops().empty())
-			 {
-			   matcher().stops().pop_back();
-			   return yy::parser::make_END(location()); 
-			 }
-			 else if (endOfFile()) 
-			 {
-			   return yy::parser::make_EOF(location());
-			 }
+			     {
+			       matcher().stops().pop_back();
+			       return yy::parser::make_END(location()); 
+			     }
+			     else if (endOfFile()) 
+			     {
+			       return yy::parser::make_EOF(location());
+			     }
 
 
 %%

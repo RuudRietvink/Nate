@@ -1,6 +1,8 @@
 
 #include "ExprNode.h"
 
+#include <iostream>
+
 ExprNode::ExprNode()
 	: ExprNode("", "", Type())
 {
@@ -10,6 +12,7 @@ ExprNode::ExprNode(const std::string& aWord)
 	: ExprNode(aWord, "", Type())
 {
 	setFlag(Word, true);
+	setFlag(ConstExpr, true);
 }
 
 ExprNode::ExprNode(const std::string& aText, const Type& aType)
@@ -43,6 +46,14 @@ bool ExprNode::castToType(const Type& aToType)
 			*this = ExprNode(text(), "static_cast<" + aToType.codeType() + ">(" + code() + ")", aToType);
 		}
 	}
+	else if (type().is(Type::Number) && aToType.is(Type::String))
+	{
+			*this = ExprNode(text(), "std::to_string(" + code() + ")", aToType);
+  }
+	else if (type().is(Type::Boolean) && aToType.is(Type::String))
+	{
+			*this = ExprNode(text(), "(" + code() + "?\"true\":\"false\")", aToType);
+  }
 	else if (type().name() != aToType.name())
 	{
 		ok = false;

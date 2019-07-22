@@ -193,7 +193,8 @@
     <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\language_scripts.cpp" />
     <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp" />
     <ClCompile Include="Code.cpp" />
-    <ClCompile Include="CodeArg.cpp" />
+    <ClCompile Include="Arg.cpp" />
+    <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
     <ClCompile Include="Identifier.cpp" />
@@ -204,17 +205,20 @@
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="Type.cpp" />
+    <ClCompile Include="Method.cpp" />
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="D:\nate.code" />
+    <None Include="D:\nate.define" />
     <None Include="D:\nate.import" />
     <None Include="D:\nate.in" />
     <None Include="NateLexer.l" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code.h" />
-    <ClInclude Include="CodeArg.h" />
+    <ClInclude Include="Arg.h" />
+    <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="ExprNode.h" />
     <ClInclude Include="Identifier.h" />
@@ -225,6 +229,11 @@
     <ClInclude Include="NateParser.tab.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="Type.h" />
+    <ClInclude Include="utf8.h" />
+    <ClInclude Include="utf8\checked.h" />
+    <ClInclude Include="utf8\core.h" />
+    <ClInclude Include="utf8\unchecked.h" />
+    <ClInclude Include="Method.h" />
     <ClInclude Include="WithFlags.h" />
   </ItemGroup>
   <ItemGroup>
