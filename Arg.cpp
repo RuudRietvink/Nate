@@ -20,23 +20,23 @@ bool Arg::setArgFlag(const std::string& aFlag)
 {
   bool ok = true;
 
-	if (aFlag == "Num")
+	if (aFlag == "num")
 	{
 		setFlag(Num, true);
 	}
-	else if (aFlag == "Any")
+	else if (aFlag == "any")
 	{
 		setFlag(Any, true);
 	}
-	else if (aFlag == "Cmp")
+	else if (aFlag == "cmp")
 	{
 		setFlag(Cmp, true);
 	}
-	else if (aFlag == "Same")
+	else if (aFlag == "same")
 	{
 		setFlag(Same, true);
 	}
-	else if (aFlag == "Out")
+	else if (aFlag == "out")
 	{
 		setFlag(Out, true);
 	}

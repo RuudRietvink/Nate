@@ -147,6 +147,7 @@ statement:
   | loop-statement
   | return-statement
   | BEGIN statement-list END
+  | expr-statement
   | EOS
   ;
 
@@ -156,7 +157,7 @@ define:
 			  nate.addDefine();
 			  pushState(lexer, Lexer::ARGS);
 		  }
-	  arg-list IS call-return COL
+	  arg-list call-return COL
 		  { 
 			  popState(lexer);
 			  pushState(lexer, Lexer::DEFINE);
@@ -178,7 +179,7 @@ code:
 			  pushState(lexer, Lexer::ARGS);
 		  }
 	  code-start
-	  arg-list IS call-return COL
+	  arg-list call-return COL
 		  { 
 			  popState(lexer);
 			  pushState(lexer, Lexer::CODE);
@@ -195,12 +196,12 @@ code:
 code-start:
 	  "right" NUMBER 
 		  { 
-			  nate.curCode().setPriority(atoi($2.c_str())); 
+			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 			  nate.curCode().setFlag(Code::RightLeft, true);
 		  }
   | NUMBER 
 		  { 
-			  nate.curCode().setPriority(atoi($1.c_str())); 
+			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 		  }
   ;
 	
@@ -212,9 +213,9 @@ code-stat-list:
 
 code-stat:
     WORD
-		  { nate.curCode().addCodeStatWord($1); }
+		  { nate.curCode().addCodeStatWord($WORD); }
   | id
-		  { nate.curCode().addCodeStatId($1); }
+		  { nate.curCode().addCodeStatId($id); }
   ;
   
 arg-list:
@@ -224,25 +225,25 @@ arg-list:
 
 arg:
     WORD
-		  { nate.curWithArgs().addArgWord($1); }
-  | id IS type 
+		  { nate.curWithArgs().addArgWord($WORD); }
+  | OPENPAR id IS type 
 		  { 
-			  auto id = Identifier($1, Type($3));
+			  auto id = Identifier($id, Type($type));
 			  nate.addIdentifier(id);
 		    nate.curWithArgs().addArgId(id);
 		  }
-    opt-arg-flags
+    opt-arg-flags CLOSEPAR
   | id-with-arg-flags
   ;
 
 id-with-arg-flags:
-    id IS
+    OPENPAR id IS
 		{ 
-			auto id = Identifier($1, Type(""));
+			auto id = Identifier($id, Type(""));
 			nate.addIdentifier(id);
 		  nate.curWithArgs().addArgId(id);
 		}
-		arg-flags 
+		arg-flags CLOSEPAR
   ;
   
 arg-flags:
@@ -262,19 +263,21 @@ arg-flag-list:
 arg-flag:
 	  WORD
 		  { 
-        if (!nate.curWithArgs().curArg().setArgFlag($1))
+        if (!nate.curWithArgs().curArg().setArgFlag($WORD))
         {
-				  nate.error("Unknown argument type: " + $1);
+				  nate.error("Unknown argument type: " + $WORD);
         }
       }
   ;
   
 call-return:
-	  type
+  %empty
+		  { nate.curWithArgs().setReturnFlag("none"); }
+	| IS type
 		  { 
-			  nate.curWithArgs().setType($1);
+			  nate.curWithArgs().setType($type);
 		  }
-  | call-return-flags 
+  | IS call-return-flags 
   ;
   
 call-return-flags:
@@ -290,7 +293,7 @@ call-return-flag-list:
 
 call-return-flag:
 	  WORD
-		  { nate.curWithArgs().setReturnFlag($1); }
+		  { nate.curWithArgs().setReturnFlag($WORD); }
   ;
 
 var-statement:
@@ -299,7 +302,7 @@ var-statement:
 	  id-list 
 		  { popState(lexer); }
 	  is-type var-init-assign
-		  { nate.codeDeclareLocalIdentifiers($3, $5, $6); }
+		  { nate.codeDeclareLocalIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
   ;
 
 var:
@@ -308,24 +311,24 @@ var:
 
 id-list:
 	  id
-		  { $$.push_back($1); }
+		  { $$.push_back($id); }
   | id-list COMMA id
-		  { $$ = $1; $$.push_back($3); }
+		  { $$ = $1; $$.push_back($id); }
   ;
 
 id:
 	  IDENTIFIER
-		  { $$ = ($1[0] == '$') ? $1.substr(1) : $1; }
+		  { $$ = ($IDENTIFIER[0] == '$') ? $IDENTIFIER.substr(1) : $IDENTIFIER; }
   ;
 
 single-id:
 	  id-list
 		  {
-			  if ($1.size()>1)
+			  if ($[id-list].size()>1)
 			  {
 				  nate.error("Expecting single identifier.");
 			  }
-			  $$ = $1.front();
+			  $$ = $[id-list].front();
 		  }
   ;
 
@@ -333,7 +336,7 @@ is-type:
     %empty
 		  { $$ = ""; }
   | IS type
-	  	{ $$ = $2; }
+	  	{ $$ = $type; }
   ;
 
 type:
@@ -344,14 +347,14 @@ var-init-assign:
 	  %empty
 		  { $$.clear(); }
   | ASSIGN var-init-list
-		  { $$ = $2; }
+		  { $$ = $[var-init-list]; }
   ;
 
 var-init-list:
 	  var-init
-		  { $$.push_back($1); }
-  | var-init-list COMMA var-init
-		  { $$ = $1; $$.push_back($3); }
+		  { $$.push_back($[var-init]); }
+  | var-init-list[list] COMMA var-init
+		  { $$ = $list; $$.push_back($[var-init]); }
   ;
   
 var-init:
@@ -360,7 +363,7 @@ var-init:
 
 assign-statement:
 	  id-list ASSIGN expr
-		  { nate.codeAssign($1, $3); }
+		  { nate.codeAssign($[id-list], $expr); }
   ;
 
 output-statement:
@@ -395,7 +398,7 @@ output-part-rest:
 
 output-part:
 	  expr
-		  { nate.codeOutput($1); }
+		  { nate.codeOutput($expr); }
   ;
 
 output-sep:
@@ -406,7 +409,7 @@ output-sep:
       
 if-statement:
 	  IF expr COL
-		  { nate.codeIf($2); }
+		  { nate.codeIf($expr); }
 	  EOS BEGIN 
 		  statement-list
 		  { nate.codeEndIf(); }
@@ -465,13 +468,13 @@ while-loop-statement:
 	  WHILE expr COL
 		  { 
 		    nate.codeStartLoop();
-			  nate.codeLoopWhile($2);
+			  nate.codeLoopWhile($expr);
 		  }
   ;
   
 while-statement:
 	  WHILE expr COL
-		  { nate.codeLoopWhile($2); }
+		  { nate.codeLoopWhile($expr); }
   ;
 
 opt-while:
@@ -517,6 +520,11 @@ return-statement:
     RETURN expr
       { nate.codeReturn($2); }
   ;
+  
+expr-statement:
+    expr
+      { nate.codeExpression($expr); }
+  ;
 
 expr:
 	  expr-value-start
@@ -531,7 +539,7 @@ expr:
 	  expr-end
 		  { 
 			  popState(lexer); 
-			  $$ = nate.evaluate(Expr($1, $2));
+			  $$ = nate.evaluate(Expr($[expr-word-start], $[expr-word-parts]));
 		  }
   ;
 
@@ -544,61 +552,61 @@ expr-value-parts:
 	  %empty
 		  { $$ = Expr(); }
   | expr-value-next expr-word-parts
-		  { $$ = Expr($1, $2); }
+		  { $$ = Expr($[expr-value-next], $[expr-word-parts]); }
   ;
   
 expr-value-start:
 	  expr-value
-		  { $$ = $1; pushState(lexer, stateExprValue); }
+		  { $$ = $[expr-value]; pushState(lexer, stateExprValue); }
   ;
   
 expr-value-next:
-	  expr-word-part
-		  { $$ = Expr($1.node().text() == "+" ? "plus" : ($1.node().text() == "-" ? "minus" : $1.node().text())); }
+	  expr-word-part[part]
+		  { $$ = Expr($part.node().text() == "+" ? "plus" : ($part.node().text() == "-" ? "minus" : $part.node().text())); }
   ;
 
 expr-value-part:
 	  expr-value
-		  { $$ = $1; setState(lexer, stateExprValue); }
+		  { $$ = $[expr-value]; setState(lexer, stateExprValue); }
   ;
 
 expr-value:
 	  NUMBER
 		  { 
-			  $$ = Expr(ExprNode($1, $1, Type::makeType($1)));
+			  $$ = Expr(ExprNode($NUMBER, $NUMBER, Type::makeType($NUMBER)));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | string
 		  { 
-			  $$ = Expr(ExprNode($1, $1, Type("text")));
+			  $$ = Expr(ExprNode($string, $string, Type("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | BOOL
 		  { 
-			  $$ = Expr(ExprNode($1, $1, Type("boolean")));
+			  $$ = Expr(ExprNode($BOOL, $BOOL, Type("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | id
 		  { 
-			  $$ = Expr(ExprNode($1, nate.codeId($1), nate.getOrFakeIdentifier($1).type()));
+			  $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id).type()));
 			  $$.node().setFlag(ExprNode::Output, true);
 		  } 
   | OPENPAR expr CLOSEPAR
-		  { $$ = nate.evaluate(Expr($2)); }
+		  { $$ = nate.evaluate(Expr($expr)); }
   ;
 
 expr-word-parts:
 	  %empty
 		  { $$ = Expr(); }
-  | expr-word-next expr-word-parts
-	  	{ $$ = Expr($1, $2); }
+  | expr-word-next expr-word-parts[parts]
+	  	{ $$ = Expr($[expr-word-next], $[parts]); }
   | expr-value-part expr-value-parts
-	  	{ $$ = Expr($1, $2); }
+	  	{ $$ = Expr($[expr-value-part], $[expr-value-parts]); }
   ;
     
 expr-word-start:
 	  expr-word
-		  { $$ = $1; pushState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = $[expr-word]; pushState(lexer, Lexer::EXPR_WORD); }
   ;
   
 expr-word-next:
@@ -607,7 +615,7 @@ expr-word-next:
 
 expr-word-part:
 	  expr-word
-		  { $$ = $1; setState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = $[expr-word]; setState(lexer, Lexer::EXPR_WORD); }
   | IF
 		  { $$ = Expr(ExprNode("if")); setState(lexer, Lexer::EXPR_WORD); }
   | ELSE
@@ -616,7 +624,7 @@ expr-word-part:
 
 expr-word:
     WORD
-		  { $$ = Expr($1); }
+		  { $$ = Expr($WORD); }
   ;
 
 string:

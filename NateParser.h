@@ -73,16 +73,17 @@ public:
   void codeEndLoop();
   void codeLoopWhile(const Expr& aExpr);
   void codeReturn(const Expr& aValue);
+  void codeExpression(const Expr& aExpr);
   Expr evaluate(const Expr& aExpr);
 	void printLineNr();
 
 private:
 	struct Match
 	{
-		const Method*  methodFound;
+		const Method*  methodFound = nullptr;
 		ExprNodesCIter nodeStartIter;
 		ExprNodesCIter nodeEndIter;
-		const Method*  matchedMethod;
+		const Method*  matchedMethod = nullptr;
 		std::string    matchedErrorMsg;
 	};
 

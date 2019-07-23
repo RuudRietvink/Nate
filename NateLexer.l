@@ -10,6 +10,7 @@ public:
 	std::vector<std::string> filenames;
 	int depth = 0;
 	NateParser* nate = nullptr;
+  int commentNested = 0;
 		
 	void includeFile(const std::string& aFile)
 	{
@@ -96,6 +97,7 @@ public:
 %x VAR_DECL
 %x FOR_EXPR_VALUE
 %x OUTPUT_EXPR_VALUE
+%x COMMENT
 
 idName [\p{Ll}\p{Lu}]([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
 number [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?
@@ -103,12 +105,23 @@ oper   [^\p{Ll}\p{Lu}0-9\h\n]
 
 %%
 <*>{
-(?^^\h*\n)                // eat empty lines without affecting indent stops
-(?^^\h*"/*"(.|\n)*"*/")   // eat /*-comments that start a line without affecting indent stops
-"/*"(.|\n)*"*/"           // eat /*-comments
-(?^^\h*"//".*)            // eat //-comments that start a line without affecting indent stops
-"//".*                    // eat //-comments
-(?^\\\n\h*)               // lines ending in \ will continue on the next line
+(?^^\h*\n)     // eat empty lines without affecting indent stops
+(?^^\h*"//".*) // eat //-comments that start a line without affecting indent stops
+"//".*         // eat //-comments
+(?^^\h+/"/*")  // eat white space before /*-comments without affecting indent stops
+(?^\\\n\h*)    // lines ending in \ will continue on the next line
+
+"/*"           if (commentNested == 0) push_state(COMMENT);
+               ++commentNested;                  // allow nesting /*-comments
+               
+}
+
+<COMMENT>{
+"*/"           if (--commentNested == 0)
+               {
+                 pop_state();
+               }
+.|\n           // ignore all content in comments
 }
 
 <LOOP>{
@@ -137,6 +150,7 @@ include\h*\".*?\"    includeFile();
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ","				    return yy::parser::make_COMMA(location());
+"&"					  return yy::parser::make_CONCAT(location());
 ";"				    return yy::parser::make_EOS(location());
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
@@ -159,12 +173,9 @@ include\h*\".*?\"    includeFile();
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 }
 
-<OUTPUT_EXPR_VALUE>{
-"&"					  return yy::parser::make_CONCAT(location());
-}
-
 <EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE>{
 ","					  return yy::parser::make_COMMA(location());
+"&"					  return yy::parser::make_CONCAT(location());
 ":"				    return yy::parser::make_COL(location());
 ")"					  return yy::parser::make_CLOSEPAR(location());
 {idName}			return yy::parser::make_WORD(str(), location());

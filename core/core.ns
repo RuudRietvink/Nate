@@ -1,0 +1,106 @@
+
+///////////////////////////////////////////////
+// operators
+///////////////////////////////////////////////
+
+code right 110 √ ($val is (num)) is float-64:
+	std::sqrt($val)
+  
+code right 110 ($val-1 is (num)) max ($val-2 is (num,same)) is (num,same):
+	std::max($val-1, $val-2)
+  
+code right 110 ($val-1 is (num)) min ($val-2 is (num,same)) is (num,same):
+	std::min($val-1, $val-2)
+
+code right 100 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
+	std::pow($val-1, $val-2)
+	
+code right 100 ($val-1 is (num)) ** ($val-2 is (num)) is (num,highest):
+	std::pow($val-1, $val-2)
+	
+code 90 - ($val-1 is (num)) is (num,highest):
+	-$val-1
+	
+code 90 + ($val-1 is (num)) is (num,highest):
+	$val-1
+	
+code 90 not ($cond is boolean) is boolean:
+	!$cond
+
+code 80 ($val-1 is (num)) * ($val-2 is (num)) is (num,highest):
+	$val-1 * $val-2
+	
+code 80 ($val-1 is (num)) × ($val-2 is (num)) is (num,highest):
+	$val-1 * $val-2
+
+code 80 ($val-1 is (num)) / ($val-2 is (num)) is (num,highest):
+	$val-1 / $val-2
+	
+code 80 ($val-1 is (num)) mod ($val-2 is (num)) is (num,highest):
+	$val-1 % $val-2
+
+code 70 ($val-1 is (num)) plus ($val-2 is (num)) is (num,highest):
+	$val-1 + $val-2
+
+code 70 ($val-1 is (num)) minus ($val-2 is (num)) is (num,highest):
+	$val-1 - $val-2
+	
+code 70 ($val-1 is text) plus ($val-2 is text) is text:
+	$val-1 + $val-2
+  
+code 60 ($val-1 is (any)) if ($cond is boolean) else ($val-2 is (same)) is (same):
+	$cond ? $val-1 : $val-2
+
+code 50 ($val-1 is (cmp)) = ($val-2 is (cmp)) is boolean:
+	$val-1 == $val-2
+	
+code 50 ($val-1 is (cmp)) != ($val-2 is (cmp)) is boolean:
+	$val-1 != $val-2
+	
+code 50 ($val-1 is (cmp)) >= ($val-2 is (cmp)) is boolean:
+	$val-1 >= $val-2
+	
+code 50 ($val-1 is (cmp)) <= ($val-2 is (cmp)) is boolean:
+	$val-1 <= $val-2
+
+code 50 ($val-1 is (cmp)) > ($val-2 is (cmp)) is boolean:
+	$val-1 > $val-2
+	
+code 50 ($val-1 is (cmp)) < ($val-2 is (cmp)) is boolean:
+	$val-1 < $val-2
+	
+code 40 ($cond-1 is boolean) and ($cond-2 is boolean) is boolean:
+	$cond-1 && $cond-2
+
+code 35 ($cond-1 is boolean) or ($cond-2 is boolean) is boolean:
+	$cond-1 || $cond-2
+  
+///////////////////////////////////////////////
+// face value
+///////////////////////////////////////////////
+
+code 150 decrease ($val is (num,out)) is (same):
+  --$val
+  
+code 150 increase ($val is (num,out)) is (same):
+  ++$val
+
+///////////////////////////////////////////////
+// math
+///////////////////////////////////////////////
+
+code 200 pi is float-64:
+	3.141592653589793238463
+  
+///////////////////////////////////////////////
+// text
+///////////////////////////////////////////////
+
+code right 150 uppercased ($val is text) is text:
+  Core::upperCased($val)
+
+code right 150 first of ($val is text) is text:
+  Core::firstOf($val)
+
+code right 150 rest of ($val is text) is text:
+  Core::restOf($val)

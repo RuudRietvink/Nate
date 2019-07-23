@@ -8,7 +8,9 @@
 #include <sstream>
 
 Define::Define()
-{}
+{
+	setPriority(150);
+}
 
 const std::string&      Define::codeCall()  const { return mCodeCall; }
 std::string&            Define::codeCall()        { return mCodeCall; }
@@ -18,7 +20,15 @@ std::string Define::createCodeDecl()
 	std::stringstream buf;
 	bool first = true;
 
-	buf << type().codeType() << " ";
+	if (is(None))
+	{
+		buf << "void ";
+	}
+	else
+	{
+		buf << type().codeType() << " ";
+	}
+
 	buf << pattern() << "(";
 
 	for (auto const& arg : args())

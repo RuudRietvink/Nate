@@ -23,6 +23,9 @@
     <Filter Include="Source Files\Utf8">
       <UniqueIdentifier>{0b68d01d-7cf6-47cf-9121-0d202473c8d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{b383cede-c771-4dd7-baff-5f9cb27c014c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Nate.cpp">
@@ -106,6 +109,9 @@
     <ClCompile Include="Method.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
+    <ClCompile Include="core\Core.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
@@ -117,11 +123,11 @@
     <None Include="D:\nate.in">
       <Filter>Source Files\Input</Filter>
     </None>
-    <None Include="D:\nate.code">
-      <Filter>Source Files\Input</Filter>
-    </None>
     <None Include="D:\nate.define">
       <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="core\core.ns">
+      <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -170,9 +176,6 @@
     <ClInclude Include="utf8\checked.h">
       <Filter>Source Files\Utf8</Filter>
     </ClInclude>
-    <ClInclude Include="utf8\core.h">
-      <Filter>Source Files\Utf8</Filter>
-    </ClInclude>
     <ClInclude Include="utf8\unchecked.h">
       <Filter>Source Files\Utf8</Filter>
     </ClInclude>
@@ -181,6 +184,13 @@
     </ClInclude>
     <ClInclude Include="Method.h">
       <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Core.h" />
+    <ClInclude Include="core\Core.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8\core.h">
+      <Filter>Source Files\Utf8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

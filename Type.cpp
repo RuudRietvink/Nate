@@ -33,8 +33,9 @@ Type::Type(const std::string& aName)
 		mCodeType = "int16_t";
 		mBitSize = 16;
 	}
-	else if (aName == "int-32")
+	else if (aName == "int-32" || aName == "int")
 	{
+		mName = "int-32";
 		setFlag(Number, true);
 		setFlag(Comparable, true);
 		mCodeType = "int32_t";
@@ -47,8 +48,9 @@ Type::Type(const std::string& aName)
 		mCodeType = "int64_t";
 		mBitSize = 64;
 	}
-	else if (aName == "float-32")
+	else if (aName == "float-32" || aName == "float")
 	{
+		mName = "float-32";
 		setFlag(Number, true);
 		setFlag(Comparable, true);
 		setFlag(Float, true);

@@ -194,6 +194,7 @@
     <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp" />
     <ClCompile Include="Code.cpp" />
     <ClCompile Include="Arg.cpp" />
+    <ClCompile Include="core\Core.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
@@ -209,7 +210,7 @@
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="D:\nate.code" />
+    <None Include="core\core.ns" />
     <None Include="D:\nate.define" />
     <None Include="D:\nate.import" />
     <None Include="D:\nate.in" />
@@ -218,6 +219,8 @@
   <ItemGroup>
     <ClInclude Include="Code.h" />
     <ClInclude Include="Arg.h" />
+    <ClInclude Include="Core.h" />
+    <ClInclude Include="core\Core.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="ExprNode.h" />

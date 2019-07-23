@@ -14,16 +14,28 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 {
 	mLexer->nate = this;
 	mLexer->filenames.push_back(replaceAll(aFilename, "\\", "\\\\"));
+	mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
 	mOut << "#include <string>" << std::endl;
 	mOut << "#include <cstdint>" << std::endl;
 	mOut << "#include <cmath>" << std::endl;
 	mOut << "#include <iostream>" << std::endl;
+	mOut << "#include <algorithm>" << std::endl;
 }
 
 NateParser::~NateParser() = default;
 
 int NateParser::parse()
 {
+	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
+	{
+		std::ifstream stream(file);
+	  yy::Lexer lexer(stream);
+		lexer.nate = this;
+		lexer.filenames.push_back(replaceAll(file, "\\", "\\\\"));
+		yy::parser parser(lexer, *this);
+		parser.parse();
+	}
+
 	return mParser->parse();
 }
 
@@ -158,7 +170,7 @@ std::string NateParser::pattern(const ExprNode& aNode) const
 
 	if (aNode.is(ExprNode::Word))
 	{
-		result = aNode.text();
+		result = aNode.text() + "_";
 	}
 	else
 	{
@@ -194,7 +206,7 @@ void NateParser::methodMatches(const Method& aMethod,
 		aMatch.methodFound = &aMethod;
 		aMatch.nodeStartIter = aStartIter;
 		aMatch.nodeEndIter = aEndIter;
-		//std::cerr << std::get<1>(aMatch.methodFound->evaluate(aMatch.nodeStartIter, aMatch.nodeEndIter)) << std::endl;
+	  //std::cerr << std::get<1>(aMatch.methodFound->evaluate(aMatch.nodeStartIter, aMatch.nodeEndIter)) << std::endl;
 	}
 	else
 	{
@@ -217,7 +229,9 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 		auto exprPattern = pattern(startIter, endIter);
 
 		if (aMethod.matches(exprPattern) &&
-				startIter < aMatch.nodeStartIter)
+				(aMatch.methodFound == nullptr || 
+				 aMethod.priority() > aMatch.methodFound->priority() ||
+				 startIter < aMatch.nodeStartIter))
 		{
 			methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -237,7 +251,9 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 		auto exprPattern = pattern(startIter, endIter);
 
 		if (aMethod.matches(exprPattern) &&
-				(aMatch.nodeStartIter == aExpr.nodes().cend() || startIter > aMatch.nodeStartIter))
+				(aMatch.methodFound == nullptr || 
+				 aMethod.priority() > aMatch.methodFound->priority() ||
+				 startIter > aMatch.nodeStartIter))
 		{
 			 methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -282,12 +298,9 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			checkIfMethod(code, aExpr, match);
 		}
 		
-		if (!match.methodFound)
+		for (auto const& define : mDefines)
 		{
-			for (auto const& define : mDefines)
-			{
-				checkIfMethod(define, aExpr, match);
-			}
+			checkIfMethod(define, aExpr, match);
 		}
 
 		if (match.methodFound)
@@ -581,4 +594,10 @@ void NateParser::codeLoopWhile(const Expr& aExpr)
  {
 	 printLineNr();
 	 mOut << "return " << aValue.code() << ";" << std::endl;
+ }
+
+ void NateParser::codeExpression(const Expr& aValue)
+ {
+	 printLineNr();
+	 mOut << aValue.code() << ";" << std::endl;
  }

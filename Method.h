@@ -40,6 +40,7 @@ public:
 	static const size_t Num        = 2;
 	static const size_t Same       = 3;
 	static const size_t RightLeft  = 4;
+	static const size_t None       = 5;
 
 private:
 	Type                 mType;

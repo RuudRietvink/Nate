@@ -22,17 +22,21 @@ void Method::setPriority(int aValue)    { mPriority = aValue; }
 
 void Method::setReturnFlag(const std::string& aFlag)
 {
-	if (aFlag == "Num")
+	if (aFlag == "num")
 	{
 		setFlag(Num, true);
 	}
-	else if (aFlag == "Highest")
+	else if (aFlag == "highest")
 	{
 		setFlag(Highest, true);
 	}
-	else if (aFlag == "Same")
+	else if (aFlag == "same")
 	{
 		setFlag(Same, true);
+	}
+	else if (aFlag == "none")
+	{
+		setFlag(None, true);
 	}
 }
 
@@ -55,9 +59,12 @@ void Method::addArgId(const Identifier& aId)
 bool Method::matches(const std::string& aPattern) const
 {
 	auto& regex = pattern();
-	return mIsRegex 
+	
+	bool result = mIsRegex 
          ? reflex::Matcher(pattern(), aPattern).matches()
 		     : (regex == aPattern);
+
+	return result;
 }
 
 std::string Method::toCodeWord(const std::string& aWord) const
@@ -79,7 +86,7 @@ const std::string& Method::pattern() const
 			}
 			else
 			{
-				buf << toCodeWord(arg.word());
+				buf << toCodeWord(arg.word()) << "_";
 			}
 		}
 
