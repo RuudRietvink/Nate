@@ -112,6 +112,12 @@
     <ClCompile Include="core\Core.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Record.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Container.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
@@ -185,12 +191,17 @@
     <ClInclude Include="Method.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
-    <ClInclude Include="Core.h" />
     <ClInclude Include="core\Core.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="utf8\core.h">
       <Filter>Source Files\Utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="Record.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Container.h">
+      <Filter>Source Files\Structs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

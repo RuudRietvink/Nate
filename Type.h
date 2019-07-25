@@ -19,13 +19,17 @@ public:
 	const std::string& name() const;
 	const std::string& codeType() const;
 	int                bitSize() const;
+	void setCodeType(const std::string& aCodeType);
 	
 	static const size_t Number     = 0;
 	static const size_t Float      = 1;
-	static const size_t String     = 2;
+	static const size_t Text       = 2;
 	static const size_t Boolean    = 3;
 	static const size_t Unknown    = 4;
 	static const size_t Comparable = 5;
+	static const size_t NeedsRef   = 6;
+	static const size_t Record     = 7;
+	static const size_t Scalar     = 8;
 
 private:
 	std::string mName;

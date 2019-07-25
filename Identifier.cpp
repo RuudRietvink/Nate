@@ -6,7 +6,9 @@
 Identifier::Identifier(const std::string& aName, const Type& aType)
 	: Identifier(aName, aType, Expr(ExprNode("default", "{}", aType)))
 {
+	mInitValue.node().setFlag(ExprNode::Default, true);
 }
+
 Identifier::Identifier(const std::string& aName, const Type& aType, const Expr& aInitValue)
 	: mName(aName),
 	mCodeName(toCodeName(aName)),

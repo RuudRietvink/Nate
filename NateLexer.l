@@ -147,6 +147,7 @@ include\h*\".*?\"    includeFile();
 \belse\b 		  return yy::parser::make_ELSE(location());
 \bloop\b 		  return yy::parser::make_LOOP(location());
 \bfor\b 		  return yy::parser::make_FOR(location());
+\brecord\b    return yy::parser::make_RECORD(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ","				    return yy::parser::make_COMMA(location());
@@ -185,6 +186,7 @@ include\h*\".*?\"    includeFile();
 <ARGS>{
 \bright\b		  return yy::parser::make_RIGHT(location());
 \bis\b			  return yy::parser::make_IS(location());
+\binout\b	    return yy::parser::make_INOUT(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 "("					  return yy::parser::make_OPENPAR(location());

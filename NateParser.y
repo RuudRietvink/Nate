@@ -77,6 +77,8 @@
 %token TO "to"
 %token STEP "step"
 %token RETURN "return"
+%token INOUT "inout"
+%token RECORD "record"
 %token COL ":"
 %token ASSIGN ":="
 %token EOS "\n"
@@ -86,10 +88,12 @@
 %token CLOSEPAR ")"
 
 %type <std::string>              id;
+%type <std::string>              arg-id;
 %type <std::vector<std::string>> id-list;
 %type <std::string>              single-id;
 %type <std::string>              is-type;
 %type <std::string>              type;
+%type <std::string>              inout;
 %type <std::vector<Expr>>        var-init-assign;
 %type <std::vector<Expr>>        var-init-list;
 %type <Expr>                     var-init;
@@ -119,6 +123,7 @@ prog-statement:
 	  program
   | code
   | define
+  | record-statement
   | BEGIN 
   | END
   | EOS
@@ -146,6 +151,7 @@ statement:
   | if-statement
   | loop-statement
   | return-statement
+  | record-statement
   | BEGIN statement-list END
   | expr-statement
   | EOS
@@ -225,27 +231,47 @@ arg-list:
 
 arg:
     WORD
-		  { nate.curWithArgs().addArgWord($WORD); }
-  | OPENPAR id IS type 
+		  { nate.curMethod().addArgWord($WORD); }
+  | OPENPAR inout arg-id[id] IS type 
 		  { 
 			  auto id = Identifier($id, Type($type));
 			  nate.addIdentifier(id);
-		    nate.curWithArgs().addArgId(id);
+		    nate.curMethod().addArgId(id);
+        if (!$inout.empty())
+        {
+          nate.curMethod().curArg().setArgFlag($inout);
+        }
 		  }
     opt-arg-flags CLOSEPAR
   | id-with-arg-flags
   ;
 
 id-with-arg-flags:
-    OPENPAR id IS
+    OPENPAR inout arg-id[id] IS
 		{ 
 			auto id = Identifier($id, Type(""));
 			nate.addIdentifier(id);
-		  nate.curWithArgs().addArgId(id);
+		  nate.curMethod().addArgId(id);
+      if (!$inout.empty())
+      {
+        nate.curMethod().curArg().setArgFlag($inout);
+      }
 		}
 		arg-flags CLOSEPAR
   ;
-  
+ 
+arg-id:
+    id
+  | WORD
+  ;
+
+inout:
+  %empty
+    { $$ = ""; }
+  | INOUT
+    { $$ = "inout"; }
+  ;
+       
 arg-flags:
     OPENPAR arg-flag-list CLOSEPAR
   ;
@@ -263,7 +289,7 @@ arg-flag-list:
 arg-flag:
 	  WORD
 		  { 
-        if (!nate.curWithArgs().curArg().setArgFlag($WORD))
+        if (!nate.curMethod().curArg().setArgFlag($WORD))
         {
 				  nate.error("Unknown argument type: " + $WORD);
         }
@@ -272,10 +298,10 @@ arg-flag:
   
 call-return:
   %empty
-		  { nate.curWithArgs().setReturnFlag("none"); }
+		  { nate.curMethod().setReturnFlag("none"); }
 	| IS type
 		  { 
-			  nate.curWithArgs().setType($type);
+			  nate.curMethod().setType($type);
 		  }
   | IS call-return-flags 
   ;
@@ -293,7 +319,7 @@ call-return-flag-list:
 
 call-return-flag:
 	  WORD
-		  { nate.curWithArgs().setReturnFlag($WORD); }
+		  { nate.curMethod().setReturnFlag($WORD); }
   ;
 
 var-statement:
@@ -359,6 +385,33 @@ var-init-list:
   
 var-init:
 	  expr
+  ;
+
+record-statement:
+    RECORD WORD[id] COL
+      { 
+        Record record($id, nate.curScope());
+        nate.curScope().addRecord(record);
+        nate.codeStartRecord(record);
+      }
+    EOS BEGIN
+    record-var-list
+    EOS END
+      { nate.codeEndRecord(); }
+  ;
+
+record-var-list:
+    record-var
+  | record-var-list record-var
+  ;
+
+record-var:
+    var
+		  { pushState(lexer, Lexer::VAR_DECL); }
+	  id-list 
+		  { popState(lexer); }
+	  is-type var-init-assign
+		  { nate.codeDeclareRecordIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
   ;
 
 assign-statement:

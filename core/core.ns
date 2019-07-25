@@ -79,8 +79,14 @@ code 35 ($cond-1 is boolean) or ($cond-2 is boolean) is boolean:
 // face value
 ///////////////////////////////////////////////
 
+code 150 decrease ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
+  $val-1 -= $val-2
+  
 code 150 decrease ($val is (num,out)) is (same):
   --$val
+  
+code 150 increase ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
+  $val-1 +-= $val-2
   
 code 150 increase ($val is (num,out)) is (same):
   ++$val

@@ -20,7 +20,7 @@ public:
 
 	virtual bool matches(const std::string& aPattern) const;
 	virtual std::tuple<std::string, bool> checkArgTypes(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
-	virtual std::tuple<std::string, std::string, Type> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const = 0;
+	virtual std::tuple<std::string, std::string, Type> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const Identifier& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
@@ -35,14 +35,18 @@ public:
 	const std::string&          pattern() const;
 	const std::string&          signature() const;
 	void                        setReturnFlag(const std::string& aFlag);
+		
+	const std::string&          code() const;
+	std::string&                code();
 
 	static const size_t Highest    = 1;
 	static const size_t Num        = 2;
 	static const size_t Same       = 3;
 	static const size_t RightLeft  = 4;
 	static const size_t None       = 5;
-
+  
 private:
+	std::string          mCode;
 	Type                 mType;
 	std::vector<Arg>     mArgs;
 	std::string          mSignature;

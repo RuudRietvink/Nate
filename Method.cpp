@@ -17,6 +17,9 @@ std::vector<Arg>&       Method::args()            { return mArgs; }
 Arg&                    Method::curArg()          { return mArgs.back(); }
 int                     Method::priority()  const { return mPriority; }
 
+const std::string&      Method::code()			const { return mCode; }
+std::string&            Method::code()						{ return mCode; }
+
 void Method::setType(const Type& aType) { mType = aType; }
 void Method::setPriority(int aValue)    { mPriority = aValue; }
 
@@ -65,6 +68,49 @@ bool Method::matches(const std::string& aPattern) const
 		     : (regex == aPattern);
 
 	return result;
+}
+
+std::tuple<std::string, std::string, Type> Method::evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
+{
+	std::string error;
+	std::string resultCode = code();
+	ExprNodesCIter nodeIter = aBegin;
+	Type codeType(type());
+	Type firstType;
+
+	for (auto const& arg : args())
+	{
+		if (arg.isIdentifier())
+		{
+			const Type& nodeType = nodeIter->type();
+
+			if (firstType.is(Type::Unknown))
+			{
+				firstType = nodeType;
+			}
+
+      ExprNode node = *nodeIter;
+			Type argType = arg.identifier().type();
+      node.castToType(argType.is(Arg::Same) ? firstType : argType);
+			resultCode = replaceAll(resultCode, "${" + arg.identifier().name() + "}", 
+                              "(" + node.code() + ")");
+
+			if (arg.is(Arg::Num) && type().is(Type::Unknown) && nodeType.isBiggerThan(codeType))
+			{
+				codeType = nodeType;
+				//std::cerr << arg.identifier().name() << " " << codeType << std::endl;
+			}
+		}
+
+		++nodeIter;
+	}
+
+	if (is(Same))
+	{
+		codeType = firstType;
+	}
+
+	return std::make_tuple(error, resultCode, codeType);
 }
 
 std::string Method::toCodeWord(const std::string& aWord) const
@@ -130,7 +176,7 @@ std::tuple<std::string, bool> Method::checkArgTypes(ExprNodesCIter& aBegin, Expr
 				error = "Not a comparible: " + nodeIter->text() + " for " + arg.identifier().name();
 				result = false;
 			}
-			else if (arg.is(Arg::Same) && nodeType.name() != firstType.name())
+			else if (arg.is(Arg::Same) && !firstType.isCompatibleWith(nodeType))
 			{
 				error = "Not same type: " + arg.identifier().name() + " of type " + nodeType.name() +
                 " must be of type " + firstType.name();
@@ -154,6 +200,7 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 {
 	aStream << "Method(" 
 		    << aValue.type() << ","
+		    << aValue.code() << ","
 		    << join(aValue.args())  << "," 
 		    << aValue.pattern() << ")";
 	return aStream;

@@ -26,6 +26,8 @@ NateParser::~NateParser() = default;
 
 int NateParser::parse()
 {
+	pushScope(Scope("global"));
+
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
 		std::ifstream stream(file);
@@ -51,12 +53,12 @@ void NateParser::popScope()
 	mScopes.pop_front();
 }
 
-Scope& NateParser::currentScope()
+Scope& NateParser::curScope()
 {
 	return mScopes.front();
 }
 
-Method& NateParser::curWithArgs()
+Method& NateParser::curMethod()
 {
 	return mInCode ? static_cast<Method&>(curCode()) : static_cast<Method&>(curDefine());
 }
@@ -351,7 +353,8 @@ void NateParser::codeEndProgram()
 	mOut << "}" << std::endl;
 }
 
-void NateParser::codeDeclareLocalIdentifier(const Identifier& aIdentifier)
+void NateParser::codeDeclareLocalIdentifier(const Identifier& aIdentifier,
+																						bool initializeNonScalars)
 {
 	addIdentifier(aIdentifier);
 	if (aIdentifier.type().is(Type::Unknown))
@@ -360,12 +363,19 @@ void NateParser::codeDeclareLocalIdentifier(const Identifier& aIdentifier)
 	}
 
 	printLineNr();
-	mOut << aIdentifier.type().codeType() << " " << aIdentifier.codeName() << " = " << aIdentifier.initValue().code() << ";" << std::endl;
+	mOut << aIdentifier.type().codeType() << " " << aIdentifier.codeName();
+	if (aIdentifier.type().is(Type::Scalar) || initializeNonScalars)
+	{
+		mOut << " = " << aIdentifier.initValue().code();
+	}
+
+	mOut<< ";" << std::endl;
 }
 
 void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
-																					 const std::string& aType,
-																					 const std::vector<Expr>& aInitValues)
+																						 const std::string& aType,
+																					 	 const std::vector<Expr>& aInitValues,
+																						 bool initializeNonScalars)
 {
 	//std::cout << join(aNames, ", ") << ":" << aType << ":" << join(aInitValues, ", ") << std::endl;
 
@@ -383,7 +393,7 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 
 	for (auto const& name : aNames)
 	{
-		if (getIdentifier(name))
+		if (getIdentifier(name, &curScope()))
 		{
 			error("duplicate declaration of: " + name);
 		}
@@ -392,6 +402,7 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 		{
 			type = Type(aType);
 			initValue = Expr(ExprNode("default", "{}", type));
+			initValue.node().setFlag(ExprNode::Default, true);
 		}
 		else if (aInitValues.size() != 1 || initIter == aInitValues.cbegin())
 		{
@@ -403,8 +414,35 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 			initValue = Expr(ExprNode(aNames.front(), codeId(aNames.front()), type));
 		}
 
-		codeDeclareLocalIdentifier(Identifier(name, type, initValue));
+		codeDeclareLocalIdentifier(Identifier(name, type, initValue), initializeNonScalars);
 	}
+}
+
+void NateParser::codeStartRecord(const Record& aRecord)
+{
+	pushScope(Scope(aRecord.name()));
+	mOut << "struct " << aRecord.codeType() << " {" << std::endl;
+}
+
+void NateParser::codeDeclareRecordIdentifiers(const std::vector<std::string>& aNames,
+																							const std::string& aType,
+																							const std::vector<Expr>& aInitValues)
+{
+	codeDeclareLocalIdentifiers(aNames, aType, aInitValues, false);
+
+	for (auto& id : curScope().getIdentifiers())
+	{
+		std::cerr << id << std::endl;
+		if (!id.type().is(Type::Scalar) && !id.initValue().is(ExprNode::Default))
+		{
+			error("Cannot initialize member: " + id.name() + " of record " + curScope().name());
+		}
+	}
+}
+
+void NateParser::codeEndRecord()
+{
+	mOut << "};" << std::endl;
 }
 
 void NateParser::codeAssign(const std::vector<std::string>& aNames, Expr& aValue)

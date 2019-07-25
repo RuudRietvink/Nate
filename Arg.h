@@ -23,6 +23,7 @@ public:
 	static const size_t Cmp    = 3;
 	static const size_t Same   = 4;
 	static const size_t Out    = 5;
+	static const size_t InOut  = 6;
 
 private:
 	Identifier      mIdentifier;

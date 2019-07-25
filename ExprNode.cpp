@@ -46,11 +46,11 @@ bool ExprNode::castToType(const Type& aToType)
 			*this = ExprNode(text(), "static_cast<" + aToType.codeType() + ">(" + code() + ")", aToType);
 		}
 	}
-	else if (type().is(Type::Number) && aToType.is(Type::String))
+	else if (type().is(Type::Number) && aToType.is(Type::Text))
 	{
 			*this = ExprNode(text(), "std::to_string(" + code() + ")", aToType);
   }
-	else if (type().is(Type::Boolean) && aToType.is(Type::String))
+	else if (type().is(Type::Boolean) && aToType.is(Type::Text))
 	{
 			*this = ExprNode(text(), "(" + code() + "?\"true\":\"false\")", aToType);
   }
@@ -73,6 +73,8 @@ std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 	if (aValue.is(ExprNode::Word)) aStream << ",Word";
 	if (aValue.is(ExprNode::Literal)) aStream << ",Literal";
 	if (aValue.is(ExprNode::Output)) aStream << ",Output";
+	if (aValue.is(ExprNode::ConstExpr)) aStream << ",ConstExpr";
+	if (aValue.is(ExprNode::Default)) aStream << ",Default";
 	aStream << ")";
 	return aStream;
 }

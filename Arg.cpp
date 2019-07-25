@@ -40,6 +40,11 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	{
 		setFlag(Out, true);
 	}
+	else if (aFlag == "inout")
+	{
+		setFlag(Out, true);
+		setFlag(InOut, true);
+	}
   else
   {
     ok = false;

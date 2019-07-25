@@ -12,6 +12,7 @@
 #include "Define.h"
 #include "Identifier.h"
 #include "Scope.h"
+#include "Record.h"
 
 namespace yy
 {
@@ -30,7 +31,7 @@ public:
 
 	void pushScope(const Scope& aScope);
 	void popScope();
-	Scope& currentScope();
+	Scope& curScope();
 	void error(const std::string& anError);
 	int errorCount() const { return mErrors; }
 	Identifier* getIdentifier(const std::string& aName, Scope* aScope = nullptr);
@@ -47,11 +48,18 @@ public:
 	void declareDefine();
 	void endDefine();
 	Define& curDefine();
-	Method& curWithArgs();
-	void codeDeclareLocalIdentifier(const Identifier& aIdentifier);
+	Method& curMethod();
+	void codeDeclareLocalIdentifier(const Identifier& aIdentifier,
+																	bool initializeNonScalars = true);
 	void codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
-							         const std::string& aType,
-							         const std::vector<Expr>& aInitValues);
+																	 const std::string& aType,
+																	 const std::vector<Expr>& aInitValues,
+																	 bool initializeNonScalars = true);
+	void codeStartRecord(const Record& aRecord);
+	void codeDeclareRecordIdentifiers(const std::vector<std::string>& aNames,
+																  	const std::string& aType,
+																	  const std::vector<Expr>& aInitValues);
+	void codeEndRecord();
 	void codeAssign(const std::vector<std::string>& aNames, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);

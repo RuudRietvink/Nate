@@ -198,11 +198,13 @@
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
+    <ClCompile Include="Container.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="lex.yy.cpp" />
     <ClCompile Include="Nate.cpp" />
     <ClCompile Include="NateFunctions.cpp" />
     <ClCompile Include="NateParser.cpp" />
+    <ClCompile Include="Record.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="Type.cpp" />
@@ -219,17 +221,18 @@
   <ItemGroup>
     <ClInclude Include="Code.h" />
     <ClInclude Include="Arg.h" />
-    <ClInclude Include="Core.h" />
     <ClInclude Include="core\Core.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="ExprNode.h" />
+    <ClInclude Include="Container.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="location.hpp" />
     <ClInclude Include="NateFunctions.h" />
     <ClInclude Include="NateParser.h" />
     <ClInclude Include="NateParser.tab.h" />
+    <ClInclude Include="Record.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="utf8.h" />
