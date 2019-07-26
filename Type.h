@@ -10,12 +10,14 @@ class Type : public WithFlags
 {
 public:
 	Type();
-	Type(const std::string& aName);
+	Type(const std::string& aType);
+	Type(const std::string& aType, const std::string& aName);
 	virtual ~Type() = default;
 
 	static std::shared_ptr<Type> makeType(const std::string& aValue);
 	bool isBiggerThan(const std::shared_ptr<Type>& aType) const;
 	bool isCompatibleWith(const std::shared_ptr<Type>& aType) const;
+	virtual std::ostream& print(std::ostream& aStream) const;
 
 	const std::string& name() const;
 	const std::string& codeType() const;

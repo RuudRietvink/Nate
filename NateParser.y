@@ -96,6 +96,7 @@
 %type <std::string>              inout;
 %type <std::vector<Expr>>        var-init-assign;
 %type <std::vector<Expr>>        var-init-list;
+%type <std::vector<Expr>>        expr-list;
 %type <Expr>                     var-init;
 %type <bool>                     for-to;
 %type <Expr>                     step;
@@ -390,12 +391,12 @@ var-init:
 record-statement:
     RECORD WORD[id] COL
       { 
-        if (nate.curScope().getType($id) != nullptr)
+        if (nate.curScope()->getType($id))
         {
 				  nate.error("Duplicate type of :" + $id);
         }
-        RecordPtr record = std::make_shared<Record>($id, nate.curScope());
-        nate.curScope().addRecord(record);
+        RecordPtr record = std::make_shared<Record>($id);
+        nate.curScope()->addRecord(record);
         nate.codeStartRecord(record);
       }
     EOS BEGIN
@@ -419,8 +420,15 @@ record-var:
   ;
 
 assign-statement:
-	  id-list ASSIGN expr
-		  { nate.codeAssign($[id-list], $expr); }
+	  expr-list ASSIGN expr
+		  { nate.codeAssign($[expr-list], $expr); }
+  ;
+
+expr-list:
+	  expr
+		  { $$.push_back($expr); }
+  | expr-list COMMA expr
+		  { $$ = $1; $$.push_back($expr); }
   ;
 
 output-statement:

@@ -3,29 +3,43 @@
 
 #include "NateFunctions.h"
 
-Record::Record(const std::string& aName, Scope& aScope)
-	: Type(aName),
-	  mScope(aScope)
+Record::Record(const std::string& aName)
+	: Type("record", aName),
+	  mScope(std::make_shared<Scope>(aName))
 {
 	setCodeType(toCodeName(aName));
 }
 
-Scope& Record::getScope()
+ScopePtr& Record::scope()
 {
 	return mScope;
 }
 
 IdentifierPtr Record::getIdentifier(const std::string& aName)
 {
-	return mScope.getIdentifier(aName);
+	return mScope->getIdentifier(aName);
 }
 
 void Record::addIdentifier(const IdentifierPtr& aIdentifier)
 {
-	mScope.addIdentifier(aIdentifier);
+	mScope->addIdentifier(aIdentifier);
 }
 
 const std::list<IdentifierPtr>& Record::getIdentifiers() const
 {
-	return mScope.getIdentifiers();
+	return mScope->getIdentifiers();
+}
+
+std::ostream& Record::print(std::ostream& aStream) const
+{
+	aStream << "Record(";
+	Type::print(aStream);
+	aStream << "Identifiers(";
+	for (auto id : getIdentifiers())
+	{
+		aStream << *id << ",";
+	}
+	aStream << ")";
+	aStream << ")";
+	return aStream;
 }

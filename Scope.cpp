@@ -2,6 +2,8 @@
 #include "Identifier.h"
 #include "Record.h"
 
+#include "iostream"
+
 Scope::Scope(const std::string& aName)
 	: mName(aName)
 {
@@ -30,8 +32,9 @@ RecordPtr Scope::getRecord(const std::string& aName)
 	return mRecords.getData(aName);
 }
 
-void Scope::addRecord(const RecordPtr& aRecord)
+void Scope::addRecord(RecordPtr& aRecord)
 {
+	aRecord->setFlag(Type::Record, true);
 	mRecords.addData(aRecord);
 	mTypes.addData(aRecord);
 }

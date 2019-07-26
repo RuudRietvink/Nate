@@ -26,7 +26,7 @@ NateParser::~NateParser() = default;
 
 int NateParser::parse()
 {
-	pushScope(Scope("global"));
+	pushScope(std::make_shared<Scope>("global"));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -41,7 +41,7 @@ int NateParser::parse()
 	return mParser->parse();
 }
 
-void NateParser::pushScope(const Scope& aScope)
+void NateParser::pushScope(const ScopePtr& aScope)
 {
 	//std::cerr << "push " << aScope.name() << std::endl;
 	mScopes.push_front(aScope);
@@ -53,7 +53,7 @@ void NateParser::popScope()
 	mScopes.pop_front();
 }
 
-Scope& NateParser::curScope()
+ScopePtr& NateParser::curScope()
 {
 	return mScopes.front();
 }
@@ -65,7 +65,7 @@ Method& NateParser::curMethod()
 
 void NateParser::addCode()
 {
-	pushScope(Scope("code"));
+	pushScope(std::make_shared<Scope>("code"));
 	mCodes.emplace_back();
 	mInCode = true;
 }
@@ -79,7 +79,7 @@ Code& NateParser::curCode() { return mCodes.back(); }
 
 void NateParser::addDefine()
 {
-	pushScope(Scope("define"));
+	pushScope(std::make_shared<Scope>("define"));
 	mDefines.emplace_back();
 	mInCode = false;
 }
@@ -133,7 +133,7 @@ IdentifierPtr NateParser::getIdentifier(const std::string& aName, Scope* aScope)
 	{
 		for (auto& scope : mScopes)
 		{
-			auto var = scope.getIdentifier(aName);
+			auto var = scope->getIdentifier(aName);
 			if (var != nullptr)
 			{
 				return var;
@@ -161,7 +161,7 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, Scope* a
 
 void NateParser::addIdentifier(const IdentifierPtr& aIdentifier)
 {
-	mScopes.front().addIdentifier(aIdentifier);
+	mScopes.front()->addIdentifier(aIdentifier);
 }
 
 TypePtr NateParser::getType(const std::string& aName, Scope* aScope)
@@ -170,7 +170,7 @@ TypePtr NateParser::getType(const std::string& aName, Scope* aScope)
 	{
 		for (auto& scope : mScopes)
 		{
-			auto type = scope.getType(aName);
+			auto type = scope->getType(aName);
 			if (type != nullptr)
 			{
 				return type;
@@ -302,16 +302,21 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			std::string errorMsg;
 			std::string methodStat;
 			TypePtr methodType;
-			std::tie(errorMsg, methodStat, methodType) = match.methodFound->evaluate(match.nodeStartIter, match.nodeEndIter);
+			Flags nodeFlags;
+			std::tie(errorMsg, methodStat, methodType, nodeFlags) = 
+				match.methodFound->evaluate(match.nodeStartIter, match.nodeEndIter);
 			if (!errorMsg.empty())
 			{
 				error(errorMsg);
 			}
 			//std::cerr << methodType << " " << methodStat << std::endl;
+			
+			ExprNode node(methodStat, methodStat, methodType);
+			node.setFlags(nodeFlags);
 
 			Expr newExpr;
 			newExpr.addNodes(aExpr.nodes().cbegin(), match.nodeStartIter);
-			newExpr.addNode(ExprNode(methodStat, methodStat, methodType));
+			newExpr.addNode(node);
 			newExpr.addNodes(match.nodeEndIter, aExpr.nodes().cend());
 			//std::cerr << newExpr << std::endl;
 			return evaluate(newExpr);
@@ -329,6 +334,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	{
 		error("Bad expression: " + aExpr.text());
 	}
+	//std::cerr << result << std::endl;
 	return result;
 }
 
@@ -336,7 +342,7 @@ void NateParser::codeStartProgram()
 {
 	printLineNr();
 	mOut << "int main(int argc, char** argv)\n{" << std::endl;
-	pushScope(Scope("main"));
+	pushScope(std::make_shared<Scope>("main"));
 }
 
 void NateParser::codeEndProgram()
@@ -352,6 +358,7 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 	if (aIdentifier->type()->is(Type::Unknown))
 	{
 		error("Unknown type: " + aIdentifier->type()->name());
+		return;
 	}
 
 	printLineNr();
@@ -385,7 +392,7 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 
 	for (auto const& name : aNames)
 	{
-		if (getIdentifier(name, &curScope()))
+		if (getIdentifier(name, curScope().get()))
 		{
 			error("duplicate declaration of: " + name);
 		}
@@ -413,7 +420,7 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 void NateParser::codeStartRecord(const RecordPtr& aRecord)
 {
 	printLineNr();
-	pushScope(Scope(aRecord->name()));
+	pushScope(aRecord->scope());
 	mOut << "struct " << aRecord->codeType() << " {" << std::endl;
 }
 
@@ -423,11 +430,11 @@ void NateParser::codeDeclareRecordIdentifiers(const std::vector<std::string>& aN
 {
 	codeDeclareLocalIdentifiers(aNames, aType, aInitValues, false);
 
-	for (auto& id : curScope().getIdentifiers())
+	for (auto& id : curScope()->getIdentifiers())
 	{
 		if (!id->type()->is(Type::Scalar) && !id->initValue().is(ExprNode::Default))
 		{
-			error("Cannot initialize member: " + id->name() + " of record " + curScope().name());
+			error("Cannot initialize member: " + id->name() + " of record " + curScope()->name());
 		}
 	}
 }
@@ -437,19 +444,26 @@ void NateParser::codeEndRecord()
 	mOut << "};" << std::endl;
 }
 
-void NateParser::codeAssign(const std::vector<std::string>& aNames, Expr& aValue)
+void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)
 {
 	printLineNr();
-	for (auto const& name : aNames)
+	for (auto const& expr : aExpressions)
 	{
-		const TypePtr& nameType = getOrFakeIdentifier(name)->type();
-		bool ok = aValue.node().castToType(nameType);
-		if (!ok)
+		if (!expr.is(ExprNode::Output))
 		{
-			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + nameType->name());
+			error("Cannot assign to a non-variable");
 		}
+		else
+		{
+			const TypePtr& exprType = expr.type();
+			bool ok = aValue.node().castToType(exprType);
+			if (!ok)
+			{
+				error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
+			}
 				
-		mOut << codeId(name) << " = ";
+			mOut << expr.code() << " = ";
+		}
 	}
 
 	mOut << aValue.code() << ";" << std::endl;
@@ -497,7 +511,7 @@ void NateParser::codeOutput(const std::string& aString)
 
 void NateParser::codeOutput(const Expr& aValue)
 {
-	if (aValue.type()->is(Type::Boolean))
+	if (aValue.type() && aValue.type()->is(Type::Boolean))
 	{
 		codeOutput("std::boolalpha ");
 	}
@@ -508,7 +522,7 @@ void NateParser::codeOutput(const Expr& aValue)
 	}
 	else
 	{
-		if (aValue.type()->name() == "int-8")
+		if (aValue.type() && aValue.type()->name() == "int-8")
 		{
 			codeOutput("static_cast<int>(" + aValue.code() + ")");
 		}
@@ -542,7 +556,7 @@ void NateParser::codeIf(const Expr& aValue)
 	}
 
 	mOut << "if (" << aValue.code() << ") {" << std::endl;
-	pushScope(Scope("if"));
+	pushScope(std::make_shared<Scope>("if"));
 }
 
 void NateParser::codeElseIf()
@@ -554,7 +568,7 @@ void NateParser::codeElse()
 {
 	printLineNr();
 	mOut << "else {" << std::endl;
-	pushScope(Scope("else"));
+	pushScope(std::make_shared<Scope>("else"));
 }
 
 void NateParser::codeEndIf()
@@ -567,7 +581,7 @@ void NateParser::codeInitLoop()
 {
 	printLineNr();
 	mLoopWhileCounts.push_back(0);
-	pushScope(Scope("while"));
+	pushScope(std::make_shared<Scope>("while"));
 }
 
 void NateParser::codeStartLoop()

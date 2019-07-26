@@ -9,14 +9,14 @@ ExprNode::ExprNode()
 }
 
 ExprNode::ExprNode(const std::string& aWord)
-	: ExprNode(aWord, "", TypePtr())
+	: ExprNode(aWord, aWord, TypePtr())
 {
 	setFlag(Word, true);
 	setFlag(ConstExpr, true);
 }
 
 ExprNode::ExprNode(const std::string& aText, const TypePtr& aType)
-	: ExprNode(aText, "", aType)
+	: ExprNode(aText, aText, aType)
 {
 }
 
@@ -69,7 +69,7 @@ bool               ExprNode::isEmpty()         const { return mText.empty(); }
 
 std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 {
-	aStream << "ExprNode(" << aValue.text() << "," << aValue.code() << "," << *aValue.type();
+	aStream << "ExprNode(" << aValue.text() << "," << aValue.code() << "," << (aValue.type() ? *aValue.type() : Type());
 	if (aValue.is(ExprNode::Word)) aStream << ",Word";
 	if (aValue.is(ExprNode::Literal)) aStream << ",Literal";
 	if (aValue.is(ExprNode::Output)) aStream << ",Output";

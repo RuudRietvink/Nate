@@ -38,6 +38,10 @@ void Method::setReturnFlag(const std::string& aFlag)
 	{
 		setFlag(Same, true);
 	}
+	else if (aFlag == "last")
+	{
+		setFlag(Last, true);
+	}
 	else if (aFlag == "none")
 	{
 		setFlag(None, true);
@@ -86,36 +90,60 @@ bool Method::matches(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
 	return true;
 }
 
-std::tuple<std::string, std::string, TypePtr> Method::evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
+std::tuple<std::string, std::string, TypePtr, Flags> Method::evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
 {
 	std::string error;
 	std::string resultCode = code();
 	ExprNodesCIter nodeIter = aBegin;
 	TypePtr codeType(type());
 	TypePtr firstType;
+	TypePtr lastType;
+	Record* owner = nullptr;
+	Flags nodeFlags;
 
 	for (auto const& arg : args())
 	{
 		if (arg.isIdentifier())
 		{
-			const TypePtr& nodeType = nodeIter->type();
+			const TypePtr& argType = arg.identifier()->type();
+			TypePtr nodeType = nodeIter->type();
 
-			if (!firstType) 
+			if (arg.is(Arg::Owner))
 			{
-				firstType = nodeType;
+				//std::cerr << "isOwner " << *nodeType << std::endl;
+				owner = dynamic_cast<Record*>(nodeType.get());
+				//std::cerr << (owner == nullptr ? "nullptr" : "ok") << std::endl;
+			}
+			else
+			{
+				if (arg.is(Arg::Prop) && owner != nullptr)
+				{
+					auto identifier = owner->getIdentifier(nodeIter->text());
+					//std::cerr << "owner " << *owner << " " << nodeIter->text() << std::endl;
+					if (identifier)
+					{
+						nodeType = identifier->type();
+						nodeFlags.push_back(ExprNode::Output);
+					}
+				}
+
+				if (!firstType) 
+				{
+					firstType = nodeType;
+				}
 			}
 
       ExprNode node = *nodeIter;
-			TypePtr argType = arg.identifier()->type();
-      node.castToType(argType->is(Arg::Same) ? firstType : argType);
-			resultCode = replaceAll(resultCode, "${" + arg.identifier()->name() + "}", 
-                              "(" + node.code() + ")");
+      node.castToType(arg.is(Arg::Same) ? firstType : argType);
+			std::string code = (arg.is(Arg::Prop) ? node.code() : "(" + node.code() + ")");
+			resultCode = replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
 
 			if (arg.is(Arg::Num) && !type() && (!codeType || nodeType->isBiggerThan(codeType)))
 			{
 				codeType = nodeType;
-				//std::cerr << arg.identifier().name() << " " << codeType << std::endl;
 			}
+
+			lastType = nodeType;
 		}
 
 		++nodeIter;
@@ -125,8 +153,12 @@ std::tuple<std::string, std::string, TypePtr> Method::evaluate(ExprNodesCIter& a
 	{
 		codeType = firstType;
 	}
+	else if (is(Last))
+	{
+		codeType = lastType;
+	}
 
-	return std::make_tuple(error, resultCode, codeType);
+	return std::make_tuple(error, resultCode, codeType, nodeFlags);
 }
 
 std::string Method::toCodeWord(const std::string& aWord) const
@@ -208,12 +240,26 @@ std::tuple<std::string, bool> Method::checkArgTypes(ExprNodesCIter& aBegin, Expr
 				}
 				else
 				{
+					owner = dynamic_cast<Record*>(nodeType.get());
+					if (owner == nullptr)
+					{
+						error = "Not a record: " + nodeType->name();
+						result = false;
+					}
 				}
 			}
-			else if (arg.is(Arg::Prop) && !nodeIter->is(ExprNode::Word))
+			else if (arg.is(Arg::Prop))
 			{
-				error = "Not a record: " + nodeType->name();
-				result = false;
+				if (owner == nullptr)
+				{
+					error = "No record specified for property: " + nodeIter->text();
+					result = false;
+				}
+				else if (!owner->getIdentifier(nodeIter->text()))
+				{
+					error = "Not a property of '" + owner->name() + "': " + nodeIter->text();
+					result = false;
+				}
 			}
 			else if (argType && !argType->is(Type::Unknown) && !argType->isCompatibleWith(nodeType))
 			{

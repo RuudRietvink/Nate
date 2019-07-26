@@ -100,6 +100,7 @@ public:
 %x COMMENT
 
 idName [\p{Ll}\p{Lu}]([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
+word   [\p{Ll}\p{Lu}']([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
 number [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?
 oper   [^\p{Ll}\p{Lu}0-9\h\n]
 
@@ -177,9 +178,10 @@ include\h*\".*?\"    includeFile();
 <EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE>{
 ","					  return yy::parser::make_COMMA(location());
 "&"					  return yy::parser::make_CONCAT(location());
+":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ")"					  return yy::parser::make_CLOSEPAR(location());
-{idName}			return yy::parser::make_WORD(str(), location());
+{word}		  	return yy::parser::make_WORD(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 }
 
@@ -193,7 +195,7 @@ include\h*\".*?\"    includeFile();
 ")"					  return yy::parser::make_CLOSEPAR(location());
 ","					  return yy::parser::make_COMMA(location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
-{idName}			return yy::parser::make_WORD(str(), location());
+{word}	  		return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 (?^^\h*)      // ignore indent changes

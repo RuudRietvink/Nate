@@ -19,7 +19,7 @@ public:
 	const std::list<IdentifierPtr>& getIdentifiers() const;
 
 	RecordPtr getRecord(const std::string& aName);
-	void addRecord(const RecordPtr& aRecord);
+	void addRecord(RecordPtr& aRecord);
 
 	TypePtr getType(const std::string& aName);
 	void addType(const TypePtr& aType);
@@ -31,3 +31,5 @@ private:
 	Container<RecordPtr>     mRecords;					
 	Container<TypePtr>       mTypes;													
 };
+
+typedef std::shared_ptr<Scope> ScopePtr;

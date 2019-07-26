@@ -29,9 +29,9 @@ public:
 	virtual ~NateParser();
 	int parse();
 
-	void pushScope(const Scope& aScope);
+	void pushScope(const ScopePtr& aScope);
 	void popScope();
-	Scope& curScope();
+	ScopePtr& curScope();
 	void error(const std::string& anError);
 	int errorCount() const { return mErrors; }
 	TypePtr getType(const std::string& aName, Scope* aScope = nullptr);
@@ -62,7 +62,7 @@ public:
 																  	const std::string& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
-	void codeAssign(const std::vector<std::string>& aNames, Expr& aValue);
+	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);
 	void codeOutput(const std::string& aString);
@@ -111,7 +111,7 @@ private:
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
-	std::list<Scope>            mScopes;
+	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
 	std::list<Define>           mDefines;
 	std::list<int>              mLoopWhileCounts;

@@ -12,10 +12,9 @@ Identifier::Identifier(const std::string& aName, const TypePtr& aType)
 Identifier::Identifier(const std::string& aName, const TypePtr& aType, const Expr& aInitValue)
 	: mName(aName),
 	mCodeName(toCodeName(aName)),
-	mType(aType),
+	mType(aType ? aType : std::make_shared<Type>()),
 	mInitValue(aInitValue)
 {
-
 }
 
 const std::string& Identifier::name()      const { return mName; }

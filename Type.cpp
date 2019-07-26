@@ -10,9 +10,14 @@ Type::Type()
 }
 
 Type::Type(const std::string& aName)
+	: Type(aName, aName)
+{
+}
+
+Type::Type(const std::string& aType, const std::string& aName)
 	: mName(aName)
 {
-	if (aName == "text")
+	if (aType == "text")
 	{
 		setFlag(Text, true);
 		setFlag(Comparable, true);
@@ -20,7 +25,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "std::string";
 		mBitSize = 1000;
 	}
-	else if (aName == "int-8")
+	else if (aType == "int-8")
 	{
 		setFlag(Scalar, true);
 		setFlag(Number, true);
@@ -28,7 +33,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "int8_t";
 		mBitSize = 8;
 	}
-	else if (aName == "int-16")
+	else if (aType == "int-16")
 	{
 		setFlag(Scalar, true);
 		setFlag(Number, true);
@@ -36,7 +41,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "int16_t";
 		mBitSize = 16;
 	}
-	else if (aName == "int-32" || aName == "int")
+	else if (aType == "int-32" || aName == "int")
 	{
 		setFlag(Scalar, true);
 		mName = "int-32";
@@ -45,7 +50,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "int32_t";
 		mBitSize = 32;
 	}
-	else if (aName == "int-64")
+	else if (aType == "int-64")
 	{
 		setFlag(Scalar, true);
 		setFlag(Number, true);
@@ -53,7 +58,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "int64_t";
 		mBitSize = 64;
 	}
-	else if (aName == "float-32" || aName == "float")
+	else if (aType == "float-32" || aType == "float")
 	{
 		setFlag(Scalar, true);
 		mName = "float-32";
@@ -63,7 +68,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "float";
 		mBitSize = 32;
 	}
-	else if (aName == "float-64")
+	else if (aType == "float-64")
 	{
 		setFlag(Scalar, true);
 		setFlag(Number, true);
@@ -72,7 +77,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "double";
 		mBitSize = 64;
 	}
-	else if (aName == "bool" || aName == "boolean")
+	else if (aType == "bool" || aType == "boolean")
 	{
 		setFlag(Scalar, true);
     mName = "boolean";
@@ -81,7 +86,7 @@ Type::Type(const std::string& aName)
 		mCodeType = "bool";
 		mBitSize = 32;
 	}
-	else if (aName == "record")
+	else if (aType == "record")
 	{
 		setFlag(Record, true);
 		setFlag(NeedsRef, true);
@@ -189,16 +194,21 @@ void Type::setCodeType(const std::string& aCodeType) { mCodeType = aCodeType; }
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue)
 {
-	aStream << "Type(" << aValue.name() << "," << aValue.codeType() << "," << aValue.bitSize();
-	if (aValue.is(Type::Number))  aStream << ",Number";
-	if (aValue.is(Type::Float))   aStream << ",Float";
-	if (aValue.is(Type::Text))  aStream << ",Text";
-	if (aValue.is(Type::Boolean)) aStream << ",Boolean";
-	if (aValue.is(Type::Unknown)) aStream << ",Unknown";
-	if (aValue.is(Type::Scalar)) aStream << ",Scalar";
-	if (aValue.is(Type::Comparable)) aStream << ",Comparable";
-	if (aValue.is(Type::NeedsRef)) aStream << ",NeedsRef";
-	if (aValue.is(Type::Record)) aStream << ",Record";
+	return aValue.print(aStream);
+}
+
+std::ostream& Type::print(std::ostream& aStream) const
+{
+	aStream << "Type(" << name() << "," << codeType() << "," << bitSize();
+	if (is(Type::Number))  aStream << ",Number";
+	if (is(Type::Float))   aStream << ",Float";
+	if (is(Type::Text))  aStream << ",Text";
+	if (is(Type::Boolean)) aStream << ",Boolean";
+	if (is(Type::Unknown)) aStream << ",Unknown";
+	if (is(Type::Scalar)) aStream << ",Scalar";
+	if (is(Type::Comparable)) aStream << ",Comparable";
+	if (is(Type::NeedsRef)) aStream << ",NeedsRef";
+	if (is(Type::Record)) aStream << ",Record";
 	aStream << ")";
 	return aStream;
 }

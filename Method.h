@@ -20,7 +20,7 @@ public:
 
 	virtual bool matches(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
 	virtual std::tuple<std::string, bool> checkArgTypes(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
-	virtual std::tuple<std::string, std::string, TypePtr> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
+	virtual std::tuple<std::string, std::string, TypePtr, Flags> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
