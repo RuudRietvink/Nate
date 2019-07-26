@@ -4,6 +4,7 @@
 
 #include <string>
 #include <ostream>
+#include <memory>
 
 class Type : public WithFlags
 {
@@ -12,9 +13,9 @@ public:
 	Type(const std::string& aName);
 	virtual ~Type() = default;
 
-	static Type makeType(const std::string& aValue);
-	bool isBiggerThan(const Type& aType) const;
-	bool isCompatibleWith(const Type& aType) const;
+	static std::shared_ptr<Type> makeType(const std::string& aValue);
+	bool isBiggerThan(const std::shared_ptr<Type>& aType) const;
+	bool isCompatibleWith(const std::shared_ptr<Type>& aType) const;
 
 	const std::string& name() const;
 	const std::string& codeType() const;
@@ -36,5 +37,7 @@ private:
 	std::string mCodeType;
 	int			    mBitSize = 4;
 };
+
+typedef std::shared_ptr<Type> TypePtr;
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);

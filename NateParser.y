@@ -234,7 +234,7 @@ arg:
 		  { nate.curMethod().addArgWord($WORD); }
   | OPENPAR inout arg-id[id] IS type 
 		  { 
-			  auto id = Identifier($id, Type($type));
+			  auto id = std::make_shared<Identifier>($id, nate.determineType($type));
 			  nate.addIdentifier(id);
 		    nate.curMethod().addArgId(id);
         if (!$inout.empty())
@@ -249,7 +249,7 @@ arg:
 id-with-arg-flags:
     OPENPAR inout arg-id[id] IS
 		{ 
-			auto id = Identifier($id, Type(""));
+			auto id = std::make_shared<Identifier>($id, std::make_shared<Type>(""));
 			nate.addIdentifier(id);
 		  nate.curMethod().addArgId(id);
       if (!$inout.empty())
@@ -301,7 +301,7 @@ call-return:
 		  { nate.curMethod().setReturnFlag("none"); }
 	| IS type
 		  { 
-			  nate.curMethod().setType($type);
+			  nate.curMethod().setType(std::make_shared<Type>($type));
 		  }
   | IS call-return-flags 
   ;
@@ -390,7 +390,11 @@ var-init:
 record-statement:
     RECORD WORD[id] COL
       { 
-        Record record($id, nate.curScope());
+        if (nate.curScope().getType($id) != nullptr)
+        {
+				  nate.error("Duplicate type of :" + $id);
+        }
+        RecordPtr record = std::make_shared<Record>($id, nate.curScope());
         nate.curScope().addRecord(record);
         nate.codeStartRecord(record);
       }
@@ -559,7 +563,7 @@ for-to:
 
 step:
 	  %empty
-		  { $$ = Expr(ExprNode("1", "1", Type("int-32"))); }
+		  { $$ = Expr(ExprNode("1", "1", nate.determineType("int-32"))); }
   | STEP expr
 		  { $$ = $expr; }
   ;
@@ -631,17 +635,17 @@ expr-value:
 		  }
   | string
 		  { 
-			  $$ = Expr(ExprNode($string, $string, Type("text")));
+			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | BOOL
 		  { 
-			  $$ = Expr(ExprNode($BOOL, $BOOL, Type("boolean")));
+			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.determineType("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | id
 		  { 
-			  $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id).type()));
+			  $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
 			  $$.node().setFlag(ExprNode::Output, true);
 		  } 
   | OPENPAR expr CLOSEPAR

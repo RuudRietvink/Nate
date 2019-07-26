@@ -1,7 +1,6 @@
 #include "Record.h"
 #include "Scope.h"
 
-#include "Identifier.h"
 #include "NateFunctions.h"
 
 Record::Record(const std::string& aName, Scope& aScope)
@@ -16,17 +15,17 @@ Scope& Record::getScope()
 	return mScope;
 }
 
-Identifier* Record::getIdentifier(const std::string& aName)
+IdentifierPtr Record::getIdentifier(const std::string& aName)
 {
 	return mScope.getIdentifier(aName);
 }
 
-void Record::addIdentifier(const Identifier& aIdentifier)
+void Record::addIdentifier(const IdentifierPtr& aIdentifier)
 {
 	mScope.addIdentifier(aIdentifier);
 }
 
-const std::list<Identifier>& Record::getIdentifiers() const
+const std::list<IdentifierPtr>& Record::getIdentifiers() const
 {
 	return mScope.getIdentifiers();
 }

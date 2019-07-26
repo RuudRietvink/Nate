@@ -23,7 +23,7 @@ std::string Define::createCodeDecl()
 	}
 	else
 	{
-		buf << type().codeType() << " ";
+		buf << type()->codeType() << " ";
 	}
 
 	buf << pattern() << "(";
@@ -39,19 +39,19 @@ std::string Define::createCodeDecl()
 
 			first = false;
 
-			if (arg.identifier().type().is(Type::NeedsRef) && !arg.is(Arg::Out))
+			if (arg.identifier()->type()->is(Type::NeedsRef) && !arg.is(Arg::Out))
 			{
 				buf << "const ";
 			}
 
-			buf << arg.identifier().type().codeType();
+			buf << arg.identifier()->type()->codeType();
 
-			if (arg.identifier().type().is(Type::NeedsRef) || arg.is(Arg::Out))
+			if (arg.identifier()->type()->is(Type::NeedsRef) || arg.is(Arg::Out))
 			{
 				buf << "&";
 			}
 
-			buf << " " << arg.identifier().codeName();
+			buf << " " << arg.identifier()->codeName();
 		}
 	}
 
@@ -77,7 +77,7 @@ void Define::createCodeCall()
 			}
 			first = false;
 
-			buf << "${" << arg.identifier().name() << "}";
+			buf << "${" << arg.identifier()->name() << "}";
 		}
 	}
 		

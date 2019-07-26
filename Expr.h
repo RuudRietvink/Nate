@@ -19,7 +19,7 @@ public:
 
 	std::string        text()       const;
 	const std::string& code()       const;
-	const Type&        type()       const;
+	TypePtr            type()       const;
 	bool               is(size_t aFlags) const;
 	bool               isEmpty()    const;
 

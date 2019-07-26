@@ -9,28 +9,39 @@ Scope::Scope(const std::string& aName)
 
 const std::string& Scope::name() const { return mName; }
 
-Identifier* Scope::getIdentifier(const std::string& aName)
+IdentifierPtr Scope::getIdentifier(const std::string& aName)
 {
 	return mIds.getData(aName);
 }
 
-const std::list<Identifier>& Scope::getIdentifiers() const
+const std::list<IdentifierPtr>& Scope::getIdentifiers() const
 {
 	return mIdentifierList;
 }
 
-void Scope::addIdentifier(const Identifier& aIdentifier)
+void Scope::addIdentifier(const IdentifierPtr& aIdentifier)
 {
 	mIds.addData(aIdentifier);
 	mIdentifierList.push_back(aIdentifier);
 }
 
-Record* Scope::getRecord(const std::string& aName)
+RecordPtr Scope::getRecord(const std::string& aName)
 {
 	return mRecords.getData(aName);
 }
 
-void Scope::addRecord(const Record& aRecord)
+void Scope::addRecord(const RecordPtr& aRecord)
 {
 	mRecords.addData(aRecord);
+	mTypes.addData(aRecord);
+}
+
+TypePtr Scope::getType(const std::string& aName)
+{
+	return mTypes.getData(aName);
+}
+
+void Scope::addType(const TypePtr& aType)
+{
+	mTypes.addData(aType);
 }

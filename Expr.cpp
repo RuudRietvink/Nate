@@ -63,7 +63,7 @@ std::string Expr::text() const
 }
 
 const std::string& Expr::code()            const { return node().code(); }
-const Type&        Expr::type()            const { return node().type(); }
+TypePtr            Expr::type()            const { return node().type(); }
 bool               Expr::is(size_t aFlags) const { return !nodes().empty() && node().is(aFlags); }
 bool               Expr::isEmpty()         const { return nodes().empty() || node().isEmpty(); }
 

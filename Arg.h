@@ -9,14 +9,14 @@
 class Arg : public WithFlags
 {
 public:
-	Arg(const Identifier& aIdentifier);
+	Arg(const IdentifierPtr& aIdentifier);
 	Arg(const std::string& aWord);
 	virtual ~Arg() = default;
 
-	bool               isIdentifier() const;
-	const Identifier&  identifier() const;
-	const std::string& word() const;
-	bool               setArgFlag(const std::string& aFlag);
+	bool									isIdentifier() const;
+	const IdentifierPtr&	identifier() const;
+	const std::string&		word() const;
+	bool									setArgFlag(const std::string& aFlag);
 
 	static const size_t Num    = 1;
 	static const size_t Any    = 2;
@@ -24,9 +24,11 @@ public:
 	static const size_t Same   = 4;
 	static const size_t Out    = 5;
 	static const size_t InOut  = 6;
+	static const size_t Owner  = 7;
+	static const size_t Prop   = 8;
 
 private:
-	Identifier      mIdentifier;
+	IdentifierPtr   mIdentifier;
 	std::string     mWord;
 	bool            mIsIdentifier = false;
 };

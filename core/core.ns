@@ -110,3 +110,10 @@ code right 150 first of ($val is text) is text:
 
 code right 150 rest of ($val is text) is text:
   Core::restOf($val)
+  
+///////////////////////////////////////////////
+// language
+///////////////////////////////////////////////
+
+code 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
+  $owner.$prop

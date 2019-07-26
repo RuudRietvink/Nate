@@ -18,17 +18,17 @@ public:
 	Method();
 	virtual ~Method() = default;
 
-	virtual bool matches(const std::string& aPattern) const;
+	virtual bool matches(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
 	virtual std::tuple<std::string, bool> checkArgTypes(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
-	virtual std::tuple<std::string, std::string, Type> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
+	virtual std::tuple<std::string, std::string, TypePtr> evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const;
 	virtual void addArgWord(const std::string& aWord);
-	virtual void addArgId(const Identifier& aId);
+	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
 	
 	int                         priority() const;
 	void                        setPriority(int aValue);
-	const Type&                 type() const;
-	void                        setType(const Type& aType);
+  const TypePtr&              type() const;
+	void                        setType(const TypePtr& aType);
 	const std::vector<Arg>&     args() const;
 	std::vector<Arg>&           args();
 	Arg&                        curArg();
@@ -44,14 +44,14 @@ public:
 	static const size_t Same       = 3;
 	static const size_t RightLeft  = 4;
 	static const size_t None       = 5;
+	static const size_t Last       = 6;
   
 private:
 	std::string          mCode;
-	Type                 mType;
+	TypePtr              mType;
 	std::vector<Arg>     mArgs;
 	std::string          mSignature;
 	mutable std::string  mPattern;
-	mutable bool         mIsRegex = false;
 	int                  mPriority = 0;
 };
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);

@@ -1,10 +1,9 @@
 #pragma once
 #include "Type.h"
-#include "Scope.h"
+#include "Identifier.h"
 
 #include <list>
 
-class Identifier;
 class Scope;
 
 class Record : public Type
@@ -16,11 +15,12 @@ public:
 
 	Scope& getScope();
 
-	Identifier* getIdentifier(const std::string& aName);
-	void addIdentifier(const Identifier& aIdentifier);
-	const std::list<Identifier>& getIdentifiers() const;
+	IdentifierPtr getIdentifier(const std::string& aName);
+	void addIdentifier(const IdentifierPtr& aIdentifier);
+	const std::list<IdentifierPtr>& getIdentifiers() const;
 
 private:
 	Scope&	mScope;
 };
 
+typedef std::shared_ptr<Record> RecordPtr;

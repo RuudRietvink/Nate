@@ -96,7 +96,7 @@ Type::Type(const std::string& aName)
 	}
 }
 
-Type Type::makeType(const std::string& aValue)
+TypePtr Type::makeType(const std::string& aValue)
 {
 	std::string type = "";
 
@@ -138,26 +138,26 @@ Type Type::makeType(const std::string& aValue)
 		}
 	}
 
-	return Type(type);
+	return std::make_shared<Type>(type);
 }
 
-bool Type::isCompatibleWith(const Type& aType) const
+bool Type::isCompatibleWith(const TypePtr& aType) const
 {
 	bool result = false;
 
-	if ( is(Number) && aType.is(Number))
+	if ( is(Number) && aType->is(Number))
 	{
 		result = true;
 	}
-	else if (is(Text) && aType.is(Number))
+	else if (is(Text) && aType->is(Number))
 	{
 		result = true;
 	}
-	else if (is(Text) && aType.is(Boolean))
+	else if (is(Text) && aType->is(Boolean))
 	{
 		result = true;
 	}
-	else if (name() == aType.name())
+	else if (name() == aType->name())
 	{
 		result = true;
 	}
@@ -165,15 +165,15 @@ bool Type::isCompatibleWith(const Type& aType) const
 	return result;
 }
 
-bool Type::isBiggerThan(const Type& aType) const
+bool Type::isBiggerThan(const TypePtr& aType) const
 {
 	bool result = false;
 
-	if (bitSize() > aType.bitSize())
+	if (bitSize() > aType->bitSize())
 	{
 		result = true;
 	}
-	else if (is(Float) && (!aType.is(Float) && aType.is(Number)))
+	else if (is(Float) && (!aType->is(Float) && aType->is(Number)))
 	{
 		result = true;
 	}

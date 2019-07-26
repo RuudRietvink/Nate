@@ -9,20 +9,22 @@
 class Identifier
 {
 public:
-	Identifier(const std::string& aName, const Type& aType);
-	Identifier(const std::string& aName, const Type& aType, const Expr& aInitValue);
+	Identifier(const std::string& aName, const TypePtr& aType);
+	Identifier(const std::string& aName, const TypePtr& aType, const Expr& aInitValue);
 	virtual ~Identifier() = default;
 
 	const std::string& name()      const;
 	const std::string& codeName()  const;
 	const Expr&        initValue() const;
-	const Type&        type()      const;
+	TypePtr            type()      const;
 
 private:
 	std::string mName;
 	std::string mCodeName;
 	Expr        mInitValue;
-	Type        mType;
+	TypePtr     mType;
 };
+
+typedef std::shared_ptr<Identifier> IdentifierPtr;
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue);

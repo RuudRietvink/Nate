@@ -1,20 +1,20 @@
 
 #include "Arg.h"
 
-Arg::Arg(const Identifier& aIdentifier)
+Arg::Arg(const IdentifierPtr& aIdentifier)
 	: mIdentifier(aIdentifier),
 	  mIsIdentifier(true)
 {}
 
 Arg::Arg(const std::string& aWord)
-	: mIdentifier("", Type()), 
+	: mIdentifier(std::make_shared<Identifier>("", TypePtr())), 
 	  mWord(aWord),
 	  mIsIdentifier(false)
 {}
 
-bool               Arg::isIdentifier()    const { return mIsIdentifier; }
-const Identifier&  Arg::identifier()      const { return mIdentifier; }
-const std::string& Arg::word()            const { return mWord; }
+bool                  Arg::isIdentifier()    const { return mIsIdentifier; }
+const IdentifierPtr&  Arg::identifier()      const { return mIdentifier; }
+const std::string&    Arg::word()            const { return mWord; }
 
 bool Arg::setArgFlag(const std::string& aFlag)
 {
@@ -45,6 +45,14 @@ bool Arg::setArgFlag(const std::string& aFlag)
 		setFlag(Out, true);
 		setFlag(InOut, true);
 	}
+	else if (aFlag == "owner")
+	{
+		setFlag(Owner, true);
+	}
+	else if (aFlag == "prop")
+	{
+		setFlag(Prop, true);
+	}
   else
   {
     ok = false;
@@ -58,7 +66,7 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	aStream << "Arg(" << aValue.isIdentifier() << ",";
 	if (aValue.isIdentifier())
 	{
-		aStream << aValue.identifier();
+		aStream << *aValue.identifier();
 	}
 	else
 	{
@@ -68,6 +76,11 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	if (aValue.is(Arg::Num)) aStream << ",Num";
 	if (aValue.is(Arg::Any)) aStream << ",Any";
 	if (aValue.is(Arg::Cmp)) aStream << ",Cmp";
+	if (aValue.is(Arg::Same)) aStream << ",Same";
+	if (aValue.is(Arg::Out)) aStream << ",Out";
+	if (aValue.is(Arg::InOut)) aStream << ",InOut";
+	if (aValue.is(Arg::Owner)) aStream << ",Owner";
+	if (aValue.is(Arg::Prop)) aStream << ",Prop";
 
 	aStream << "}";
 

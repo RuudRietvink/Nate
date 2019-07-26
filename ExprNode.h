@@ -12,15 +12,15 @@ class ExprNode : public WithFlags
 public:
 	ExprNode();
 	ExprNode(const std::string& aWord);
-	ExprNode(const std::string& aText, const Type& aType);
-	ExprNode(const std::string& aText, const std::string& aCode, const Type& aType);
+	ExprNode(const std::string& aText, const TypePtr& aType);
+	ExprNode(const std::string& aText, const std::string& aCode, const TypePtr& aType);
 	virtual ~ExprNode() = default;
 
-	bool castToType(const Type& aToType);
+	bool castToType(const TypePtr& aToType);
 
 	const std::string& text()            const;
 	const std::string& code()            const;
-	const Type&        type()            const;
+	TypePtr            type()            const;
 	bool               isEmpty()         const;
 	
 	static const size_t Word      = 0;
@@ -32,7 +32,7 @@ public:
 private:
 	std::string       mText;
 	std::string       mCode;
-	Type              mType;
+	TypePtr           mType;
 };
 
 typedef std::vector<ExprNode> ExprNodes;

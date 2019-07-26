@@ -10,15 +10,15 @@ public:
 	Container() = default;
 	virtual ~Container() = default;
 
-	T* getData(const std::string& aName)
+	T getData(const std::string& aName)
 	{
 		auto iter = mContainer.find(aName);
-		return iter == mContainer.end() ? nullptr : &iter->second;
+		return iter == mContainer.end() ? T() : iter->second;
 	}
 
 	void addData(const T& aData)
 	{
-		mContainer.emplace(aData.name(), aData);
+		mContainer.emplace(aData->name(), aData);
 	}
 
 private:

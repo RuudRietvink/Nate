@@ -34,9 +34,11 @@ public:
 	Scope& curScope();
 	void error(const std::string& anError);
 	int errorCount() const { return mErrors; }
-	Identifier* getIdentifier(const std::string& aName, Scope* aScope = nullptr);
-	Identifier& getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
-	void addIdentifier(const Identifier& aIdentifier);
+	TypePtr getType(const std::string& aName, Scope* aScope = nullptr);
+	TypePtr determineType(const std::string& aName);
+	IdentifierPtr getIdentifier(const std::string& aName, Scope* aScope = nullptr);
+	IdentifierPtr getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
+	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aString);
 
 	void codeStartProgram();
@@ -49,13 +51,13 @@ public:
 	void endDefine();
 	Define& curDefine();
 	Method& curMethod();
-	void codeDeclareLocalIdentifier(const Identifier& aIdentifier,
+	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 																	bool initializeNonScalars = true);
 	void codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
 																	 const std::string& aType,
 																	 const std::vector<Expr>& aInitValues,
 																	 bool initializeNonScalars = true);
-	void codeStartRecord(const Record& aRecord);
+	void codeStartRecord(const RecordPtr& aRecord);
 	void codeDeclareRecordIdentifiers(const std::vector<std::string>& aNames,
 																  	const std::string& aType,
 																	  const std::vector<Expr>& aInitValues);
@@ -95,9 +97,6 @@ private:
 		std::string    matchedErrorMsg;
 	};
 
-	std::string pattern(const ExprNode& aNode) const;
-	std::string pattern(std::vector<ExprNode>::const_iterator& aBegin,
-  std::vector<ExprNode>::const_iterator& aEnd) const;
 	void methodMatches(const Method& aMethod,
 		                 ExprNodesCIter& aStartIter, 
 		                 ExprNodesCIter& aEndIter,

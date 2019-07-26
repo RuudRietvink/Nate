@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Container.h"
+#include "Record.h"
+#include "Type.h"
+#include "Identifier.h"
 
 #include <list>
-
-class Identifier;
-class Record;
 
 class Scope
 {
@@ -14,16 +14,20 @@ public:
 	virtual ~Scope() = default;
 
 	const std::string& name() const;
-	Identifier* getIdentifier(const std::string& aName);
-	void addIdentifier(const Identifier& aIdentifier);
-	const std::list<Identifier>& getIdentifiers() const;
+	IdentifierPtr getIdentifier(const std::string& aName);
+	void addIdentifier(const IdentifierPtr& aIdentifier);
+	const std::list<IdentifierPtr>& getIdentifiers() const;
 
-	Record* getRecord(const std::string& aName);
-	void addRecord(const Record& aRecord);
+	RecordPtr getRecord(const std::string& aName);
+	void addRecord(const RecordPtr& aRecord);
+
+	TypePtr getType(const std::string& aName);
+	void addType(const TypePtr& aType);
 
 private:
-	std::string					  mName;
-	Container<Identifier> mIds;
-	std::list<Identifier> mIdentifierList;
-	Container<Record>     mRecords;													
+	std::string					     mName;
+	Container<IdentifierPtr> mIds;
+	std::list<IdentifierPtr> mIdentifierList;
+	Container<RecordPtr>     mRecords;					
+	Container<TypePtr>       mTypes;													
 };
