@@ -125,8 +125,6 @@ prog-statement:
   | code
   | define
   | record-statement
-  | BEGIN 
-  | END
   | EOS
   ;
 
@@ -153,7 +151,6 @@ statement:
   | loop-statement
   | return-statement
   | record-statement
-  | BEGIN statement-list END
   | expr-statement
   | EOS
   ;
@@ -362,8 +359,13 @@ single-id:
 is-type:
     %empty
 		  { $$ = ""; }
-  | IS type
-	  	{ $$ = $type; }
+  | IS 
+      { pushState(lexer, Lexer::DECL_TYPE); }
+    type
+	  	{ 
+        popState(lexer);
+        $$ = $type;
+      }
   ;
 
 type:

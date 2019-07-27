@@ -9,7 +9,7 @@
 
 Define::Define()
 {
-	setPriority(150);
+	setPriority(65);
 }
 
 std::string Define::createCodeDecl()

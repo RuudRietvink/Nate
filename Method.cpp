@@ -94,43 +94,45 @@ std::tuple<std::string, std::string, TypePtr, Flags> Method::evaluate(ExprNodesC
 {
 	std::string error;
 	std::string resultCode = code();
-	ExprNodesCIter nodeIter = aBegin;
 	TypePtr codeType(type());
 	TypePtr firstType;
 	TypePtr lastType;
 	Record* owner = nullptr;
 	Flags nodeFlags;
 
-	for (auto const& arg : args())
+	ExprNodesCIter nodeIter = aBegin;
+	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
+	{
+		if (arg->isIdentifier())
+		{
+			if (arg->is(Arg::Owner))
+			{
+				owner = dynamic_cast<Record*>(nodeIter->type().get());
+			}
+		}
+	}
+	
+	nodeIter = aBegin;
+	for (auto const& arg : mArgs)
 	{
 		if (arg.isIdentifier())
 		{
 			const TypePtr& argType = arg.identifier()->type();
 			TypePtr nodeType = nodeIter->type();
 
-			if (arg.is(Arg::Owner))
+			if (arg.is(Arg::Prop) && owner != nullptr)
 			{
-				//std::cerr << "isOwner " << *nodeType << std::endl;
-				owner = dynamic_cast<Record*>(nodeType.get());
-				//std::cerr << (owner == nullptr ? "nullptr" : "ok") << std::endl;
+				auto identifier = owner->getIdentifier(nodeIter->text());
+				if (identifier)
+				{
+					nodeType = identifier->type();
+					nodeFlags.push_back(ExprNode::Output);
+				}
 			}
-			else
-			{
-				if (arg.is(Arg::Prop) && owner != nullptr)
-				{
-					auto identifier = owner->getIdentifier(nodeIter->text());
-					//std::cerr << "owner " << *owner << " " << nodeIter->text() << std::endl;
-					if (identifier)
-					{
-						nodeType = identifier->type();
-						nodeFlags.push_back(ExprNode::Output);
-					}
-				}
 
-				if (!firstType) 
-				{
-					firstType = nodeType;
-				}
+			if (!firstType) 
+			{
+				firstType = nodeType;
 			}
 
       ExprNode node = *nodeIter;
@@ -194,10 +196,36 @@ std::tuple<std::string, bool> Method::checkArgTypes(ExprNodesCIter& aBegin, Expr
 {
 	std::string error;
 	bool result = true;
-	ExprNodesCIter nodeIter = aBegin;
 	TypePtr firstType;
 	Record* owner = nullptr;
+	
+	ExprNodesCIter nodeIter = aBegin;
+	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
+	{
+		if (arg->isIdentifier())
+		{
+			if (arg->is(Arg::Owner))
+			{
+				const TypePtr& nodeType = nodeIter->type();
+				if (!nodeType->is(Type::Record))
+				{
+					error = "Not a record: " + nodeType->name();
+					result = false;
+				}
+				else
+				{
+					owner = dynamic_cast<Record*>(nodeType.get());
+					if (owner == nullptr)
+					{
+						error = "Not a record: " + nodeType->name();
+						result = false;
+					}
+				}
+			}
+		}
+	}
 
+	nodeIter = aBegin;
 	for (auto const& arg : mArgs)
 	{
 		if (arg.isIdentifier())
@@ -233,20 +261,7 @@ std::tuple<std::string, bool> Method::checkArgTypes(ExprNodesCIter& aBegin, Expr
 			}
 			else if (arg.is(Arg::Owner))
 			{
-				if (!nodeType->is(Type::Record))
-				{
-					error = "Not a record: " + nodeType->name();
-					result = false;
-				}
-				else
-				{
-					owner = dynamic_cast<Record*>(nodeType.get());
-					if (owner == nullptr)
-					{
-						error = "Not a record: " + nodeType->name();
-						result = false;
-					}
-				}
+				// above code
 			}
 			else if (arg.is(Arg::Prop))
 			{

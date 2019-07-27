@@ -121,10 +121,37 @@ void NateParser::printLineNr()
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aString)
 {
 	IdentifierPtr id = getIdentifier(aString);
-
 	std::string name = aString;
+	size_t pos = 0;
 
-	return std::make_tuple((id != nullptr), name);
+	while (!id && pos != std::string::npos)
+	{
+		pos = name.find_last_of("-");
+		if (pos != std::string::npos)
+		{
+			name = name.substr(0, pos);
+			id = getIdentifier(name);
+		}
+	}
+
+	if (!id)
+	{
+		name = aString;
+	}
+	else
+	{
+		if (pos != 0)
+		{
+			for (auto ind = aString.size() - 1; ind >= pos; --ind)
+			{
+				mLexer->matcher().unput(aString[ind]);
+			}
+
+			name = aString.substr(0, pos);
+		}
+	}
+	
+	return std::make_tuple(!!id, name);
 }
 
 IdentifierPtr NateParser::getIdentifier(const std::string& aName, Scope* aScope)
@@ -226,7 +253,8 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 startIter < aMatch.nodeStartIter))
+				 startIter < aMatch.nodeStartIter ||
+				 (startIter == aMatch.nodeStartIter && endIter > aMatch.nodeEndIter)))
 		{
 			methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -247,7 +275,8 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 startIter > aMatch.nodeStartIter))
+				 startIter > aMatch.nodeStartIter ||
+				 (startIter == aMatch.nodeStartIter && endIter > aMatch.nodeEndIter)))
 		{
 			 methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -309,7 +338,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			{
 				error(errorMsg);
 			}
-			//std::cerr << methodType << " " << methodStat << std::endl;
+			//std::cerr << *methodType << " " << methodStat << std::endl;
 			
 			ExprNode node(methodStat, methodStat, methodType);
 			node.setFlags(nodeFlags);

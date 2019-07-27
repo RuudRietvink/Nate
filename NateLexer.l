@@ -11,6 +11,8 @@ public:
 	int depth = 0;
 	NateParser* nate = nullptr;
   int commentNested = 0;
+  std::vector<size_t> stops;
+  std::stack<std::vector<size_t>> stopsStack;
 		
 	void includeFile(const std::string& aFile)
 	{
@@ -30,6 +32,8 @@ public:
 			{
 				++depth;
 				filenames.push_back(replaceAll(aFile, "\\", "\\\\"));
+        stopsStack.push(stops);
+        stops.clear();
 				push_matcher(new_matcher(fd));  // push current matcher, use new matcher
 			}
 		}
@@ -51,6 +55,8 @@ public:
 			pop_matcher();                  // delete current matcher, pop matcher
 			filenames.pop_back();
 			--depth;
+      stops = stopsStack.top();
+      stopsStack.pop();
 			result = false;                 // continue reading
 		}
 
@@ -63,8 +69,8 @@ public:
 		bool isId;
 
 		std::tie(isId, name) = nate->makeIdOrWord(aString);
-		return isId ? yy::parser::make_IDENTIFIER(str(), aLocation)
-		            : yy::parser::make_WORD(str(), aLocation);
+		return isId ? yy::parser::make_IDENTIFIER(name, aLocation)
+		            : yy::parser::make_WORD(name, aLocation);
 	}
 
   void outIndents(const std::string& aString)
@@ -74,6 +80,7 @@ public:
       std::cerr << aString << matcher().stops().size() << " " << matcher().last_stop() << std::endl;
     }
   }
+
 %}
 
 %option bison-complete
@@ -95,45 +102,48 @@ public:
 %x CODE
 %x ARGS
 %x VAR_DECL
+%x DECL_TYPE
 %x FOR_EXPR_VALUE
 %x OUTPUT_EXPR_VALUE
 %x COMMENT
 
 idName [\p{Ll}\p{Lu}]([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
 word   [\p{Ll}\p{Lu}']([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
-number [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?
+number [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
 oper   [^\p{Ll}\p{Lu}0-9\h\n]
 
 %%
+ 
 <*>{
+\h+            // ignore
 (?^^\h*\n)     // eat empty lines without affecting indent stops
 (?^^\h*"//".*) // eat //-comments that start a line without affecting indent stops
 "//".*         // eat //-comments
 (?^^\h+/"/*")  // eat white space before /*-comments without affecting indent stops
 (?^\\\n\h*)    // lines ending in \ will continue on the next line
-
-"/*"           if (commentNested == 0) push_state(COMMENT);
+                  
+^"/*"\j|"/*"   if (commentNested == 0) push_state(COMMENT);
                ++commentNested;                  // allow nesting /*-comments
-               
 }
+
+^\h*\i			  stops = matcher().stops();
+              outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
+^\h*\j			  outIndents("j "); return yy::parser::make_END(location());   // dedent
+\j				    outIndents("j+ "); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
 
 <COMMENT>{
 "*/"           if (--commentNested == 0)
                {
-                 pop_state();
+                 matcher().stops() = stops; // restore the indent margin/tab stops
+                 pop_state(); 
                }
-.|\n           // ignore all content in comments
+[^*/]*|.|\n    // ignore all content in comments
 }
 
 <LOOP>{
 \bwhile\b     |
 (?^^\h+/while\b)	return yy::parser::make_WHILE(location());
 }
- 
-^\h*\i			  outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
-^\h*\j			  outIndents("j "); return yy::parser::make_END(location());   // dedent
-\j				    outIndents("j+ "); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
-<*>\h+        // ignore
 
 <INITIAL,LOOP,EXPR_WORD,EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE,DEFINE>\n return yy::parser::make_EOS(location());
 
@@ -156,6 +166,15 @@ include\h*\".*?\"    includeFile();
 ";"				    return yy::parser::make_EOS(location());
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
+
+<*>{
+"√"           return yy::parser::make_WORD("sqrt", location());
+"π"           return yy::parser::make_WORD("pi", location());
+"τ"           return yy::parser::make_WORD("tau", location());
+"÷"           return yy::parser::make_WORD("/", location());
+"×"           return yy::parser::make_WORD("*", location());
+"⋅"           return yy::parser::make_WORD("*", location());
+}
 
 {number}			return yy::parser::make_NUMBER(str(), location());
 ["][^"]*[""]	return yy::parser::make_STRING(str(), location());
@@ -181,6 +200,7 @@ include\h*\".*?\"    includeFile();
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ")"					  return yy::parser::make_CLOSEPAR(location());
+"**"          return yy::parser::make_WORD("^", location());
 {word}		  	return yy::parser::make_WORD(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 }
@@ -210,6 +230,10 @@ include\h*\".*?\"    includeFile();
 [^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            // ignore
+}
+
+<DECL_TYPE>{
+{word}	  		return yy::parser::make_WORD(str(), location());
 }
 
 <VAR_DECL>{
