@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utf8.h"
+
 #define NOMINMAX  
 #include <windows.h>
 #include <stringapiset.h>
@@ -14,6 +16,10 @@ extern std::string toCodeName(const std::string& aName);
 extern std::string escapedMatch(const std::string& aString);
 extern std::string replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo);
 extern std::string toCodeWord(const std::string& aWord);
+extern utf8::iterator<std::string::const_iterator> cbegin(const std::string& aString);
+extern utf8::iterator<std::string::const_iterator> cend(const std::string& aString);
+extern utf8::iterator<std::string::const_iterator> find(const std::string& aString,
+																											  uint32_t aChar);
 
 template<typename CONTAINER>
 std::string join(const CONTAINER& container, const std::string& seperator = ",")

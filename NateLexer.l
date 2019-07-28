@@ -11,8 +11,6 @@ public:
 	int depth = 0;
 	NateParser* nate = nullptr;
   int commentNested = 0;
-  std::vector<size_t> stops;
-  std::stack<std::vector<size_t>> stopsStack;
 		
 	void includeFile(const std::string& aFile)
 	{
@@ -32,8 +30,6 @@ public:
 			{
 				++depth;
 				filenames.push_back(replaceAll(aFile, "\\", "\\\\"));
-        stopsStack.push(stops);
-        stops.clear();
 				push_matcher(new_matcher(fd));  // push current matcher, use new matcher
 			}
 		}
@@ -55,8 +51,6 @@ public:
 			pop_matcher();                  // delete current matcher, pop matcher
 			filenames.pop_back();
 			--depth;
-      stops = stopsStack.top();
-      stopsStack.pop();
 			result = false;                 // continue reading
 		}
 
@@ -107,39 +101,65 @@ public:
 %x OUTPUT_EXPR_VALUE
 %x COMMENT
 
-idName [\p{Ll}\p{Lu}]([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
-word   [\p{Ll}\p{Lu}']([-\p{Ll}\p{Lu}0-9]*[\p{Ll}\p{Lu}0-9])?
-number [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
-oper   [^\p{Ll}\p{Lu}0-9\h\n]
+/*firstWordChars  [\p{Ll}\p{Lu}]
+nextWordChars   [-\p{Pc}]
+lastWordChars   [\p{Nd}]
+subscriptNrs    [₀₁₂₃₄₅₆₇₈₉]
+subscript       [||{subscriptNrs}]
+superscriptNrs  [⁰¹²³⁴⁵⁶⁷⁸⁹]
+superscript     [||{superscriptNrs}]
+firstWord       [||firstWordChars}]
+nextWord        [||{firstWordChars}||{nextWordChars}||{lastWordChars}||{subscript}]
+lastWord        [||{firstWordChars}||{lastWordChars}||{subscript}]*/
+firstWord   [\p{Ll}\p{Lu}]
+subscript   [₀₁₂₃₄₅₆₇₈₉]
+superscript [⁰¹²³⁴⁵⁶⁷⁸⁹]
+nextWord    [-\p{Pc}\p{Ll}\p{Lu}\p{Nd}||[₀₁₂₃₄₅₆₇₈₉]]
+lastWord    [\p{Ll}\p{Lu}\p{Nd}||[₀₁₂₃₄₅₆₇₈₉]]
+idName      {firstWord}({nextWord}*{lastWord})?
+word        ({firstWord}|')({nextWord}*{lastWord})?
+number      [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
+oper        [^\p{Ll}\p{Lu}0-9\h\n]
+fraction    [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 
 %%
  
 <*>{
 \h+            // ignore
+(?^\\\n\h*)    // lines ending in \ will continue on the next line
+
+// *** aliases for operators and functions
+<*>{
+"√"           return yy::parser::make_WORD("sqrt", location());
+"π"           return yy::parser::make_WORD("pi", location());
+"τ"           return yy::parser::make_WORD("tau", location());
+"÷"           return yy::parser::make_WORD("/", location());
+"×"           return yy::parser::make_WORD("*", location());
+"⋅"           return yy::parser::make_WORD("*", location());
+}
+
+// *** comments
 (?^^\h*\n)     // eat empty lines without affecting indent stops
 (?^^\h*"//".*) // eat //-comments that start a line without affecting indent stops
 "//".*         // eat //-comments
-(?^^\h+/"/*")  // eat white space before /*-comments without affecting indent stops
-(?^\\\n\h*)    // lines ending in \ will continue on the next line
-                  
-^"/*"\j|"/*"   if (commentNested == 0) push_state(COMMENT);
+\h*"/*"\k?     if (commentNested == 0) push_state(COMMENT);
                ++commentNested;                  // allow nesting /*-comments
 }
 
-^\h*\i			  stops = matcher().stops();
-              outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
+^\h*\i			  outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
 ^\h*\j			  outIndents("j "); return yy::parser::make_END(location());   // dedent
 \j				    outIndents("j+ "); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
 
 <COMMENT>{
 "*/"           if (--commentNested == 0)
                {
-                 matcher().stops() = stops; // restore the indent margin/tab stops
                  pop_state(); 
                }
 [^*/]*|.|\n    // ignore all content in comments
 }
 
+
+// *** key words
 <LOOP>{
 \bwhile\b     |
 (?^^\h+/while\b)	return yy::parser::make_WHILE(location());
@@ -167,16 +187,8 @@ include\h*\".*?\"    includeFile();
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
-<*>{
-"√"           return yy::parser::make_WORD("sqrt", location());
-"π"           return yy::parser::make_WORD("pi", location());
-"τ"           return yy::parser::make_WORD("tau", location());
-"÷"           return yy::parser::make_WORD("/", location());
-"×"           return yy::parser::make_WORD("*", location());
-"⋅"           return yy::parser::make_WORD("*", location());
-}
-
 {number}			return yy::parser::make_NUMBER(str(), location());
+{fraction}	  return yy::parser::make_FRACTION(str(), location());
 ["][^"]*[""]	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 {idName}			return makeIdOrWord(str(), location());

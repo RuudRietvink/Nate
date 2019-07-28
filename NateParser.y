@@ -54,6 +54,7 @@
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
+%token <std::string> FRACTION "fraction"
 %token <std::string> STRING "string"
 %token <std::string> BOOL "bool"
 %token <std::string> WORD "word"
@@ -641,6 +642,11 @@ expr-value:
 	  NUMBER
 		  { 
 			  $$ = Expr(ExprNode($NUMBER, $NUMBER, Type::makeType($NUMBER)));
+			  $$.node().setFlag(ExprNode::Literal, true);
+		  }
+	| FRACTION
+		  { 
+			  $$ = Expr(ExprNode($FRACTION, $FRACTION, Type::makeType($FRACTION)));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | string

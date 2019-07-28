@@ -1,4 +1,4 @@
-﻿
+
 #include "NateParser.h"
 
 #include <fstream>

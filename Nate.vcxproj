@@ -199,6 +199,7 @@
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
     <ClCompile Include="Container.cpp" />
+    <ClCompile Include="Fraction.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="lex.yy.cpp" />
     <ClCompile Include="Nate.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="Expr.h" />
     <ClInclude Include="ExprNode.h" />
     <ClInclude Include="Container.h" />
+    <ClInclude Include="Fraction.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="location.hpp" />

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include "utf8.h"
 
 std::wstring u16(const std::string& str)
 {
@@ -37,8 +36,8 @@ bool strtodbl(const char* aString, double& aResult)
 std::string toCodeName(const std::string& aName)
 {
 	std::stringstream buf;
-	utf8::iterator<std::string::const_iterator> iter(aName.cbegin(), aName.cbegin(), aName.cend());
-	utf8::iterator<std::string::const_iterator> end(aName.cend(), aName.cbegin(), aName.cend());
+	utf8::iterator<std::string::const_iterator> iter(cbegin(aName));
+	utf8::iterator<std::string::const_iterator> end(cend(aName));
 
 	//std::cerr << aName << " ";
 	for (; iter != end; ++iter)
@@ -49,7 +48,7 @@ std::string toCodeName(const std::string& aName)
 		}
 		else if (*iter > 255)
 		{
-			buf << "U" << std::hex << *iter;
+			buf << "__" << std::hex << *iter << "_";
 		}
 		else
 		{
@@ -98,4 +97,31 @@ std::string replaceAll(const std::string& aString, const std::string& aFrom, con
   }
 
   return result;
+}
+
+utf8::iterator<std::string::const_iterator> cbegin(const std::string& aString)
+{
+	return utf8::iterator<std::string::const_iterator>(aString.cbegin(), aString.cbegin(), aString.cend());
+}
+
+utf8::iterator<std::string::const_iterator> cend(const std::string& aString)
+{
+	return utf8::iterator<std::string::const_iterator>(aString.cend(), aString.cbegin(), aString.cend());
+}
+
+utf8::iterator<std::string::const_iterator> find(const std::string& aString,
+																								 uint32_t aChar)
+{
+	utf8::iterator<std::string::const_iterator> iter(cbegin(aString));
+	utf8::iterator<std::string::const_iterator> end(cend(aString));
+		
+	for (; iter != end; ++iter)
+	{
+		if (*iter == aChar)
+		{
+			return iter;
+		}
+	}
+
+	return end;
 }
