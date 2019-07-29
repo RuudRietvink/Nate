@@ -195,11 +195,11 @@
     <ClCompile Include="Code.cpp" />
     <ClCompile Include="Arg.cpp" />
     <ClCompile Include="core\Core.cpp" />
+    <ClCompile Include="core\Fraction.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
     <ClCompile Include="Container.cpp" />
-    <ClCompile Include="Fraction.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="lex.yy.cpp" />
     <ClCompile Include="Nate.cpp" />
@@ -214,6 +214,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns" />
+    <None Include="core\Math.ns" />
+    <None Include="core\Text.ns" />
     <None Include="D:\nate.define" />
     <None Include="D:\nate.import" />
     <None Include="D:\nate.in" />
@@ -223,11 +225,12 @@
     <ClInclude Include="Code.h" />
     <ClInclude Include="Arg.h" />
     <ClInclude Include="core\Core.h" />
+    <ClInclude Include="core\Fraction.h" />
+    <ClInclude Include="core\UpperLower.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="ExprNode.h" />
     <ClInclude Include="Container.h" />
-    <ClInclude Include="Fraction.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="location.hpp" />

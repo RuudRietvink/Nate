@@ -6,6 +6,7 @@ class Fraction
 {
 public:
 	Fraction();
+	Fraction(const std::string& aString);
 	virtual ~Fraction() = default;
 
 	float toFloat() const;

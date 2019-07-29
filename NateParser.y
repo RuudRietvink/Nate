@@ -23,37 +23,15 @@
   #undef yylex
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
 
-  int stateExprValue = yy::Lexer::EXPR_VALUE;
   bool outputEnd = true;
   
-  void pushState(yy::Lexer& lexer, int aState)
-  {
-	  if (lexer.debug()) std::cerr << "Push " << aState << std::endl;
-	  lexer.push_state(aState);
-  }
-
-  void popState(yy::Lexer& lexer)
-  {
-    if (lexer.debug()) std::cerr << "Pop from " << lexer.start();
-	  if (!lexer.states_empty())
-	  {
-		  lexer.pop_state();
-	  }
-
-	  if (lexer.debug()) std::cerr << " to " << lexer.start() << std::endl;
-  }
-
-  void setState(yy::Lexer& lexer, int aState)
-  {
-	  if (lexer.debug()) std::cerr << "Set " << aState << " from " << lexer.start() << std::endl;    
-	  lexer.start(aState);
-  }
 
 }
 
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
+%token <std::string> SUPERNUMBER "power number"
 %token <std::string> FRACTION "fraction"
 %token <std::string> STRING "string"
 %token <std::string> BOOL "bool"
@@ -61,6 +39,7 @@
 %token EOF 0 "end of file"
 %token BEGIN "begin block"
 %token END "end block"
+%token IMPORT "import"
 %token PROGRAM "program"
 %token ERR "error"
 %token VAR "var"
@@ -122,11 +101,17 @@ prog-statement-list:
   ;
 
 prog-statement:
-	  program
+	  import
+  | program
   | code
   | define
   | record-statement
   | EOS
+  ;
+  
+import:
+    IMPORT WORD
+      { nate.import($WORD); }
   ;
 
 program:
@@ -160,19 +145,19 @@ define:
 	  DEFINE 
 		  { 
 			  nate.addDefine();
-			  pushState(lexer, Lexer::ARGS);
+			  lexer.pushState(Lexer::ARGS);
 		  }
 	  arg-list call-return COL
 		  { 
-			  popState(lexer);
-			  pushState(lexer, Lexer::DEFINE);
+			  lexer.popState();
+			  lexer.pushState(Lexer::DEFINE);
 			  nate.declareDefine();
 		  }
 	  EOS BEGIN
 		  statement-list
 	  END
 		  { 
-			  popState(lexer); 
+			  lexer.popState(); 
 			  nate.endDefine();
 		  }
   ;
@@ -181,19 +166,19 @@ code:
 	  CODE 
 		  { 
 			  nate.addCode();
-			  pushState(lexer, Lexer::ARGS);
+			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
 	  arg-list call-return COL
 		  { 
-			  popState(lexer);
-			  pushState(lexer, Lexer::CODE);
+			  lexer.popState();
+			  lexer.pushState(Lexer::CODE);
 		  }
 	  BEGIN
 		  code-stat-list
 	  END
 		  { 
-			  popState(lexer); 
+			  lexer.popState(); 
 			  nate.endCode();
 		  }
   ;
@@ -323,9 +308,9 @@ call-return-flag:
 
 var-statement:
 	  var 
-		  { pushState(lexer, Lexer::VAR_DECL); }
+		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
-		  { popState(lexer); }
+		  { lexer.popState(); }
 	  is-type var-init-assign
 		  { nate.codeDeclareLocalIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
   ;
@@ -361,10 +346,10 @@ is-type:
     %empty
 		  { $$ = ""; }
   | IS 
-      { pushState(lexer, Lexer::DECL_TYPE); }
+      { lexer.pushState(Lexer::DECL_TYPE); }
     type
 	  	{ 
-        popState(lexer);
+        lexer.popState();
         $$ = $type;
       }
   ;
@@ -415,9 +400,9 @@ record-var-list:
 
 record-var:
     var
-		  { pushState(lexer, Lexer::VAR_DECL); }
+		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
-		  { popState(lexer); }
+		  { lexer.popState(); }
 	  is-type var-init-assign
 		  { nate.codeDeclareRecordIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
   ;
@@ -438,11 +423,11 @@ output-statement:
 	  OUTPUT 
 		  { 
         nate.codeOutputStart("std::cout");
-        stateExprValue = yy::Lexer::OUTPUT_EXPR_VALUE;
+        lexer.stateExprValue = yy::Lexer::OUTPUT_EXPR_VALUE;
       }
 	  output-list
 		  { 
-        stateExprValue = yy::Lexer::EXPR_VALUE;
+        lexer.stateExprValue = yy::Lexer::EXPR_VALUE;
         nate.codeOutputEnd(outputEnd);
         outputEnd = true;
       }
@@ -501,7 +486,7 @@ else-statement:
 loop-statement:
 	  LOOP 
 		  { 
-        pushState(lexer, Lexer::LOOP);
+        lexer.pushState(Lexer::LOOP);
         nate.codeInitLoop();
       }
 	  for-part
@@ -510,7 +495,7 @@ loop-statement:
 		loop-part-statement-list
 		  { 
         nate.codeEndLoop();
-        popState(lexer);
+        lexer.popState();
       }
     END
   ;
@@ -552,14 +537,14 @@ opt-while:
  
 for-loop-statement:
 	  FOR var 
-		  { pushState(lexer, Lexer::VAR_DECL); }
+		  { lexer.pushState(Lexer::VAR_DECL); }
 	  single-id 
-		  { popState(lexer); }
+		  { lexer.popState(); }
 	  is-type ASSIGN 
-		  { stateExprValue = yy::Lexer::FOR_EXPR_VALUE; }
+		  { lexer.stateExprValue = yy::Lexer::FOR_EXPR_VALUE; }
 	  expr[from] for-to expr[to] step 
 		  { 
-			  stateExprValue = yy::Lexer::EXPR_VALUE;
+			  lexer.stateExprValue = yy::Lexer::EXPR_VALUE;
 			  nate.codeStartForLoop($[single-id], $[is-type], $[for-to], $from, $to, $step);
 		  }
 	  for-loop-part-end
@@ -599,14 +584,14 @@ expr:
 	  expr-value-parts
 	  expr-end
 		  { 
-			  popState(lexer); 
+			  lexer.popState(); 
 			  $$ = nate.evaluate(Expr($[expr-value-start], $[expr-value-parts]));
 		  }
  |	expr-word-start
 	  expr-word-parts
 	  expr-end
 		  { 
-			  popState(lexer); 
+			  lexer.popState(); 
 			  $$ = nate.evaluate(Expr($[expr-word-start], $[expr-word-parts]));
 		  }
   ;
@@ -625,7 +610,7 @@ expr-value-parts:
   
 expr-value-start:
 	  expr-value
-		  { $$ = $[expr-value]; pushState(lexer, stateExprValue); }
+		  { $$ = $[expr-value]; lexer.pushState(lexer.stateExprValue); }
   ;
   
 expr-value-next:
@@ -635,9 +620,9 @@ expr-value-next:
 
 expr-value-part:
 	  expr-value
-		  { $$ = $[expr-value]; setState(lexer, stateExprValue); }
+		  { $$ = $[expr-value]; lexer.setState(lexer.stateExprValue); }
   ;
-
+  
 expr-value:
 	  NUMBER
 		  { 
@@ -646,7 +631,7 @@ expr-value:
 		  }
 	| FRACTION
 		  { 
-			  $$ = Expr(ExprNode($FRACTION, $FRACTION, Type::makeType($FRACTION)));
+			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\"", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
   | string
@@ -679,7 +664,7 @@ expr-word-parts:
     
 expr-word-start:
 	  expr-word
-		  { $$ = $[expr-word]; pushState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = $[expr-word]; lexer.pushState(lexer.stateExprWord); }
   ;
   
 expr-word-next:
@@ -688,11 +673,11 @@ expr-word-next:
 
 expr-word-part:
 	  expr-word
-		  { $$ = $[expr-word]; setState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = $[expr-word]; lexer.setState(lexer.stateExprWord); }
   | IF
-		  { $$ = Expr(ExprNode("if")); setState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = Expr(ExprNode("if")); lexer.setState(lexer.stateExprWord); }
   | ELSE
-		  { $$ = Expr(ExprNode("else")); setState(lexer, Lexer::EXPR_WORD); }
+		  { $$ = Expr(ExprNode("else")); lexer.setState(lexer.stateExprWord); }
   ;
 
 expr-word:

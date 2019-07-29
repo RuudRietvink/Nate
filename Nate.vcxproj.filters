@@ -118,8 +118,8 @@
     <ClCompile Include="Container.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
-    <ClCompile Include="Fraction.cpp">
-      <Filter>Source Files\Structs</Filter>
+    <ClCompile Include="core\Fraction.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +136,12 @@
       <Filter>Source Files\Input</Filter>
     </None>
     <None Include="core\core.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Math.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Text.ns">
       <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
@@ -206,8 +212,11 @@
     <ClInclude Include="Container.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
-    <ClInclude Include="Fraction.h">
-      <Filter>Source Files\Structs</Filter>
+    <ClInclude Include="core\Fraction.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\UpperLower.h">
+      <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 #include "NateParser.h"
-
+#include "core/Core.h"
 #include "lex.yy.h"
 #include "NateParser.tab.h"
 #include <algorithm>
@@ -14,6 +14,9 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 {
 	mLexer->nate = this;
 	mLexer->filenames.push_back(replaceAll(aFilename, "\\", "\\\\"));
+	  
+	mOut << "#define NOMINMAX" << std::endl;
+	mOut << "#include <windows.h>" << std::endl;
 	mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
 	mOut << "#include <string>" << std::endl;
 	mOut << "#include <cstdint>" << std::endl;
@@ -39,6 +42,12 @@ int NateParser::parse()
 	}
 
 	return mParser->parse();
+}
+
+void NateParser::import(const std::string& aName)
+{
+  std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core\\";
+	mLexer->includeFile(library + aName + ".ns");
 }
 
 void NateParser::pushScope(const ScopePtr& aScope)
@@ -371,6 +380,9 @@ void NateParser::codeStartProgram()
 {
 	printLineNr();
 	mOut << "int main(int argc, char** argv)\n{" << std::endl;
+	mOut << "SetConsoleOutputCP(65001);" << std::endl;
+	mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
+    
 	pushScope(std::make_shared<Scope>("main"));
 }
 

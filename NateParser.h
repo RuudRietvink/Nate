@@ -28,6 +28,7 @@ public:
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut);
 	virtual ~NateParser();
 	int parse();
+	void import(const std::string& aName);
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();

@@ -1,6 +1,6 @@
 
 #include "Type.h"
-#include "NateFunctions.h"
+#include "Core/Core.h"
 
 #include <iostream>
 
@@ -116,7 +116,7 @@ TypePtr Type::makeType(const std::string& aValue)
 	else if (aValue.find('.') != std::string::npos)
 	{
 		/*double value;
-		strtodbl(aValue.c_str(), value);
+		Core::strtodbl(aValue.c_str(), value);
 		if (value > std::numeric_limits<float>::max() || 
 		    (value < 0 && value < std::numeric_limits<float>::lowest()) ||
 		    (value > 0 && value < std::numeric_limits<float>::min()))
@@ -132,7 +132,7 @@ TypePtr Type::makeType(const std::string& aValue)
 	else
 	{
 		int64_t value;
-		strtoi64(aValue.c_str(), value);
+		Core::strtoi64(aValue.c_str(), value);
 		if (value > std::numeric_limits<int32_t>::max() || value < std::numeric_limits<int32_t>::lowest())
 		{
 			type = "int-64";

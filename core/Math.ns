@@ -1,0 +1,25 @@
+
+///////////////////////////////////////////////
+// Math
+///////////////////////////////////////////////
+
+code 200 pi is float-64:
+	3.141592653589793
+  
+code 200 tau is float-64:
+	6.283185307179586
+
+code right 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
+	std::pow($val-1, $val-2)
+  
+code 105 ($val-1 is (num)) monomial ($val-2 is (num)) is (num,highest):
+	$val-1 * $val-2
+	
+code right 100 sqrt ($val is (num)) is float-64:
+	std::sqrt($val)
+    
+code right 85 ($val-1 is (num)) max ($val-2 is (num,same)) is (num,same):
+	std::max($val-1, $val-2)
+  
+code right 85 ($val-1 is (num)) min ($val-2 is (num,same)) is (num,same):
+	std::min($val-1, $val-2)
