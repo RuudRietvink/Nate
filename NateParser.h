@@ -40,7 +40,7 @@ public:
 	IdentifierPtr getIdentifier(const std::string& aName, Scope* aScope = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
-	std::tuple<bool, std::string> makeIdOrWord(const std::string& aString);
+	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 
 	void codeStartProgram();
 	void codeEndProgram();
@@ -109,6 +109,8 @@ private:
 	                            const Expr& aExpr,
 	                            Match& aMatch);
 	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch);
+	void unput(const std::string::const_iterator& aStart,
+						 const std::string::const_iterator& aEnd);
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;

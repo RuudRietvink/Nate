@@ -70,3 +70,51 @@ std::string replaceAll(const std::string& aString, const std::string& aFrom, con
 
   return result;
 }
+
+std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
+{
+	std::string number;
+	std::string word;
+	
+	utf8::iterator<std::string::const_iterator> iter(Core::cbegin(aString));
+	utf8::iterator<std::string::const_iterator> end(Core::cend(aString));
+	auto inserter = std::back_inserter(number);
+
+	while (iter != end && std::isdigit(*iter))
+	{
+		inserter = utf8::append(*iter++, inserter);
+	}
+
+	if (iter != end && *iter == '.')
+	{
+		inserter = utf8::append(*iter++, inserter);
+
+		while (iter != end && std::isdigit(*iter))
+		{
+			inserter = utf8::append(*iter++, inserter);
+		}
+
+		if (iter != end && *iter == 'E')
+		{
+			inserter = utf8::append(*iter++, inserter);
+
+			if (iter != end && (*iter == '-' || *iter == '+'))
+			{
+				inserter = utf8::append(*iter++, inserter);
+			}
+
+			while (iter != end && std::isdigit(*iter))
+			{
+				inserter = utf8::append(*iter++, inserter);
+			}
+		}
+	}
+	
+	inserter = std::back_inserter(word);
+	while (iter != end)
+	{
+		inserter = utf8::append(*iter++, inserter);
+	}
+
+	return std::make_tuple(number, word);
+}

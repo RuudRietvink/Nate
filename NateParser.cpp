@@ -127,7 +127,19 @@ void NateParser::printLineNr()
 	}
 }
 
-std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aString)
+void NateParser::unput(const std::string::const_iterator& aStart,
+											 const std::string::const_iterator& aEnd)
+{
+	std::string::const_iterator iter = aStart;
+	if (iter != aEnd)
+	{
+		char kar = *iter;
+		unput(++iter, aEnd);
+		mLexer->matcher().unput(kar);
+	}
+}
+
+std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
 {
 	IdentifierPtr id = getIdentifier(aString);
 	std::string name = aString;
@@ -139,7 +151,8 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aStrin
 		if (pos != std::string::npos)
 		{
 			name = name.substr(0, pos);
-			id = getIdentifier(name);
+			IdentifierPtr newId = getIdentifier(name); // temp needed otherwise it crashes on NULL struct
+			id = newId;
 		}
 	}
 
@@ -151,11 +164,10 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aStrin
 	{
 		if (pos != 0)
 		{
-			for (auto ind = aString.size() - 1; ind >= pos; --ind)
-			{
-				mLexer->matcher().unput(aString[ind]);
-			}
-
+			utf8::iterator<std::string::const_iterator> iter(Core::cbegin(aOrig));
+			utf8::iterator<std::string::const_iterator> end(Core::cend(aOrig));
+			utf8::advance(iter, pos, end);
+			unput(iter.base(), end.base());
 			name = aString.substr(0, pos);
 		}
 	}

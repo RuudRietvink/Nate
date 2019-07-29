@@ -8,6 +8,9 @@ code 200 pi is float-64:
   
 code 200 tau is float-64:
 	6.283185307179586
+  
+code 200 e is float-64:
+	2.718281828459045
 
 code right 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
 	std::pow($val-1, $val-2)

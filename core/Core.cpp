@@ -73,7 +73,7 @@ std::string Core::restOf(const std::string& aString)
 	{
 		std::string::const_iterator iter = aString.cbegin();
 		utf8::next(iter, aString.cend());
-		result =  std::string(iter, aString.cend());
+		result = std::string(iter, aString.cend());
 	}
 
 	return result;
@@ -205,6 +205,6 @@ std::string Core::unSuperscript(const std::string& aString)
 		}
 	}
 
-	std::cerr << aString << " -> " << result << std::endl; 
+	//std::cerr << aString << " -> " << result << std::endl; 
 	return result;
 }

@@ -31,6 +31,7 @@
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
+%token <std::string> MONOMIAL "monomial"
 %token <std::string> SUPERNUMBER "power number"
 %token <std::string> FRACTION "fraction"
 %token <std::string> STRING "string"
@@ -634,7 +635,27 @@ expr-value:
 			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\"", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 		  }
-  | string
+  | MONOMIAL
+		  { 
+        std::string number;
+        std::string word;
+        std::tie(number, word) = fromMonomial($MONOMIAL);
+			  $$ = Expr(ExprNode(number, number, Type::makeType(number)));
+        $$.addNode(ExprNode("monomial"));
+        
+		    std::string name;
+		    bool isId;
+		    std::tie(isId, name) = nate.makeIdOrWord(word, word);
+        if (isId)
+        {
+          $$.addNode(ExprNode(name, nate.codeId(name), nate.getOrFakeIdentifier(name)->type()));
+        }
+        else
+        {
+          $$.addNode(ExprNode(word));
+        }
+		  }
+	| string
 		  { 
 			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);

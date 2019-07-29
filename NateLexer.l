@@ -62,12 +62,12 @@ public:
 		return result;
 	}
 
-	yy::parser::symbol_type makeIdOrWord(const std::string& aString, const yy::location& aLocation)
+	yy::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const yy::location& aLocation)
 	{
 		std::string name;
 		bool isId;
 
-		std::tie(isId, name) = nate->makeIdOrWord(aString);
+		std::tie(isId, name) = nate->makeIdOrWord(aOrig, aString);
 		return isId ? yy::parser::make_IDENTIFIER(name, aLocation)
 		            : yy::parser::make_WORD(name, aLocation);
 	}
@@ -182,27 +182,28 @@ public:
 %x SUPERSCRIPT_EXPR_WORD
 %x COMMENT
 
-firstWord   [\p{Ll}\p{Lu}]
-subscript   [₀₁₂₃₄₅₆₇₈₉]
-superscript [⁰¹²³⁴⁵⁶⁷⁸⁹]
-wordSep     [-\p{Pc}]
-wordDigits  [\p{Nd}]
-nextWord    {firstWord}|{wordSep}|{wordDigits}|{subscript}
-lastWord    {firstWord}|{wordDigits}|{subscript}
-idName      {firstWord}({nextWord}*{lastWord})?
-word        ({firstWord}|')({nextWord}*{lastWord})?
-number      [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
-oper        [^\p{Ll}\p{Lu}0-9\h\n]
-fraction    [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
-superNumber {superscript}+
-superMinus  [⁻]
-superPlus   [⁺]
-superOpen   [⁽]
-superClose  [⁾]
-superFirstWord [ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ]
-superNextWord {superFirstWord}|{superMinus}|{superscript}
-superLastWord {superFirstWord}|{superscript}
-superIdName {superFirstWord}({superNextWord}*{superLastWord})?
+firstWord       [\p{Ll}\p{Lu}]
+subscript       [₀₁₂₃₄₅₆₇₈₉]
+superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
+wordSep         [-\p{Pc}]
+wordDigits      [\p{Nd}]
+nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
+lastWord        {firstWord}|{wordDigits}|{subscript}
+idName          {firstWord}({nextWord}*{lastWord})?
+word            ({firstWord}|')({nextWord}*{lastWord})?
+number          [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
+monomial        {number}{word}
+oper            [^\p{Ll}\p{Lu}0-9\h\n]
+fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+superNumber     {superscript}+
+superMinus      [⁻]
+superPlus       [⁺]
+superOpen       [⁽]
+superClose      [⁾]
+superFirstWord  [ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ]
+superNextWord   {superFirstWord}|{superMinus}|{superscript}
+superLastWord   {superFirstWord}|{superscript}
+superIdName     {superFirstWord}({superNextWord}*{superLastWord})?
 superscriptChar {superscript}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
 
 %%
@@ -280,7 +281,8 @@ include\h*\".*\"    includeFile();
 }
 
 <SUPERSCRIPT_EXPR_VALUE>{
-{superIdName} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
+{superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
+{superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
 {superMinus}  return yy::parser::make_WORD("-", location());
 {superPlus}   return yy::parser::make_WORD("+", location());
 {superOpen}   return yy::parser::make_OPENPAR(location());
@@ -297,7 +299,7 @@ include\h*\".*\"    includeFile();
 }
 
 <SUPERSCRIPT_EXPR_WORD>{
-{superIdName}	return makeIdOrWord(Core::unSuperscript(str()), location());
+{superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
 {superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
 {superOpen}   return yy::parser::make_OPENPAR(location());
 {superClose}  return yy::parser::make_CLOSEPAR(location());
@@ -365,10 +367,11 @@ include\h*\".*\"    includeFile();
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
 {number}			return yy::parser::make_NUMBER(str(), location());
+{monomial}  	return yy::parser::make_MONOMIAL(str(), location());
 {fraction}	  return yy::parser::make_FRACTION(str(), location());
 ["][^"]*[""]	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
-{idName}			return makeIdOrWord(str(), location());
+{idName}			return makeIdOrWord(str(), str(), location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 
