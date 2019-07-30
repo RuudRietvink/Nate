@@ -3,13 +3,13 @@
 // operators
 ///////////////////////////////////////////////
 	
-code 90 - ($val-1 is (num)) is (num,highest):
+code unary 90 uminus ($val-1 is (num)) is (num,highest):
 	-$val-1
 	
-code 90 + ($val-1 is (num)) is (num,highest):
+code unary 90 uplus ($val-1 is (num)) is (num,highest):
 	$val-1
 	
-code 90 not ($cond is boolean) is boolean:
+code unary 90 not ($cond is boolean) is boolean:
 	!$cond
   
 code 80 ($val-1 is (num)) * ($val-2 is (num)) is (num,highest):
@@ -21,13 +21,13 @@ code 80 ($val-1 is (num)) / ($val-2 is (num)) is (num,highest):
 code 80 ($val-1 is (num)) mod ($val-2 is (num)) is (num,highest):
 	$val-1 % $val-2
 
-code 70 ($val-1 is (num)) plus ($val-2 is (num)) is (num,highest):
+code 70 ($val-1 is (num)) + ($val-2 is (num)) is (num,highest):
 	$val-1 + $val-2
 
-code 70 ($val-1 is (num)) minus ($val-2 is (num)) is (num,highest):
+code 70 ($val-1 is (num)) - ($val-2 is (num)) is (num,highest):
 	$val-1 - $val-2
 	
-code 62 ($val-1 is text) plus ($val-2 is text) is text:
+code 62 ($val-1 is text) + ($val-2 is text) is text:
 	$val-1 + $val-2
   
 code 60 ($val-1 is (any)) if ($cond is boolean) else ($val-2 is (same)) is (same):

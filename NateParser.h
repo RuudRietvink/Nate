@@ -10,6 +10,7 @@
 #include "NateFunctions.h"
 #include "Code.h"
 #include "Define.h"
+#include "Value.h"
 #include "Identifier.h"
 #include "Scope.h"
 #include "Record.h"
@@ -29,6 +30,8 @@ public:
 	virtual ~NateParser();
 	int parse();
 	void import(const std::string& aName);
+	std::string alias(const std::string& aString);
+	bool isLeftMonomial(const std::string& aWord) const;
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -50,6 +53,9 @@ public:
 	void addDefine();
 	void declareDefine();
 	void endDefine();
+	void addValue();
+	void endValue();
+	Value& curValue();
 	Define& curDefine();
 	Method& curMethod();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
@@ -97,7 +103,11 @@ private:
 		const Method*  matchedMethod = nullptr;
 		std::string    matchedErrorMsg;
 	};
-
+	
+	bool insideLeft(const ExprNodesCIter& aRangeStartIter, const ExprNodesCIter& aRangeEndIter,
+						    	const ExprNodesCIter& aTestStartIter, const ExprNodesCIter& aTestEndIter) const;
+	bool insideRight(const ExprNodesCIter& aRangeStartIter, const ExprNodesCIter& aRangeEndIter,
+						    	 const ExprNodesCIter& aTestStartIter, const ExprNodesCIter& aTestEndIter) const;
 	void methodMatches(const Method& aMethod,
 		                 ExprNodesCIter& aStartIter, 
 		                 ExprNodesCIter& aEndIter,
@@ -116,12 +126,21 @@ private:
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
+	std::list<Value>            mValues;
 	std::list<Define>           mDefines;
 	std::list<int>              mLoopWhileCounts;
 	int				                  mErrors = 0;
 	std::ostream&               mOut;
 	std::string                 mCachedOutput;
-  bool                        mInCode = false;
+
+	enum class MethodType
+	{
+		Code,
+		Define,
+		Value,
+	};
+
+  MethodType                  mMethodType = MethodType::Define;
 };
 
 

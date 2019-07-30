@@ -64,12 +64,16 @@ void Method::addArgId(const IdentifierPtr& aId)
 	}
 }
 
-bool Method::matches(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
+bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 {
 	auto nodeIter = aBegin;
+	auto exp = Expr();
+	exp.addNodes(aBegin, aEnd);
+	//std::cerr << "//// " << pattern() << " " << exp.text() << " ";
 
 	if (mArgs.size() != static_cast<size_t>(std::distance(aBegin, aEnd)))
 	{
+		//std::cerr <<  "diff size "  << mArgs.size() << " " << static_cast<size_t>(std::distance(aBegin, aEnd)) << std::endl;
 		return false;
 	}
 
@@ -77,20 +81,25 @@ bool Method::matches(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
 	{
 		if (arg.isIdentifier() != (!nodeIter->is(ExprNode::Word)))
 		{
+			//std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
 			return false;
 		}
 		if (!arg.isIdentifier() && arg.word() != nodeIter->text())
 		{
+			//std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
 			return false;
 		}
 
 		++nodeIter;
 	}
 
+	//std::cerr << "matches " << std::endl;
+
 	return true;
 }
 
-std::tuple<std::string, std::string, TypePtr, Flags> Method::evaluate(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
+std::tuple<std::string, std::string, TypePtr, Flags> 
+Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 {
 	std::string error;
 	std::string resultCode = code();
@@ -137,7 +146,9 @@ std::tuple<std::string, std::string, TypePtr, Flags> Method::evaluate(ExprNodesC
 
       ExprNode node = *nodeIter;
       node.castToType(arg.is(Arg::Same) ? firstType : argType);
-			std::string code = (arg.is(Arg::Prop) ? node.code() : "(" + node.code() + ")");
+			std::string code = (arg.is(Arg::Prop) || node.is(ExprNode::Literal))
+													? node.code() 
+													: "(" + node.code() + ")";
 			resultCode = replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
 
 			if (arg.is(Arg::Num) && !type() && (!codeType || nodeType->isBiggerThan(codeType)))
@@ -192,7 +203,8 @@ const std::string& Method::pattern() const
 	return mPattern;
 }
 
-std::tuple<std::string, bool> Method::checkArgTypes(ExprNodesCIter& aBegin, ExprNodesCIter& aEnd) const
+std::tuple<std::string, bool> 
+Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 {
 	std::string error;
 	bool result = true;
@@ -301,8 +313,11 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::Highest)) aStream << ",Highest";
 	if (aValue.is(Method::Num)) aStream << ",Num";
 	if (aValue.is(Method::Same)) aStream << ",Same";
+	if (aValue.is(Method::None)) aStream << ",None";
 	if (aValue.is(Method::RightLeft)) aStream << ",RightLeft";
 	if (aValue.is(Method::Last)) aStream << ",Last";
+	if (aValue.is(Method::LeftMonomial)) aStream << ",LeftMonomial";
+	if (aValue.is(Method::Unary)) aStream << ",Unary";
 
 	aStream << ")";
 	return aStream;

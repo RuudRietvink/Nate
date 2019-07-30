@@ -1,13 +1,9 @@
 #pragma once
 
-#include "Arg.h"
 #include "Method.h"
 
 #include <string>
 #include <ostream>
-#include <tuple>
-
-class Identifier;
 
 class Code : public Method
 {

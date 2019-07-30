@@ -3,11 +3,11 @@
 // Text
 ///////////////////////////////////////////////
 
-code right 150 uppercased ($val is text) is text:
+code unary right 150 uppercased ($val is text) is text:
   Core::upperCased($val)
 
-code right 150 first of ($val is text) is text:
+code unary right 150 first of ($val is text) is text:
   Core::firstOf($val)
 
-code right 150 rest of ($val is text) is text:
+code unary right 150 rest of ($val is text) is text:
   Core::restOf($val)

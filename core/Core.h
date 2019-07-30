@@ -13,6 +13,7 @@ public:
 	static utf8::iterator<std::string::const_iterator> cend(const std::string& aString);
 	static utf8::iterator<std::string::const_iterator> find(const std::string& aString,
 																											    uint32_t aChar);
+
 	static std::string upperCased(const std::string& aString);
 	static std::string firstOf(const std::string& aString);
 	static std::string restOf(const std::string& aString);

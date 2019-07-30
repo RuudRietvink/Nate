@@ -69,14 +69,18 @@ ScopePtr& NateParser::curScope()
 
 Method& NateParser::curMethod()
 {
-	return mInCode ? static_cast<Method&>(curCode()) : static_cast<Method&>(curDefine());
+	return mMethodType == MethodType::Code 
+			   ? static_cast<Method&>(curCode()) 
+		     : (mMethodType == MethodType::Define
+						? static_cast<Method&>(curDefine())
+						: static_cast<Method&>(curValue()));
 }
 
 void NateParser::addCode()
 {
 	pushScope(std::make_shared<Scope>("code"));
 	mCodes.emplace_back();
-	mInCode = true;
+	mMethodType = MethodType::Code;
 }
 
 void NateParser::endCode()
@@ -90,7 +94,7 @@ void NateParser::addDefine()
 {
 	pushScope(std::make_shared<Scope>("define"));
 	mDefines.emplace_back();
-	mInCode = false;
+	mMethodType = MethodType::Define;
 }
 
 void NateParser::declareDefine()
@@ -106,6 +110,20 @@ void NateParser::endDefine()
 }
 
 Define& NateParser::curDefine() { return mDefines.back(); }
+
+void NateParser::addValue()
+{
+	pushScope(std::make_shared<Scope>("value"));
+	mValues.emplace_back();
+	mMethodType = MethodType::Value;
+}
+
+void NateParser::endValue()
+{
+	popScope();
+}
+
+Value& NateParser::curValue() { return mValues.back(); }
 
 void NateParser::error(const std::string& anError)
 {
@@ -137,6 +155,42 @@ void NateParser::unput(const std::string::const_iterator& aStart,
 		unput(++iter, aEnd);
 		mLexer->matcher().unput(kar);
 	}
+}
+
+std::string NateParser::alias(const std::string& aString)
+{
+	std::string result;
+
+	if (aString == "√")
+	{
+		result = "sqrt";
+	}
+	else if (aString == "π")
+	{
+		result = "pi";
+	}
+	else if (aString == "τ")
+	{
+		result = "tau";
+	}
+	else if (aString == "÷")
+	{
+		result = "/";
+	}
+	else if (aString == "×")
+	{
+		result = "*";
+	}
+	else if (aString == "⋅")
+	{
+		result = "*";
+	}
+	else
+	{
+		result = aString;
+	}
+
+	return result;
 }
 
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
@@ -250,11 +304,9 @@ void NateParser::methodMatches(const Method& aMethod,
 		aMatch.methodFound = &aMethod;
 		aMatch.nodeStartIter = aStartIter;
 		aMatch.nodeEndIter = aEndIter;
-	  //std::cerr << std::get<1>(aMatch.methodFound->evaluate(aMatch.nodeStartIter, aMatch.nodeEndIter)) << std::endl;
 	}
 	else
 	{
-		//std::cerr << "MatchedMethod: " << aMethod << " -> " << errorMsg << std::endl;
 		aMatch.matchedMethod = &aMethod;
 		aMatch.matchedErrorMsg = errorMsg;
 	}
@@ -270,12 +322,25 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 			 size <= static_cast<size_t>(std::distance(startIter, aExpr.nodes().cend())); ++startIter)
 	{
 		auto endIter = startIter + size;
+		
+		//if (aMethod.matches(startIter, endIter))
+		//{
+		//	Expr exp;
+		//	exp.addNodes(startIter, endIter);
+		//	std::cerr << "checkLeftToRightMethod " << exp.text() << std::endl;
+		//	if (aMatch.methodFound != nullptr)
+		//	{
+		//		Expr mat;
+		//		mat.addNodes(aMatch.nodeStartIter, aMatch.nodeEndIter);
+		//		std::cerr <<  mat.text() << std::endl;
+		//	}
+		//}
 
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 startIter < aMatch.nodeStartIter ||
-				 (startIter == aMatch.nodeStartIter && endIter > aMatch.nodeEndIter)))
+				 (aMethod.priority() == aMatch.methodFound->priority() &&
+          startIter < aMatch.nodeStartIter)))
 		{
 			methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -292,12 +357,25 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 			 size <= static_cast<size_t>(std::distance(aExpr.nodes().cbegin(), endIter)); --endIter)
 	{
 		auto startIter = endIter - size;
+		
+		//if (aMethod.matches(startIter, endIter))
+		//{
+		//	Expr exp;
+		//	exp.addNodes(startIter, endIter);
+		//	std::cerr << "checkRightToLeftMethod " << exp.text() << std::endl;
+		//	if (aMatch.methodFound != nullptr)
+		//	{
+		//		Expr mat;
+		//		mat.addNodes(aMatch.nodeStartIter, aMatch.nodeEndIter);
+		//		std::cerr <<  mat.text() << std::endl;
+		//	}
+		//}
 
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 startIter > aMatch.nodeStartIter ||
-				 (startIter == aMatch.nodeStartIter && endIter > aMatch.nodeEndIter)))
+				 (aMethod.priority() == aMatch.methodFound->priority() &&
+          startIter > aMatch.nodeStartIter)))
 		{
 			 methodMatches(aMethod, startIter, endIter, aMatch);
 		}
@@ -306,19 +384,16 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 
 void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch)
 {
-	if (!aMatch.methodFound || aMethod.priority() >= aMatch.methodFound->priority())
+	auto size = aMethod.args().size();
+	if (size <= aExpr.nodes().size())
 	{
-		auto size = aMethod.args().size();
-		if (size <= aExpr.nodes().size())
+		if (aMethod.is(Code::RightLeft))
 		{
-			if (aMethod.is(Code::RightLeft))
-			{
-				checkRightToLeftMethod(aMethod, aExpr, aMatch);
-			}
-			else
-			{
-				checkLeftToRightMethod(aMethod, aExpr, aMatch);
-			}
+			checkRightToLeftMethod(aMethod, aExpr, aMatch);
+		}
+		else
+		{
+			checkLeftToRightMethod(aMethod, aExpr, aMatch);
 		}
 	}
 }
@@ -326,7 +401,7 @@ void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& 
 Expr NateParser::evaluate(const Expr& aExpr)
 {
 	Expr result = aExpr;
-	//std::cerr << aExpr << std::endl;
+	//std::cerr << "+++++ " << aExpr.text() << std::endl;
 
 	Match match;
 	match.methodFound = nullptr;
@@ -336,15 +411,23 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	if (aExpr.nodes().size() > 1 || aExpr.node().is(ExprNode::Word))
 	{
 		match.matchedMethod = nullptr;
-
-		for (auto const& code : mCodes)
-		{
-			checkIfMethod(code, aExpr, match);
-		}
 		
-		for (auto const& define : mDefines)
+		for (auto const& value : mValues)
 		{
-			checkIfMethod(define, aExpr, match);
+			checkIfMethod(value, aExpr, match);
+		}
+
+		if (!match.methodFound)
+		{
+			for (auto const& code : mCodes)
+			{
+				checkIfMethod(code, aExpr, match);
+			}
+		
+			for (auto const& define : mDefines)
+			{
+				checkIfMethod(define, aExpr, match);
+			}
 		}
 
 		if (match.methodFound)
@@ -359,7 +442,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			{
 				error(errorMsg);
 			}
-			//std::cerr << *methodType << " " << methodStat << std::endl;
+			//std::cerr << "******* " << *methodType << " " << methodStat << std::endl;
 			
 			ExprNode node(methodStat, methodStat, methodType);
 			node.setFlags(nodeFlags);
@@ -383,9 +466,33 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	if (aExpr.nodes().size() > 1 || aExpr.nodes().front().is(ExprNode::Word))
 	{
 		error("Bad expression: " + aExpr.text());
+		exit(1);
 	}
 	//std::cerr << result << std::endl;
 	return result;
+}
+
+bool NateParser::isLeftMonomial(const std::string& aWord) const
+{
+	auto found = std::find_if(mValues.cbegin(), mValues.cend(), 
+														[&aWord](const Value& aItem) 
+														{ 
+															return aItem.name() == aWord;
+														})
+										!= mValues.cend();
+
+	if (!found)
+	{
+		found = std::find_if(mCodes.cbegin(), mCodes.cend(), 
+													[&aWord](const Code& aItem) 
+												  { 
+														return aItem.is(Method::LeftMonomial) &&
+															     aItem.args().front().word() == aWord;
+												  }) 
+										!= mCodes.cend();
+	}
+
+	return found;
 }
 
 void NateParser::codeStartProgram()

@@ -80,7 +80,7 @@ std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 	utf8::iterator<std::string::const_iterator> end(Core::cend(aString));
 	auto inserter = std::back_inserter(number);
 
-	while (iter != end && std::isdigit(*iter))
+	while (iter != end && *iter < 255 && std::isdigit(*iter))
 	{
 		inserter = utf8::append(*iter++, inserter);
 	}
@@ -89,7 +89,7 @@ std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 	{
 		inserter = utf8::append(*iter++, inserter);
 
-		while (iter != end && std::isdigit(*iter))
+		while (iter != end && *iter < 255 && std::isdigit(*iter))
 		{
 			inserter = utf8::append(*iter++, inserter);
 		}
@@ -103,7 +103,7 @@ std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 				inserter = utf8::append(*iter++, inserter);
 			}
 
-			while (iter != end && std::isdigit(*iter))
+			while (iter != end && *iter < 255 && std::isdigit(*iter))
 			{
 				inserter = utf8::append(*iter++, inserter);
 			}

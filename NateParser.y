@@ -24,14 +24,12 @@
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
 
   bool outputEnd = true;
-  
-
+  bool prevWasValue = false;
 }
 
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
-%token <std::string> MONOMIAL "monomial"
 %token <std::string> SUPERNUMBER "power number"
 %token <std::string> FRACTION "fraction"
 %token <std::string> STRING "string"
@@ -46,11 +44,14 @@
 %token VAR "var"
 %token CODE "code"
 %token DEFINE "define"
+%token VALUE "value"
 %token IF "if"
 %token ELSE "else"
 %token OUTPUT "output"
 %token IS "is"
 %token RIGHT "right"
+%token LEFTMONOMIAL "left-monomial"
+%token UNARY "unary"
 %token LOOP "loop"
 %token WHILE "while"
 %token FOR "for"
@@ -82,16 +83,10 @@
 %type <bool>                     for-to;
 %type <Expr>                     step;
 %type <Expr>                     expr;
-%type <Expr>					           expr-value-start;
-%type <Expr>					           expr-value-next;
-%type <Expr>                     expr-value-parts;
-%type <Expr>					           expr-value-part;
-%type <Expr>					           expr-word-start;
-%type <Expr>					           expr-word-next;
-%type <Expr>                     expr-word-parts;
-%type <Expr>					           expr-word-part;
+%type <Expr>                     expr-part;
+%type <Expr>                     expr-part-list;
+%type <Expr>					           expr-non-word;
 %type <Expr>					           expr-word;
-%type <Expr>					           expr-value;
 %type <std::string>              string;
 
 %%
@@ -106,6 +101,7 @@ prog-statement:
   | program
   | code
   | define
+  | value
   | record-statement
   | EOS
   ;
@@ -118,7 +114,6 @@ import:
 program:
 	  PROGRAM COL 
 		  { nate.codeStartProgram(); }
-	  EOS
 	  BEGIN 
 		  statement-list
 	  END
@@ -154,7 +149,7 @@ define:
 			  lexer.pushState(Lexer::DEFINE);
 			  nate.declareDefine();
 		  }
-	  EOS BEGIN
+	  BEGIN
 		  statement-list
 	  END
 		  { 
@@ -185,17 +180,32 @@ code:
   ;
 
 code-start:
-	  "right" NUMBER 
-		  { 
-			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
-			  nate.curCode().setFlag(Code::RightLeft, true);
-		  }
-  | NUMBER 
+    code-options
+    NUMBER 
 		  { 
 			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 		  }
   ;
 	
+code-options:
+    %empty
+  | code-options-list
+  ;
+
+code-options-list:
+    code-options-part
+  | code-options-list code-options-part
+  ;
+
+code-options-part:
+    RIGHT 
+      { nate.curCode().setFlag(Code::RightLeft, true);}
+  | LEFTMONOMIAL 
+      { nate.curCode().setFlag(Code::LeftMonomial, true);}
+  | UNARY 
+      { nate.curCode().setFlag(Code::Unary, true);}
+  ;
+
 code-stat-list:
     code-stat
   | code-stat-list code-stat
@@ -209,6 +219,33 @@ code-stat:
 		  { nate.curCode().addCodeStatId($id); }
   ;
   
+value:
+	  VALUE 
+		  { 
+			  nate.addValue();
+			  lexer.pushState(Lexer::ARGS);
+			  nate.curValue().setPriority(1000);
+		  }
+	  WORD call-return COL
+		  { 
+		    nate.curValue().addArgWord($WORD);
+			  lexer.popState();
+			  lexer.pushState(Lexer::VALUE);
+		  }
+	  BEGIN
+		  value-stat
+	  END
+		  { 
+			  lexer.popState(); 
+			  nate.endValue();
+		  }
+  ;
+
+value-stat:
+    NUMBER
+		  { nate.curValue().addValue($NUMBER); }
+  ;
+
 arg-list:
     arg
   | arg-list arg
@@ -388,9 +425,9 @@ record-statement:
         nate.curScope()->addRecord(record);
         nate.codeStartRecord(record);
       }
-    EOS BEGIN
+    BEGIN
     record-var-list
-    EOS END
+    END
       { nate.codeEndRecord(); }
   ;
 
@@ -424,11 +461,11 @@ output-statement:
 	  OUTPUT 
 		  { 
         nate.codeOutputStart("std::cout");
-        lexer.stateExprValue = yy::Lexer::OUTPUT_EXPR_VALUE;
+        lexer.stateExprValue = yy::Lexer::OUTPUT_EXPR;
       }
 	  output-list
 		  { 
-        lexer.stateExprValue = yy::Lexer::EXPR_VALUE;
+        lexer.stateExprValue = yy::Lexer::EXPR;
         nate.codeOutputEnd(outputEnd);
         outputEnd = true;
       }
@@ -464,7 +501,7 @@ output-sep:
 if-statement:
 	  IF expr COL
 		  { nate.codeIf($expr); }
-	  EOS BEGIN 
+	  BEGIN 
 		  statement-list
 		  { nate.codeEndIf(); }
 	  END
@@ -478,7 +515,7 @@ else-statement:
 		  if-statement
   | ELSE COL 
 		  { nate.codeElse(); }
-    EOS BEGIN
+    BEGIN
 		statement-list
 		  { nate.codeEndIf(); }
 	  END
@@ -491,7 +528,7 @@ loop-statement:
         nate.codeInitLoop();
       }
 	  for-part
-	  EOS opt-while 
+	  opt-while 
     BEGIN
 		loop-part-statement-list
 		  { 
@@ -533,7 +570,7 @@ while-statement:
 
 opt-while:
 	  %empty
-  | while-statement EOS
+  | while-statement
   ;
  
 for-loop-statement:
@@ -542,10 +579,10 @@ for-loop-statement:
 	  single-id 
 		  { lexer.popState(); }
 	  is-type ASSIGN 
-		  { lexer.stateExprValue = yy::Lexer::FOR_EXPR_VALUE; }
+		  { lexer.stateExprValue = yy::Lexer::FOR_EXPR; }
 	  expr[from] for-to expr[to] step 
 		  { 
-			  lexer.stateExprValue = yy::Lexer::EXPR_VALUE;
+			  lexer.stateExprValue = yy::Lexer::EXPR;
 			  nate.codeStartForLoop($[single-id], $[is-type], $[for-to], $from, $to, $step);
 		  }
 	  for-loop-part-end
@@ -581,129 +618,133 @@ expr-statement:
   ;
 
 expr:
-	  expr-value-start
-	  expr-value-parts
-	  expr-end
-		  { 
+    expr-part
+      { lexer.pushState(lexer.stateExprValue); }
+    expr-part-list
+    expr-end
+      { 
 			  lexer.popState(); 
-			  $$ = nate.evaluate(Expr($[expr-value-start], $[expr-value-parts]));
-		  }
- |	expr-word-start
-	  expr-word-parts
-	  expr-end
-		  { 
-			  lexer.popState(); 
-			  $$ = nate.evaluate(Expr($[expr-word-start], $[expr-word-parts]));
+        auto exp = Expr($[expr-part], $[expr-part-list]);
+        //std::cerr << "+++++++++++++++++++++++" << std::endl << exp.text() << std::endl;
+			  $$ = nate.evaluate(exp);
+        prevWasValue = false;
+        lexer.space();
 		  }
   ;
-
+  
 expr-end:
-	  %empty
+    %empty
   | EOS
   ;
 
-expr-value-parts:
-	  %empty
-		  { $$ = Expr(); }
-  | expr-value-next expr-word-parts
-		  { $$ = Expr($[expr-value-next], $[expr-word-parts]); }
-  ;
-  
-expr-value-start:
-	  expr-value
-		  { $$ = $[expr-value]; lexer.pushState(lexer.stateExprValue); }
-  ;
-  
-expr-value-next:
-	  expr-word-part[part]
-		  { $$ = Expr($part.node().text() == "+" ? "plus" : ($part.node().text() == "-" ? "minus" : $part.node().text())); }
+expr-part-list:
+    %empty
+  | expr-part
+  | expr-part-list[list] expr-part
+		  { $$ = Expr($[list], $[expr-part]); }
   ;
 
-expr-value-part:
-	  expr-value
-		  { $$ = $[expr-value]; lexer.setState(lexer.stateExprValue); }
+expr-part:
+    expr-word
+  | expr-non-word
   ;
-  
-expr-value:
+
+expr-non-word:
 	  NUMBER
 		  { 
 			  $$ = Expr(ExprNode($NUMBER, $NUMBER, Type::makeType($NUMBER)));
 			  $$.node().setFlag(ExprNode::Literal, true);
+        lexer.noSpace();
+        prevWasValue = true;
 		  }
 	| FRACTION
 		  { 
 			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\"", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
-		  }
-  | MONOMIAL
-		  { 
-        std::string number;
-        std::string word;
-        std::tie(number, word) = fromMonomial($MONOMIAL);
-			  $$ = Expr(ExprNode(number, number, Type::makeType(number)));
-        $$.addNode(ExprNode("monomial"));
-        
-		    std::string name;
-		    bool isId;
-		    std::tie(isId, name) = nate.makeIdOrWord(word, word);
-        if (isId)
-        {
-          $$.addNode(ExprNode(name, nate.codeId(name), nate.getOrFakeIdentifier(name)->type()));
-        }
-        else
-        {
-          $$.addNode(ExprNode(word));
-        }
+        lexer.noSpace();
+        prevWasValue = true;
 		  }
 	| string
 		  { 
 			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
+        prevWasValue = true;
 		  }
   | BOOL
 		  { 
 			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.determineType("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
+        prevWasValue = true;
 		  }
   | id
 		  { 
-			  $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
-			  $$.node().setFlag(ExprNode::Output, true);
+        if (!lexer.spaceBeen)
+        {
+          //std::cerr << "monomial " << $id << std::endl;
+          $$ = Expr(ExprNode("monomial"));
+			    $$.addNode(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
+        }
+        else
+        {
+			    $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
+			    $$.node().setFlag(ExprNode::Output, true);
+          //std::cerr << "spacebeen " << $$ << std::endl;
+        }
+        prevWasValue = true;
 		  } 
-  | OPENPAR expr CLOSEPAR
-		  { $$ = nate.evaluate(Expr($expr)); }
-  ;
+  | OPENPAR 
+      { 
+        lexer.space();
+        prevWasValue = false;
+      }
+    expr
+    CLOSEPAR
+		  { 
+        lexer.noSpace();
+        prevWasValue = true;
+        $$ = nate.evaluate(Expr($expr));
 
-expr-word-parts:
-	  %empty
-		  { $$ = Expr(); }
-  | expr-word-next expr-word-parts[parts]
-	  	{ $$ = Expr($[expr-word-next], $[parts]); }
-  | expr-value-part expr-value-parts
-	  	{ $$ = Expr($[expr-value-part], $[expr-value-parts]); }
-  ;
-    
-expr-word-start:
-	  expr-word
-		  { $$ = $[expr-word]; lexer.pushState(lexer.stateExprWord); }
+      }
+  | IF
+		  { 
+        $$ = Expr(ExprNode("if"));
+        prevWasValue = false;
+      }
+  | ELSE
+		  { 
+        $$ = Expr(ExprNode("else"));
+        prevWasValue = false;
+      }
   ;
   
-expr-word-next:
-	  expr-word-part
-  ;
-
-expr-word-part:
-	  expr-word
-		  { $$ = $[expr-word]; lexer.setState(lexer.stateExprWord); }
-  | IF
-		  { $$ = Expr(ExprNode("if")); lexer.setState(lexer.stateExprWord); }
-  | ELSE
-		  { $$ = Expr(ExprNode("else")); lexer.setState(lexer.stateExprWord); }
-  ;
-
 expr-word:
     WORD
-		  { $$ = Expr($WORD); }
+		  { 
+        auto value = nate.alias($WORD);
+
+        if (value == "-" && !prevWasValue)
+        {
+          value = "uminus";
+        }
+        else if (value == "+" && !prevWasValue)
+        {
+          value = "uplus";
+        }
+
+        if (!nate.isLeftMonomial(value) || lexer.spaceBeen)
+        {
+          lexer.space();
+          $$ = Expr(value);
+        }    
+        else
+        {
+          //std::cerr << "monomial " << $WORD << std::endl;
+          $$ = Expr(ExprNode("monomial"));
+			    $$.addNode(ExprNode(value));
+        }
+
+        prevWasValue = false;
+      }
   ;
 
 string:

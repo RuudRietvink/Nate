@@ -12,10 +12,10 @@ public:
 	int depth = 0;
 	NateParser* nate = nullptr;
   int commentNested = 0;
-  int savedState = EXPR_VALUE;
-  int savedStateExprValue = EXPR_VALUE;
-  int stateExprValue = EXPR_VALUE;
-  int stateExprWord = EXPR_WORD;
+  int savedState = EXPR;
+  int savedStateExprValue = EXPR;
+  int stateExprValue = EXPR;
+  bool spaceBeen = false;
 		
 	void includeFile(const std::string& aFile)
 	{
@@ -98,18 +98,17 @@ public:
     std::vector<std::string> strs =
     {
       "INITIAL",
-      "EXPR_VALUE",
-      "EXPR_WORD",
+      "EXPR",
       "LOOP",
       "DEFINE",
       "CODE",
+      "VALUE",
       "ARGS",
       "VAR_DECL",
       "DECL_TYPE",
-      "FOR_EXPR_VALUE",
-      "OUTPUT_EXPR_VALUE",
-      "SUPERSCRIPT_EXPR_VALUE",
-      "SUPERSCRIPT_EXPR_WORD",
+      "FOR_EXPR",
+      "OUTPUT_EXPR",
+      "SUPERSCRIPT_EXPR",
       "COMMENT"
     };
     return strs[aState];
@@ -140,10 +139,11 @@ public:
 
   void startSuperscript()
   {
+    space();
     savedState = start();
     savedStateExprValue = stateExprValue;
-    stateExprValue = SUPERSCRIPT_EXPR_VALUE;
-    stateExprWord = SUPERSCRIPT_EXPR_WORD;
+    stateExprValue = SUPERSCRIPT_EXPR;
+    setState(stateExprValue);
   }
 
   void stopSuperscript()
@@ -151,7 +151,22 @@ public:
     unputString(str());
     setState(savedState);
     stateExprValue = savedStateExprValue;
-    stateExprWord = EXPR_WORD;
+    space();
+  }
+
+  void s()
+  {
+    spaceBeen = true;
+  }
+  
+  void space()
+  {
+    s();
+  }
+
+  void noSpace()
+  {
+    spaceBeen = false;
   }
 
 %}
@@ -168,33 +183,22 @@ public:
 //%option debug
 %option fast
 
-%x EXPR_VALUE
-%s EXPR_WORD
+%s EXPR
 %s LOOP
 %s DEFINE
 %x CODE
+%x VALUE
 %x ARGS
 %x VAR_DECL
 %x DECL_TYPE
-%x FOR_EXPR_VALUE
-%x OUTPUT_EXPR_VALUE
-%x SUPERSCRIPT_EXPR_VALUE
-%x SUPERSCRIPT_EXPR_WORD
+%s FOR_EXPR
+%s OUTPUT_EXPR
+%x SUPERSCRIPT_EXPR
 %x COMMENT
 
 firstWord       [\p{Ll}\p{Lu}]
 subscript       [₀₁₂₃₄₅₆₇₈₉]
 superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
-wordSep         [-\p{Pc}]
-wordDigits      [\p{Nd}]
-nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
-lastWord        {firstWord}|{wordDigits}|{subscript}
-idName          {firstWord}({nextWord}*{lastWord})?
-word            ({firstWord}|')({nextWord}*{lastWord})?
-number          [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
-monomial        {number}{word}
-oper            [^\p{Ll}\p{Lu}0-9\h\n]
-fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 superNumber     {superscript}+
 superMinus      [⁻]
 superPlus       [⁺]
@@ -206,31 +210,37 @@ superLastWord   {superFirstWord}|{superscript}
 superIdName     {superFirstWord}({superNextWord}*{superLastWord})?
 superscriptChar {superscript}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
 
+wordSep         [-\p{Pc}]
+wordDigits      [\p{Nd}]
+nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
+lastWord        {firstWord}|{wordDigits}|{subscript}
+idName          {firstWord}({nextWord}*{lastWord})?
+word            ({firstWord}|')({nextWord}*{lastWord})?
+number          [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
+oper            [^\p{Ll}\p{Lu}0-9\h\n]
+fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+
 %%
  
 <*>{
-\h+            // ignore
-(?^\\\n\h*)    // lines ending in \ will continue on the next line
-
-// *** aliases
-"√"           return yy::parser::make_WORD("sqrt", location());
-"π"           return yy::parser::make_WORD("pi", location());
-"τ"           return yy::parser::make_WORD("tau", location());
-"÷"           return yy::parser::make_WORD("/", location());
-"×"           return yy::parser::make_WORD("*", location());
-"⋅"           return yy::parser::make_WORD("*", location());
+// ** spacing
+(?^^\h*\n)     s();// eat empty lines without affecting indent stops
+\h+            s();// ignore
+(?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 // *** comments
-(?^^\h*\n)     // eat empty lines without affecting indent stops
-(?^^\h*"//".*) // eat //-comments that start a line without affecting indent stops
-"//".*         // eat //-comments
-\h*"/*"\k?     if (commentNested == 0) pushState(COMMENT);
+(?^^\h*"//".*\n) s();// eat //-comments that start a line without affecting indent stops
+"//".*         s();// eat //-comments
+\h*"/*"\k?     s();
+               if (commentNested == 0) pushState(COMMENT);
                ++commentNested;                  // allow nesting /*-comments
 }
 
-^\h*\i			  outIndents("i "); return yy::parser::make_BEGIN(location()); // indent
-^\h*\j			  outIndents("j "); return yy::parser::make_END(location());   // dedent
-\j				    outIndents("j+ "); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
+<*,^COMMENT>{
+^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
+^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
+\j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
+}
 
 <COMMENT>{
 "*/"           if (--commentNested == 0) popState(); 
@@ -238,18 +248,18 @@ superscriptChar {superscript}|{superFirstWord}|{superMinus}|{superPlus}|{superOp
 }
 
 <*>{
-<^CODE,^ARGS,^SUPERSCRIPT_EXPR_VALUE,^SUPERSCRIPT_EXPR_WORD,^COMMENT>\n return yy::parser::make_EOS(location());
+<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^COMMENT>\n s(); // ignore
 }
 
 <*>{
-<^SUPERSCRIPT_EXPR_VALUE,^SUPERSCRIPT_EXPR_WORD,^COMMENT>{
+<^SUPERSCRIPT_EXPR,^COMMENT>{
 {superscriptChar} unputString(str()); 
-              startSuperscript();
-              return yy::parser::make_WORD("^", location());
+                  startSuperscript();
+                  return yy::parser::make_WORD("^", location());
 }
 }
 
-include\h*\".*\"    includeFile();
+include\h*\".*\"  s(); includeFile();
 
 
 // *** key words
@@ -262,55 +272,34 @@ include\h*\".*\"    includeFile();
 \breturn\b	  return yy::parser::make_RETURN(location());
 }
 
-<FOR_EXPR_VALUE>{
+<FOR_EXPR>{
 \bdown-to\b	  return yy::parser::make_DOWNTO(location());
 \bto\b		    return yy::parser::make_TO(location());
 \bstep\b	    return yy::parser::make_STEP(location());
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 }
 
-<EXPR_VALUE,FOR_EXPR_VALUE,OUTPUT_EXPR_VALUE>{
-","					  return yy::parser::make_COMMA(location());
-"&"					  return yy::parser::make_CONCAT(location());
-":="			    return yy::parser::make_ASSIGN(location());
-":"				    return yy::parser::make_COL(location());
-")"					  return yy::parser::make_CLOSEPAR(location());
-"**"          return yy::parser::make_WORD("^", location());
-{word}		  	return yy::parser::make_WORD(str(), location());
-{oper}				return yy::parser::make_WORD(str(), location());
+<EXPR,FOR_EXPR,OUTPUT_EXPR>{
+\n            return yy::parser::make_EOS(location());
 }
 
-<SUPERSCRIPT_EXPR_VALUE>{
+<SUPERSCRIPT_EXPR>{
 {superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
 {superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
 {superMinus}  return yy::parser::make_WORD("-", location());
 {superPlus}   return yy::parser::make_WORD("+", location());
 {superOpen}   return yy::parser::make_OPENPAR(location());
 {superClose}  return yy::parser::make_CLOSEPAR(location());
-","					  stopSuperscript(); 
-"&"					  stopSuperscript();
-":="			    stopSuperscript();
-":"				    stopSuperscript();
-")"					  stopSuperscript();
-"**"          stopSuperscript();
 {word}      	stopSuperscript();
 {oper}			  stopSuperscript(); 
-\n            stopSuperscript(); return yy::parser::make_EOS(location());
-}
-
-<SUPERSCRIPT_EXPR_WORD>{
-{superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
-{superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
-{superOpen}   return yy::parser::make_OPENPAR(location());
-{superClose}  return yy::parser::make_CLOSEPAR(location());
-{superMinus}  return yy::parser::make_WORD("-", location());
-{superPlus}   return yy::parser::make_WORD("+", location());
 \n            stopSuperscript(); return yy::parser::make_EOS(location());
 [^\h]         stopSuperscript();
 }
 
 <ARGS>{
+\bleft-monomial\b return yy::parser::make_LEFTMONOMIAL(location());
 \bright\b		  return yy::parser::make_RIGHT(location());
+\bunary\b		  return yy::parser::make_UNARY(location());
 \bis\b			  return yy::parser::make_IS(location());
 \binout\b	    return yy::parser::make_INOUT(location());
 ":="			    return yy::parser::make_ASSIGN(location());
@@ -322,18 +311,16 @@ include\h*\".*\"    includeFile();
 {word}	  		return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
-(?^^\h*)      // ignore indent changes
-\n					  // ignore
 }
 
 <CODE>{
-^\h*\i		    outIndents("code i "); return yy::parser::make_BEGIN(location());
-^\h*\j        outIndents("code j "); return yy::parser::make_END(location()); 
-\j            outIndents("code j+ "); return yy::parser::make_END(location());
 [\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
 [^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
-\n            // ignore
+}
+
+<VALUE>{
+{number}			return yy::parser::make_NUMBER(str(), location());
 }
 
 <DECL_TYPE>{
@@ -352,6 +339,7 @@ include\h*\".*\"    includeFile();
 \bvar\b			  return yy::parser::make_VAR(location());
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
+\bvalue\b		  return yy::parser::make_VALUE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
 \bif\b   		  return yy::parser::make_IF(location());
 \belse\b 		  return yy::parser::make_ELSE(location());
@@ -367,11 +355,10 @@ include\h*\".*\"    includeFile();
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
 {number}			return yy::parser::make_NUMBER(str(), location());
-{monomial}  	return yy::parser::make_MONOMIAL(str(), location());
 {fraction}	  return yy::parser::make_FRACTION(str(), location());
 ["][^"]*[""]	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
-{idName}			return makeIdOrWord(str(), str(), location());
+{word}	  		return makeIdOrWord(str(), str(), location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 
