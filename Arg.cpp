@@ -7,7 +7,7 @@ Arg::Arg(const IdentifierPtr& aIdentifier)
 {}
 
 Arg::Arg(const std::string& aWord)
-	: mIdentifier(std::make_shared<Identifier>("", TypePtr())), 
+	: mIdentifier(), 
 	  mWord(aWord),
 	  mIsIdentifier(false)
 {}

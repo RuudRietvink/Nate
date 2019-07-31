@@ -3,14 +3,11 @@
 // Math
 ///////////////////////////////////////////////
 
-value pi is float-64:
-	3.141592653589793
+var pi is float-64 := 3.141592653589793
   
-value tau is float-64:
-	6.283185307179586
+var tau is float-64 := 6.283185307179586
   
-value e is float-64:
-	2.718281828459045
+var e is float-64 := 2.718281828459045
 
 code right 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
 	std::pow($val-1, $val-2)

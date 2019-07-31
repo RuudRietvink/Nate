@@ -210,7 +210,6 @@
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="Type.cpp" />
     <ClCompile Include="Method.cpp" />
-    <ClCompile Include="Value.cpp" />
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -246,7 +245,6 @@
     <ClInclude Include="utf8\core.h" />
     <ClInclude Include="utf8\unchecked.h" />
     <ClInclude Include="Method.h" />
-    <ClInclude Include="Value.h" />
     <ClInclude Include="WithFlags.h" />
   </ItemGroup>
   <ItemGroup>

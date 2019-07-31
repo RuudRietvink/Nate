@@ -10,7 +10,6 @@
 #include "NateFunctions.h"
 #include "Code.h"
 #include "Define.h"
-#include "Value.h"
 #include "Identifier.h"
 #include "Scope.h"
 #include "Record.h"
@@ -45,19 +44,19 @@ public:
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 
-	void codeStartProgram();
-	void codeEndProgram();
 	void addCode();
 	void endCode();
 	Code& curCode();
 	void addDefine();
 	void declareDefine();
 	void endDefine();
-	void addValue();
-	void endValue();
-	Value& curValue();
 	Define& curDefine();
 	Method& curMethod();
+
+	void codeStartProgram();
+	void codeEndProgram();
+	void codeStartScope();
+	void codeEndScope();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 																	bool initializeNonScalars = true);
 	void codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
@@ -104,10 +103,6 @@ private:
 		std::string    matchedErrorMsg;
 	};
 	
-	bool insideLeft(const ExprNodesCIter& aRangeStartIter, const ExprNodesCIter& aRangeEndIter,
-						    	const ExprNodesCIter& aTestStartIter, const ExprNodesCIter& aTestEndIter) const;
-	bool insideRight(const ExprNodesCIter& aRangeStartIter, const ExprNodesCIter& aRangeEndIter,
-						    	 const ExprNodesCIter& aTestStartIter, const ExprNodesCIter& aTestEndIter) const;
 	void methodMatches(const Method& aMethod,
 		                 ExprNodesCIter& aStartIter, 
 		                 ExprNodesCIter& aEndIter,
@@ -121,17 +116,19 @@ private:
 	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
+	void initAliases();
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
-	std::list<Value>            mValues;
 	std::list<Define>           mDefines;
 	std::list<int>              mLoopWhileCounts;
 	int				                  mErrors = 0;
 	std::ostream&               mOut;
 	std::string                 mCachedOutput;
+	std::map<std::string, std::string> 
+															mAliases;
 
 	enum class MethodType
 	{

@@ -40,6 +40,7 @@
 %token END "end block"
 %token IMPORT "import"
 %token PROGRAM "program"
+%token SCOPE "scope"
 %token ERR "error"
 %token VAR "var"
 %token CODE "code"
@@ -101,8 +102,8 @@ prog-statement:
   | program
   | code
   | define
-  | value
   | record-statement
+  | var-statement
   | EOS
   ;
   
@@ -127,6 +128,7 @@ statement-list:
 
 statement: 
 	  var-statement
+  | scope-statement
   | assign-statement
   | output-statement
   | if-statement
@@ -219,33 +221,6 @@ code-stat:
 		  { nate.curCode().addCodeStatId($id); }
   ;
   
-value:
-	  VALUE 
-		  { 
-			  nate.addValue();
-			  lexer.pushState(Lexer::ARGS);
-			  nate.curValue().setPriority(1000);
-		  }
-	  WORD call-return COL
-		  { 
-		    nate.curValue().addArgWord($WORD);
-			  lexer.popState();
-			  lexer.pushState(Lexer::VALUE);
-		  }
-	  BEGIN
-		  value-stat
-	  END
-		  { 
-			  lexer.popState(); 
-			  nate.endValue();
-		  }
-  ;
-
-value-stat:
-    NUMBER
-		  { nate.curValue().addValue($NUMBER); }
-  ;
-
 arg-list:
     arg
   | arg-list arg
@@ -256,7 +231,7 @@ arg:
 		  { nate.curMethod().addArgWord($WORD); }
   | OPENPAR inout arg-id[id] IS type 
 		  { 
-			  auto id = std::make_shared<Identifier>($id, nate.determineType($type));
+			  auto id = std::make_shared<Identifier>(nate.curScope(), $id, nate.determineType($type));
 			  nate.addIdentifier(id);
 		    nate.curMethod().addArgId(id);
         if (!$inout.empty())
@@ -271,7 +246,7 @@ arg:
 id-with-arg-flags:
     OPENPAR inout arg-id[id] IS
 		{ 
-			auto id = std::make_shared<Identifier>($id, std::make_shared<Type>(""));
+			auto id = std::make_shared<Identifier>(nate.curScope(), $id, std::make_shared<Type>(""));
 			nate.addIdentifier(id);
 		  nate.curMethod().addArgId(id);
       if (!$inout.empty())
@@ -342,6 +317,15 @@ call-return-flag-list:
 call-return-flag:
 	  WORD
 		  { nate.curMethod().setReturnFlag($WORD); }
+  ;
+
+scope-statement:
+    SCOPE COL
+      { nate.codeStartScope(); }
+    BEGIN
+      statement-list
+    END
+      { nate.codeEndScope(); }
   ;
 
 var-statement:
@@ -730,7 +714,7 @@ expr-word:
         {
           value = "uplus";
         }
-
+        
         if (!nate.isLeftMonomial(value) || lexer.spaceBeen)
         {
           lexer.space();

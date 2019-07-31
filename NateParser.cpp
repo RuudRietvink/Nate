@@ -12,6 +12,8 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	mParser(new yy::parser(*mLexer, *this)),
 	mOut(aOut)
 {
+	initAliases();
+
 	mLexer->nate = this;
 	mLexer->filenames.push_back(replaceAll(aFilename, "\\", "\\\\"));
 	  
@@ -50,6 +52,16 @@ void NateParser::import(const std::string& aName)
 	mLexer->includeFile(library + aName + ".ns");
 }
 
+void NateParser::initAliases()
+{
+	mAliases.insert(std::make_pair("√", "sqrt"));
+	mAliases.insert(std::make_pair("÷", "/"));
+	mAliases.insert(std::make_pair("×", "*"));
+	mAliases.insert(std::make_pair("⋅", "*"));
+	mAliases.insert(std::make_pair("π", "pi"));
+	mAliases.insert(std::make_pair("τ", "tau"));
+}
+
 void NateParser::pushScope(const ScopePtr& aScope)
 {
 	//std::cerr << "push " << aScope.name() << std::endl;
@@ -71,9 +83,7 @@ Method& NateParser::curMethod()
 {
 	return mMethodType == MethodType::Code 
 			   ? static_cast<Method&>(curCode()) 
-		     : (mMethodType == MethodType::Define
-						? static_cast<Method&>(curDefine())
-						: static_cast<Method&>(curValue()));
+		     : static_cast<Method&>(curDefine());
 }
 
 void NateParser::addCode()
@@ -111,20 +121,6 @@ void NateParser::endDefine()
 
 Define& NateParser::curDefine() { return mDefines.back(); }
 
-void NateParser::addValue()
-{
-	pushScope(std::make_shared<Scope>("value"));
-	mValues.emplace_back();
-	mMethodType = MethodType::Value;
-}
-
-void NateParser::endValue()
-{
-	popScope();
-}
-
-Value& NateParser::curValue() { return mValues.back(); }
-
 void NateParser::error(const std::string& anError)
 {
 	std::cerr << mLexer->location() << ": " << anError << std::endl;
@@ -160,30 +156,11 @@ void NateParser::unput(const std::string::const_iterator& aStart,
 std::string NateParser::alias(const std::string& aString)
 {
 	std::string result;
+	auto iter = mAliases.find(aString);
 
-	if (aString == "√")
+	if (iter != mAliases.cend())
 	{
-		result = "sqrt";
-	}
-	else if (aString == "π")
-	{
-		result = "pi";
-	}
-	else if (aString == "τ")
-	{
-		result = "tau";
-	}
-	else if (aString == "÷")
-	{
-		result = "/";
-	}
-	else if (aString == "×")
-	{
-		result = "*";
-	}
-	else if (aString == "⋅")
-	{
-		result = "*";
+		result = iter->second;
 	}
 	else
 	{
@@ -194,9 +171,9 @@ std::string NateParser::alias(const std::string& aString)
 }
 
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
-{
-	IdentifierPtr id = getIdentifier(aString);
+{	
 	std::string name = aString;
+	IdentifierPtr id = getIdentifier(alias(name));
 	size_t pos = 0;
 
 	while (!id && pos != std::string::npos)
@@ -205,28 +182,49 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 		if (pos != std::string::npos)
 		{
 			name = name.substr(0, pos);
-			IdentifierPtr newId = getIdentifier(name); // temp needed otherwise it crashes on NULL struct
+			IdentifierPtr newId = getIdentifier(alias(name)); // temp needed otherwise it crashes on NULL struct
 			id = newId;
 		}
 	}
 
 	if (!id)
 	{
-		name = aString;
+		auto iter = name.cbegin();
+		bool ok = true;
+		bool first = true;
+
+		while (iter != name.cend() && ok)
+		{
+			auto next = iter;
+			utf8::next(next, name.cend());
+			IdentifierPtr newId = getIdentifier(alias(std::string(iter, next)));
+			id = newId;
+			if (!id)
+			{
+				ok = false;
+			}
+			else if (first)
+			{
+				pos = std::distance(iter, next);
+				first = false;
+			}
+			
+			utf8::next(iter, name.cend());
+		}
 	}
-	else
+
+	if (id)
 	{
 		if (pos != 0)
 		{
-			utf8::iterator<std::string::const_iterator> iter(Core::cbegin(aOrig));
-			utf8::iterator<std::string::const_iterator> end(Core::cend(aOrig));
-			utf8::advance(iter, pos, end);
-			unput(iter.base(), end.base());
+			auto iter = aOrig.cbegin();
+			utf8::advance(iter, pos, aOrig.cend());
 			name = aString.substr(0, pos);
+			unput(iter, aOrig.cend());
 		}
 	}
 	
-	return std::make_tuple(!!id, name);
+	return std::make_tuple(!!id, alias(name));
 }
 
 IdentifierPtr NateParser::getIdentifier(const std::string& aName, Scope* aScope)
@@ -254,7 +252,7 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, Scope* a
 	if (!result)
 	{
 		error(std::string("Undeclared identifier: ") + aName);
-		addIdentifier(std::make_shared<Identifier>(aName, std::make_shared<Type>("int-32")));
+		addIdentifier(std::make_shared<Identifier>(curScope(), aName, std::make_shared<Type>("int-32")));
 		result = getIdentifier(aName);
 	}
 
@@ -412,22 +410,14 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	{
 		match.matchedMethod = nullptr;
 		
-		for (auto const& value : mValues)
+		for (auto const& code : mCodes)
 		{
-			checkIfMethod(value, aExpr, match);
+			checkIfMethod(code, aExpr, match);
 		}
-
-		if (!match.methodFound)
-		{
-			for (auto const& code : mCodes)
-			{
-				checkIfMethod(code, aExpr, match);
-			}
 		
-			for (auto const& define : mDefines)
-			{
-				checkIfMethod(define, aExpr, match);
-			}
+		for (auto const& define : mDefines)
+		{
+			checkIfMethod(define, aExpr, match);
 		}
 
 		if (match.methodFound)
@@ -474,25 +464,13 @@ Expr NateParser::evaluate(const Expr& aExpr)
 
 bool NateParser::isLeftMonomial(const std::string& aWord) const
 {
-	auto found = std::find_if(mValues.cbegin(), mValues.cend(), 
-														[&aWord](const Value& aItem) 
-														{ 
-															return aItem.name() == aWord;
-														})
-										!= mValues.cend();
-
-	if (!found)
-	{
-		found = std::find_if(mCodes.cbegin(), mCodes.cend(), 
-													[&aWord](const Code& aItem) 
-												  { 
-														return aItem.is(Method::LeftMonomial) &&
-															     aItem.args().front().word() == aWord;
-												  }) 
-										!= mCodes.cend();
-	}
-
-	return found;
+	return std::find_if(mCodes.cbegin(), mCodes.cend(), 
+											[&aWord](const Code& aItem) 
+											{ 
+												return aItem.is(Method::LeftMonomial) &&
+														    aItem.args().front().word() == aWord;
+											}) 
+							!= mCodes.cend();
 }
 
 void NateParser::codeStartProgram()
@@ -506,6 +484,18 @@ void NateParser::codeStartProgram()
 }
 
 void NateParser::codeEndProgram()
+{
+	popScope();
+	mOut << "}" << std::endl;
+}
+
+void NateParser::codeStartScope()
+{
+	printLineNr();
+	pushScope(std::make_shared<Scope>("scope"));
+	mOut << "{" << std::endl;
+}
+void NateParser::codeEndScope()
 {
 	popScope();
 	mOut << "}" << std::endl;
@@ -573,7 +563,8 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 			initValue = Expr(ExprNode(aNames.front(), codeId(aNames.front()), type));
 		}
 
-		codeDeclareLocalIdentifier(std::make_shared<Identifier>(name, type, initValue), initializeNonScalars);
+		codeDeclareLocalIdentifier(
+			std::make_shared<Identifier>(curScope(), name, type, initValue), initializeNonScalars);
 	}
 }
 
@@ -760,7 +751,7 @@ void NateParser::codeStartForLoop(const std::string& aId,
 							   ? aStart.type()
 							   : determineType(aType);
 
-	IdentifierPtr id = std::make_shared<Identifier>(aId, type);
+	IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
 	addIdentifier(id);
 
 	mOut << "for (" << id->type()->codeType() << " " 

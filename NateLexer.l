@@ -102,7 +102,6 @@ public:
       "LOOP",
       "DEFINE",
       "CODE",
-      "VALUE",
       "ARGS",
       "VAR_DECL",
       "DECL_TYPE",
@@ -187,7 +186,6 @@ public:
 %s LOOP
 %s DEFINE
 %x CODE
-%x VALUE
 %x ARGS
 %x VAR_DECL
 %x DECL_TYPE
@@ -196,7 +194,6 @@ public:
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
-firstWord       [\p{Ll}\p{Lu}]
 subscript       [₀₁₂₃₄₅₆₇₈₉]
 superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
 superNumber     {superscript}+
@@ -210,6 +207,7 @@ superLastWord   {superFirstWord}|{superscript}
 superIdName     {superFirstWord}({superNextWord}*{superLastWord})?
 superscriptChar {superscript}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
 
+firstWord       [\p{Ll}\p{Lu}]
 wordSep         [-\p{Pc}]
 wordDigits      [\p{Nd}]
 nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
@@ -319,10 +317,6 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 }
 
-<VALUE>{
-{number}			return yy::parser::make_NUMBER(str(), location());
-}
-
 <DECL_TYPE>{
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
@@ -335,11 +329,11 @@ include\h*\".*\"  s(); includeFile();
 }
 
 \bprogram\b		return yy::parser::make_PROGRAM(location());
+\bscope\b	  	return yy::parser::make_SCOPE(location());
 \bimport\b		return yy::parser::make_IMPORT(location());
 \bvar\b			  return yy::parser::make_VAR(location());
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
-\bvalue\b		  return yy::parser::make_VALUE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
 \bif\b   		  return yy::parser::make_IF(location());
 \belse\b 		  return yy::parser::make_ELSE(location());

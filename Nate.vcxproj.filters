@@ -121,9 +121,6 @@
     <ClCompile Include="core\Fraction.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Value.cpp">
-      <Filter>Source Files\Structs</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
@@ -220,9 +217,6 @@
     </ClInclude>
     <ClInclude Include="core\UpperLower.h">
       <Filter>Source Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Value.h">
-      <Filter>Source Files\Structs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
