@@ -107,6 +107,7 @@ public:
       "DECL_TYPE",
       "FOR_EXPR",
       "OUTPUT_EXPR",
+      "INPUT_EXPR",
       "SUPERSCRIPT_EXPR",
       "COMMENT"
     };
@@ -191,6 +192,7 @@ public:
 %x DECL_TYPE
 %s FOR_EXPR
 %s OUTPUT_EXPR
+%s INPUT_EXPR
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
@@ -226,6 +228,10 @@ fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([�
 \h+            s();// ignore
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
+<*>{
+<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^INPUT_EXPR,^COMMENT>\n s(); // ignore
+}
+
 // *** comments
 (?^^\h*"//".*\n) s();// eat //-comments that start a line without affecting indent stops
 "//".*         s();// eat //-comments
@@ -245,9 +251,8 @@ fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([�
 [^*/]*|.|\n    // ignore all content in comments
 }
 
-<*>{
-<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^COMMENT>\n s(); // ignore
-}
+"*/"           nate->error("*/ without matching /*");
+
 
 <*>{
 <^SUPERSCRIPT_EXPR,^COMMENT>{
@@ -277,7 +282,7 @@ include\h*\".*\"  s(); includeFile();
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 }
 
-<EXPR,FOR_EXPR,OUTPUT_EXPR>{
+<EXPR,FOR_EXPR,OUTPUT_EXPR,INPUT_EXPR>{
 \n            return yy::parser::make_EOS(location());
 }
 
@@ -331,10 +336,14 @@ include\h*\".*\"  s(); includeFile();
 \bprogram\b		return yy::parser::make_PROGRAM(location());
 \bscope\b	  	return yy::parser::make_SCOPE(location());
 \bimport\b		return yy::parser::make_IMPORT(location());
+\bvariable\b  |
 \bvar\b			  return yy::parser::make_VAR(location());
+\bconstant\b  |
+\bconst\b		  return yy::parser::make_CONST(location());
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
+\binput\b		  return yy::parser::make_INPUT(location());
 \bif\b   		  return yy::parser::make_IF(location());
 \belse\b 		  return yy::parser::make_ELSE(location());
 \bloop\b 		  return yy::parser::make_LOOP(location());

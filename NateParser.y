@@ -24,13 +24,13 @@
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
 
   bool outputEnd = true;
+  bool inputEnd = true;
   bool prevWasValue = false;
 }
 
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
-%token <std::string> SUPERNUMBER "power number"
 %token <std::string> FRACTION "fraction"
 %token <std::string> STRING "string"
 %token <std::string> BOOL "bool"
@@ -43,12 +43,13 @@
 %token SCOPE "scope"
 %token ERR "error"
 %token VAR "var"
+%token CONST "const"
 %token CODE "code"
 %token DEFINE "define"
-%token VALUE "value"
 %token IF "if"
 %token ELSE "else"
 %token OUTPUT "output"
+%token INPUT "input"
 %token IS "is"
 %token RIGHT "right"
 %token LEFTMONOMIAL "left-monomial"
@@ -77,12 +78,14 @@
 %type <std::string>              is-type;
 %type <std::string>              type;
 %type <std::string>              inout;
+%type <bool>                     var;
 %type <std::vector<Expr>>        var-init-assign;
 %type <std::vector<Expr>>        var-init-list;
 %type <std::vector<Expr>>        expr-list;
 %type <Expr>                     var-init;
 %type <bool>                     for-to;
 %type <Expr>                     step;
+%type <Expr>                     output-desc;
 %type <Expr>                     expr;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
@@ -131,6 +134,7 @@ statement:
   | scope-statement
   | assign-statement
   | output-statement
+  | input-statement
   | if-statement
   | loop-statement
   | return-statement
@@ -334,11 +338,15 @@ var-statement:
 	  id-list 
 		  { lexer.popState(); }
 	  is-type var-init-assign
-		  { nate.codeDeclareLocalIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
+		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
   ;
 
 var:
 	  VAR
+      { $$ = false; }
+  |
+    CONST
+      { $$ = true; }
   ;
 
 id-list:
@@ -426,7 +434,7 @@ record-var:
 	  id-list 
 		  { lexer.popState(); }
 	  is-type var-init-assign
-		  { nate.codeDeclareRecordIdentifiers($[id-list], $[is-type], $[var-init-assign]); }
+		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
   ;
 
 assign-statement:
@@ -472,8 +480,8 @@ output-part-rest:
   ;
 
 output-part:
-	  expr
-		  { nate.codeOutput($expr); }
+	  expr output-desc
+		  { nate.codeOutput($expr, $[output-desc]); }
   ;
 
 output-sep:
@@ -481,7 +489,56 @@ output-sep:
 		  { nate.codeOutput("\" \""); }
 	| CONCAT
   ;
-      
+    
+output-desc:
+    %empty
+      { $$ = Expr(); }
+  | COL expr
+      { $$ = $expr; }
+  ;
+
+input-statement:
+	  INPUT 
+		  { 
+        nate.codeInputStart("std::cin");
+        lexer.stateExprValue = yy::Lexer::INPUT_EXPR;
+      }
+	  input-list
+		  { 
+        lexer.stateExprValue = yy::Lexer::EXPR;
+        nate.codeInputEnd(inputEnd);
+        inputEnd = true;
+      }
+  ;
+
+input-list:
+	  %empty
+  | input-part-list
+  ;
+
+input-part-list:
+	  input-part
+  | input-part input-sep input-part-rest
+  ;
+
+input-part-rest:
+	  %empty
+		  { inputEnd = false; }
+  | input-part-list
+  ;
+
+input-part:
+	  expr
+		  { nate.codeInput($expr); }
+  ;
+
+input-sep:
+	  COMMA
+		  { nate.codeInputSpace(); }
+	| CONCAT
+		  { nate.codeInputNoSpace(); }
+  ;
+
 if-statement:
 	  IF expr COL
 		  { nate.codeIf($expr); }
@@ -638,6 +695,7 @@ expr-non-word:
 		  { 
 			  $$ = Expr(ExprNode($NUMBER, $NUMBER, Type::makeType($NUMBER)));
 			  $$.node().setFlag(ExprNode::Literal, true);
+			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
         prevWasValue = true;
 		  }
@@ -645,6 +703,7 @@ expr-non-word:
 		  { 
 			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\"", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
+			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
         prevWasValue = true;
 		  }
@@ -652,29 +711,33 @@ expr-non-word:
 		  { 
 			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
+			  $$.node().setFlag(ExprNode::ConstExpr, true);
         prevWasValue = true;
 		  }
   | BOOL
 		  { 
 			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.determineType("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
+			  $$.node().setFlag(ExprNode::ConstExpr, true);
         prevWasValue = true;
 		  }
   | id
 		  { 
+        auto identifier = nate.getOrFakeIdentifier($id);
         if (!lexer.spaceBeen)
         {
           //std::cerr << "monomial " << $id << std::endl;
           $$ = Expr(ExprNode("monomial"));
-			    $$.addNode(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
+			    $$.addNode(ExprNode($id, nate.codeId($id), identifier->type()));
         }
         else
         {
-			    $$ = Expr(ExprNode($id, nate.codeId($id), nate.getOrFakeIdentifier($id)->type()));
-			    $$.node().setFlag(ExprNode::Output, true);
+			    $$ = Expr(ExprNode($id, nate.codeId($id), identifier->type()));
+			    $$.node().setFlag(ExprNode::Output, !identifier->is(Identifier::Const));
           //std::cerr << "spacebeen " << $$ << std::endl;
         }
         prevWasValue = true;
+        $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
 		  } 
   | OPENPAR 
       { 

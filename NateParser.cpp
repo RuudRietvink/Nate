@@ -512,16 +512,34 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 	}
 
 	printLineNr();
+	if (aIdentifier->is(Identifier::Const))
+	{
+		if (aIdentifier->type()->is(Type::Scalar))
+		{
+			mOut << "constexpr ";		
+		}
+		else
+		{
+			mOut << "const ";		
+		}
+	}
+
 	mOut << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
 	if (aIdentifier->type()->is(Type::Scalar) || initializeNonScalars)
 	{
 		mOut << " = " << aIdentifier->initValue().code();
 	}
 
+	if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
+	{
+		error("Expected constant expression.");
+	}
+
 	mOut<< ";" << std::endl;
 }
 
-void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
+void NateParser::codeDeclareLocalIdentifiers(bool aConst,
+																						 const std::vector<std::string>& aNames,
 																						 const std::string& aType,
 																					 	 const std::vector<Expr>& aInitValues,
 																						 bool initializeNonScalars)
@@ -551,7 +569,11 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 		{
 			type = determineType(aType);
 			initValue = Expr(ExprNode("default", "{}", type));
-			initValue.node().setFlag(ExprNode::Default, true);
+			initValue.node().setFlag(ExprNode::Default);
+			if (aConst)
+			{
+				error("Expected initial values for constants");
+			}
 		}
 		else if (aInitValues.size() != 1 || initIter == aInitValues.cbegin())
 		{
@@ -561,10 +583,13 @@ void NateParser::codeDeclareLocalIdentifiers(const std::vector<std::string>& aNa
 		else 
 		{
 			initValue = Expr(ExprNode(aNames.front(), codeId(aNames.front()), type));
+			initValue.node().setFlag(ExprNode::ConstExpr, aConst);
 		}
 
-		codeDeclareLocalIdentifier(
-			std::make_shared<Identifier>(curScope(), name, type, initValue), initializeNonScalars);
+		IdentifierPtr id = std::make_shared<Identifier>(curScope(), name, type, initValue);
+		id->setFlag(Identifier::Const, aConst);
+
+		codeDeclareLocalIdentifier(id, initializeNonScalars);
 	}
 }
 
@@ -575,11 +600,12 @@ void NateParser::codeStartRecord(const RecordPtr& aRecord)
 	mOut << "struct " << aRecord->codeType() << " {" << std::endl;
 }
 
-void NateParser::codeDeclareRecordIdentifiers(const std::vector<std::string>& aNames,
+void NateParser::codeDeclareRecordIdentifiers(bool aConst,
+																							const std::vector<std::string>& aNames,
 																							const std::string& aType,
 																							const std::vector<Expr>& aInitValues)
 {
-	codeDeclareLocalIdentifiers(aNames, aType, aInitValues, false);
+	codeDeclareLocalIdentifiers(aConst, aNames, aType, aInitValues, false);
 
 	for (auto& id : curScope()->getIdentifiers())
 	{
@@ -627,6 +653,7 @@ std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 
 void NateParser::codeOutputStart(const std::string& aStream)
 {
+	mStream = aStream;
 	printLineNr();
 	mOut << aStream;
 	mCachedOutput.clear();
@@ -660,28 +687,59 @@ void NateParser::codeOutput(const std::string& aString)
 	}
 }
 
-void NateParser::codeOutput(const Expr& aValue)
+void NateParser::codeOutput(const Expr& aValue, const Expr& aDesc)
 {
 	if (aValue.type() && aValue.type()->is(Type::Boolean))
 	{
 		codeOutput("std::boolalpha ");
 	}
 	
-	if (aValue.is(ExprNode::Literal))
+	if (!aDesc.isEmpty())
 	{
-		codeOutput(aValue.code());
-	}
-	else
-	{
-		if (aValue.type() && aValue.type()->name() == "int-8")
+		codeOutputEnd(false);
+		mOut << "{ Core::SaveStreamState a(" + mStream + "); ";
+
+		if (!aDesc.type()->is(Type::Text))
 		{
-			codeOutput("static_cast<int>(" + aValue.code() + ")");
+			error("Output format must be a string");
 		}
 		else
 		{
-			codeOutput("(" + aValue.code() + ")");
+			if (aDesc.is(ExprNode::Literal))
+			{
+				Core::Format format = Core::getFormat(aDesc.code().substr(1, aDesc.code().size() - 2));
+				mOut << "Core::outputFormatted(" << mStream << ", " << aValue.code() << ", " << format << ")";
+			}
+			else
+			{
+				mOut << "Core::Format format = Core::getFormat(" + aDesc.code() + ");";
+				mOut << "Core::outputFormatted(" + mStream + ", " + aValue.code() + ", format)";
+			}
+
+			codeOutputEnd(false);
+			mOut << "}" << std::endl;
+			mOut << mStream;
 		}
 	}
+	else
+	{
+		if (aValue.is(ExprNode::Literal))
+		{
+			codeOutput(aValue.code());
+		}
+		else
+		{
+			if (aValue.type() && aValue.type()->name() == "int-8")
+			{
+				codeOutput("static_cast<int>(" + aValue.code() + ")");
+			}
+			else
+			{
+				codeOutput("(" + aValue.code() + ")");
+			}
+		}
+	}
+
 }
 
 void NateParser::codeOutputEnd(bool aAddEnd)
@@ -698,7 +756,49 @@ void NateParser::codeOutputEnd(bool aAddEnd)
 	mOut << ";" << std::endl;
 }
 
-void NateParser::codeIf(const Expr& aValue)
+void NateParser::codeInputStart(const std::string& aStream)
+{
+	mStream = aStream;
+	printLineNr();
+	mOut << aStream;
+}
+
+void NateParser::codeInputSpace()
+{
+}
+
+void NateParser::codeInputNoSpace()
+{
+}
+
+void NateParser::codeInput(const Expr& aValue)
+{
+	if (aValue.is(ExprNode::Output) && !aValue.is(ExprNode::ConstExpr))
+	{
+		if (aValue.type() && aValue.type()->is(Type::Boolean))
+		{
+			mOut << ">> std::boolalpha ";
+		}
+	
+		mOut << ">> " << aValue.code();
+	}
+	else
+	{
+		error("Expected non-constant variable for input");
+	}
+}
+
+void NateParser::codeInputEnd(bool aAddEnd)
+{
+	mOut << ";";
+	if (aAddEnd)
+	{
+		mOut << mStream << ".ignore(std::numeric_limits<std::streamsize>::max(), '\\n');";
+	}
+	mOut << std::endl;
+}
+
+void NateParser::NateParser::codeIf(const Expr& aValue)
 {
 	printLineNr();
 	if (!aValue.type()->is(Type::Boolean))

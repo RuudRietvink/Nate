@@ -59,12 +59,14 @@ public:
 	void codeEndScope();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 																	bool initializeNonScalars = true);
-	void codeDeclareLocalIdentifiers(const std::vector<std::string>& aNames,
+	void codeDeclareLocalIdentifiers(bool aConst,
+																	 const std::vector<std::string>& aNames,
 																	 const std::string& aType,
 																	 const std::vector<Expr>& aInitValues,
 																	 bool initializeNonScalars = true);
 	void codeStartRecord(const RecordPtr& aRecord);
-	void codeDeclareRecordIdentifiers(const std::vector<std::string>& aNames,
+	void codeDeclareRecordIdentifiers(bool aConst,
+																	  const std::vector<std::string>& aNames,
 																  	const std::string& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
@@ -72,8 +74,13 @@ public:
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);
 	void codeOutput(const std::string& aString);
-	void codeOutput(const Expr& aValue);
+	void codeOutput(const Expr& aValue, const Expr& aDesc);
 	void codeOutputEnd(bool aAddEnd = true);
+	void codeInputStart(const std::string& aStream);
+	void codeInputSpace();
+	void codeInputNoSpace();
+	void codeInput(const Expr& aValue);
+	void codeInputEnd(bool aAddEnd = true);
 	void codeIf(const Expr& aValue);
 	void codeElseIf();
 	void codeElse();
@@ -127,6 +134,7 @@ private:
 	int				                  mErrors = 0;
 	std::ostream&               mOut;
 	std::string                 mCachedOutput;
+	std::string                 mStream;
 	std::map<std::string, std::string> 
 															mAliases;
 

@@ -28,7 +28,7 @@ bool Fraction::convertFromString(const std::string& aString)
 	mNumerator = 0;
 	mDenominator = 1;
 
-	ok = Core::numberFrom(iter, end, "0123456789", mWhole);
+	ok = Core::numberFrom(iter, end, mWhole);
 
 	if (iter == Core::cbegin(aString) || ok)
 	{

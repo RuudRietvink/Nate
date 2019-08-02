@@ -2,6 +2,7 @@
 
 #include "Expr.h"
 #include "Type.h"
+#include "WithFlags.h"
 
 #include <string>
 #include <ostream>
@@ -9,7 +10,7 @@
 
 class Scope;
 
-class Identifier
+class Identifier : public WithFlags
 {
 public:
 	Identifier(const std::shared_ptr<Scope>& aScope, const std::string& aName, const TypePtr& aType);
@@ -21,6 +22,8 @@ public:
 	const Expr&					 initValue() const;
 	TypePtr							 type()      const;
 	std::weak_ptr<Scope> scope()      const;
+	
+	static const size_t Const      = 0;
 
 private:
 	std::string						mName;

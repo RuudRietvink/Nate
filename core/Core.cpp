@@ -153,6 +153,13 @@ int Core::positionIn(const std::string& aString, uint32_t aChar)
 
 bool Core::numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
 											const utf8::iterator<std::string::const_iterator>& aEnd,
+											int32_t& aNumber)
+{
+	return numberFrom(aIter, aEnd, "0123456789", aNumber);
+}
+
+bool Core::numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
+											const utf8::iterator<std::string::const_iterator>& aEnd,
 											const std::string& aDigits,
 											int32_t& aNumber)
 {
@@ -207,4 +214,166 @@ std::string Core::unSuperscript(const std::string& aString)
 
 	//std::cerr << aString << " -> " << result << std::endl; 
 	return result;
+}
+
+std::string Core::toString(utf8::iterator<std::string::const_iterator> aIter)
+{
+	return std::string(aIter.base(), (++aIter).base());
+}
+
+std::string Core::toString(const utf8::iterator<std::string::const_iterator>& aIter,
+											     const utf8::iterator<std::string::const_iterator>& aEnd)
+{
+	return std::string(aIter.base(), aEnd.base());
+}
+
+Core::Format Core::getFormat(const std::string& aFormat)
+{
+	utf8::iterator<std::string::const_iterator> iter(aFormat.cbegin(), aFormat.cbegin(), aFormat.cend());
+	utf8::iterator<std::string::const_iterator> end(aFormat.cend(), aFormat.cbegin(), aFormat.cend());
+	
+	Format result;
+	int32_t temp;
+			
+	while (iter != end)
+	{
+		switch (*iter++)
+		{
+			case 'w': case 'W':
+				if (iter != end)
+				{
+					bool ok = numberFrom(iter, end, temp);
+					if (ok)
+					{
+						result.width = temp;
+					}
+					
+					if (iter != end)
+					{
+						if (*iter == '.')
+						{
+							++iter;
+							numberFrom(iter, end, temp);
+							result.precision = temp;
+						}
+						else if (!ok && *iter != '|')
+						{
+							std::cerr << "Missing output format width, got: " << toString(iter) << std::endl;
+						}
+					}
+				}
+				else
+				{
+					std::cerr << "Missing output format width: " << std::endl;
+				}
+				break;
+			case 'j': case 'J':
+				if (iter != end)
+				{
+					switch (*iter)
+					{
+						case '<':
+						case '>':
+						case '=':
+							result.justify = *iter;
+							break;
+						default:
+							std::cerr << "Bad output format justify, got: " << toString(iter) << std::endl;
+							break;
+					}
+					++iter;
+				}
+				else
+				{
+					std::cerr << "Missing output format justify: " << std::endl;
+				}
+				break;
+			case 'f': case 'F':
+				if (iter != end)
+				{
+					result.fill = *iter++;
+				}
+				else
+				{
+					std::cerr << "Missing output format fill: " << std::endl;
+				}
+				break;
+			case '|':
+				--iter;
+				break;
+			default:
+				std::cerr << "Unknown output format header, got: " << toString(iter) << std::endl;
+				break;
+		}
+
+		if (iter != end)
+		{
+			if (*iter++ != '|')
+			{
+				std::cerr << "Missing output format seperator: got: " << toString(iter) << std::endl;
+			}
+		}
+	}
+
+	return result;
+}
+
+Core::SaveStreamState::SaveStreamState(std::ostream& aStream)
+: mStream{aStream},
+	mFlags{aStream.flags()},
+	mWidth{aStream.width()},
+	mPrecision{aStream.precision()},
+	mFill{aStream.fill()}
+{}
+
+Core::SaveStreamState::~SaveStreamState()
+{
+	mStream.flags(mFlags);
+	mStream.width(mWidth);
+	mStream.precision(mPrecision);
+	mStream.fill(mFill);
+}
+
+void Core::setWidth(std::ostream& aStream, int32_t aWidth)
+{
+	if (aWidth >= 0)
+	{
+		aStream.width(aWidth);
+	}
+}
+
+void Core::setPrecision(std::ostream& aStream, int32_t aPrecision)
+{
+	if (aPrecision >= 0)
+	{
+		aStream.precision(aPrecision);
+	}
+}
+
+void Core::setJustify(std::ostream& aStream, char aJustify)
+{
+	if (aJustify == '<')
+	{
+		aStream.setf(std::ios::left);
+	}
+	else if (aJustify == '>')
+	{
+		aStream.setf(std::ios::right);
+	}
+}
+	
+void Core::setFill(std::ostream& aStream, uint32_t aFill)
+{
+	aStream.fill(aFill);
+}
+
+std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
+{
+	aStream << "Core::Format{" 
+						<< aFormat.width << ", "
+						<< aFormat.precision << ", "
+						<< aFormat.fill << ", "
+						<< "'" << aFormat.justify << "'} ";
+
+	return aStream;
 }
