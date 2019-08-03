@@ -79,6 +79,39 @@ std::string Core::restOf(const std::string& aString)
 	return result;
 }
 
+std::string Core::replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo)
+{
+  std::string result = aString;
+
+  if (!aFrom.empty())
+  {
+    size_t start = 0;
+    while ((start = result.find(aFrom, start)) != std::string::npos)
+    {
+      result.replace(start, aFrom.length(), aTo);
+      start += aTo.length();
+    }
+  }
+
+  return result;
+}
+
+std::string Core::replaceOne(const std::string& aString, const std::string& aFrom, const std::string& aTo)
+{
+  std::string result = aString;
+
+  if (!aFrom.empty())
+  {
+    size_t start = 0;
+    if ((start = result.find(aFrom, start)) != std::string::npos)
+    {
+      result.replace(start, aFrom.length(), aTo);
+    }
+  }
+
+  return result;
+}
+
 utf8::iterator<std::string::const_iterator> Core::cbegin(const std::string& aString)
 {
 	return utf8::iterator<std::string::const_iterator>(aString.cbegin(), aString.cbegin(), aString.cend());
@@ -227,6 +260,26 @@ std::string Core::toString(const utf8::iterator<std::string::const_iterator>& aI
 	return std::string(aIter.base(), aEnd.base());
 }
 
+std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
+{
+	aStream << "Core::Format{" 
+						<< aFormat.width << ", "
+						<< aFormat.precision << ", "
+						<< aFormat.fill << ", "
+						<< "'" << aFormat.align << "',"
+						<< "'" << aFormat.sign << "'"
+					  << "} ";
+
+	return aStream;
+}
+
+std::string Core::Format::toString() const
+{
+	std::stringstream ss;
+	ss << *this;
+	return ss.str();
+}
+
 Core::Format Core::getFormat(const std::string& aFormat)
 {
 	utf8::iterator<std::string::const_iterator> iter(aFormat.cbegin(), aFormat.cbegin(), aFormat.cend());
@@ -237,10 +290,19 @@ Core::Format Core::getFormat(const std::string& aFormat)
 			
 	while (iter != end)
 	{
-		switch (*iter++)
+		std::string header;
+		while (iter != end && *iter != ',' && *iter != ':')
 		{
-			case 'w': case 'W':
-				if (iter != end)
+			header += *iter++;
+		}
+
+		header = upperCased(header);
+		if (*iter == ':' && !header.empty())
+		{
+			++iter;
+			if (iter != end)
+			{
+				if (header == "W" || header == "WIDTH")
 				{
 					bool ok = numberFrom(iter, end, temp);
 					if (ok)
@@ -262,55 +324,92 @@ Core::Format Core::getFormat(const std::string& aFormat)
 						}
 					}
 				}
-				else
+				else if (header == "A" || header == "ALIGN")
 				{
-					std::cerr << "Missing output format width: " << std::endl;
-				}
-				break;
-			case 'j': case 'J':
-				if (iter != end)
-				{
-					switch (*iter)
+					std::string align;
+					while (iter != end && *iter != ',')
 					{
-						case '<':
-						case '>':
-						case '=':
-							result.justify = *iter;
-							break;
-						default:
-							std::cerr << "Bad output format justify, got: " << toString(iter) << std::endl;
-							break;
+						align += *iter++;
 					}
-					++iter;
+
+					align = upperCased(align);
+
+					if (align == "<" || align == "L" || align == "LEFT")
+					{
+						result.align = '<';
+					}
+					else if (align == ">" || align == "R" || align == "RIGHT")
+					{
+						result.align = '>';
+					}
+					else if (align == "^" || align == "C" || align == "CENTER")
+					{
+						result.align = '=';
+						if (result.width < 0)
+						{
+							std::cerr << "Center align requires width specified" << std::endl;
+						}
+					}
+					else
+					{
+						std::cerr << "Unknown output format align, got: " << align << std::endl;
+					}
 				}
-				else
-				{
-					std::cerr << "Missing output format justify: " << std::endl;
-				}
-				break;
-			case 'f': case 'F':
-				if (iter != end)
+				else if (header == "F" || header == "FILL")
 				{
 					result.fill = *iter++;
 				}
+				else if (header == "S" || header == "SIGN")
+				{
+					std::string sign;
+					while (iter != end && *iter != ',')
+					{
+						sign += *iter++;
+					}
+
+					sign = upperCased(sign);
+
+					if (sign == "-" || sign == "MINUS")
+					{
+						result.sign = '-';
+					}
+					else if (sign == "+" || sign == "PLUS")
+					{
+						result.sign = '+';
+					}
+					else if (sign == " " || sign == "SPACE")
+					{
+						result.sign = ' ';
+					}
+					else
+					{
+						std::cerr << "Unknown output format sign, got: " << sign << std::endl;
+					}
+				}
 				else
 				{
-					std::cerr << "Missing output format fill: " << std::endl;
+					std::cerr << "Unknown output format header, got: " << header << std::endl;
 				}
-				break;
-			case '|':
-				--iter;
-				break;
-			default:
-				std::cerr << "Unknown output format header, got: " << toString(iter) << std::endl;
-				break;
+			}
+			else
+			{
+				std::cerr << "Missing format value" << std::endl;
+			}
+		}
+		else if (!header.empty())
+		{
+			std::cerr << "Missing format colon" << std::endl;
 		}
 
 		if (iter != end)
 		{
-			if (*iter++ != '|')
+			if (*iter != ',')
 			{
 				std::cerr << "Missing output format seperator: got: " << toString(iter) << std::endl;
+			}
+			else
+			{
+				++iter;
 			}
 		}
 	}
@@ -350,30 +449,31 @@ void Core::setPrecision(std::ostream& aStream, int32_t aPrecision)
 	}
 }
 
-void Core::setJustify(std::ostream& aStream, char aJustify)
+void Core::setAlign(std::ostream& aStream, char aAlign)
 {
-	if (aJustify == '<')
+	if (aAlign == '<')
 	{
 		aStream.setf(std::ios::left);
 	}
-	else if (aJustify == '>')
+	else if (aAlign == '>')
 	{
 		aStream.setf(std::ios::right);
+	}
+}
+	
+void Core::setSign(std::ostream& aStream, char aSign)
+{
+	if (aSign == '-')
+	{
+		aStream.unsetf(std::ios_base::showpos);
+	}
+	else if (aSign == '+')
+	{
+		aStream.setf(std::ios_base::showpos);
 	}
 }
 	
 void Core::setFill(std::ostream& aStream, uint32_t aFill)
 {
 	aStream.fill(aFill);
-}
-
-std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
-{
-	aStream << "Core::Format{" 
-						<< aFormat.width << ", "
-						<< aFormat.precision << ", "
-						<< aFormat.fill << ", "
-						<< "'" << aFormat.justify << "'} ";
-
-	return aStream;
 }

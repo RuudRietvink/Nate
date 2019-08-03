@@ -7,6 +7,7 @@
 #include <ios>
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 
 class Core
 {
@@ -20,6 +21,8 @@ public:
 	static std::string upperCased(const std::string& aString);
 	static std::string firstOf(const std::string& aString);
 	static std::string restOf(const std::string& aString);
+	static std::string replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo);
+	static std::string replaceOne(const std::string& aString, const std::string& aFrom, const std::string& aTo);
 
 	static bool strtoi32(const char* aString, int32_t& aResult);
 	static bool strtoi64(const char* aString, int64_t& aResult);
@@ -45,7 +48,10 @@ public:
 		int32_t width = -1;
 		int32_t precision = -1;
 		uint32_t fill = ' ';
-		char justify = '<';
+		char align = '<';
+		char sign = '-';
+
+		std::string toString() const;
 	};
 
 
@@ -53,25 +59,78 @@ public:
 	
 	static void setWidth(std::ostream& aStream, int32_t aWidth);
 	static void setPrecision(std::ostream& aStream, int32_t aPrecision);
-	static void setJustify(std::ostream& aStream, char aJustify);
+	static void setAlign(std::ostream& aStream, char aAlign);
+	static void setSign(std::ostream& aStream, char aSign);
 	static void setFill(std::ostream& aStream, uint32_t aFill);
 
 	template <typename T>
-	static void outputFormatted(std::ostream& aStream, const T& aValue, const Core::Format& aFormat)
+	static std::string formatted(const T& aValue, const Core::Format& aFormat)
 	{
-		setWidth(aStream, aFormat.width);
-		setPrecision(aStream, aFormat.precision);
+		std::string result;
+		//std::cerr << aValue << " " << aFormat << std::endl;
 
-		if (aFormat.justify != '=' && aFormat.fill <= 255)
+		if (((aFormat.align != '=' && aFormat.fill <= 255) || aFormat.width < 0) && aFormat.sign != ' ')
 		{
-			setJustify(aStream, aFormat.justify);
-			setFill(aStream, aFormat.fill);
+			std::stringstream ss;
+			setWidth(ss, aFormat.width);
+			setPrecision(ss, aFormat.precision);
+			setAlign(ss, aFormat.align);
+			setFill(ss, aFormat.fill);
+			setSign(ss, aFormat.sign);
+			ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
+			ss.setf(std::ios_base::boolalpha);
 
-			aStream << aValue;
+			ss << aValue;
+			result = ss.str();
+			//std::cerr << "{" << result << "}" << std::endl;
 		}
 		else
 		{
+			Format subFormat = aFormat;
+		  subFormat.width = -1;
+		  subFormat.fill = ' ';
+			subFormat.align = '<';
+			subFormat.sign = (aFormat.sign == ' ' ? '+' : aFormat.sign);
+
+			result = formatted(aValue, subFormat);
+			//std::cerr << "|" << result << "|";
+
+			if (aFormat.sign == ' ')
+			{
+				result = replaceOne(result, "+", " ");
+			}
+			
+			std::string temp;
+			auto back = std::back_inserter(temp);
+			int32_t half = 0;
+			int32_t otherHalf = 0;
+			int32_t size = static_cast<int32_t>(result.size());
+			if (aFormat.align == '=')
+			{
+				half = (aFormat.width - size) / 2;
+				otherHalf = aFormat.width - size - half;
+			}
+			else if (aFormat.align == '>')
+			{
+				half = aFormat.width - size;
+			}
+			else
+			{
+				otherHalf = aFormat.width - size;
+			}
+
+			while (half-- > 0)
+			{
+				utf8::append(aFormat.fill, back);
+			}
+			temp += result;
+				
+			temp += std::string(otherHalf, ' ');
+			result = std::move(temp);
+			//std::cerr << result << "|" << std::endl;
 		}
+
+		return result;
 	}
 	
 	// Members are all public and mutable, so if we really don't want

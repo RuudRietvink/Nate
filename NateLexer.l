@@ -34,7 +34,7 @@ public:
 			else
 			{
 				++depth;
-				filenames.push_back(replaceAll(aFile, "\\", "\\\\"));
+				filenames.push_back(Core::replaceAll(aFile, "\\", "\\\\"));
 				push_matcher(new_matcher(fd));  // push current matcher, use new matcher
 			}
 		}
@@ -351,6 +351,7 @@ include\h*\".*\"  s(); includeFile();
 \brecord\b    return yy::parser::make_RECORD(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
+"@"				    return yy::parser::make_AT(location());
 ","				    return yy::parser::make_COMMA(location());
 "&"					  return yy::parser::make_CONCAT(location());
 ";"				    return yy::parser::make_EOS(location());

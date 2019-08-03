@@ -74,7 +74,7 @@ public:
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);
 	void codeOutput(const std::string& aString);
-	void codeOutput(const Expr& aValue, const Expr& aDesc);
+	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
 	void codeInputStart(const std::string& aStream);
 	void codeInputSpace();

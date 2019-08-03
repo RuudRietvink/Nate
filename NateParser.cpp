@@ -15,7 +15,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	initAliases();
 
 	mLexer->nate = this;
-	mLexer->filenames.push_back(replaceAll(aFilename, "\\", "\\\\"));
+	mLexer->filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
 	  
 	mOut << "#define NOMINMAX" << std::endl;
 	mOut << "#include <windows.h>" << std::endl;
@@ -38,7 +38,7 @@ int NateParser::parse()
 		std::ifstream stream(file);
 	  yy::Lexer lexer(stream);
 		lexer.nate = this;
-		lexer.filenames.push_back(replaceAll(file, "\\", "\\\\"));
+		lexer.filenames.push_back(Core::replaceAll(file, "\\", "\\\\"));
 		yy::parser parser(lexer, *this);
 		parser.parse();
 	}
@@ -478,7 +478,7 @@ void NateParser::codeStartProgram()
 	printLineNr();
 	mOut << "int main(int argc, char** argv)\n{" << std::endl;
 	mOut << "SetConsoleOutputCP(65001);" << std::endl;
-	mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
+	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
     
 	pushScope(std::make_shared<Scope>("main"));
 }
@@ -687,59 +687,28 @@ void NateParser::codeOutput(const std::string& aString)
 	}
 }
 
-void NateParser::codeOutput(const Expr& aValue, const Expr& aDesc)
+void NateParser::codeOutput(const Expr& aValue)
 {
 	if (aValue.type() && aValue.type()->is(Type::Boolean))
 	{
 		codeOutput("std::boolalpha ");
 	}
 	
-	if (!aDesc.isEmpty())
+	if (aValue.is(ExprNode::Literal))
 	{
-		codeOutputEnd(false);
-		mOut << "{ Core::SaveStreamState a(" + mStream + "); ";
-
-		if (!aDesc.type()->is(Type::Text))
-		{
-			error("Output format must be a string");
-		}
-		else
-		{
-			if (aDesc.is(ExprNode::Literal))
-			{
-				Core::Format format = Core::getFormat(aDesc.code().substr(1, aDesc.code().size() - 2));
-				mOut << "Core::outputFormatted(" << mStream << ", " << aValue.code() << ", " << format << ")";
-			}
-			else
-			{
-				mOut << "Core::Format format = Core::getFormat(" + aDesc.code() + ");";
-				mOut << "Core::outputFormatted(" + mStream + ", " + aValue.code() + ", format)";
-			}
-
-			codeOutputEnd(false);
-			mOut << "}" << std::endl;
-			mOut << mStream;
-		}
+		codeOutput(aValue.code());
 	}
 	else
 	{
-		if (aValue.is(ExprNode::Literal))
+		if (aValue.type() && aValue.type()->name() == "int-8")
 		{
-			codeOutput(aValue.code());
+			codeOutput("static_cast<int>(" + aValue.code() + ")");
 		}
 		else
 		{
-			if (aValue.type() && aValue.type()->name() == "int-8")
-			{
-				codeOutput("static_cast<int>(" + aValue.code() + ")");
-			}
-			else
-			{
-				codeOutput("(" + aValue.code() + ")");
-			}
+			codeOutput("(" + aValue.code() + ")");
 		}
 	}
-
 }
 
 void NateParser::codeOutputEnd(bool aAddEnd)

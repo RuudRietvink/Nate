@@ -64,6 +64,7 @@
 %token INOUT "inout"
 %token RECORD "record"
 %token COL ":"
+%token AT "@"
 %token ASSIGN ":="
 %token EOS "\n"
 %token COMMA ","
@@ -85,7 +86,7 @@
 %type <Expr>                     var-init;
 %type <bool>                     for-to;
 %type <Expr>                     step;
-%type <Expr>                     output-desc;
+%type <Expr>                     expr-desc;
 %type <Expr>                     expr;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
@@ -480,21 +481,14 @@ output-part-rest:
   ;
 
 output-part:
-	  expr output-desc
-		  { nate.codeOutput($expr, $[output-desc]); }
+	  expr
+		  { nate.codeOutput($expr); }
   ;
 
 output-sep:
 	  COMMA
 		  { nate.codeOutput("\" \""); }
 	| CONCAT
-  ;
-    
-output-desc:
-    %empty
-      { $$ = Expr(); }
-  | COL expr
-      { $$ = $expr; }
   ;
 
 input-statement:
@@ -662,17 +656,39 @@ expr:
     expr-part
       { lexer.pushState(lexer.stateExprValue); }
     expr-part-list
+    expr-desc
     expr-end
       { 
 			  lexer.popState(); 
         auto exp = Expr($[expr-part], $[expr-part-list]);
-        //std::cerr << "+++++++++++++++++++++++" << std::endl << exp.text() << std::endl;
-			  $$ = nate.evaluate(exp);
+			  exp = nate.evaluate(exp);
+        if (!$[expr-desc].isEmpty())
+        {
+          auto type = std::make_shared<Type>("text");
+
+			    if ($[expr-desc].is(ExprNode::Literal))
+			    {
+				    Core::Format format = Core::getFormat($[expr-desc].code().substr(1, $[expr-desc].code().size() - 2));
+            exp = Expr(ExprNode(exp.text(), "Core::formatted(" + exp.code() + "," + format.toString() + ")", type));
+			    }
+			    else
+			    {
+            exp = Expr(ExprNode(exp.text(), "Core::formatted(" + exp.code() + ", Core::getFormat(" + $[expr-desc].code() + "))", type));
+			    }
+        }
         prevWasValue = false;
         lexer.space();
+        $$ = exp;
 		  }
   ;
   
+expr-desc:
+    %empty
+      { $$ = Expr(); }
+  | AT expr
+      { $$ = $expr; }
+  ;
+
 expr-end:
     %empty
   | EOS

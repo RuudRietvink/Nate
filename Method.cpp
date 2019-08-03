@@ -149,7 +149,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 			std::string code = (arg.is(Arg::Prop) || node.is(ExprNode::Literal))
 													? node.code() 
 													: "(" + node.code() + ")";
-			resultCode = replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
+			resultCode = Core::replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
 
 			if (arg.is(Arg::Num) && !type() && (!codeType || nodeType->isBiggerThan(codeType)))
 			{

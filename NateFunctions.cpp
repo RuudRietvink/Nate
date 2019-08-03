@@ -54,23 +54,6 @@ extern std::string escapedMatch(const std::string& aString)
 	return buf.str();
 }
 
-std::string replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo)
-{
-  std::string result = aString;
-
-  if (!aFrom.empty())
-  {
-    size_t start = 0;
-    while ((start = result.find(aFrom, start)) != std::string::npos)
-    {
-      result.replace(start, aFrom.length(), aTo);
-      start += aTo.length();
-    }
-  }
-
-  return result;
-}
-
 std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 {
 	std::string number;
