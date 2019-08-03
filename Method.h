@@ -47,6 +47,7 @@ public:
 	static const size_t Last         = 6;
 	static const size_t LeftMonomial = 7;
 	static const size_t Unary        = 8;
+	static const size_t ConstExpr    = 9;
   
 private:
 	std::string          mCode;

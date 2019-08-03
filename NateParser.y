@@ -26,6 +26,7 @@
   bool outputEnd = true;
   bool inputEnd = true;
   bool prevWasValue = false;
+  Expr ifExpr;
 }
 
 %define api.token.prefix {TOK_}
@@ -206,11 +207,13 @@ code-options-list:
 
 code-options-part:
     RIGHT 
-      { nate.curCode().setFlag(Code::RightLeft, true);}
+      { nate.curCode().setFlag(Code::RightLeft); }
   | LEFTMONOMIAL 
-      { nate.curCode().setFlag(Code::LeftMonomial, true);}
+      { nate.curCode().setFlag(Code::LeftMonomial); }
   | UNARY 
-      { nate.curCode().setFlag(Code::Unary, true);}
+      { nate.curCode().setFlag(Code::Unary); }
+  | CONST 
+      { nate.curCode().setFlag(Code::ConstExpr); }
   ;
 
 code-stat-list:
@@ -535,15 +538,25 @@ input-sep:
 
 if-statement:
 	  IF expr COL
-		  { nate.codeIf($expr); }
+      { ifExpr = $expr; }
+    if-rest
+  ;
+
+if-rest:
+    if-then
+  | if-is
+  ;
+
+if-then:
 	  BEGIN 
+		  { nate.codeIf(ifExpr); }
 		  statement-list
 		  { nate.codeEndIf(); }
 	  END
-	  else-statement
+	  else
   ;
 
-else-statement:
+else:
 	  %empty
   | ELSE 
 	  	{ nate.codeElseIf(); }
@@ -554,6 +567,54 @@ else-statement:
 		statement-list
 		  { nate.codeEndIf(); }
 	  END
+  ;
+
+if-is:
+    IS 
+	  	{ nate.codeIfIs(ifExpr); }
+    is-rest
+    is-else
+	  	{ nate.codeEndIfIs(); }
+  ;
+  
+is-rest:
+    is-part
+    is-block-list
+  ;
+  
+is-block-list:
+    is-block
+  | is-block-list is-block
+  ;
+
+is-block:
+    IS is-part
+  ;
+  
+is-part:
+    expr COL
+	  	{ nate.codeIs($expr, ifExpr); }
+    is-part-block
+  ;
+
+is-part-block:
+    %empty
+  | BEGIN 
+      { nate.codeBeginIs(); }
+    statement-list 
+      { nate.codeEndIs(); }
+    END
+  ;
+  
+is-else:
+    %empty
+  | ELSE COL 
+	  	{ nate.codeElseIs(); }
+    BEGIN 
+      { nate.codeBeginIs(); }
+    statement-list 
+      { nate.codeEndIs(); }
+    END
   ;
 
 loop-statement:
@@ -696,6 +757,7 @@ expr-end:
 
 expr-part-list:
     %empty
+      { $$ = Expr(); }
   | expr-part
   | expr-part-list[list] expr-part
 		  { $$ = Expr($[list], $[expr-part]); }

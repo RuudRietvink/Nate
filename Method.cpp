@@ -108,6 +108,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 	TypePtr lastType;
 	Record* owner = nullptr;
 	Flags nodeFlags;
+	bool isConst = is(ConstExpr);
 
 	ExprNodesCIter nodeIter = aBegin;
 	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
@@ -157,6 +158,10 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 			}
 
 			lastType = nodeType;
+			if (!node.is(ExprNode::ConstExpr))
+			{
+				isConst = false;
+			}
 		}
 
 		++nodeIter;
@@ -169,6 +174,11 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 	else if (is(Last))
 	{
 		codeType = lastType;
+	}
+
+	if (isConst)
+	{
+	  nodeFlags.push_back(ExprNode::ConstExpr);
 	}
 
 	return std::make_tuple(error, resultCode, codeType, nodeFlags);

@@ -32,6 +32,7 @@ public:
 	std::string alias(const std::string& aString);
 	bool isLeftMonomial(const std::string& aWord) const;
 
+	void pushScope(const std::string& aName);
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
 	ScopePtr& curScope();
@@ -85,6 +86,12 @@ public:
 	void codeElseIf();
 	void codeElse();
 	void codeEndIf();
+	void codeIfIs(const Expr& aValue);
+	void codeIs(const Expr& aValue, const Expr& aIfExpr);
+	void codeElseIs();
+	void codeBeginIs();
+	void codeEndIs();
+	void codeEndIfIs();
   void codeInitLoop();
   void codeStartLoop();
   void codeStartForLoop(const std::string& aId, 

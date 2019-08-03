@@ -31,7 +31,7 @@ NateParser::~NateParser() = default;
 
 int NateParser::parse()
 {
-	pushScope(std::make_shared<Scope>("global"));
+	pushScope("global");
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -62,6 +62,11 @@ void NateParser::initAliases()
 	mAliases.insert(std::make_pair("τ", "tau"));
 }
 
+void NateParser::pushScope(const std::string& aName)
+{
+	mScopes.push_front(std::make_shared<Scope>(aName));
+}
+
 void NateParser::pushScope(const ScopePtr& aScope)
 {
 	//std::cerr << "push " << aScope.name() << std::endl;
@@ -88,7 +93,7 @@ Method& NateParser::curMethod()
 
 void NateParser::addCode()
 {
-	pushScope(std::make_shared<Scope>("code"));
+	pushScope("code");
 	mCodes.emplace_back();
 	mMethodType = MethodType::Code;
 }
@@ -102,7 +107,7 @@ Code& NateParser::curCode() { return mCodes.back(); }
 
 void NateParser::addDefine()
 {
-	pushScope(std::make_shared<Scope>("define"));
+	pushScope("define");
 	mDefines.emplace_back();
 	mMethodType = MethodType::Define;
 }
@@ -436,6 +441,10 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			
 			ExprNode node(methodStat, methodStat, methodType);
 			node.setFlags(nodeFlags);
+			if (match.methodFound->is(Method::ConstExpr))
+			{
+				node.setFlag(ExprNode::ConstExpr);
+			}
 
 			Expr newExpr;
 			newExpr.addNodes(aExpr.nodes().cbegin(), match.nodeStartIter);
@@ -480,7 +489,7 @@ void NateParser::codeStartProgram()
 	mOut << "SetConsoleOutputCP(65001);" << std::endl;
 	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
     
-	pushScope(std::make_shared<Scope>("main"));
+	pushScope("main");
 }
 
 void NateParser::codeEndProgram()
@@ -492,7 +501,7 @@ void NateParser::codeEndProgram()
 void NateParser::codeStartScope()
 {
 	printLineNr();
-	pushScope(std::make_shared<Scope>("scope"));
+	pushScope("scope");
 	mOut << "{" << std::endl;
 }
 void NateParser::codeEndScope()
@@ -776,7 +785,7 @@ void NateParser::NateParser::codeIf(const Expr& aValue)
 	}
 
 	mOut << "if (" << aValue.code() << ") {" << std::endl;
-	pushScope(std::make_shared<Scope>("if"));
+	pushScope("if");
 }
 
 void NateParser::codeElseIf()
@@ -788,7 +797,7 @@ void NateParser::codeElse()
 {
 	printLineNr();
 	mOut << "else {" << std::endl;
-	pushScope(std::make_shared<Scope>("else"));
+	pushScope("else");
 }
 
 void NateParser::codeEndIf()
@@ -797,11 +806,68 @@ void NateParser::codeEndIf()
 	mOut << "}" << std::endl;
 }
 
+void NateParser::codeIfIs(const Expr& aValue)
+{
+	printLineNr();
+	if (!aValue.type()->is(Type::Scalar))
+	{
+		error("Expected scalar expression for IF IS statement");
+	}
+
+	mOut << "switch (" << aValue.code() << ") {" << std::endl;
+	pushScope("if is");
+}
+
+void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
+{
+	printLineNr();
+	if (!aValue.is(ExprNode::ConstExpr))
+	{
+		error("Expected constant expression for IS clause");
+	}
+	
+	if (!(aValue.type()->name() == aIfExpr.type()->name() ||
+			 aValue.type()->is(Type::Float) == aIfExpr.type()->is(Type::Float)))
+	{
+		error("Expected expression with same type as in IF");
+	}
+
+	mOut << "case " << aValue.code() << ":" << std::endl;
+}
+
+void NateParser::codeElseIs()
+{
+	printLineNr();
+	mOut << "default:" << std::endl;
+}
+
+void NateParser::codeBeginIs()
+{
+	printLineNr();
+	mOut << "{" << std::endl;
+	pushScope("is");
+}
+
+void NateParser::codeEndIs()
+{
+	printLineNr();
+	mOut << "break;" << std::endl;
+	mOut << "}" << std::endl;
+	popScope();
+}
+
+void NateParser::codeEndIfIs()
+{
+	printLineNr();
+	popScope();
+	mOut << "}" << std::endl;
+}
+
 void NateParser::codeInitLoop()
 {
 	printLineNr();
 	mLoopWhileCounts.push_back(0);
-	pushScope(std::make_shared<Scope>("while"));
+	pushScope("while");
 }
 
 void NateParser::codeStartLoop()

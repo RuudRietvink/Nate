@@ -15,7 +15,7 @@ code right 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
 code unary left-monomial 110 sqrt ($val is (num)) is float-64:
 	std::sqrt($val)
     
-code 100 ($val-1 is (num)) monomial ($val-2 is (num)) is (num,highest):
+code const 100 ($val-1 is (num)) monomial ($val-2 is (num)) is (num,highest):
 	$val-1 * $val-2
 	
 code right 85 ($val-1 is (num)) max ($val-2 is (num,same)) is (num,same):
