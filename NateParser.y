@@ -53,9 +53,6 @@
 %token OUTPUT "output"
 %token INPUT "input"
 %token IS "is"
-%token RIGHT "right"
-%token LEFTMONOMIAL "left-monomial"
-%token UNARY "unary"
 %token LOOP "loop"
 %token WHILE "while"
 %token FOR "for"
@@ -66,7 +63,6 @@
 %token INOUT "inout"
 %token RECORD "record"
 %token COL ":"
-%token AT "@"
 %token ASSIGN ":="
 %token EOS "\n"
 %token COMMA ","
@@ -88,7 +84,6 @@
 %type <Expr>                     var-init;
 %type <bool>                     for-to;
 %type <Expr>                     step;
-%type <Expr>                     expr-desc;
 %type <Expr>                     expr;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
@@ -189,32 +184,12 @@ code:
   ;
 
 code-start:
-    code-options
+    STRING
     NUMBER 
 		  { 
+        nate.curCode().setName($STRING.substr(1, $STRING.size() - 2));
 			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 		  }
-  ;
-	
-code-options:
-    %empty
-  | code-options-list
-  ;
-
-code-options-list:
-    code-options-part
-  | code-options-list code-options-part
-  ;
-
-code-options-part:
-    RIGHT 
-      { nate.curCode().setFlag(Code::RightLeft); }
-  | LEFTMONOMIAL 
-      { nate.curCode().setFlag(Code::LeftMonomial); }
-  | UNARY 
-      { nate.curCode().setFlag(Code::Unary); }
-  | CONST 
-      { nate.curCode().setFlag(Code::ConstExpr); }
   ;
 
 code-stat-list:
@@ -305,13 +280,22 @@ arg-flag:
 call-return:
   %empty
 		  { nate.curMethod().setReturnFlag("none"); }
-	| IS type
+	| IS type-flags
+  ;
+  
+type-flags:
+    type opt-call-return-flags
 		  { 
 			  nate.curMethod().setType(std::make_shared<Type>($type));
 		  }
-  | IS call-return-flags 
+  | call-return-flags
   ;
-  
+
+opt-call-return-flags:
+    %empty
+  | call-return-flags
+  ;
+
 call-return-flags:
     OPENPAR 
 		call-return-flag-list 
@@ -725,39 +709,15 @@ expr:
     expr-part
       { lexer.pushState(lexer.stateExprValue); }
     expr-part-list
-    expr-desc
     expr-end
       { 
 			  lexer.popState(); 
-        auto exp = Expr($[expr-part], $[expr-part-list]);
-			  exp = nate.evaluate(exp);
-        if (!$[expr-desc].isEmpty())
-        {
-          auto type = std::make_shared<Type>("text");
-
-			    if ($[expr-desc].is(ExprNode::Literal))
-			    {
-				    Core::Format format = Core::getFormat($[expr-desc].code().substr(1, $[expr-desc].code().size() - 2));
-            exp = Expr(ExprNode(exp.text(), "Core::formatted(" + exp.code() + "," + format.toString() + ")", type));
-			    }
-			    else
-			    {
-            exp = Expr(ExprNode(exp.text(), "Core::formatted(" + exp.code() + ", Core::getFormat(" + $[expr-desc].code() + "))", type));
-			    }
-        }
+			  $$ = nate.evaluate(Expr($[expr-part], $[expr-part-list]));
         prevWasValue = false;
         lexer.space();
-        $$ = exp;
 		  }
   ;
   
-expr-desc:
-    %empty
-      { $$ = Expr(); }
-  | AT expr
-      { $$ = $expr; }
-  ;
-
 expr-end:
     %empty
   | EOS
@@ -858,25 +818,31 @@ expr-word:
         if (value == "-" && !prevWasValue)
         {
           value = "uminus";
+          prevWasValue = false;
+          $$ = Expr(value);
         }
         else if (value == "+" && !prevWasValue)
         {
           value = "uplus";
-        }
-        
-        if (!nate.isLeftMonomial(value) || lexer.spaceBeen)
-        {
-          lexer.space();
+          prevWasValue = false;
           $$ = Expr(value);
-        }    
-        else
-        {
-          //std::cerr << "monomial " << $WORD << std::endl;
-          $$ = Expr(ExprNode("monomial"));
-			    $$.addNode(ExprNode(value));
         }
+        else
+        {        
+          if (!nate.isLeftMonomial(value) || lexer.spaceBeen)
+          {
+            lexer.space();
+            $$ = Expr(value);
+          }    
+          else
+          {
+            //std::cerr << "monomial " << $WORD << std::endl;
+            $$ = Expr(ExprNode("monomial"));
+			      $$.addNode(ExprNode(value));
+          }
 
-        prevWasValue = false;
+          prevWasValue = !nate.isCode(value);
+        }
       }
   ;
 

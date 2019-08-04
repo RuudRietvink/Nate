@@ -46,6 +46,11 @@ int NateParser::parse()
 	return mParser->parse();
 }
 
+std::string NateParser::in(int aOffset) const
+{
+	return std::string(mScopes.size() + aOffset - 1, '\t');
+}
+
 void NateParser::import(const std::string& aName)
 {
   std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core\\";
@@ -77,14 +82,14 @@ void NateParser::pushScope(const std::string& aName)
 
 void NateParser::pushScope(const ScopePtr& aScope)
 {
-	//std::cerr << "push " << aScope.name() << std::endl;
+	if (mLexer->debug()) std::cerr << "push " << aScope->name() << std::endl;
 	mScopes.push_front(aScope);
 }
 
 void NateParser::popScope()
 {
-	//std::cerr << "pop " << mScopes.front().name() << std::endl;
 	mScopes.pop_front();
+	if (mLexer->debug()) std::cerr << "pop to " << mScopes.front()->name() << std::endl;
 }
 
 ScopePtr& NateParser::curScope()
@@ -108,6 +113,7 @@ void NateParser::addCode()
 
 void NateParser::endCode()
 {
+	curCode().endDecl();
 	popScope();
 }
 
@@ -122,14 +128,15 @@ void NateParser::addDefine()
 
 void NateParser::declareDefine()
 {
-	mOut << curDefine().createCodeDecl() << " {" << std::endl;
+	mOut << in(-1) << curDefine().createCodeDecl() << " {" << std::endl;
 	curDefine().createCodeCall();
 }
 
 void NateParser::endDefine()
 {
+	curDefine().endDecl();
 	popScope();
-	mOut << "}" << std::endl;
+	mOut << in() << "}" << std::endl;
 }
 
 Define& NateParser::curDefine() { return mDefines.back(); }
@@ -236,6 +243,10 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 			unput(iter, aOrig.cend());
 		}
 	}
+	else
+	{
+		name = aString;
+	}
 	
 	return std::make_tuple(!!id, alias(name));
 }
@@ -334,19 +345,6 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 	{
 		auto endIter = startIter + size;
 		
-		//if (aMethod.matches(startIter, endIter))
-		//{
-		//	Expr exp;
-		//	exp.addNodes(startIter, endIter);
-		//	std::cerr << "checkLeftToRightMethod " << exp.text() << std::endl;
-		//	if (aMatch.methodFound != nullptr)
-		//	{
-		//		Expr mat;
-		//		mat.addNodes(aMatch.nodeStartIter, aMatch.nodeEndIter);
-		//		std::cerr <<  mat.text() << std::endl;
-		//	}
-		//}
-
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
@@ -369,19 +367,6 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 	{
 		auto startIter = endIter - size;
 		
-		//if (aMethod.matches(startIter, endIter))
-		//{
-		//	Expr exp;
-		//	exp.addNodes(startIter, endIter);
-		//	std::cerr << "checkRightToLeftMethod " << exp.text() << std::endl;
-		//	if (aMatch.methodFound != nullptr)
-		//	{
-		//		Expr mat;
-		//		mat.addNodes(aMatch.nodeStartIter, aMatch.nodeEndIter);
-		//		std::cerr <<  mat.text() << std::endl;
-		//	}
-		//}
-
 		if (aMethod.matches(startIter, endIter) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
@@ -445,7 +430,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			{
 				error(errorMsg);
 			}
-			//std::cerr << "******* " << *methodType << " " << methodStat << std::endl;
+			//std::cerr << "******* " << (methodType ? *methodType : Type()) << " " << methodStat << std::endl;
 			
 			ExprNode node(methodStat, methodStat, methodType);
 			node.setFlags(nodeFlags);
@@ -490,32 +475,42 @@ bool NateParser::isLeftMonomial(const std::string& aWord) const
 							!= mCodes.cend();
 }
 
+bool NateParser::isCode(const std::string& aWord) const
+{
+	return std::find_if(mCodes.cbegin(), mCodes.cend(), 
+											[&aWord](const Code& aItem) 
+											{ 
+												return aItem.name() == aWord;
+											}) 
+							!= mCodes.cend();
+}
+
 void NateParser::codeStartProgram()
 {
 	printLineNr();
-	mOut << "int main(int argc, char** argv)\n{" << std::endl;
-	mOut << "SetConsoleOutputCP(65001);" << std::endl;
+	mOut << in() << "int main(int argc, char** argv)\n{" << std::endl;
+	pushScope("main");
+	mOut << in() << "SetConsoleOutputCP(65001);" << std::endl;
 	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
     
-	pushScope("main");
 }
 
 void NateParser::codeEndProgram()
 {
 	popScope();
-	mOut << "}" << std::endl;
+	mOut << in() << "}" << std::endl;
 }
 
 void NateParser::codeStartScope()
 {
 	printLineNr();
+	mOut << in() << "{" << std::endl;
 	pushScope("scope");
-	mOut << "{" << std::endl;
 }
 void NateParser::codeEndScope()
 {
 	popScope();
-	mOut << "}" << std::endl;
+	mOut << in() << "}" << std::endl;
 }
 
 void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
@@ -533,15 +528,15 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 	{
 		if (aIdentifier->type()->is(Type::Scalar))
 		{
-			mOut << "constexpr ";		
+			mOut << in() << "constexpr ";		
 		}
 		else
 		{
-			mOut << "const ";		
+			mOut << in() << "const ";		
 		}
 	}
 
-	mOut << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
+	mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
 	if (aIdentifier->type()->is(Type::Scalar) || initializeNonScalars)
 	{
 		mOut << " = " << aIdentifier->initValue().code();
@@ -613,8 +608,8 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 void NateParser::codeStartRecord(const RecordPtr& aRecord)
 {
 	printLineNr();
+	mOut << in() << "struct " << aRecord->codeType() << " {" << std::endl;
 	pushScope(aRecord->scope());
-	mOut << "struct " << aRecord->codeType() << " {" << std::endl;
 }
 
 void NateParser::codeDeclareRecordIdentifiers(bool aConst,
@@ -635,7 +630,8 @@ void NateParser::codeDeclareRecordIdentifiers(bool aConst,
 
 void NateParser::codeEndRecord()
 {
-	mOut << "};" << std::endl;
+	popScope();
+	mOut << in() << "};" << std::endl;
 }
 
 void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)
@@ -656,7 +652,7 @@ void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)
 				error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
 			}
 				
-			mOut << expr.code() << " = ";
+			mOut << in() << expr.code() << " = ";
 		}
 	}
 
@@ -672,7 +668,7 @@ void NateParser::codeOutputStart(const std::string& aStream)
 {
 	mStream = aStream;
 	printLineNr();
-	mOut << aStream;
+	mOut << in() << aStream;
 	mCachedOutput.clear();
 }
 
@@ -746,7 +742,7 @@ void NateParser::codeInputStart(const std::string& aStream)
 {
 	mStream = aStream;
 	printLineNr();
-	mOut << aStream;
+	mOut << in() << aStream;
 }
 
 void NateParser::codeInputSpace()
@@ -792,26 +788,26 @@ void NateParser::NateParser::codeIf(const Expr& aValue)
 		error("Expected boolean expression for IF statement");
 	}
 
-	mOut << "if (" << aValue.code() << ") {" << std::endl;
+	mOut << in() << "if (" << aValue.code() << ") {" << std::endl;
 	pushScope("if");
 }
 
 void NateParser::codeElseIf()
 {
-	mOut << "else " << std::endl;
+	mOut << in() << "else " << std::endl;
 }
 
 void NateParser::codeElse()
 {
 	printLineNr();
-	mOut << "else {" << std::endl;
+	mOut << in() << "else {" << std::endl;
 	pushScope("else");
 }
 
 void NateParser::codeEndIf()
 {
 	popScope();
-	mOut << "}" << std::endl;
+	mOut << in() << "}" << std::endl;
 }
 
 void NateParser::codeIfIs(const Expr& aValue, const std::string& idName)
@@ -824,14 +820,14 @@ void NateParser::codeIfIs(const Expr& aValue, const std::string& idName)
 
 	if (aValue.type()->is(Type::Scalar))
 	{
-		mOut << "switch (" << aValue.code() << ") {" << std::endl;
+		mOut << in() << "switch (" << aValue.code() << ") {" << std::endl;
+		pushScope("if is");
 	}
 	else
 	{
-		mOut << "auto const " << idName << " = " << aValue.code() << ";" << std::endl;
+		mOut << in() << "auto const " << idName << " = " << aValue.code() << ";" << std::endl;
 	}
 
-	pushScope("if is");
 }
 
 void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
@@ -850,7 +846,7 @@ void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 			error("Expected expression with same type as in IF");
 		}
 
-		mOut << "case " << aValue.code() << ":" << std::endl;
+		mOut << in() << "case " << aValue.code() << ":" << std::endl;
 	}
 	else
 	{
@@ -859,7 +855,7 @@ void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 
 		if (!ifIs.isFirst && firstExpr)
 		{
-			mOut << "else ";
+			mOut << in() << "else ";
 		}
 
 		if (ifIs.isFirst || firstExpr)
@@ -872,7 +868,7 @@ void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 
 		if (firstExpr)
 		{
-			mOut << "if (";
+			mOut << in() << "if (";
 		}
 		else
 		{
@@ -887,11 +883,11 @@ void NateParser::codeElseIs()
 	printLineNr();
 	if (mIfIs.top().isSwitch)
 	{
-		mOut << "default:" << std::endl;
+		mOut << in() << "default:" << std::endl;
 	}
 	else
 	{
-		mOut << "else" << std::endl;
+		mOut << in() << "else" << std::endl;
 		auto ifIs = mIfIs.top();
 		mIfIs.pop();
 		ifIs.nextElse = true;
@@ -906,7 +902,7 @@ void NateParser::codeBeginIs()
 		mOut << ")" << std::endl;
 	}
 	printLineNr();
-	mOut << "{" << std::endl;
+	mOut << in() << "{" << std::endl;
 	pushScope("is");
 }
 
@@ -915,10 +911,10 @@ void NateParser::codeEndIs()
 	printLineNr();
 	if (mIfIs.top().isSwitch)
 	{
-		mOut << "break;" << std::endl;
+		mOut << in() << "break;" << std::endl;
 	}
-	mOut << "}" << std::endl;
 	popScope();
+	mOut << in() << "}" << std::endl;
 	
 	auto ifIs = mIfIs.top();
 	mIfIs.pop();
@@ -929,10 +925,10 @@ void NateParser::codeEndIs()
 void NateParser::codeEndIfIs()
 {
 	printLineNr();
-	popScope();
 	if (mIfIs.top().isSwitch)
 	{
-		mOut << "}" << std::endl;
+		popScope();
+		mOut << in() << "}" << std::endl;
 	}
 
 	mIfIs.pop();
@@ -947,7 +943,7 @@ void NateParser::codeInitLoop()
 
 void NateParser::codeStartLoop()
 {
-	mOut << "while (true) {" << std::endl;
+	mOut << in(-1) << "while (true) {" << std::endl;
 }
 
 void NateParser::codeStartForLoop(const std::string& aId,
@@ -964,7 +960,7 @@ void NateParser::codeStartForLoop(const std::string& aId,
 	IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
 	addIdentifier(id);
 
-	mOut << "for (" << id->type()->codeType() << " " 
+	mOut << in(-1) << "for (" << id->type()->codeType() << " " 
 			 << id->codeName() << "= " << aStart.code() << ";" 
 			 << id->name() << (aDownTo ? " >= " : "<=") << aEnd.code() << ";"
 			 << id->name() << (aDownTo ? " -= " : "+=") << aStep.code() << ") {" << std::endl;
@@ -973,8 +969,8 @@ void NateParser::codeStartForLoop(const std::string& aId,
 void NateParser::codeEndLoop()
 {
 	mLoopWhileCounts.pop_back();
-	mOut << "}" << std::endl;
 	popScope();
+	mOut << in() << "}" << std::endl;
 }
 
 void NateParser::codeLoopWhile(const Expr& aExpr)
@@ -992,17 +988,17 @@ void NateParser::codeLoopWhile(const Expr& aExpr)
 	}
 		
 	printLineNr();
-	mOut << "if (!(" << aExpr.code() << ")) break;" << std::endl;
+	mOut << in() << "if (!(" << aExpr.code() << ")) break;" << std::endl;
 }
 
  void NateParser::codeReturn(const Expr& aValue)
  {
 	 printLineNr();
-	 mOut << "return " << aValue.code() << ";" << std::endl;
+	 mOut << in() << "return " << aValue.code() << ";" << std::endl;
  }
 
  void NateParser::codeExpression(const Expr& aValue)
  {
 	 printLineNr();
-	 mOut << aValue.code() << ";" << std::endl;
+	 mOut << in() << aValue.code() << ";" << std::endl;
  }

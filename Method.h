@@ -11,6 +11,7 @@
 #include <tuple>
 
 class Identifier;
+class Record;
 
 class Method : public WithFlags
 {
@@ -24,17 +25,22 @@ public:
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
+	virtual void endDecl();
 	
-	int                         priority() const;
-	void                        setPriority(int aValue);
-  const TypePtr&              type() const;
-	void                        setType(const TypePtr& aType);
-	const std::vector<Arg>&     args() const;
-	std::vector<Arg>&           args();
-	Arg&                        curArg();
-	const std::string&          pattern() const;
-	const std::string&          signature() const;
-	void                        setReturnFlag(const std::string& aFlag);
+	using ArgVector        = std::vector<Arg>;
+	using ArgConstIterator = ArgVector::const_iterator;
+
+	int                 priority() const;
+	void                setPriority(int aValue);
+  const TypePtr&      type() const;
+	void                setType(const TypePtr& aType);
+	const ArgVector&    args() const;
+	ArgVector&          args();
+	Arg&                curArg();
+	const std::string&	pattern() const;
+	const std::string&  signature() const;
+	void                setReturnFlag(const std::string& aFlag);
+	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
 		
 	const std::string&          code() const;
 	std::string&                code();
@@ -52,10 +58,12 @@ public:
 private:
 	std::string          mCode;
 	TypePtr              mType;
-	std::vector<Arg>     mArgs;
+	ArgVector						 mArgs;
 	std::string          mSignature;
 	mutable std::string  mPattern;
 	int                  mPriority = 0;
+	ArgConstIterator		 mOwnerArg;
+	ArgConstIterator		 mPropArg;
 };
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);
 

@@ -28,23 +28,43 @@ void Method::setReturnFlag(const std::string& aFlag)
 {
 	if (aFlag == "num")
 	{
-		setFlag(Num, true);
+		setFlag(Num);
 	}
 	else if (aFlag == "highest")
 	{
-		setFlag(Highest, true);
+		setFlag(Highest);
 	}
 	else if (aFlag == "same")
 	{
-		setFlag(Same, true);
+		setFlag(Same);
 	}
 	else if (aFlag == "last")
 	{
-		setFlag(Last, true);
+		setFlag(Last);
 	}
 	else if (aFlag == "none")
 	{
-		setFlag(None, true);
+		setFlag(None);
+	}
+	else if (aFlag == "right")
+	{
+		setFlag(RightLeft);
+	}
+	else if (aFlag == "left-monomial")
+	{
+		setFlag(LeftMonomial);
+	}
+	else if (aFlag == "unary")
+	{
+		setFlag(Unary);
+	}
+	else if (aFlag == "const")
+	{
+		setFlag(ConstExpr);
+	}
+	else
+	{
+		std::cerr << "Bad flag: " << aFlag << std::endl;
 	}
 }
 
@@ -64,9 +84,43 @@ void Method::addArgId(const IdentifierPtr& aId)
 	}
 }
 
+void Method::endDecl()
+{
+	mOwnerArg = args().cend();
+	mPropArg = args().cend();
+
+	for (auto arg = args().cbegin(); arg != args().cend(); ++arg)
+	{
+		if (arg->isIdentifier())
+		{
+			if (arg->is(Arg::Owner))
+			{
+				mOwnerArg = arg;
+			}
+			else if (arg->is(Arg::Prop))
+			{
+				mPropArg = arg;
+			}
+		}
+	}
+}
+
+Record* Method::getOwner(const ExprNodesCIter& aNodeIter) const
+{
+	Record* owner = nullptr;
+	if (mOwnerArg != args().cend())
+	{
+		auto ownerIter = aNodeIter;
+		auto dist = std::distance(args().cbegin(), mOwnerArg);
+		std::advance(ownerIter, dist);
+		owner = dynamic_cast<Record*>(ownerIter->type().get());
+	}
+
+	return owner;
+}
+
 bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 {
-	auto nodeIter = aBegin;
 	auto exp = Expr();
 	exp.addNodes(aBegin, aEnd);
 	//std::cerr << "//// " << pattern() << " " << exp.text() << " ";
@@ -76,18 +130,33 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) c
 		//std::cerr <<  "diff size "  << mArgs.size() << " " << static_cast<size_t>(std::distance(aBegin, aEnd)) << std::endl;
 		return false;
 	}
-
+	
+	ExprNodesCIter nodeIter = aBegin;
 	for (const auto& arg : mArgs)
 	{
-		if (arg.isIdentifier() != (!nodeIter->is(ExprNode::Word)))
+		if (arg.is(Arg::Prop))
 		{
-			//std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
-			return false;
+			Record* owner = getOwner(aBegin);
+			IdentifierPtr id = owner == nullptr ? IdentifierPtr() : owner->getIdentifier(nodeIter->text());
+			if (!id)
+			{
+				//if (owner == nullptr) std::cerr << "No owner" << std::endl;
+				//std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
+				return false;
+			}
 		}
-		if (!arg.isIdentifier() && arg.word() != nodeIter->text())
+		else
 		{
-			//std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
-			return false;
+			if (arg.isIdentifier() != (!nodeIter->is(ExprNode::Word)))
+			{
+				//std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
+				return false;
+			}
+			if (!arg.isIdentifier() && arg.word() != nodeIter->text())
+			{
+				//std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
+				return false;
+			}
 		}
 
 		++nodeIter;
@@ -106,23 +175,12 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 	TypePtr codeType(type());
 	TypePtr firstType;
 	TypePtr lastType;
-	Record* owner = nullptr;
 	Flags nodeFlags;
 	bool isConst = is(ConstExpr);
-
+	Record* owner = getOwner(aBegin);
+	std::string nodeCode;
+			
 	ExprNodesCIter nodeIter = aBegin;
-	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
-	{
-		if (arg->isIdentifier())
-		{
-			if (arg->is(Arg::Owner))
-			{
-				owner = dynamic_cast<Record*>(nodeIter->type().get());
-			}
-		}
-	}
-	
-	nodeIter = aBegin;
 	for (auto const& arg : mArgs)
 	{
 		if (arg.isIdentifier())
@@ -135,9 +193,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 				auto identifier = owner->getIdentifier(nodeIter->text());
 				if (identifier)
 				{
+					nodeCode = identifier->codeName();
 					nodeType = identifier->type();
 					nodeFlags.push_back(ExprNode::Output);
 				}
+			}
+			else
+			{
+				nodeCode = nodeIter->code();
 			}
 
 			if (!firstType) 
@@ -146,10 +209,15 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 			}
 
       ExprNode node = *nodeIter;
-      node.castToType(arg.is(Arg::Same) ? firstType : argType);
+			if (!arg.is(Arg::Prop))
+			{
+				node.castToType(arg.is(Arg::Same) ? firstType : argType);
+				nodeCode = node.code();
+			}
+
 			std::string code = (arg.is(Arg::Prop) || node.is(ExprNode::Literal))
-													? node.code() 
-													: "(" + node.code() + ")";
+													? nodeCode 
+													: "(" + nodeCode + ")";
 			resultCode = Core::replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
 
 			if (arg.is(Arg::Num) && !type() && (!codeType || nodeType->isBiggerThan(codeType)))

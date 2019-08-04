@@ -38,3 +38,5 @@ lex.yy.cpp
 lex.yy.h
 location.hpp
 parser.cpp
+parser.output
+

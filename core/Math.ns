@@ -9,17 +9,17 @@ const tau is float-64 := 6.283185307179586
   
 constant e is float-64 := 2.718281828459045
 
-code right 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest):
+code "^" 110 ($val-1 is (num)) ^ ($val-2 is (num)) is (num,highest,right):
 	std::pow($val-1, $val-2)
   
-code unary left-monomial 110 sqrt ($val is (num)) is float-64:
+code "sqrt" 110 sqrt ($val is (num)) is float-64 (unary,left-monomial):
 	std::sqrt($val)
     
-code const 100 ($val-1 is (num)) monomial ($val-2 is (num)) is (num,highest):
+code "monomial" 100 ($val-1 is (num)) monomial ($val-2 is (num)) is (num,highest,const):
 	$val-1 * $val-2
 	
-code right 85 ($val-1 is (num)) max ($val-2 is (num,same)) is (num,same):
+code "max" 85 ($val-1 is (num)) max ($val-2 is (num,same)) is (num,same,right):
 	std::max($val-1, $val-2)
   
-code right 85 ($val-1 is (num)) min ($val-2 is (num,same)) is (num,same):
+code "min" 85 ($val-1 is (num)) min ($val-2 is (num,same)) is (num,same,right):
 	std::min($val-1, $val-2)

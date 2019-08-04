@@ -28,10 +28,12 @@ class NateParser
 public:
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut);
 	virtual ~NateParser();
+	std::string in(int aOffset = 0) const;
 	int parse();
 	void import(const std::string& aName);
 	std::string alias(const std::string& aString);
 	bool isLeftMonomial(const std::string& aWord) const;
+	bool isCode(const std::string& aWord) const;
 
 	void pushScope(const std::string& aName);
 	void pushScope(const ScopePtr& aScope);

@@ -3,82 +3,85 @@
 // operators
 ///////////////////////////////////////////////
 	
-code const unary 90 uminus ($val-1 is (num)) is (num,highest):
+code "uminus" 90 uminus ($val-1 is (num)) is (num,highest,const,unary):
 	-$val-1
 	
-code const unary 90 uplus ($val-1 is (num)) is (num,highest):
+code "uplus" 90 uplus ($val-1 is (num)) is (num,highest,const,unary):
 	$val-1
 	
-code const unary 90 not ($cond is boolean) is boolean:
+code "not" 90 not ($cond is boolean) is boolean (const,unary):
 	!$cond
   
-code const 80 ($val-1 is (num)) * ($val-2 is (num)) is (num,highest):
+code "*" 80 ($val-1 is (num)) * ($val-2 is (num)) is (num,highest,const):
 	$val-1 * $val-2
 	
-code const 80 ($val-1 is (num)) / ($val-2 is (num)) is (num,highest):
+code "/" 80 ($val-1 is (num)) / ($val-2 is (num)) is (num,highest,const):
 	$val-1 / $val-2
 	
-code const 80 ($val-1 is (num)) mod ($val-2 is (num)) is (num,highest):
+code "mod" 80 ($val-1 is (num)) mod ($val-2 is (num)) is (num,highest,const):
 	$val-1 % $val-2
 
-code const 70 ($val-1 is (num)) + ($val-2 is (num)) is (num,highest):
+code "+" 70 ($val-1 is (num)) + ($val-2 is (num)) is (num,highest,const):
 	$val-1 + $val-2
 
-code const 70 ($val-1 is (num)) - ($val-2 is (num)) is (num,highest):
+code "-" 70 ($val-1 is (num)) - ($val-2 is (num)) is (num,highest,const):
 	$val-1 - $val-2
 	
-code const 62 ($val-1 is text) + ($val-2 is text) is text:
+code "+" 62 ($val-1 is text) + ($val-2 is text) is text (const):
 	$val-1 + $val-2
   
-code const 60 ($val-1 is (any)) if ($cond is boolean) else ($val-2 is (same)) is (same):
+code "if" 60 ($val-1 is (any)) if ($cond is boolean) else ($val-2 is (same)) is (same,const):
 	$cond ? $val-1 : $val-2
 
-code const 50 ($val-1 is (cmp)) = ($val-2 is (cmp)) is boolean:
+code "=" 50 ($val-1 is (cmp)) = ($val-2 is (cmp)) is boolean (const):
 	$val-1 == $val-2
 	
-code const 50 ($val-1 is (cmp)) != ($val-2 is (cmp)) is boolean:
+code "!=" 50 ($val-1 is (cmp)) != ($val-2 is (cmp)) is boolean (const):
 	$val-1 != $val-2
 	
-code const 50 ($val-1 is (cmp)) >= ($val-2 is (cmp)) is boolean:
+code ">=" 50 ($val-1 is (cmp)) >= ($val-2 is (cmp)) is boolean (const):
 	$val-1 >= $val-2
 	
-code const 50 ($val-1 is (cmp)) <= ($val-2 is (cmp)) is boolean:
+code "<=" 50 ($val-1 is (cmp)) <= ($val-2 is (cmp)) is boolean (const):
 	$val-1 <= $val-2
 
-code const 50 ($val-1 is (cmp)) > ($val-2 is (cmp)) is boolean:
+code ">" 50 ($val-1 is (cmp)) > ($val-2 is (cmp)) is boolean (const):
 	$val-1 > $val-2
 	
-code const 50 ($val-1 is (cmp)) < ($val-2 is (cmp)) is boolean:
+code "<" 50 ($val-1 is (cmp)) < ($val-2 is (cmp)) is boolean (const):
 	$val-1 < $val-2
 	
-code const 40 ($cond-1 is boolean) and ($cond-2 is boolean) is boolean:
+code "and" 40 ($cond-1 is boolean) and ($cond-2 is boolean) is boolean (const):
 	$cond-1 && $cond-2
 
-code const 35 ($cond-1 is boolean) or ($cond-2 is boolean) is boolean:
+code "or" 35 ($cond-1 is boolean) or ($cond-2 is boolean) is boolean (const):
 	$cond-1 || $cond-2
   
 ///////////////////////////////////////////////
 // face value
 ///////////////////////////////////////////////
 
-code 65 decrease ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
+code "decrease" 65 decrease ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
   $val-1 -= $val-2
   
-code 65 decrease ($val is (num,out)) is (same):
+code "decrease" 65 decrease ($val is (num,out)) is (same):
   --$val
   
-code 65 increase ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
+code "increase" 65 increase ($val-1 is (num,out)) with ($val-2 is (same)) is (same):
   $val-1 += $val-2
   
-code 65 increase ($val is (num,out)) is (same):
+code "increase" 65 increase ($val is (num,out)) is (same):
   ++$val
-  
+
+code "with" 65 increase ($val is (num,out)) is (same):
+  nop to handle unary after "with"
+
 ///////////////////////////////////////////////
 // language
 ///////////////////////////////////////////////
 
-code const 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
+code "'s" 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
   $owner.$prop
 
-code const 200 ($prop is (prop)) of ($owner is (owner)) is (same):
+code "of" 200 ($prop is (prop)) of ($owner is (owner)) is (same):
   $owner.$prop

@@ -82,7 +82,7 @@ public:
 
 			ss << aValue;
 			result = ss.str();
-			//std::cerr << "{" << result << "}" << std::endl;
+			//std::cerr << ss.width() << " " << ss.precision() << " " << ss.flags() << " {" << result << "}" << std::endl;
 		}
 		else
 		{

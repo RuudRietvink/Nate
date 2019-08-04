@@ -219,6 +219,7 @@ word            ({firstWord}|')({nextWord}*{lastWord})?
 number          [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
 fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+string          ["][^"]*[""]
 
 %%
  
@@ -300,10 +301,6 @@ include\h*\".*\"  s(); includeFile();
 }
 
 <ARGS>{
-\bleft-monomial\b return yy::parser::make_LEFTMONOMIAL(location());
-\bright\b		  return yy::parser::make_RIGHT(location());
-\bunary\b		  return yy::parser::make_UNARY(location());
-\bconst\b		  return yy::parser::make_CONST(location());
 \bis\b			  return yy::parser::make_IS(location());
 \binout\b	    return yy::parser::make_INOUT(location());
 ":="			    return yy::parser::make_ASSIGN(location());
@@ -312,6 +309,7 @@ include\h*\".*\"  s(); includeFile();
 ")"					  return yy::parser::make_CLOSEPAR(location());
 ","					  return yy::parser::make_COMMA(location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
+{string}    	return yy::parser::make_STRING(str(), location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
@@ -353,7 +351,6 @@ include\h*\".*\"  s(); includeFile();
 \brecord\b    return yy::parser::make_RECORD(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
-"@"				    return yy::parser::make_AT(location());
 ","				    return yy::parser::make_COMMA(location());
 "&"					  return yy::parser::make_CONCAT(location());
 ";"				    return yy::parser::make_EOS(location());
@@ -362,13 +359,19 @@ include\h*\".*\"  s(); includeFile();
 
 {number}			return yy::parser::make_NUMBER(str(), location());
 {fraction}	  return yy::parser::make_FRACTION(str(), location());
-["][^"]*[""]	return yy::parser::make_STRING(str(), location());
+{string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 
-<<EOF>>		 if (!matcher().stops().empty())
+<<EOF>>		 if (commentNested > 0)
+           {
+             nate->error("/* without matching */");
+             commentNested = 0;
+           }
+           
+           if (!matcher().stops().empty())
 			     {
 			       matcher().stops().pop_back();
 			       return yy::parser::make_END(location()); 
