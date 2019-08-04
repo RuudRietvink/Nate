@@ -62,6 +62,14 @@ void NateParser::initAliases()
 	mAliases.insert(std::make_pair("τ", "tau"));
 }
 
+
+std::string NateParser::uniqueName() const
+{
+	static int count = 0;
+
+	return "tmp__" + std::to_string(count++) + "__";
+}
+
 void NateParser::pushScope(const std::string& aName)
 {
 	mScopes.push_front(std::make_shared<Scope>(aName));
@@ -806,43 +814,97 @@ void NateParser::codeEndIf()
 	mOut << "}" << std::endl;
 }
 
-void NateParser::codeIfIs(const Expr& aValue)
+void NateParser::codeIfIs(const Expr& aValue, const std::string& idName)
 {
 	printLineNr();
-	if (!aValue.type()->is(Type::Scalar))
+	IfIs info;
+	info.idName = idName;
+	info.isSwitch = aValue.type()->is(Type::Scalar);
+	mIfIs.push(info);
+
+	if (aValue.type()->is(Type::Scalar))
 	{
-		error("Expected scalar expression for IF IS statement");
+		mOut << "switch (" << aValue.code() << ") {" << std::endl;
+	}
+	else
+	{
+		mOut << "auto const " << idName << " = " << aValue.code() << ";" << std::endl;
 	}
 
-	mOut << "switch (" << aValue.code() << ") {" << std::endl;
 	pushScope("if is");
 }
 
 void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 {
 	printLineNr();
-	if (!aValue.is(ExprNode::ConstExpr))
+	if (mIfIs.top().isSwitch)
 	{
-		error("Expected constant expression for IS clause");
-	}
+		if (!aValue.is(ExprNode::ConstExpr))
+		{
+			error("Expected constant expression for IS clause");
+		}
 	
-	if (!(aValue.type()->name() == aIfExpr.type()->name() ||
-			 aValue.type()->is(Type::Float) == aIfExpr.type()->is(Type::Float)))
-	{
-		error("Expected expression with same type as in IF");
-	}
+		if (!(aValue.type()->name() == aIfExpr.type()->name() ||
+				 aValue.type()->is(Type::Float) == aIfExpr.type()->is(Type::Float)))
+		{
+			error("Expected expression with same type as in IF");
+		}
 
-	mOut << "case " << aValue.code() << ":" << std::endl;
+		mOut << "case " << aValue.code() << ":" << std::endl;
+	}
+	else
+	{
+		auto ifIs = mIfIs.top();
+		bool firstExpr = ifIs.isFirstTest;
+
+		if (!ifIs.isFirst && firstExpr)
+		{
+			mOut << "else ";
+		}
+
+		if (ifIs.isFirst || firstExpr)
+		{
+			mIfIs.pop();
+			ifIs.isFirst = false;
+			ifIs.isFirstTest = false;
+			mIfIs.push(ifIs);
+		}
+
+		if (firstExpr)
+		{
+			mOut << "if (";
+		}
+		else
+		{
+			mOut << " || ";
+		}
+		mOut << "(" << mIfIs.top().idName << " == " << aValue.code() << ")";
+	}
 }
 
 void NateParser::codeElseIs()
 {
 	printLineNr();
-	mOut << "default:" << std::endl;
+	if (mIfIs.top().isSwitch)
+	{
+		mOut << "default:" << std::endl;
+	}
+	else
+	{
+		mOut << "else" << std::endl;
+		auto ifIs = mIfIs.top();
+		mIfIs.pop();
+		ifIs.nextElse = true;
+		mIfIs.push(ifIs);
+	}
 }
 
 void NateParser::codeBeginIs()
 {
+	if (!mIfIs.top().isSwitch && !mIfIs.top().nextElse)
+	{
+		mOut << ")" << std::endl;
+	}
 	printLineNr();
 	mOut << "{" << std::endl;
 	pushScope("is");
@@ -851,16 +913,29 @@ void NateParser::codeBeginIs()
 void NateParser::codeEndIs()
 {
 	printLineNr();
-	mOut << "break;" << std::endl;
+	if (mIfIs.top().isSwitch)
+	{
+		mOut << "break;" << std::endl;
+	}
 	mOut << "}" << std::endl;
 	popScope();
+	
+	auto ifIs = mIfIs.top();
+	mIfIs.pop();
+	ifIs.isFirstTest = true;
+	mIfIs.push(ifIs);
 }
 
 void NateParser::codeEndIfIs()
 {
 	printLineNr();
 	popScope();
-	mOut << "}" << std::endl;
+	if (mIfIs.top().isSwitch)
+	{
+		mOut << "}" << std::endl;
+	}
+
+	mIfIs.pop();
 }
 
 void NateParser::codeInitLoop()

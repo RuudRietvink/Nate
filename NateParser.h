@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <stack>
 #include <limits>
 #include <fstream>
 #include <memory>
@@ -44,6 +45,7 @@ public:
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
+	std::string uniqueName() const;
 
 	void addCode();
 	void endCode();
@@ -86,7 +88,7 @@ public:
 	void codeElseIf();
 	void codeElse();
 	void codeEndIf();
-	void codeIfIs(const Expr& aValue);
+	void codeIfIs(const Expr& aValue, const std::string& idName);
 	void codeIs(const Expr& aValue, const Expr& aIfExpr);
 	void codeElseIs();
 	void codeBeginIs();
@@ -142,8 +144,17 @@ private:
 	std::ostream&               mOut;
 	std::string                 mCachedOutput;
 	std::string                 mStream;
-	std::map<std::string, std::string> 
-															mAliases;
+	std::map<std::string, std::string> mAliases;
+
+	struct IfIs
+	{
+		bool isSwitch = true;
+		bool isFirst = true;
+		bool isFirstTest = true;
+		bool nextElse = false;
+		std::string idName;
+	};
+	std::stack<IfIs> mIfIs;
 
 	enum class MethodType
 	{

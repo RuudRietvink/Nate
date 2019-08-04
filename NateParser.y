@@ -26,7 +26,8 @@
   bool outputEnd = true;
   bool inputEnd = true;
   bool prevWasValue = false;
-  Expr ifExpr;
+  std::stack<Expr> ifExpr;
+  std::stack<std::string> ifId;
 }
 
 %define api.token.prefix {TOK_}
@@ -538,8 +539,15 @@ input-sep:
 
 if-statement:
 	  IF expr COL
-      { ifExpr = $expr; }
+      { 
+        ifExpr.push($expr);
+        ifId.push(nate.uniqueName());
+      }
     if-rest
+      { 
+        ifExpr.pop(); 
+        ifId.pop(); 
+      }
   ;
 
 if-rest:
@@ -549,7 +557,7 @@ if-rest:
 
 if-then:
 	  BEGIN 
-		  { nate.codeIf(ifExpr); }
+		  { nate.codeIf(ifExpr.top()); }
 		  statement-list
 		  { nate.codeEndIf(); }
 	  END
@@ -571,7 +579,7 @@ else:
 
 if-is:
     IS 
-	  	{ nate.codeIfIs(ifExpr); }
+	  	{ nate.codeIfIs(ifExpr.top(), ifId.top()); }
     is-rest
     is-else
 	  	{ nate.codeEndIfIs(); }
@@ -593,7 +601,7 @@ is-block:
   
 is-part:
     expr COL
-	  	{ nate.codeIs($expr, ifExpr); }
+	  	{ nate.codeIs($expr, ifExpr.top()); }
     is-part-block
   ;
 
