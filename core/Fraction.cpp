@@ -248,7 +248,8 @@ Fraction Fraction::operator+(const Fraction& aFraction) const
 		else
 		{
 			Fraction temp(aFraction);
-			preventOverflow(result, temp);
+			preventOverflow(result.mDenominator, temp.mDenominator, 0, result, temp.mNumerator);
+			preventOverflow(result.mDenominator, temp.mDenominator, 0, temp, result.mNumerator);
 			result.mNumerator = result.mNumerator * temp.mDenominator +
 													temp.mNumerator * result.mDenominator;
 			result.mDenominator *= temp.mDenominator;
@@ -295,7 +296,8 @@ Fraction Fraction::operator-(const Fraction& aFraction) const
 			else
 			{
 				Fraction temp(aFraction);
-				preventOverflow(result, temp);
+				preventOverflow(result.mDenominator, temp.mDenominator, 0, result, temp.mNumerator);
+				preventOverflow(result.mDenominator, temp.mDenominator, 0, temp, result.mNumerator);
 				result.mNumerator = result.mNumerator * temp.mDenominator -
 														temp.mNumerator * result.mDenominator;
 				result.mDenominator *= temp.mDenominator;
@@ -312,6 +314,30 @@ Fraction Fraction::operator-(const Fraction& aFraction) const
 	return result;
 }
 
+Fraction Fraction::operator*(const Fraction& aFraction) const
+{
+	Fraction result = *this;
+	Fraction temp = aFraction;
+	
+	preventOverflow(result.mWhole, result.mDenominator, result.mNumerator, result, 0);
+	result.mNumerator += result.mWhole * result.mDenominator;
+	result.mWhole = 0;
+	preventOverflow(temp.mWhole, temp.mDenominator, temp.mNumerator, temp, 0);
+	temp.mNumerator += temp.mWhole * temp.mDenominator;
+	temp.mWhole = 0;
+
+	result.mNegative = (result.mNegative != temp.mNegative);
+	preventOverflow(result.mNumerator, temp.mNumerator, 0, result, temp.mNumerator);
+	preventOverflow(result.mNumerator, temp.mNumerator, 0, temp, result.mNumerator);
+	result.mNumerator *= temp.mNumerator;
+	preventOverflow(result.mDenominator, temp.mDenominator, 0, result, 0);
+	result.mDenominator *= temp.mDenominator;
+
+	result.simplify();
+
+	return result;
+}
+
 Fraction operator+(int32_t aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) + aFraction;
@@ -322,6 +348,11 @@ Fraction operator-(int32_t aValue, const Fraction& aFraction)
 	return Fraction(aValue) - aFraction;
 }
 
+Fraction operator*(int32_t aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) * aFraction;
+}
+
 Fraction operator+(double aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) + aFraction;
@@ -330,6 +361,11 @@ Fraction operator+(double aValue, const Fraction& aFraction)
 Fraction operator-(double aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) - aFraction;
+}
+
+Fraction operator*(double aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) * aFraction;
 }
 
 void Fraction::simplify()
@@ -367,21 +403,16 @@ void Fraction::simplify()
 	//std::cerr << *this << "(" << mWhole << " " << mNumerator << " " << mDenominator << ") " << std::endl;
 }
 
-void Fraction::preventOverflow(Fraction& aFrac1, Fraction& aFrac2)
+void Fraction::preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
+														 	 Fraction& aFrac,
+														 	 int32_t aNum2)
 {
 	int64_t val;
-	while ((val = static_cast<int64_t>(aFrac1.mDenominator) * aFrac2.mDenominator) > std::numeric_limits<int32_t>::max())
+	while ((val = static_cast<int64_t>(aMul1) * aMul2 + aSum) > std::numeric_limits<int32_t>::max() &&
+				 (aFrac.mNumerator > 1000 || aNum2 < 1000))
 	{
-		if (aFrac1.mNumerator > 1000 || aFrac2.mNumerator < 1000)
-		{
-			aFrac1.mNumerator /= 10;
-			aFrac1.mDenominator /= 10;
-		}
-		if (aFrac2.mNumerator > 1000 || aFrac1.mNumerator < 1000)
-		{
-			aFrac2.mNumerator /= 10;
-			aFrac2.mDenominator /= 10;
-		}
+		aFrac.mNumerator /= 2;
+		aFrac.mDenominator /= 2;
 	}
 }
 

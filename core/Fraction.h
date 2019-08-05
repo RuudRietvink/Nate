@@ -32,15 +32,20 @@ public:
 	Fraction operator-() const;
 	Fraction operator+(const Fraction& aFraction) const;
 	Fraction operator-(const Fraction& aFraction) const;
+	Fraction operator*(const Fraction& aFraction) const;
 
 	friend Fraction operator+(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator-(int32_t aValue, const Fraction& aFraction);
+	friend Fraction operator*(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator+(double aValue, const Fraction& aFraction);
 	friend Fraction operator-(double aValue, const Fraction& aFraction);
+	friend Fraction operator*(double aValue, const Fraction& aFraction);
 
 private:
 	void simplify();
-	static void preventOverflow(Fraction& aFrac1, Fraction& aFrac2);
+	static void preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
+														 	Fraction& aFrac,
+														 	int32_t aNum2);
 
 	int32_t mWhole       = 0;
 	int32_t mNumerator   = 0;
