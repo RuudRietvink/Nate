@@ -10,6 +10,7 @@
 #include <cctype>
 #include <vector>
 #include <iostream>
+#include <iterator>
 
 namespace
 {
@@ -233,6 +234,32 @@ bool Core::numberFrom(const std::string& aString,
 {
 	auto iter = cbegin(aString);
 	return numberFrom(iter, cend(aString), aDigits, aNumber);
+}
+
+namespace
+{
+	void toString(std::back_insert_iterator<std::string>& aIter,
+								int32_t aNumber,
+								const std::string& aDigits)
+	{
+
+		if (aNumber > 0)
+		{
+			auto digIter = aDigits.cbegin();
+			utf8::advance(digIter, aNumber % 10, aDigits.cend());
+			toString(aIter, aNumber / 10, aDigits);
+			utf8::append(utf8::next(digIter, aDigits.cend()), aIter);
+		}
+	}
+}
+
+std::string Core::toString(int32_t aNumber,
+												   const std::string& aDigits)
+{
+	std::string result;
+	auto back = std::back_inserter(result);
+	::toString(back, aNumber, aDigits);
+	return result;
 }
 
 std::string Core::unSuperscript(const std::string& aString)

@@ -39,6 +39,9 @@ public:
 	static bool numberFrom(const std::string& aString,
 												 const std::string& aDigits,
 												 int32_t& aNumber);
+	static std::string toString(int32_t aNumber,
+												      const std::string& aDigits);
+
 	static std::string unSuperscript(const std::string& aString);
 	static std::string toString(utf8::iterator<std::string::const_iterator> aIter);
 	static std::string toString(const utf8::iterator<std::string::const_iterator>& aIter,
