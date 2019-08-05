@@ -40,6 +40,7 @@
 %token EOF 0 "end of file"
 %token BEGIN "begin block"
 %token END "end block"
+%token ALIAS "alias"
 %token IMPORT "import"
 %token PROGRAM "program"
 %token SCOPE "scope"
@@ -100,6 +101,7 @@ prog-statement-list:
 
 prog-statement:
 	  import
+  | alias
   | program
   | code
   | define
@@ -108,6 +110,11 @@ prog-statement:
   | EOS
   ;
   
+alias:
+    ALIAS STRING[STR1] STRING[STR2]
+      { nate.addAlias(unquote($STR1), unquote($STR2)); }
+  ;
+
 import:
     IMPORT WORD
       { nate.import($WORD); }
@@ -187,7 +194,7 @@ code-start:
     STRING
     NUMBER 
 		  { 
-        nate.curCode().setName($STRING.substr(1, $STRING.size() - 2));
+        nate.curCode().setName(unquote($STRING));
 			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 		  }
   ;
@@ -769,16 +776,17 @@ expr-non-word:
 		  }
   | id
 		  { 
-        auto identifier = nate.getOrFakeIdentifier($id);
+        auto value = nate.alias($id);
+        auto identifier = nate.getOrFakeIdentifier(value);
         if (!lexer.spaceBeen)
         {
-          //std::cerr << "monomial " << $id << std::endl;
+          //std::cerr << "monomial " << value << std::endl;
           $$ = Expr(ExprNode("monomial"));
-			    $$.addNode(ExprNode($id, nate.codeId($id), identifier->type()));
+			    $$.addNode(ExprNode(value, nate.codeId(value), identifier->type()));
         }
         else
         {
-			    $$ = Expr(ExprNode($id, nate.codeId($id), identifier->type()));
+			    $$ = Expr(ExprNode(value, nate.codeId(value), identifier->type()));
 			    $$.node().setFlag(ExprNode::Output, !identifier->is(Identifier::Const));
           //std::cerr << "spacebeen " << $$ << std::endl;
         }

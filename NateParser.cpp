@@ -12,8 +12,6 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	mParser(new yy::parser(*mLexer, *this)),
 	mOut(aOut)
 {
-	initAliases();
-
 	mLexer->nate = this;
 	mLexer->filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
 	  
@@ -57,16 +55,10 @@ void NateParser::import(const std::string& aName)
 	mLexer->includeFile(library + aName + ".ns");
 }
 
-void NateParser::initAliases()
+void NateParser::addAlias(const std::string& aName, const std::string& aValue)
 {
-	mAliases.insert(std::make_pair("√", "sqrt"));
-	mAliases.insert(std::make_pair("÷", "/"));
-	mAliases.insert(std::make_pair("×", "*"));
-	mAliases.insert(std::make_pair("⋅", "*"));
-	mAliases.insert(std::make_pair("π", "pi"));
-	mAliases.insert(std::make_pair("τ", "tau"));
+	mAliases.insert(std::make_pair(aName, aValue));
 }
-
 
 std::string NateParser::uniqueName() const
 {
@@ -685,11 +677,11 @@ void NateParser::codeOutput(const std::string& aString)
 	}
 	else if (!mCachedOutput.empty())
 	{
-		mCachedOutput += aString.substr(1, aString.size() - 2);
+		mCachedOutput += unquote(aString);
 	}
 	else if (aString[0] == '"')
 	{
-		mCachedOutput = aString.substr(1, aString.size() - 2);
+		mCachedOutput = unquote(aString);
 	}
 	else
 	{

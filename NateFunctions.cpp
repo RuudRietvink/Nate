@@ -5,6 +5,11 @@
 #include <sstream>
 #include <iomanip>
 
+std::string unquote(const std::string& aString)
+{
+	return aString.substr(1, aString.size() - 2);
+}
+
 std::string toCodeName(const std::string& aName)
 {
 	std::stringstream buf;

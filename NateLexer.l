@@ -335,6 +335,7 @@ include\h*\".*\"  s(); includeFile();
 \bprogram\b		return yy::parser::make_PROGRAM(location());
 \bscope\b	  	return yy::parser::make_SCOPE(location());
 \bimport\b		return yy::parser::make_IMPORT(location());
+\balias\b 		return yy::parser::make_ALIAS(location());
 \bvariable\b  |
 \bvar\b			  return yy::parser::make_VAR(location());
 \bconstant\b  |

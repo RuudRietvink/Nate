@@ -31,6 +31,7 @@ public:
 	std::string in(int aOffset = 0) const;
 	int parse();
 	void import(const std::string& aName);
+	void addAlias(const std::string& aName, const std::string& aValue);
 	std::string alias(const std::string& aString);
 	bool isLeftMonomial(const std::string& aWord) const;
 	bool isCode(const std::string& aWord) const;
@@ -134,7 +135,6 @@ private:
 	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
-	void initAliases();
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
