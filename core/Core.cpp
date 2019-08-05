@@ -26,6 +26,14 @@ namespace
 	}
 }
 
+std::string Core::parseNumber(const std::string& aString)
+{
+	std::string result = replaceAll(aString, "⏨", "E");
+	result = replaceAll(result, "*^", "E");
+	result = replaceAll(result, "ю", "E");
+	return result;
+}
+
 std::wstring Core::u16(const std::string& str)
 {
 	std::wstring convertedString;

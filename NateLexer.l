@@ -216,7 +216,7 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-number          [0-9]+(\.[0-9]+)?([E][-+]?[0-9]+)?
+number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
 fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
@@ -311,7 +311,7 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 {word}	  		return yy::parser::make_WORD(str(), location());
-{number}			return yy::parser::make_NUMBER(str(), location());
+{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 }
 
@@ -358,7 +358,7 @@ include\h*\".*\"  s(); includeFile();
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
-{number}			return yy::parser::make_NUMBER(str(), location());
+{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {fraction}	  return yy::parser::make_FRACTION(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
