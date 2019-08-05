@@ -13,9 +13,36 @@ int main()
 	//return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
 
 	Fraction frac1("23⅛");
-	Fraction frac2("⅛");
-	Fraction frac3("-5⁷⁸/₆₇");
-	Fraction frac4("-²³/₁₂");
+	int frac2(-42);
+	float frac3(-34.56f);
+	Fraction frac4(frac1);
 
-	std::cerr << frac1 << " " << frac2 << " " << frac3 << " " << frac4 << std::endl;
+	std::cerr << frac1 << " " << frac2 << " " << Fraction(frac3) << " " << frac3 << " " << frac4 << std::endl;
+	std::cerr << frac1 << "==" << frac2 << "=" << (frac1 == frac2) << std::endl;
+	std::cerr << frac1 << "==" << frac3 << "=" << (frac1 == frac3) << std::endl;
+	std::cerr << frac1 << "==" << frac4 << "=" << (frac1 == frac4) << std::endl;
+	std::cerr << frac1 << "!=" << frac2 << "=" << (frac1 != frac2) << std::endl;
+	std::cerr << frac1 << "!=" << frac3 << "=" << (frac1 != frac3) << std::endl;
+	std::cerr << frac1 << "!=" << frac4 << "=" << (frac1 != frac4) << std::endl;
+	std::cerr << frac1 << "<" << frac2 << "=" << (frac1 < frac2) << std::endl;
+	std::cerr << frac1 << "<" << frac3 << "=" << (frac1 < frac3) << std::endl;
+	std::cerr << frac1 << "<" << frac4 << "=" << (frac1 < frac4) << std::endl;
+	std::cerr << frac1 << ">" << frac2 << "=" << (frac1 > frac2) << std::endl;
+	std::cerr << frac1 << ">" << frac3 << "=" << (frac1 > frac3) << std::endl;
+	std::cerr << frac1 << ">" << frac4 << "=" << (frac1 > frac4) << std::endl;
+	std::cerr << frac1 << "<=" << frac2 << "=" << (frac1 <= frac2) << std::endl;
+	std::cerr << frac1 << "<=" << frac3 << "=" << (frac1 <= frac3) << std::endl;
+	std::cerr << frac1 << "<=" << frac4 << "=" << (frac1 <= frac4) << std::endl;
+	std::cerr << frac1 << ">=" << frac2 << "=" << (frac1 >= frac2) << std::endl;
+	std::cerr << frac1 << ">=" << frac3 << "=" << (frac1 >= frac3) << std::endl;
+	std::cerr << frac1 << ">=" << frac4 << "=" << (frac1 >= frac4) << std::endl;
+	std::cerr << frac1 << "+" << frac2 << "=" << frac1 + frac2 << std::endl;
+	std::cerr << frac1 << "+" << frac3 << "=" << frac1 + frac3 << std::endl;
+	std::cerr << frac1 << "+" << frac4 << "=" << frac1 + frac4 << std::endl;
+	std::cerr << frac1 << "-" << frac2 << "=" << frac1 - frac2 << std::endl;
+	std::cerr << frac1 << "-" << frac3 << "=" << frac1 - frac3 << std::endl;
+	std::cerr << frac1 << "-" << frac4 << "=" << frac1 - frac4 << std::endl;
+	std::cerr << frac2 << "-" << frac1 << "=" << frac2 - frac1 << std::endl;
+	std::cerr << frac3 << "-" << frac1 << "=" << frac3 - frac1 << std::endl;
+	std::cerr << frac4 << "-" << frac1 << "=" << frac4 - frac1 << std::endl;
 }
