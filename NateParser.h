@@ -143,7 +143,7 @@ private:
 	std::list<Define>           mDefines;
 	std::list<int>              mLoopWhileCounts;
 	int				                  mErrors = 0;
-	std::ostream&               mOut;
+	std::ostream*               mOut;
 	std::string                 mCachedOutput;
 	std::string                 mStream;
 	std::map<std::string, std::string> mAliases;
@@ -154,7 +154,10 @@ private:
 		bool isFirst = true;
 		bool isFirstTest = true;
 		bool nextElse = false;
+		bool nextCase = false;
 		std::string idName;
+		std::shared_ptr<std::ostringstream> out;
+		std::ostream* savedOut = nullptr;
 	};
 	std::stack<IfIs> mIfIs;
 
