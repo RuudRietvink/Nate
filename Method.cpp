@@ -50,10 +50,6 @@ void Method::setReturnFlag(const std::string& aFlag)
 	{
 		setFlag(RightLeft);
 	}
-	else if (aFlag == "unary")
-	{
-		setFlag(Unary);
-	}
 	else if (aFlag == "const")
 	{
 		setFlag(ConstExpr);
@@ -211,7 +207,9 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 				nodeCode = node.code();
 			}
 
-			std::string code = (arg.is(Arg::Prop) || node.is(ExprNode::Literal))
+			std::string code = (arg.is(Arg::Prop) || 
+													arg.is(Arg::Out) ||
+													node.is(ExprNode::Literal))
 													? nodeCode 
 													: "(" + nodeCode + ")";
 			resultCode = Core::replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
@@ -390,7 +388,6 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::None)) aStream << ",None";
 	if (aValue.is(Method::RightLeft)) aStream << ",RightLeft";
 	if (aValue.is(Method::Last)) aStream << ",Last";
-	if (aValue.is(Method::Unary)) aStream << ",Unary";
 
 	aStream << ")";
 	return aStream;

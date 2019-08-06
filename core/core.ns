@@ -5,18 +5,20 @@
 
 alias "÷" "/"
 alias "×" "*"
+alias "⇑" "inc"
+alias "⇓" "dec"
 
 ///////////////////////////////////////////////
 // operators
 ///////////////////////////////////////////////
 	
-code 90 \u uminus ($val-1 is (num)) is (num,highest,const,unary):
+code 90 \u uminus ($val-1 is (num)) is (num,highest,const):
 	-$val-1
 	
-code 90 \u uplus ($val-1 is (num)) is (num,highest,const,unary):
+code 90 \u uplus ($val-1 is (num)) is (num,highest,const):
 	$val-1
 	
-code 90 \u not ($cond is boolean) is boolean (const,unary):
+code 90 \u not ($cond is boolean) is boolean (const):
 	!$cond
   
 code 80 ($val-1 is (num)) \u * ($val-2 is (num)) is (num,highest,const):
@@ -68,6 +70,18 @@ code 35 ($cond-1 is boolean) \u or ($cond-2 is boolean) is boolean (const):
 // face value
 ///////////////////////////////////////////////
 
+code 120 \u inc ($val is (num,out)) is (same):
+  ++$val
+  
+code 120 ($val is (num,out)) \u inc is (same):
+  $val++
+  
+code 120 \u dec ($val is (num,out)) is (same):
+  --$val
+  
+code 120 ($val is (num,out)) \u dec is (same):
+  $val--
+  
 code 65 \u decrease ($val-1 is (num,out)) \u with ($val-2 is (same)) is (same):
   $val-1 -= $val-2
   

@@ -27,25 +27,25 @@ constant e is float-64 := 2.718281828459045
 code 110 ($val-1 is (num)) \u ^ ($val-2 is (num)) is (num,highest,right):
 	std::pow($val-1, $val-2)
   
-code 110 \u \l sqrt ($val is (num)) is float-64 (unary):
+code 110 \u \l sqrt ($val is (num)) is float-64:
 	std::sqrt($val)
     
-code 110 \u round ($val is (num)) is int-64 (unary):
+code 110 \u round ($val is (num)) is int-64:
 	std::round($val)
   
-code 110 \u floor ($val is (num)) is int-64 (unary):
+code 110 \u floor ($val is (num)) is int-64:
 	std::floor($val)
   
 code 110 \u \l floor_l ($val is (num)) floor_r is int-64:
 	std::floor($val)
   
-code 110 \u ceil ($val is (num)) is int-64 (unary):
+code 110 \u ceil ($val is (num)) is int-64:
 	std::ceil($val)
   
 code 110 \u \l ceil_l ($val is (num)) ceil_r is int-64:
 	std::ceil($val)
   
-code 110 \u abs ($val is (num)) is int-64 (unary):
+code 110 \u abs ($val is (num)) is int-64:
 	std::abs($val)
   
 code 110 \u \l abs_l ($val is (num)) abs_r is int-64:

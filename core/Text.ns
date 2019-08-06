@@ -3,13 +3,13 @@
 // Text
 ///////////////////////////////////////////////
 
-code 150 \u uppercased ($val is text) is text (unary):
+code 150 \u uppercased ($val is text) is text:
   Core::upperCased($val)
 
-code 150 first \u of ($val is text) is text (unary):
+code 150 first \u of ($val is text) is text:
   Core::firstOf($val)
 
-code 150 rest \u of ($val is text) is text (unary):
+code 150 rest \u of ($val is text) is text:
   Core::restOf($val)
   
 code 150 ($val-1 is (any)) \u @ ($val-2 is text) is text:
