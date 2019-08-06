@@ -310,7 +310,7 @@ include\h*\".*\"  s(); includeFile();
 ","					  return yy::parser::make_COMMA(location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
-{word}	  		return yy::parser::make_WORD(str(), location());
+[\\]?{word}		return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 }

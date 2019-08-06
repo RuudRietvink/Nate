@@ -36,6 +36,11 @@ void Expr::addNode(const ExprNode& aNode)
 	mNodes.push_back(aNode);
 }
 
+void Expr::insertNode(const ExprNode& aNode)
+{
+	mNodes.insert(mNodes.begin(), aNode);
+}
+
 void Expr::addNodes(const ExprNodesCIter& aNodeBegin, const ExprNodesCIter& aNodeEnd)
 {
 	for (auto iter = aNodeBegin; iter != aNodeEnd; ++iter)

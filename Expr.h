@@ -15,6 +15,7 @@ public:
 	Expr(const Expr& aExpr1, const Expr& aExpr2);
 	virtual ~Expr() = default;
 	void addNode(const ExprNode& aNode);
+	void insertNode(const ExprNode& aNode);
 	void addNodes(const ExprNodesCIter& aNodeBegin, const ExprNodesCIter& aNodeEnd);
 
 	std::string        text()       const;

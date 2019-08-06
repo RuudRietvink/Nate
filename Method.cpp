@@ -50,10 +50,6 @@ void Method::setReturnFlag(const std::string& aFlag)
 	{
 		setFlag(RightLeft);
 	}
-	else if (aFlag == "left-monomial")
-	{
-		setFlag(LeftMonomial);
-	}
 	else if (aFlag == "unary")
 	{
 		setFlag(Unary);
@@ -394,7 +390,6 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::None)) aStream << ",None";
 	if (aValue.is(Method::RightLeft)) aStream << ",RightLeft";
 	if (aValue.is(Method::Last)) aStream << ",Last";
-	if (aValue.is(Method::LeftMonomial)) aStream << ",LeftMonomial";
 	if (aValue.is(Method::Unary)) aStream << ",Unary";
 
 	aStream << ")";

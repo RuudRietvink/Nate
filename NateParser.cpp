@@ -60,6 +60,26 @@ void NateParser::addAlias(const std::string& aName, const std::string& aValue)
 	mAliases.insert(std::make_pair(aName, aValue));
 }
 
+void NateParser::addLeftMonomial(const std::string& aWord)
+{
+	mLeftMonomial.insert(aWord);
+}
+
+bool NateParser::isLeftMonomial(const std::string& aWord) const
+{
+	return mLeftMonomial.find(aWord) != mLeftMonomial.cend();
+}
+
+void NateParser::addWantsUnary(const std::string& aWord)
+{
+	mWantsUnary.insert(aWord);
+}
+
+bool NateParser::wantsUnary(const std::string& aWord) const
+{
+	return mWantsUnary.find(aWord) != mWantsUnary.cend();
+}
+
 std::string NateParser::uniqueName() const
 {
 	static int count = 0;
@@ -101,6 +121,7 @@ void NateParser::addCode()
 	pushScope("code");
 	mCodes.emplace_back();
 	mMethodType = MethodType::Code;
+	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 }
 
 void NateParser::endCode()
@@ -116,6 +137,7 @@ void NateParser::addDefine()
 	pushScope("define");
 	mDefines.emplace_back();
 	mMethodType = MethodType::Define;
+	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 }
 
 void NateParser::declareDefine()
@@ -132,6 +154,36 @@ void NateParser::endDefine()
 }
 
 Define& NateParser::curDefine() { return mDefines.back(); }
+
+void NateParser::addArgWord(const std::string& aWord)
+{
+	if (aWord == "\\u")
+	{
+		mSpecialWord |= static_cast<int32_t>(SpecialWord::WantsUnary);
+	}
+	else if (aWord == "\\a")
+	{
+		mSpecialWord |= static_cast<int32_t>(SpecialWord::IsAlias);
+	}
+	else if (aWord == "\\l")
+	{
+		mSpecialWord |= static_cast<int32_t>(SpecialWord::LeftMonomial);
+	}
+	else
+	{
+		if (mSpecialWord & static_cast<int32_t>(SpecialWord::WantsUnary))
+		{
+			addWantsUnary(aWord);
+		}
+		if (mSpecialWord & static_cast<int32_t>(SpecialWord::LeftMonomial))
+		{
+			addLeftMonomial(aWord);
+		}
+
+		curMethod().addArgWord(aWord);
+		mSpecialWord = static_cast<int32_t>(SpecialWord::None);
+	}
+}
 
 void NateParser::error(const std::string& anError)
 {
@@ -450,27 +502,6 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	}
 	//std::cerr << result << std::endl;
 	return result;
-}
-
-bool NateParser::isLeftMonomial(const std::string& aWord) const
-{
-	return std::find_if(mCodes.cbegin(), mCodes.cend(), 
-											[&aWord](const Code& aItem) 
-											{ 
-												return aItem.is(Method::LeftMonomial) &&
-														    aItem.args().front().word() == aWord;
-											}) 
-							!= mCodes.cend();
-}
-
-bool NateParser::isCode(const std::string& aWord) const
-{
-	return std::find_if(mCodes.cbegin(), mCodes.cend(), 
-											[&aWord](const Code& aItem) 
-											{ 
-												return aItem.name() == aWord;
-											}) 
-							!= mCodes.cend();
 }
 
 void NateParser::codeStartProgram()

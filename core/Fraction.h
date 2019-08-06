@@ -19,6 +19,7 @@ public:
 	int32_t round() const;
 	int32_t floor() const;
 	int32_t ceil() const;
+	Fraction abs() const;
 	
 	double toDouble() const;
 	bool convertFromString(const std::string& aString);
@@ -74,4 +75,5 @@ namespace std {
 	int32_t round(const Fraction& aFraction);
 	int32_t floor(const Fraction& aFraction);
 	int32_t ceil(const Fraction& aFraction);
+	Fraction abs(const Fraction& aFraction);
 }

@@ -9,9 +9,6 @@
 Code::Code()
 {}
 
-void Code::setName(const std::string& aName) { mName = aName; }
-const std::string Code::name() const { return mName; }
-
 void Code::addCodeStatWord(const std::string& aWord)
 {
 	code() += aWord;

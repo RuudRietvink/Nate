@@ -6,12 +6,13 @@
 
 int main()
 {
-	//std::string filename("d:\\nate.in");
-	//std::ifstream in(filename);
-	//std::ofstream out("C:\\Users\\ruud\\source\\repos\\Out\\Out.cpp");
-	//NateParser nate(filename, in, out);
-	//return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
+	std::string filename("d:\\nate.in");
+	std::ifstream in(filename);
+	std::ofstream out("C:\\Users\\ruud\\source\\repos\\Out\\Out.cpp");
+	NateParser nate(filename, in, out);
+	return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
 
+	/*
 	std::vector<Fraction> fracs = {
 		Fraction("123⅛"),
 		Fraction(-42),
@@ -22,12 +23,6 @@ int main()
 		Fraction(13, 7, 10),
 	};
 	
-	for (auto f : { 2.0, 2.4, 2.5, 2.6 })
-	{
-		std::cerr << "ceil " << f << " " << std::ceil(f) << " " << std::ceil(-f) << std::endl;
-		std::cerr << "floor " << f << " " << std::floor(f) << " " << std::floor(-f) << std::endl;
-	}
-
 	for (auto f1 : fracs)
 	{
 		std::cerr << "-------------------" << std::endl;
@@ -35,6 +30,7 @@ int main()
 		std::cerr << "round " << f1 << "=" << f1.round() << " " << (-f1).round() << std::endl;
 		std::cerr << "floor " << f1 << "=" << f1.floor() << " " << (-f1).floor() << std::endl;
 		std::cerr << "ceil  " << f1 << "=" << std::ceil(f1)  << " " << (-f1).ceil()  << std::endl;
+		std::cerr << "abs  " << f1 << "=" << std::abs(f1)  << " " << (-f1).abs()  << std::endl;
 
 		//for (auto f2 : fracs)
 		//{
@@ -51,4 +47,5 @@ int main()
 		//	std::cerr << f1 << "%"  << f2 << "=" << (f1 % f2) << std::endl;
 		//}
 	}
+		*/
 }

@@ -191,10 +191,8 @@ code:
   ;
 
 code-start:
-    STRING
     NUMBER 
 		  { 
-        nate.curCode().setName(unquote($STRING));
 			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
 		  }
   ;
@@ -219,7 +217,7 @@ arg-list:
 
 arg:
     WORD
-		  { nate.curMethod().addArgWord($WORD); }
+		  { nate.addArgWord($WORD); }
   | OPENPAR inout arg-id[id] IS type 
 		  { 
 			  auto id = std::make_shared<Identifier>(nate.curScope(), $id, nate.determineType($type));
@@ -765,6 +763,7 @@ expr-non-word:
 			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
+        lexer.noSpace();
         prevWasValue = true;
 		  }
   | BOOL
@@ -772,13 +771,15 @@ expr-non-word:
 			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.determineType("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
+        lexer.noSpace();
         prevWasValue = true;
 		  }
   | id
 		  { 
         auto value = nate.alias($id);
         auto identifier = nate.getOrFakeIdentifier(value);
-        if (!lexer.spaceBeen)
+
+        if (!lexer.spaceBeen && prevWasValue)
         {
           //std::cerr << "monomial " << value << std::endl;
           $$ = Expr(ExprNode("monomial"));
@@ -791,6 +792,7 @@ expr-non-word:
           //std::cerr << "spacebeen " << $$ << std::endl;
         }
         prevWasValue = true;
+        lexer.noSpace();
         $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
 		  } 
   | OPENPAR 
@@ -837,7 +839,7 @@ expr-word:
         }
         else
         {        
-          if (!nate.isLeftMonomial(value) || lexer.spaceBeen)
+          if (!nate.isLeftMonomial(value) || lexer.spaceBeen || !prevWasValue)
           {
             lexer.space();
             $$ = Expr(value);
@@ -849,7 +851,8 @@ expr-word:
 			      $$.addNode(ExprNode(value));
           }
 
-          prevWasValue = !nate.isCode(value);
+          prevWasValue = !nate.wantsUnary(value);
+          lexer.noSpace();
         }
       }
   ;

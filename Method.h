@@ -51,9 +51,8 @@ public:
 	static const size_t RightLeft    = 4;
 	static const size_t None         = 5;
 	static const size_t Last         = 6;
-	static const size_t LeftMonomial = 7;
-	static const size_t Unary        = 8;
-	static const size_t ConstExpr    = 9;
+	static const size_t Unary        = 7;
+	static const size_t ConstExpr    = 8;
   
 private:
 	std::string          mCode;

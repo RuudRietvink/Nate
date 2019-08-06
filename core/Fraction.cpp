@@ -71,6 +71,11 @@ namespace std
 	{
 		return aFraction.ceil();
 	}
+
+	Fraction abs(const Fraction& aFraction)
+	{
+		return aFraction.abs();
+	}
 }
 
 Fraction::Fraction()
@@ -205,6 +210,13 @@ int32_t Fraction::floor() const
 int32_t Fraction::ceil() const
 {
 	return signIt(mWhole) + std::ceil(static_cast<float>(signIt(mNumerator)) / mDenominator); 
+}
+
+Fraction Fraction::abs() const
+{
+	Fraction result = *this;
+	result.mNegative = false;
+	return result;
 }
 
 Fraction& Fraction::operator=(const Fraction& aFraction)

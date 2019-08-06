@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <stack>
+#include <set>
 #include <limits>
 #include <fstream>
 #include <memory>
@@ -32,9 +33,11 @@ public:
 	int parse();
 	void import(const std::string& aName);
 	void addAlias(const std::string& aName, const std::string& aValue);
-	std::string alias(const std::string& aString);
+	std::string alias(const std::string& aString);;
+	void addLeftMonomial(const std::string& aWord);
 	bool isLeftMonomial(const std::string& aWord) const;
-	bool isCode(const std::string& aWord) const;
+	void addWantsUnary(const std::string& aWord);
+	bool wantsUnary(const std::string& aWord) const;
 
 	void pushScope(const std::string& aName);
 	void pushScope(const ScopePtr& aScope);
@@ -58,6 +61,7 @@ public:
 	void endDefine();
 	Define& curDefine();
 	Method& curMethod();
+	void addArgWord(const std::string& aWord);
 
 	void codeStartProgram();
 	void codeEndProgram();
@@ -142,6 +146,8 @@ private:
 	std::list<Code>             mCodes;
 	std::list<Define>           mDefines;
 	std::list<int>              mLoopWhileCounts;
+	std::set<std::string>       mWantsUnary;
+	std::set<std::string>       mLeftMonomial;
 	int				                  mErrors = 0;
 	std::ostream*               mOut;
 	std::string                 mCachedOutput;
@@ -169,6 +175,16 @@ private:
 	};
 
   MethodType                  mMethodType = MethodType::Define;
+
+	enum class SpecialWord
+	{
+		None					= 0x0,
+		WantsUnary		= 0x01,
+		IsAlias				= 0x02,
+		LeftMonomial	= 0x04,
+	};
+
+	int32_t  			          	  mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 };
 
 
