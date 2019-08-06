@@ -33,13 +33,16 @@ public:
 	Fraction operator+(const Fraction& aFraction) const;
 	Fraction operator-(const Fraction& aFraction) const;
 	Fraction operator*(const Fraction& aFraction) const;
+	Fraction operator/(const Fraction& aFraction) const;
 
 	friend Fraction operator+(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator-(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator*(int32_t aValue, const Fraction& aFraction);
+	friend Fraction operator/(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator+(double aValue, const Fraction& aFraction);
 	friend Fraction operator-(double aValue, const Fraction& aFraction);
 	friend Fraction operator*(double aValue, const Fraction& aFraction);
+	friend Fraction operator/(double aValue, const Fraction& aFraction);
 
 private:
 	void simplify();

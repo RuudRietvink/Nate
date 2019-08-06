@@ -48,4 +48,7 @@ int main()
 	std::cerr << frac1 << "*" << frac2 << "=" << frac1 * frac2 << std::endl;
 	std::cerr << frac1 << "*" << frac3 << "=" << frac1 * frac3 << std::endl;
 	std::cerr << frac1 << "*" << frac4 << "=" << frac1 * frac4 << std::endl;
+	std::cerr << frac1 << "/" << frac2 << "=" << frac1 / frac2 << std::endl;
+	std::cerr << frac1 << "/" << frac3 << "=" << frac1 / frac3 << std::endl;
+	std::cerr << frac1 << "/" << frac4 << "=" << frac1 / frac4 << std::endl;
 }

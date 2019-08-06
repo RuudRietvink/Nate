@@ -235,7 +235,6 @@ Fraction Fraction::operator-() const
 Fraction Fraction::operator+(const Fraction& aFraction) const
 {
 	Fraction result = *this;
-	//std::cerr << "+ " << *this << " " << aFraction << std::endl;
 
 	if (result.mNegative == aFraction.mNegative)
 	{
@@ -267,7 +266,6 @@ Fraction Fraction::operator+(const Fraction& aFraction) const
 
 Fraction Fraction::operator-(const Fraction& aFraction) const
 {
-	//std::cerr << "- " << *this << " " << aFraction << std::endl;
 	Fraction result = *this;
 
 	if (result.mNegative == aFraction.mNegative)
@@ -338,6 +336,21 @@ Fraction Fraction::operator*(const Fraction& aFraction) const
 	return result;
 }
 
+Fraction Fraction::operator/(const Fraction& aFraction) const
+{
+	Fraction result = *this;
+	Fraction temp = aFraction;
+	
+	preventOverflow(result.mWhole, result.mDenominator, result.mNumerator, result, 0);
+	result.mNumerator += result.mWhole * result.mDenominator;
+	result.mWhole = 0;
+	preventOverflow(temp.mWhole, temp.mDenominator, temp.mNumerator, temp, 0);
+	temp.mNumerator += temp.mWhole * temp.mDenominator;
+	temp.mWhole = 0;
+	std::swap(temp.mNumerator, temp.mDenominator);
+	return operator*(temp);
+}
+
 Fraction operator+(int32_t aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) + aFraction;
@@ -351,6 +364,11 @@ Fraction operator-(int32_t aValue, const Fraction& aFraction)
 Fraction operator*(int32_t aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) * aFraction;
+}
+
+Fraction operator/(int32_t aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) / aFraction;
 }
 
 Fraction operator+(double aValue, const Fraction& aFraction)
@@ -368,6 +386,11 @@ Fraction operator*(double aValue, const Fraction& aFraction)
 	return Fraction(aValue) * aFraction;
 }
 
+Fraction operator/(double aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) / aFraction;
+}
+
 void Fraction::simplify()
 {
 	//std::cerr << "simplify " << *this << "(" << mWhole << " " << mNumerator << " " << mDenominator << ") ";
@@ -383,7 +406,13 @@ void Fraction::simplify()
 		mWhole = -mWhole;
 	}
 
-	if (mNumerator > mDenominator)
+	if (mNumerator == mDenominator)
+	{
+		++mWhole;
+		mNumerator = 0;
+		mDenominator = 1;
+	}
+	else if (mNumerator > mDenominator)
 	{
 		int32_t whole = mNumerator / mDenominator;
 		mWhole += whole;
