@@ -12,9 +12,9 @@ int main()
 	//NateParser nate(filename, in, out);
 	//return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
 
-	Fraction frac1("23⅛");
+	Fraction frac1("123⅛");
 	int frac2(-42);
-	float frac3(-34.56f);
+	float frac3(34.56f);
 	Fraction frac4(frac1);
 
 	std::cerr << frac1 << " " << frac2 << " " << Fraction(frac3) << " " << frac3 << " " << frac4 << std::endl;
@@ -51,4 +51,7 @@ int main()
 	std::cerr << frac1 << "/" << frac2 << "=" << frac1 / frac2 << std::endl;
 	std::cerr << frac1 << "/" << frac3 << "=" << frac1 / frac3 << std::endl;
 	std::cerr << frac1 << "/" << frac4 << "=" << frac1 / frac4 << std::endl;
+	std::cerr << frac1 << "%" << frac2 << "=" << frac1 % frac2 << std::endl;
+	std::cerr << frac1 << "%" << frac3 << "=" << frac1 % frac3 << std::endl;
+	std::cerr << frac1 << "%" << frac4 << "=" << frac1 % frac4 << std::endl;
 }

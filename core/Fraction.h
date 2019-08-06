@@ -14,6 +14,8 @@ public:
 	Fraction(const Fraction& aFraction);
 	virtual ~Fraction() = default;
 
+	int32_t trunc() const;
+	
 	double toDouble() const;
 	bool convertFromString(const std::string& aString);
 	std::string toString() const;
@@ -34,21 +36,25 @@ public:
 	Fraction operator-(const Fraction& aFraction) const;
 	Fraction operator*(const Fraction& aFraction) const;
 	Fraction operator/(const Fraction& aFraction) const;
+	Fraction operator%(const Fraction& aFraction) const;
 
 	friend Fraction operator+(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator-(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator*(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator/(int32_t aValue, const Fraction& aFraction);
+	friend Fraction operator%(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator+(double aValue, const Fraction& aFraction);
 	friend Fraction operator-(double aValue, const Fraction& aFraction);
 	friend Fraction operator*(double aValue, const Fraction& aFraction);
 	friend Fraction operator/(double aValue, const Fraction& aFraction);
+	friend Fraction operator%(double aValue, const Fraction& aFraction);
 
 private:
 	void simplify();
 	static void preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
 														 	Fraction& aFrac,
 														 	int32_t aNum2);
+	int32_t signIt(int32_t aValue) const;
 
 	int32_t mWhole       = 0;
 	int32_t mNumerator   = 0;
@@ -57,3 +63,7 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Fraction& aFraction);
+
+namespace std {
+	int32_t trunc(const Fraction& aFraction);
+}

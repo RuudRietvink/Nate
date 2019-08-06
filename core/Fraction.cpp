@@ -10,7 +10,8 @@
 #include <iostream>
 #include <sstream>
 
-namespace {
+namespace
+{
 	static const std::string superDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	static const std::string subDigits = "₀₁₂₃₄₅₆₇₈₉";
 	static const std::string fractions = "⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞";
@@ -46,6 +47,14 @@ namespace {
 		}
 
 		return a;
+	}
+}
+
+namespace std
+{
+	int32_t trunc(const Fraction& aFraction)
+	{
+		return aFraction.trunc();
 	}
 }
 
@@ -137,6 +146,16 @@ bool Fraction::convertFromString(const std::string& aString)
 	}
 
 	return ok;
+}
+
+int32_t Fraction::signIt(int32_t aValue) const
+{
+	return mNegative ? -aValue : aValue;
+}
+
+int32_t Fraction::trunc() const
+{
+	return signIt(mWhole);
 }
 
 Fraction& Fraction::operator=(const Fraction& aFraction)
@@ -351,6 +370,16 @@ Fraction Fraction::operator/(const Fraction& aFraction) const
 	return operator*(temp);
 }
 
+Fraction Fraction::operator%(const Fraction& aFraction) const
+{
+	int32_t divisor = (*this / aFraction).trunc();
+	Fraction result = *this - (divisor * aFraction);
+
+	result.simplify();
+
+	return result;
+}
+
 Fraction operator+(int32_t aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) + aFraction;
@@ -371,6 +400,11 @@ Fraction operator/(int32_t aValue, const Fraction& aFraction)
 	return Fraction(aValue) / aFraction;
 }
 
+Fraction operator%(int32_t aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) % aFraction;
+}
+
 Fraction operator+(double aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) + aFraction;
@@ -389,6 +423,11 @@ Fraction operator*(double aValue, const Fraction& aFraction)
 Fraction operator/(double aValue, const Fraction& aFraction)
 {
 	return Fraction(aValue) / aFraction;
+}
+
+Fraction operator%(double aValue, const Fraction& aFraction)
+{
+	return Fraction(aValue) % aFraction;
 }
 
 void Fraction::simplify()
