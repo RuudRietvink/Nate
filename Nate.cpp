@@ -12,46 +12,43 @@ int main()
 	//NateParser nate(filename, in, out);
 	//return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
 
-	Fraction frac1("123⅛");
-	int frac2(-42);
-	float frac3(34.56f);
-	Fraction frac4(frac1);
+	std::vector<Fraction> fracs = {
+		Fraction("123⅛"),
+		Fraction(-42),
+		Fraction(34.56f),
+		Fraction(13, 0, 1),
+		Fraction(13, 4, 10),
+		Fraction(13, 5, 10),
+		Fraction(13, 7, 10),
+	};
+	
+	for (auto f : { 2.0, 2.4, 2.5, 2.6 })
+	{
+		std::cerr << "ceil " << f << " " << std::ceil(f) << " " << std::ceil(-f) << std::endl;
+		std::cerr << "floor " << f << " " << std::floor(f) << " " << std::floor(-f) << std::endl;
+	}
 
-	std::cerr << frac1 << " " << frac2 << " " << Fraction(frac3) << " " << frac3 << " " << frac4 << std::endl;
-	std::cerr << frac1 << "==" << frac2 << "=" << (frac1 == frac2) << std::endl;
-	std::cerr << frac1 << "==" << frac3 << "=" << (frac1 == frac3) << std::endl;
-	std::cerr << frac1 << "==" << frac4 << "=" << (frac1 == frac4) << std::endl;
-	std::cerr << frac1 << "!=" << frac2 << "=" << (frac1 != frac2) << std::endl;
-	std::cerr << frac1 << "!=" << frac3 << "=" << (frac1 != frac3) << std::endl;
-	std::cerr << frac1 << "!=" << frac4 << "=" << (frac1 != frac4) << std::endl;
-	std::cerr << frac1 << "<" << frac2 << "=" << (frac1 < frac2) << std::endl;
-	std::cerr << frac1 << "<" << frac3 << "=" << (frac1 < frac3) << std::endl;
-	std::cerr << frac1 << "<" << frac4 << "=" << (frac1 < frac4) << std::endl;
-	std::cerr << frac1 << ">" << frac2 << "=" << (frac1 > frac2) << std::endl;
-	std::cerr << frac1 << ">" << frac3 << "=" << (frac1 > frac3) << std::endl;
-	std::cerr << frac1 << ">" << frac4 << "=" << (frac1 > frac4) << std::endl;
-	std::cerr << frac1 << "<=" << frac2 << "=" << (frac1 <= frac2) << std::endl;
-	std::cerr << frac1 << "<=" << frac3 << "=" << (frac1 <= frac3) << std::endl;
-	std::cerr << frac1 << "<=" << frac4 << "=" << (frac1 <= frac4) << std::endl;
-	std::cerr << frac1 << ">=" << frac2 << "=" << (frac1 >= frac2) << std::endl;
-	std::cerr << frac1 << ">=" << frac3 << "=" << (frac1 >= frac3) << std::endl;
-	std::cerr << frac1 << ">=" << frac4 << "=" << (frac1 >= frac4) << std::endl;
-	std::cerr << frac1 << "+" << frac2 << "=" << frac1 + frac2 << std::endl;
-	std::cerr << frac1 << "+" << frac3 << "=" << frac1 + frac3 << std::endl;
-	std::cerr << frac1 << "+" << frac4 << "=" << frac1 + frac4 << std::endl;
-	std::cerr << frac1 << "-" << frac2 << "=" << frac1 - frac2 << std::endl;
-	std::cerr << frac1 << "-" << frac3 << "=" << frac1 - frac3 << std::endl;
-	std::cerr << frac1 << "-" << frac4 << "=" << frac1 - frac4 << std::endl;
-	std::cerr << frac2 << "-" << frac1 << "=" << frac2 - frac1 << std::endl;
-	std::cerr << frac3 << "-" << frac1 << "=" << frac3 - frac1 << std::endl;
-	std::cerr << frac4 << "-" << frac1 << "=" << frac4 - frac1 << std::endl;
-	std::cerr << frac1 << "*" << frac2 << "=" << frac1 * frac2 << std::endl;
-	std::cerr << frac1 << "*" << frac3 << "=" << frac1 * frac3 << std::endl;
-	std::cerr << frac1 << "*" << frac4 << "=" << frac1 * frac4 << std::endl;
-	std::cerr << frac1 << "/" << frac2 << "=" << frac1 / frac2 << std::endl;
-	std::cerr << frac1 << "/" << frac3 << "=" << frac1 / frac3 << std::endl;
-	std::cerr << frac1 << "/" << frac4 << "=" << frac1 / frac4 << std::endl;
-	std::cerr << frac1 << "%" << frac2 << "=" << frac1 % frac2 << std::endl;
-	std::cerr << frac1 << "%" << frac3 << "=" << frac1 % frac3 << std::endl;
-	std::cerr << frac1 << "%" << frac4 << "=" << frac1 % frac4 << std::endl;
+	for (auto f1 : fracs)
+	{
+		std::cerr << "-------------------" << std::endl;
+		std::cerr << "trunc " << f1 << "=" << f1.trunc() << " " << (-f1).trunc() << std::endl;
+		std::cerr << "round " << f1 << "=" << f1.round() << " " << (-f1).round() << std::endl;
+		std::cerr << "floor " << f1 << "=" << f1.floor() << " " << (-f1).floor() << std::endl;
+		std::cerr << "ceil  " << f1 << "=" << std::ceil(f1)  << " " << (-f1).ceil()  << std::endl;
+
+		//for (auto f2 : fracs)
+		//{
+		//	std::cerr << f1 << "==" << f2 << "=" << (f1 == f2) << std::endl;
+		//	std::cerr << f1 << "!=" << f2 << "=" << (f1 != f2) << std::endl;
+		//	std::cerr << f1 << "<"  << f2 << "=" << (f1 < f2) << std::endl;
+		//	std::cerr << f1 << ">"  << f2 << "=" << (f1 > f2) << std::endl;
+		//	std::cerr << f1 << "<="  << f2 << "=" << (f1 <= f2) << std::endl;
+		//	std::cerr << f1 << ">="  << f2 << "=" << (f1 >= f2) << std::endl;
+		//	std::cerr << f1 << "+"  << f2 << "=" << (f1 + f2) << std::endl;
+		//	std::cerr << f1 << "-"  << f2 << "=" << (f1 - f2) << std::endl;
+		//	std::cerr << f1 << "*"  << f2 << "=" << (f1 * f2) << std::endl;
+		//	std::cerr << f1 << "/"  << f2 << "=" << (f1 / f2) << std::endl;
+		//	std::cerr << f1 << "%"  << f2 << "=" << (f1 % f2) << std::endl;
+		//}
+	}
 }

@@ -56,10 +56,33 @@ namespace std
 	{
 		return aFraction.trunc();
 	}
+
+	int32_t round(const Fraction& aFraction)
+	{
+		return aFraction.round();
+	}
+
+	int32_t floor(const Fraction& aFraction)
+	{
+		return aFraction.floor();
+	}
+
+	int32_t ceil(const Fraction& aFraction)
+	{
+		return aFraction.ceil();
+	}
 }
 
 Fraction::Fraction()
 {
+}
+
+Fraction::Fraction(int32_t aWhole, int32_t aNumerator, int32_t aDenominator)
+{
+	getSign(aWhole);
+	mNumerator = aNumerator;
+	mDenominator = aDenominator;
+	simplify();
 }
 
 Fraction::Fraction(const std::string& aString)
@@ -145,7 +168,18 @@ bool Fraction::convertFromString(const std::string& aString)
 		}
 	}
 
+	if (ok)
+	{
+		simplify();
+	}
+
 	return ok;
+}
+
+void Fraction::getSign(int32_t aValue)
+{
+	mNegative = (aValue < 0);
+	mWhole = mNegative ? -aValue : aValue;
 }
 
 int32_t Fraction::signIt(int32_t aValue) const
@@ -156,6 +190,21 @@ int32_t Fraction::signIt(int32_t aValue) const
 int32_t Fraction::trunc() const
 {
 	return signIt(mWhole);
+}
+
+int32_t Fraction::round() const
+{
+	return signIt(mWhole + std::round(static_cast<float>(mNumerator) / mDenominator)); 
+}
+
+int32_t Fraction::floor() const
+{
+	return signIt(mWhole) + std::floor(static_cast<float>(signIt(mNumerator)) / mDenominator); 
+}
+
+int32_t Fraction::ceil() const
+{
+	return signIt(mWhole) + std::ceil(static_cast<float>(signIt(mNumerator)) / mDenominator); 
 }
 
 Fraction& Fraction::operator=(const Fraction& aFraction)
@@ -173,8 +222,7 @@ Fraction& Fraction::operator=(const Fraction& aFraction)
 
 Fraction& Fraction::operator=(int32_t aValue)
 {
-	mNegative = (aValue < 0);
-	mWhole = mNegative ? -aValue : aValue;
+	getSign(aValue);
 	mNumerator = 0;
 	mDenominator = 1;
 
@@ -183,10 +231,8 @@ Fraction& Fraction::operator=(int32_t aValue)
 
 Fraction& Fraction::operator=(double aValue)
 {
-	mNegative = (aValue < 0);
-	aValue = mNegative ? -aValue : aValue;
-
 	mWhole = static_cast<int32_t>(std::trunc(aValue));
+	getSign(mWhole);
 	mDenominator = 10000;
 	mNumerator = static_cast<int32_t>((aValue - mWhole) * mDenominator);
 	simplify();
