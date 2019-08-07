@@ -24,6 +24,7 @@ public:
 	bool isBiggerThan(const TypePtr& aType) const;
 	bool isCompatibleWith(const TypePtr& aType) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
+	bool isOfType(const std::string& aType) const;
 
 	const std::string& name() const;
 	std::string        codeType() const;
@@ -50,6 +51,7 @@ private:
 	std::string mCodeType;
 	int			    mBitSize = 4;
 	TypePtr	    mChildType;
+	TypePtr	    mBaseType;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);

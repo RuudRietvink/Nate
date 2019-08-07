@@ -52,8 +52,12 @@ std::string NateParser::in(int aOffset) const
 
 void NateParser::import(const std::string& aName)
 {
-  std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core\\";
-	mLexer->includeFile(library + aName + ".ns");
+	if (mImports.find(aName) == mImports.cend())
+	{
+		mImports.insert(aName);
+		std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core\\";
+		mLexer->includeFile(library + aName + ".ns");
+	}
 }
 
 void NateParser::addAlias(const std::string& aName, const std::string& aValue)
@@ -845,7 +849,7 @@ void NateParser::codeIfIs(const Expr& aValue, const std::string& idName)
 void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 {
 	auto ifIs = mIfIs.top();
-	if (!(aValue.type()->name() == aIfExpr.type()->name() ||
+	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
 				aValue.type()->is(Type::Float) == aIfExpr.type()->is(Type::Float)))
 	{
 		error("Expected expression with same type as in IF");

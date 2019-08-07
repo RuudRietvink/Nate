@@ -1,0 +1,12 @@
+
+///////////////////////////////////////////////
+// Container
+///////////////////////////////////////////////
+
+code 65 \u add ($val is (typename)) to ($container is container (template, out)),
+        \u append ($val is (typename)) to ($container is container (template, out)):
+  $container.push_back($val)
+  
+code 65 size \u of ($container is container),
+        ($container is container) 's size is int-32 (const):
+  static_cast<int32_t>($container.size())

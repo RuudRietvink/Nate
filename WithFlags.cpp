@@ -27,3 +27,13 @@ void WithFlags::setFlags(const Flags& aFlags)
 		setFlag(flag);
 	}
 }
+	
+void WithFlags::setFlags(const std::bitset<32>& aFlags)
+{
+	mFlags = aFlags;
+}
+
+const std::bitset<32>& WithFlags::getFlags() const
+{
+	return mFlags;
+}

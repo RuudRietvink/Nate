@@ -14,6 +14,10 @@ public:
 	void setFlag(size_t aFlag, bool aEnable);
 	void setFlags(const Flags& aFlags);
 
+protected:
+	void setFlags(const std::bitset<32>& aFlags);
+	const std::bitset<32>& getFlags() const;
+
 private:
 	std::bitset<32> mFlags;
 };

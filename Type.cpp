@@ -98,12 +98,20 @@ void Type::setType(const std::string& aType)
 		mCodeType = "struct";
 		mBitSize = 2000;
 	}
+	else if (aType == "container")
+	{
+		setFlag(Container, true);
+		setFlag(NeedsRef, true);
+		mCodeType = "";
+		mBitSize = 3000;
+	}
 	else if (aType == "list")
 	{
 		setFlag(Container, true);
-		setFlag(List, true);
 		setFlag(NeedsRef, true);
+		setFlag(List, true);
 		mCodeType = "std::list";
+		mBaseType = std::make_shared<Type>("container");
 		mBitSize = 3000;
 	}
 	else
@@ -112,6 +120,12 @@ void Type::setType(const std::string& aType)
 		mCodeType = "unknown";
 		mBitSize = 0;
 	}
+}
+
+bool Type::isOfType(const std::string& aType) const
+{
+	return mName == aType || 
+				 (mBaseType && mBaseType->isOfType(aType));
 }
 
 TypePtr Type::makeType(const std::string& aValue)
@@ -175,7 +189,7 @@ bool Type::isCompatibleWith(const TypePtr& aType) const
 	{
 		result = true;
 	}
-	else if (name() == aType->name())
+	else if (aType->isOfType(name()))
 	{
 		result = true;
 	}

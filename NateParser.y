@@ -29,6 +29,7 @@
   bool prevWasValue = false;
   std::stack<Expr> ifExpr;
   std::stack<std::string> ifId;
+	std::list<Code*> curParsedCodes;
 }
 
 %define api.token.prefix {TOK_}
@@ -176,10 +177,11 @@ code:
 	  CODE 
 		  { 
 			  nate.addCode();
+        curParsedCodes.push_back(&nate.curCode());
 			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
-	  arg-list call-return COL
+	  code-list call-return COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::CODE);
@@ -188,9 +190,34 @@ code:
 		  code-stat-list
 	  END
 		  { 
-			  lexer.popState(); 
+			  lexer.popState();
 			  nate.endCode();
+
+        for (auto code : curParsedCodes)
+        {
+          if (&nate.curCode() != code)
+          {
+            code->copyFrom(nate.curCode());
+          }
+        }
+
+        curParsedCodes.clear();
 		  }
+  ;
+
+code-list:
+    code-decl
+  | code-list COMMA 
+      {
+			  nate.endCode();
+			  nate.addCode();
+        curParsedCodes.push_back(&nate.curCode());
+      }
+    code-decl
+  ;
+
+code-decl:
+	  arg-list
   ;
 
 code-start:

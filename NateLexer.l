@@ -241,7 +241,7 @@ string          ["][^"]*[""]
                ++commentNested;                  // allow nesting /*-comments
 }
 
-<*,^COMMENT>{
+<*,^COMMENT,^ARGS>{
 ^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
 ^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
 \j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
@@ -313,6 +313,7 @@ include\h*\".*\"  s(); includeFile();
 [\\]?{word}		return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
+\h*\k?        // ignore
 }
 
 <CODE>{

@@ -11,6 +11,14 @@
 Method::Method()
 {}
 
+void Method::copyFrom(const Method& aMethod)
+{
+	mPriority = aMethod.mPriority;
+	mCode = aMethod.mCode;
+	mType = aMethod.mType;
+	setFlags(aMethod.getFlags());
+}
+
 const TypePtr&          Method::type()      const { return mType; }
 const std::string&      Method::signature() const { return mSignature; }
 const std::vector<Arg>& Method::args()      const { return mArgs; }
@@ -21,8 +29,8 @@ int                     Method::priority()  const { return mPriority; }
 const std::string&      Method::code()			const { return mCode; }
 std::string&            Method::code()						{ return mCode; }
 
-void Method::setType(const TypePtr& aType) { mType = aType; }
-void Method::setPriority(int aValue)       { mPriority = aValue; }
+void Method::setType(const TypePtr& aType)        { mType = aType; }
+void Method::setPriority(int aValue)              { mPriority = aValue; }
 
 void Method::setReturnFlag(const std::string& aFlag)
 {

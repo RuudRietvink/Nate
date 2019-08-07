@@ -3,5 +3,4 @@
 // List
 ///////////////////////////////////////////////
 
-code 65 \u append ($val is (typename)) to ($list is list (template, out)):
-  $list.push_back($val)
+import Container

@@ -153,6 +153,7 @@ private:
 	std::string                 mCachedOutput;
 	std::string                 mStream;
 	std::map<std::string, std::string> mAliases;
+	std::set<std::string>       mImports;
 
 	struct IfIs
 	{

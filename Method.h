@@ -27,24 +27,26 @@ public:
 	virtual std::string toCodeWord(const std::string& aWord) const;
 	virtual void endDecl();
 	
+	void copyFrom(const Method& aMethod);
+
 	using ArgVector        = std::vector<Arg>;
 	using ArgConstIterator = ArgVector::const_iterator;
 
 	int                 priority() const;
-	void                setPriority(int aValue);
   const TypePtr&      type() const;
-	void                setType(const TypePtr& aType);
 	const ArgVector&    args() const;
 	ArgVector&          args();
 	Arg&                curArg();
 	const std::string&	pattern() const;
 	const std::string&  signature() const;
-	void                setReturnFlag(const std::string& aFlag);
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
 	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
 		
-	const std::string&          code() const;
-	std::string&                code();
+	void                setPriority(int aValue);
+	void                setType(const TypePtr& aType);
+	void                setReturnFlag(const std::string& aFlag);
+	const std::string&  code() const;
+	std::string&        code();
 
 	static const size_t Highest      = 1;
 	static const size_t Num          = 2;
