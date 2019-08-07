@@ -41,6 +41,7 @@ public:
 	const std::string&  signature() const;
 	void                setReturnFlag(const std::string& aFlag);
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
+	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
 		
 	const std::string&          code() const;
 	std::string&                code();
@@ -62,6 +63,8 @@ private:
 	int                  mPriority = 0;
 	ArgConstIterator		 mOwnerArg;
 	ArgConstIterator		 mPropArg;
+	ArgConstIterator		 mTemplateArg;
+	ArgConstIterator		 mTypenameArg;
 };
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);
 

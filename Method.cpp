@@ -80,6 +80,8 @@ void Method::endDecl()
 {
 	mOwnerArg = args().cend();
 	mPropArg = args().cend();
+	mTemplateArg = args().cend();
+	mTypenameArg = args().cend();
 
 	for (auto arg = args().cbegin(); arg != args().cend(); ++arg)
 	{
@@ -89,9 +91,20 @@ void Method::endDecl()
 			{
 				mOwnerArg = arg;
 			}
-			else if (arg->is(Arg::Prop))
+
+			if (arg->is(Arg::Prop))
 			{
 				mPropArg = arg;
+			}
+
+			if (arg->is(Arg::Template))
+			{
+				mTemplateArg = arg;
+			}
+
+			if (arg->is(Arg::Typename))
+			{
+				mTypenameArg = arg;
 			}
 		}
 	}
@@ -109,6 +122,20 @@ Record* Method::getOwner(const ExprNodesCIter& aNodeIter) const
 	}
 
 	return owner;
+}
+
+TypePtr Method::getTemplateType(const ExprNodesCIter& aNodeIter) const
+{
+	TypePtr templateType;
+	if (mTemplateArg != args().cend())
+	{
+		auto templateIter = aNodeIter;
+		auto dist = std::distance(args().cbegin(), mTemplateArg);
+		std::advance(templateIter, dist);
+		templateType = templateIter->type();
+	}
+
+	return templateType;
 }
 
 bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
@@ -170,6 +197,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 	Flags nodeFlags;
 	bool isConst = is(ConstExpr);
 	Record* owner = getOwner(aBegin);
+	TypePtr templateType = getTemplateType(aBegin);
 	std::string nodeCode;
 			
 	ExprNodesCIter nodeIter = aBegin;
@@ -201,7 +229,12 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 			}
 
       ExprNode node = *nodeIter;
-			if (!arg.is(Arg::Prop))
+			if (arg.is(Arg::Typename))
+			{
+				node.castToType(templateType->childType());
+				nodeCode = node.code();
+			}
+			else if (!arg.is(Arg::Prop))
 			{
 				node.castToType(arg.is(Arg::Same) ? firstType : argType);
 				nodeCode = node.code();
@@ -282,6 +315,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 	bool result = true;
 	TypePtr firstType;
 	Record* owner = nullptr;
+	TypePtr templateType;
 	
 	ExprNodesCIter nodeIter = aBegin;
 	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
@@ -304,6 +338,16 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 						error = "Not a record: " + nodeType->name();
 						result = false;
 					}
+				}
+			}
+
+			if (arg->is(Arg::Template))
+			{
+				templateType = nodeIter->type();
+				if (!templateType->childType())
+				{
+					error = "Not a generic: " + templateType->name();
+					result = false;
 				}
 			}
 		}
@@ -357,6 +401,24 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 				else if (!owner->getIdentifier(nodeIter->text()))
 				{
 					error = "Not a property of '" + owner->name() + "': " + nodeIter->text();
+					result = false;
+				}
+			}
+			else if (arg.is(Arg::Template))
+			{
+				// above code
+			}
+			else if (arg.is(Arg::Typename))
+			{
+				if (!templateType)
+				{
+					error = "No generic supplied for : " + nodeType->name();
+					result = false;
+				}
+				else if (!templateType->childType()->isCompatibleWith(nodeType))
+				{
+					error = "Not same type: " + arg.identifier()->name() + + " of type " + nodeType->name() +
+									" must be of type " + templateType->childType()->name();
 					result = false;
 				}
 			}

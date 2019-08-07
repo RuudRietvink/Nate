@@ -214,6 +214,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns" />
+    <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
     <None Include="core\Text.ns" />
     <None Include="D:\nate.define" />

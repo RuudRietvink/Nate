@@ -19,6 +19,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	*mOut << "#include <windows.h>" << std::endl;
 	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
 	*mOut << "#include <string>" << std::endl;
+	*mOut << "#include <list>" << std::endl;
 	*mOut << "#include <cstdint>" << std::endl;
 	*mOut << "#include <cmath>" << std::endl;
 	*mOut << "#include <iostream>" << std::endl;
@@ -570,17 +571,17 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 
 void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 																						 const std::vector<std::string>& aNames,
-																						 const std::string& aType,
+																						 const TypePtr& aType,
 																					 	 const std::vector<Expr>& aInitValues,
 																						 bool initializeNonScalars)
 {
 	//std::cout << join(aNames, ", ") << ":" << aType << ":" << join(aInitValues, ", ") << std::endl;
 
-	if (aType.empty() && aInitValues.empty())
+	if (aType->empty() && aInitValues.empty())
 	{
 		error("expected either type or initial value.");
 	}
-	else if (aType.empty() && (aInitValues.size() != 1 && aInitValues.size() != aNames.size()))
+	else if (aType->empty() && (aInitValues.size() != 1 && aInitValues.size() != aNames.size()))
 	{
 		error("expected as many initial values as identifiers.");
 	}
@@ -597,7 +598,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		Expr initValue;
 		if (aInitValues.empty())
 		{
-			type = determineType(aType);
+			type = aType;
 			initValue = Expr(ExprNode("default", "{}", type));
 			initValue.node().setFlag(ExprNode::Default);
 			if (aConst)
@@ -632,7 +633,7 @@ void NateParser::codeStartRecord(const RecordPtr& aRecord)
 
 void NateParser::codeDeclareRecordIdentifiers(bool aConst,
 																							const std::vector<std::string>& aNames,
-																							const std::string& aType,
+																							const TypePtr& aType,
 																							const std::vector<Expr>& aInitValues)
 {
 	codeDeclareLocalIdentifiers(aConst, aNames, aType, aInitValues, false);
@@ -991,15 +992,15 @@ void NateParser::codeStartLoop()
 }
 
 void NateParser::codeStartForLoop(const std::string& aId,
-																	const std::string& aType,   
+																	const TypePtr& aType,   
 																	bool aDownTo,
 																	const Expr& aStart,
 																	const Expr& aEnd,
 																	const Expr& aStep)
 {
-	TypePtr type = aType.empty()
+	TypePtr type = aType->empty()
 							   ? aStart.type()
-							   : determineType(aType);
+							   : aType;
 
 	IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
 	addIdentifier(id);

@@ -17,6 +17,11 @@ Type::Type(const std::string& aName)
 Type::Type(const std::string& aType, const std::string& aName)
 	: mName(aName)
 {
+	setType(aType);
+}
+
+void Type::setType(const std::string& aType)
+{
 	if (aType == "text")
 	{
 		setFlag(Text, true);
@@ -41,7 +46,7 @@ Type::Type(const std::string& aType, const std::string& aName)
 		mCodeType = "int16_t";
 		mBitSize = 16;
 	}
-	else if (aType == "int-32" || aName == "int")
+	else if (aType == "int-32" || aType == "int")
 	{
 		setFlag(Scalar, true);
 		mName = "int-32";
@@ -92,6 +97,14 @@ Type::Type(const std::string& aType, const std::string& aName)
 		setFlag(NeedsRef, true);
 		mCodeType = "struct";
 		mBitSize = 2000;
+	}
+	else if (aType == "list")
+	{
+		setFlag(Container, true);
+		setFlag(List, true);
+		setFlag(NeedsRef, true);
+		mCodeType = "std::list";
+		mBitSize = 3000;
 	}
 	else
 	{
@@ -186,11 +199,30 @@ bool Type::isBiggerThan(const TypePtr& aType) const
 	return result;
 }
 
-const std::string& Type::name()            const { return mName; }
-const std::string& Type::codeType()        const { return mCodeType; }
-int                Type::bitSize()         const { return mBitSize; }
+bool               Type::empty()     const { return mName.empty(); }
+const std::string& Type::name()      const { return mName; }
+int                Type::bitSize()   const { return mBitSize; }
+const TypePtr&		 Type::childType() const { return mChildType; }
 
+void Type::setChildType(const TypePtr& aChildType) { mChildType = aChildType; }
 void Type::setCodeType(const std::string& aCodeType) { mCodeType = aCodeType; }
+
+
+std::string Type::codeType() const
+{ 
+	std::string result;
+
+	if (!mChildType)
+	{
+	  result = mCodeType;
+	}
+	else
+	{
+		result = mCodeType + "<" + mChildType->codeType() + ">";
+	}
+
+	return result;
+}
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue)
 {
@@ -209,6 +241,12 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::Comparable)) aStream << ",Comparable";
 	if (is(Type::NeedsRef)) aStream << ",NeedsRef";
 	if (is(Type::Record)) aStream << ",Record";
+	if (is(Type::Container)) aStream << ",Container";
+	if (is(Type::List)) aStream << ",List";
+	if (mChildType) {
+		aStream << "ChildType(" << *mChildType << "),";
+	}
+
 	aStream << ")";
 	return aStream;
 }

@@ -53,6 +53,14 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	{
 		setFlag(Prop, true);
 	}
+	else if (aFlag == "template")
+	{
+		setFlag(Template, true);
+	}
+	else if (aFlag == "typename")
+	{
+		setFlag(Typename, true);
+	}
   else
   {
     ok = false;

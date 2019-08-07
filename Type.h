@@ -6,6 +6,10 @@
 #include <ostream>
 #include <memory>
 
+class Type;
+
+typedef std::shared_ptr<Type> TypePtr;
+
 class Type : public WithFlags
 {
 public:
@@ -14,15 +18,20 @@ public:
 	Type(const std::string& aType, const std::string& aName);
 	virtual ~Type() = default;
 
-	static std::shared_ptr<Type> makeType(const std::string& aValue);
-	bool isBiggerThan(const std::shared_ptr<Type>& aType) const;
-	bool isCompatibleWith(const std::shared_ptr<Type>& aType) const;
+	bool empty() const;
+	void setType(const std::string& aType);
+	static TypePtr makeType(const std::string& aValue);
+	bool isBiggerThan(const TypePtr& aType) const;
+	bool isCompatibleWith(const TypePtr& aType) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 
 	const std::string& name() const;
-	const std::string& codeType() const;
+	std::string        codeType() const;
 	int                bitSize() const;
-	void setCodeType(const std::string& aCodeType);
+	const TypePtr&		 childType() const;
+
+	void							 setChildType(const TypePtr& aChildType);
+	void							 setCodeType(const std::string& aCodeType);
 	
 	static const size_t Number     = 0;
 	static const size_t Float      = 1;
@@ -33,13 +42,14 @@ public:
 	static const size_t NeedsRef   = 6;
 	static const size_t Record     = 7;
 	static const size_t Scalar     = 8;
+	static const size_t Container  = 9;
+	static const size_t List       =10;
 
 private:
 	std::string mName;
 	std::string mCodeType;
 	int			    mBitSize = 4;
+	TypePtr	    mChildType;
 };
-
-typedef std::shared_ptr<Type> TypePtr;
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);

@@ -144,6 +144,9 @@
     <None Include="core\Text.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="core\List.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">

@@ -15,6 +15,7 @@
   }
   class NateParser;
   #include "Expr.h"
+  #include "Type.h"
 }
 %parse-param { yy::Lexer& lexer } { NateParser& nate }
 %code{
@@ -54,6 +55,7 @@
 %token OUTPUT "output"
 %token INPUT "input"
 %token IS "is"
+%token OF "of"
 %token LOOP "loop"
 %token WHILE "while"
 %token FOR "for"
@@ -75,8 +77,9 @@
 %type <std::string>              arg-id;
 %type <std::vector<std::string>> id-list;
 %type <std::string>              single-id;
-%type <std::string>              is-type;
-%type <std::string>              type;
+%type <TypePtr>                  is-type;
+%type <TypePtr>                  type;
+%type <std::string>              type-extra;
 %type <std::string>              inout;
 %type <bool>                     var;
 %type <std::vector<Expr>>        var-init-assign;
@@ -220,7 +223,7 @@ arg:
 		  { nate.addArgWord($WORD); }
   | OPENPAR inout arg-id[id] IS type 
 		  { 
-			  auto id = std::make_shared<Identifier>(nate.curScope(), $id, nate.determineType($type));
+			  auto id = std::make_shared<Identifier>(nate.curScope(), $id, $type);
 			  nate.addIdentifier(id);
 		    nate.curMethod().addArgId(id);
         if (!$inout.empty())
@@ -291,7 +294,7 @@ call-return:
 type-flags:
     type opt-call-return-flags
 		  { 
-			  nate.curMethod().setType(std::make_shared<Type>($type));
+			  nate.curMethod().setType($type);
 		  }
   | call-return-flags
   ;
@@ -368,7 +371,7 @@ single-id:
 
 is-type:
     %empty
-		  { $$ = ""; }
+		  { $$ = std::make_shared<Type>(""); }
   | IS 
       { lexer.pushState(Lexer::DECL_TYPE); }
     type
@@ -379,9 +382,26 @@ is-type:
   ;
 
 type:
-    WORD
+    WORD type-extra
+      { 
+        if (!$[type-extra].empty())
+        {
+          $$ = nate.determineType($WORD);
+          $$->setChildType(nate.determineType($[type-extra]));
+        }
+        else
+        {
+          $$ = nate.determineType($WORD);
+        }
+      }
   ;
-  
+
+type-extra:
+    %empty
+  | OF WORD
+      { $$ = $WORD; }
+  ;
+
 var-init-assign:
 	  %empty
 		  { $$.clear(); }

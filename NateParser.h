@@ -68,16 +68,16 @@ public:
 	void codeStartScope();
 	void codeEndScope();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
-																	bool initializeNonScalars = true);
+																	bool initializeNonScalars = false);
 	void codeDeclareLocalIdentifiers(bool aConst,
 																	 const std::vector<std::string>& aNames,
-																	 const std::string& aType,
+																	 const TypePtr& aType,
 																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeNonScalars = true);
+																	 bool initializeNonScalars = false);
 	void codeStartRecord(const RecordPtr& aRecord);
 	void codeDeclareRecordIdentifiers(bool aConst,
 																	  const std::vector<std::string>& aNames,
-																  	const std::string& aType,
+																  	const TypePtr& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
@@ -104,7 +104,7 @@ public:
   void codeInitLoop();
   void codeStartLoop();
   void codeStartForLoop(const std::string& aId, 
-                        const std::string& aType, 
+                        const TypePtr& aType, 
                         bool aDownTo,
                         const Expr& aStart,
                         const Expr& aEnd,

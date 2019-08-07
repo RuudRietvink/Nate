@@ -175,7 +175,7 @@ public:
 %option bison-cc-namespace=yy
 %option bison-cc-parser=parser
 %option bison-locations
-%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token.\") + matcher().text())"
+%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token in \") + filenames.back())"
 %option namespace=yy
 %option lexer=Lexer
 %option unicode
@@ -230,7 +230,7 @@ string          ["][^"]*[""]
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^INPUT_EXPR,^COMMENT>\n s(); // ignore
+<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^INPUT_EXPR,^COMMENT,^DECL_TYPE>\n s(); // ignore
 }
 
 // *** comments
@@ -283,7 +283,7 @@ include\h*\".*\"  s(); includeFile();
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 }
 
-<EXPR,FOR_EXPR,OUTPUT_EXPR,INPUT_EXPR>{
+<EXPR,FOR_EXPR,OUTPUT_EXPR,INPUT_EXPR,DECL_TYPE>{
 \n            return yy::parser::make_EOS(location());
 }
 
@@ -322,6 +322,9 @@ include\h*\".*\"  s(); includeFile();
 }
 
 <DECL_TYPE>{
+\bof\b		    return yy::parser::make_OF(location());
+":="			    return yy::parser::make_ASSIGN(location());
+";"				    return yy::parser::make_EOS(location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
 
