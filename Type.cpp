@@ -93,6 +93,7 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "record")
 	{
+		setFlag(NoOutput, true);
 		setFlag(Record, true);
 		setFlag(NeedsRef, true);
 		mCodeType = "struct";
@@ -100,19 +101,21 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "container")
 	{
+		setFlag(NoOutput, true);
 		setFlag(Container, true);
 		setFlag(NeedsRef, true);
 		mCodeType = "";
 		mBitSize = 3000;
 	}
+	else if (aType == "sequence-container")
+	{
+		setBaseType("container");
+	}
 	else if (aType == "list")
 	{
-		setFlag(Container, true);
-		setFlag(NeedsRef, true);
+		setBaseType("sequence-container");
 		setFlag(List, true);
 		mCodeType = "std::list";
-		mBaseType = std::make_shared<Type>("container");
-		mBitSize = 3000;
 	}
 	else
 	{
@@ -120,6 +123,14 @@ void Type::setType(const std::string& aType)
 		mCodeType = "unknown";
 		mBitSize = 0;
 	}
+}
+
+void Type::setBaseType(const std::string& aType)
+{
+	mBaseType = std::make_shared<Type>(aType);
+	setFlags(mBaseType->getFlags());
+	mBitSize = mBaseType->mBitSize;
+	mCodeType = mBaseType->mCodeType;
 }
 
 bool Type::isOfType(const std::string& aType) const

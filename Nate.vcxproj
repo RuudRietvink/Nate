@@ -217,6 +217,7 @@
     <None Include="core\core.ns" />
     <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
+    <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
     <None Include="D:\nate.define" />
     <None Include="D:\nate.import" />

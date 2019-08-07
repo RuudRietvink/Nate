@@ -312,6 +312,8 @@ IdentifierPtr NateParser::getIdentifier(const std::string& aName, Scope* aScope)
 				return var;
 			}
 		}
+
+		return IdentifierPtr();
 	}
 	else
 	{
@@ -349,6 +351,8 @@ TypePtr NateParser::getType(const std::string& aName, Scope* aScope)
 				return type;
 			}
 		}
+
+		return TypePtr();
 	}
 	else
 	{
@@ -503,7 +507,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 	if (aExpr.nodes().size() > 1 || aExpr.nodes().front().is(ExprNode::Word))
 	{
 		error("Bad expression: " + aExpr.text());
-		exit(1);
+		return Expr();
 	}
 	//std::cerr << result << std::endl;
 	return result;
@@ -579,7 +583,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 																					 	 const std::vector<Expr>& aInitValues,
 																						 bool initializeNonScalars)
 {
-	//std::cout << join(aNames, ", ") << ":" << aType << ":" << join(aInitValues, ", ") << std::endl;
+	//std::cout << Core::join(aNames, ", ") << ":" << aType << ":" << Core::join(aInitValues, ", ") << std::endl;
 
 	if (aType->empty() && aInitValues.empty())
 	{
@@ -740,9 +744,18 @@ void NateParser::codeOutput(const Expr& aValue)
 		{
 			codeOutput("static_cast<int>(" + aValue.code() + ")");
 		}
-		else
+		else if (!aValue.type()->is(Type::NoOutput))
 		{
 			codeOutput("(" + aValue.code() + ")");
+		}
+		else
+		{
+			Expr outExpr(Expr("stream-out"), aValue);
+			Expr resExpr = evaluate(outExpr);
+			if (!resExpr.isEmpty())
+			{
+				codeOutput("(" + resExpr.code() + ")");
+			}
 		}
 	}
 }

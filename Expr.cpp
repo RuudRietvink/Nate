@@ -1,8 +1,13 @@
 
 #include "Expr.h"
-#include "NateFunctions.h"
+#include "core/Core.h"
 
 Expr::Expr()
+{
+}
+
+Expr::Expr(const std::string& aWord)
+	: Expr(ExprNode(aWord))
 {
 }
 
@@ -78,6 +83,6 @@ const std::vector<ExprNode>& Expr::nodes() const { return mNodes; }
 
 std::ostream& operator<<(std::ostream& aStream, const Expr& aValue)
 {
-	aStream << "Expr(" << ",Nodes(" << join(aValue.nodes()) << ")" << ")";
+	aStream << "Expr(" << ",Nodes(" << Core::join(aValue.nodes()) << ")" << ")";
 	return aStream;
 }

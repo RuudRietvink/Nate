@@ -199,17 +199,17 @@ int32_t Fraction::trunc() const
 
 int32_t Fraction::round() const
 {
-	return signIt(mWhole + std::round(static_cast<float>(mNumerator) / mDenominator)); 
+	return signIt(static_cast<int32_t>(mWhole + std::round(static_cast<float>(mNumerator) / mDenominator))); 
 }
 
 int32_t Fraction::floor() const
 {
-	return signIt(mWhole) + std::floor(static_cast<float>(signIt(mNumerator)) / mDenominator); 
+	return signIt(mWhole) + static_cast<int32_t>(std::floor(static_cast<float>(signIt(mNumerator)) / mDenominator)); 
 }
 
 int32_t Fraction::ceil() const
 {
-	return signIt(mWhole) + std::ceil(static_cast<float>(signIt(mNumerator)) / mDenominator); 
+	return signIt(mWhole) + static_cast<int32_t>(std::ceil(static_cast<float>(signIt(mNumerator)) / mDenominator)); 
 }
 
 Fraction Fraction::abs() const

@@ -3,6 +3,7 @@
 #include "Identifier.h"
 #include "Record.h"
 #include "NateFunctions.h"
+#include "core/Core.h"
 
 #include <reflex/matcher.h>
 #include <iostream>
@@ -148,8 +149,8 @@ TypePtr Method::getTemplateType(const ExprNodesCIter& aNodeIter) const
 
 bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
 {
-	auto exp = Expr();
-	exp.addNodes(aBegin, aEnd);
+	//auto exp = Expr();
+	//exp.addNodes(aBegin, aEnd);
 	//std::cerr << "//// " << pattern() << " " << exp.text() << " ";
 
 	if (mArgs.size() != static_cast<size_t>(std::distance(aBegin, aEnd)))
@@ -164,8 +165,7 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) c
 		if (arg.is(Arg::Prop))
 		{
 			Record* owner = getOwner(aBegin);
-			IdentifierPtr id = owner == nullptr ? IdentifierPtr() : owner->getIdentifier(nodeIter->text());
-			if (!id)
+			if (owner == nullptr || !owner->getIdentifier(nodeIter->text()))
 			{
 				//if (owner == nullptr) std::cerr << "No owner" << std::endl;
 				//std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
@@ -449,7 +449,7 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	aStream << "Method(" 
 		    << aValue.type() << ","
 		    << aValue.code() << ","
-		    << join(aValue.args())  << ","
+		    << Core::join(aValue.args())  << ","
 		    << aValue.pattern();
 	
 	if (aValue.is(Method::Highest)) aStream << ",Highest";

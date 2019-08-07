@@ -57,8 +57,7 @@ public:
 
 		std::string toString() const;
 	};
-
-
+	
 	static Format getFormat(const std::string& aFormat);
 	
 	static void setWidth(std::ostream& aStream, int32_t aWidth);
@@ -137,6 +136,27 @@ public:
 		return result;
 	}
 	
+	template<typename CONTAINER>
+	static std::string join(const CONTAINER& container, const std::string& seperator = ",")
+	{
+		std::stringstream ss;
+		ss << container.size() << ':';
+		bool first = true;
+
+		for (auto const& item : container)
+		{
+			if (!first)
+			{
+				ss << seperator;
+			}
+
+			ss << "(" << item << ")";
+			first = false;
+		}
+
+		return ss.str();
+	}
+
 	// Members are all public and mutable, so if we really don't want
 	// to restore any particular part of the state, we can override.
 	struct SaveStreamState

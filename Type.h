@@ -45,8 +45,11 @@ public:
 	static const size_t Scalar     = 8;
 	static const size_t Container  = 9;
 	static const size_t List       =10;
+	static const size_t NoOutput   =11;
 
 private:
+	void setBaseType(const std::string& aType);
+
 	std::string mName;
 	std::string mCodeType;
 	int			    mBitSize = 4;

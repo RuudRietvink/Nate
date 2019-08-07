@@ -11,6 +11,7 @@ class Expr
 {
 public:
 	Expr();
+	Expr(const std::string& aWord);
 	Expr(const ExprNode& aNode);
 	Expr(const Expr& aExpr1, const Expr& aExpr2);
 	virtual ~Expr() = default;

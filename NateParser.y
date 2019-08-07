@@ -99,7 +99,7 @@
 %%
 
 prog-statement-list:
-	  prog-statement
+	  prog-statement opt-eos
   | prog-statement-list prog-statement
   ;
 
@@ -114,6 +114,11 @@ prog-statement:
   | EOS
   ;
   
+opt-eos:
+    %empty
+  | EOS opt-eos
+  ;
+
 alias:
     ALIAS STRING[STR1] STRING[STR2]
       { nate.addAlias(unquote($STR1), unquote($STR2)); }
@@ -134,7 +139,7 @@ program:
   ;
   
 statement-list:
-    statement
+    statement opt-eos
   | statement-list statement
   ;
 
@@ -363,6 +368,7 @@ var-statement:
 		  { lexer.popState(); }
 	  is-type var-init-assign
 		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
+    opt-eos
   ;
 
 var:
@@ -476,6 +482,7 @@ record-var:
 		  { lexer.popState(); }
 	  is-type var-init-assign
 		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
+    opt-eos
   ;
 
 assign-statement:

@@ -150,6 +150,9 @@
     <None Include="core\Container.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="core\SequenceContainer.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">
