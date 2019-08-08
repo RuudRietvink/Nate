@@ -461,7 +461,7 @@ record-statement:
 				  nate.error("Duplicate type of :" + $id);
         }
         RecordPtr record = std::make_shared<Record>($id);
-        nate.curScope()->addRecord(record);
+        nate.curScope()->addRecord(record, $id);
         nate.codeStartRecord(record);
       }
     BEGIN
@@ -744,7 +744,7 @@ for-to:
 
 step:
 	  %empty
-		  { $$ = Expr(ExprNode("1", "1", nate.determineType("int-32"))); }
+		  { $$ = Expr(ExprNode("1", "1", nate.getType("int-32"))); }
   | STEP expr
 		  { $$ = $expr; }
   ;
@@ -798,7 +798,7 @@ expr-part:
 expr-non-word:
 	  NUMBER
 		  { 
-			  $$ = Expr(ExprNode($NUMBER, $NUMBER, Type::makeType($NUMBER)));
+			  $$ = Expr(ExprNode($NUMBER, $NUMBER, nate.makeType($NUMBER)));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
@@ -814,7 +814,7 @@ expr-non-word:
 		  }
 	| string
 		  { 
-			  $$ = Expr(ExprNode($string, $string, nate.determineType("text")));
+			  $$ = Expr(ExprNode($string, $string, nate.getType("text")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
@@ -822,7 +822,7 @@ expr-non-word:
 		  }
   | BOOL
 		  { 
-			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.determineType("boolean")));
+			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.getType("boolean")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();

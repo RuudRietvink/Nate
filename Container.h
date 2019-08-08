@@ -16,9 +16,9 @@ public:
 		return iter == mContainer.end() ? T{} : iter->second;
 	}
 
-	void addData(const T& aData)
+	void addData(const T& aData, const std::string& aName = "")
 	{
-		mContainer.emplace(aData->name(), aData);
+		mContainer.emplace(aName.empty() ? aData->name() : aName, aData);
 	}
 
 private:

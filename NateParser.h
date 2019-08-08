@@ -45,8 +45,10 @@ public:
 	ScopePtr& curScope();
 	void error(const std::string& anError);
 	int errorCount() const { return mErrors; }
+	void addType(const TypePtr& aType, const std::string& aName = "");
 	TypePtr getType(const std::string& aName, Scope* aScope = nullptr);
 	TypePtr determineType(const std::string& aName);
+	TypePtr makeType(const std::string& aValue);
 	IdentifierPtr getIdentifier(const std::string& aName, Scope* aScope = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);

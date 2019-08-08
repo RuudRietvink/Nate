@@ -31,6 +31,24 @@ NateParser::~NateParser() = default;
 int NateParser::parse()
 {
 	pushScope("global");
+	for (auto name : { "int-8", "int-16", "int-32", "int-64",
+			               "float-32", "float-64",
+										 "container",
+										 "record",
+										 "boolean"
+									 })
+	{
+		TypePtr type = std::make_shared<Type>(name);
+		addType(type);
+	}
+
+	addType(getType("int-32"), "int");
+	addType(getType("float-32"), "float");
+	addType(getType("boolean"), "bool");
+		
+	addType(std::make_shared<Type>("sequence-container", getType("container")));
+	addType(std::make_shared<Type>("list", getType("sequence-container")));
+	addType(std::make_shared<Type>("text", getType("sequence-container")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -327,7 +345,7 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, Scope* a
 	if (!result)
 	{
 		error(std::string("Undeclared identifier: ") + aName);
-		addIdentifier(std::make_shared<Identifier>(curScope(), aName, std::make_shared<Type>("int-32")));
+		addIdentifier(std::make_shared<Identifier>(curScope(), aName, getType("int-32")));
 		result = getIdentifier(aName);
 	}
 
@@ -360,10 +378,60 @@ TypePtr NateParser::getType(const std::string& aName, Scope* aScope)
 	}
 }
 
+void NateParser::addType(const TypePtr& aType, const std::string& aName)
+{
+	curScope()->addType(aType, aName);
+}
+
 TypePtr NateParser::determineType(const std::string& aName)
 {
 	auto type = getType(aName);
 	return !type ? std::make_shared<Type>(aName) : type;
+}
+
+TypePtr NateParser::makeType(const std::string& aValue)
+{
+	TypePtr result = std::make_shared<Type>("");
+
+	if (aValue[0] == '"')
+	{
+		result = getType("text");
+	}
+	else if (aValue == "false" || aValue == "true")
+	{
+		result = getType("bool");
+	}
+	else if (aValue.find('.') != std::string::npos)
+	{
+		/*double value;
+		Core::strtodbl(aValue.c_str(), value);
+		if (value > std::numeric_limits<float>::max() || 
+		    (value < 0 && value < std::numeric_limits<float>::lowest()) ||
+		    (value > 0 && value < std::numeric_limits<float>::min()))
+		{
+		  result = getType(float-64");
+		}
+		else
+		{
+		  result = getType("float-32");
+		}*/
+		result = getType("float-64");
+	}
+	else
+	{
+		int64_t value;
+		Core::strtoi64(aValue.c_str(), value);
+		if (value > std::numeric_limits<int32_t>::max() || value < std::numeric_limits<int32_t>::lowest())
+		{
+			result = getType("int-64");
+		}
+		else
+		{
+			result = getType("int-32");
+		}
+	}
+
+	return result;
 }
 
 void NateParser::methodMatches(const Method& aMethod,

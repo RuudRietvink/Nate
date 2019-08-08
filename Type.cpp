@@ -9,14 +9,10 @@ Type::Type()
 {
 }
 
-Type::Type(const std::string& aName)
-	: Type(aName, aName)
+Type::Type(const std::string& aType, const TypePtr& aBaseType)
+	: mName(aType)
 {
-}
-
-Type::Type(const std::string& aType, const std::string& aName)
-	: mName(aName)
-{
+	setBaseType(aBaseType);
 	setType(aType);
 }
 
@@ -46,10 +42,9 @@ void Type::setType(const std::string& aType)
 		mCodeType = "int16_t";
 		mBitSize = 16;
 	}
-	else if (aType == "int-32" || aType == "int")
+	else if (aType == "int-32")
 	{
 		setFlag(Scalar, true);
-		mName = "int-32";
 		setFlag(Number, true);
 		setFlag(Comparable, true);
 		mCodeType = "int32_t";
@@ -63,10 +58,9 @@ void Type::setType(const std::string& aType)
 		mCodeType = "int64_t";
 		mBitSize = 64;
 	}
-	else if (aType == "float-32" || aType == "float")
+	else if (aType == "float-32")
 	{
 		setFlag(Scalar, true);
-		mName = "float-32";
 		setFlag(Number, true);
 		setFlag(Comparable, true);
 		setFlag(Float, true);
@@ -82,10 +76,9 @@ void Type::setType(const std::string& aType)
 		mCodeType = "double";
 		mBitSize = 64;
 	}
-	else if (aType == "bool" || aType == "boolean")
+	else if (aType == "boolean")
 	{
 		setFlag(Scalar, true);
-    mName = "boolean";
 		setFlag(Boolean, true);
 		setFlag(Comparable, true);
 		mCodeType = "bool";
@@ -109,11 +102,9 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "sequence-container")
 	{
-		setBaseType("container");
 	}
 	else if (aType == "list")
 	{
-		setBaseType("sequence-container");
 		setFlag(List, true);
 		mCodeType = "std::list";
 	}
@@ -125,63 +116,21 @@ void Type::setType(const std::string& aType)
 	}
 }
 
-void Type::setBaseType(const std::string& aType)
+void Type::setBaseType(const TypePtr& aType)
 {
-	mBaseType = std::make_shared<Type>(aType);
-	setFlags(mBaseType->getFlags());
-	mBitSize = mBaseType->mBitSize;
-	mCodeType = mBaseType->mCodeType;
+	mBaseType = aType;
+	if (mBaseType)
+	{
+		setFlags(mBaseType->getFlags());
+		mBitSize = mBaseType->mBitSize;
+		mCodeType = mBaseType->mCodeType;
+	}
 }
 
 bool Type::isOfType(const std::string& aType) const
 {
 	return mName == aType || 
 				 (mBaseType && mBaseType->isOfType(aType));
-}
-
-TypePtr Type::makeType(const std::string& aValue)
-{
-	std::string type = "";
-
-	if (aValue[0] == '"')
-	{
-		type = "text";
-	}
-	else if (aValue == "false" || aValue == "true")
-	{
-		type = "bool";
-	}
-	else if (aValue.find('.') != std::string::npos)
-	{
-		/*double value;
-		Core::strtodbl(aValue.c_str(), value);
-		if (value > std::numeric_limits<float>::max() || 
-		    (value < 0 && value < std::numeric_limits<float>::lowest()) ||
-		    (value > 0 && value < std::numeric_limits<float>::min()))
-		{
-		  type = "float-64";
-		}
-		else
-		{
-		  type = "float-32";
-		}*/
-		type = "float-64";
-	}
-	else
-	{
-		int64_t value;
-		Core::strtoi64(aValue.c_str(), value);
-		if (value > std::numeric_limits<int32_t>::max() || value < std::numeric_limits<int32_t>::lowest())
-		{
-			type = "int-64";
-		}
-		else
-		{
-			type = "int-32";
-		}
-	}
-
-	return std::make_shared<Type>(type);
 }
 
 bool Type::isCompatibleWith(const TypePtr& aType) const

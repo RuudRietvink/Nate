@@ -4,7 +4,7 @@
 #include "NateFunctions.h"
 
 Record::Record(const std::string& aName)
-	: Type("record", aName),
+	: Type("record"),
 	  mScope(std::make_shared<Scope>(aName))
 {
 	setCodeType(toCodeName(aName));

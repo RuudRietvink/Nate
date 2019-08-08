@@ -19,10 +19,10 @@ public:
 	const std::list<IdentifierPtr>& getIdentifiers() const;
 
 	RecordPtr getRecord(const std::string& aName);
-	void addRecord(RecordPtr& aRecord);
+	void addRecord(RecordPtr& aRecord, const std::string& aName);
 
 	TypePtr getType(const std::string& aName);
-	void addType(const TypePtr& aType);
+	void addType(const TypePtr& aType, const std::string& aName = "");
 
 private:
 	std::string					     mName;

@@ -14,13 +14,11 @@ class Type : public WithFlags
 {
 public:
 	Type();
-	Type(const std::string& aType);
-	Type(const std::string& aType, const std::string& aName);
+	Type(const std::string& aType, const TypePtr& aBaseType = TypePtr());
 	virtual ~Type() = default;
 
 	bool empty() const;
 	void setType(const std::string& aType);
-	static TypePtr makeType(const std::string& aValue);
 	bool isBiggerThan(const TypePtr& aType) const;
 	bool isCompatibleWith(const TypePtr& aType) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
@@ -48,7 +46,7 @@ public:
 	static const size_t NoOutput   =11;
 
 private:
-	void setBaseType(const std::string& aType);
+	void setBaseType(const TypePtr& aType);
 
 	std::string mName;
 	std::string mCodeType;
