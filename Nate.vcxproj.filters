@@ -227,6 +227,9 @@
     <ClInclude Include="core\UpperLower.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="core\View.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Bison Include="NateParser.y">

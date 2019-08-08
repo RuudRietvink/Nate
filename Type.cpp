@@ -176,9 +176,10 @@ bool Type::isBiggerThan(const TypePtr& aType) const
 bool               Type::empty()     const { return mName.empty(); }
 const std::string& Type::name()      const { return mName; }
 int                Type::bitSize()   const { return mBitSize; }
-const TypePtr&		 Type::childType() const { return mChildType; }
+const TypePtr&		 Type::typenameType() const { return mTypenameType; }
+const TypePtr&		 Type::baseType()  const { return mBaseType; }
 
-void Type::setChildType(const TypePtr& aChildType) { mChildType = aChildType; }
+void Type::setTypenameType(const TypePtr& aTypenameType) { mTypenameType = aTypenameType; }
 void Type::setCodeType(const std::string& aCodeType) { mCodeType = aCodeType; }
 
 
@@ -186,13 +187,13 @@ std::string Type::codeType() const
 { 
 	std::string result;
 
-	if (!mChildType)
+	if (!mTypenameType || name() == "text")
 	{
 	  result = mCodeType;
 	}
 	else
 	{
-		result = mCodeType + "<" + mChildType->codeType() + ">";
+		result = mCodeType + "<" + mTypenameType->codeType() + ">";
 	}
 
 	return result;
@@ -217,8 +218,8 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::Record)) aStream << ",Record";
 	if (is(Type::Container)) aStream << ",Container";
 	if (is(Type::List)) aStream << ",List";
-	if (mChildType) {
-		aStream << "ChildType(" << *mChildType << "),";
+	if (name() != "text") {
+		aStream << "TypenameType(" << *mTypenameType << "),";
 	}
 
 	aStream << ")";

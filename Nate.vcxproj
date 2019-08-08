@@ -229,6 +229,7 @@
     <ClInclude Include="Arg.h" />
     <ClInclude Include="core\Core.h" />
     <ClInclude Include="core\Fraction.h" />
+    <ClInclude Include="core\View.h" />
     <ClInclude Include="core\UpperLower.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />

@@ -268,6 +268,7 @@ include\h*\".*\"  s(); includeFile();
 
 // *** key words
 <LOOP>{
+\bin\b 	      return yy::parser::make_IN(location());
 \bwhile\b     |
 (?^^\h+/while\b)	return yy::parser::make_WHILE(location());
 }
@@ -281,6 +282,7 @@ include\h*\".*\"  s(); includeFile();
 \bto\b		    return yy::parser::make_TO(location());
 \bstep\b	    return yy::parser::make_STEP(location());
 \bwhile\b 	  return yy::parser::make_WHILE(location());
+\bin\b 	      return yy::parser::make_IN(location());
 }
 
 <EXPR,FOR_EXPR,OUTPUT_EXPR,INPUT_EXPR,DECL_TYPE>{
@@ -331,6 +333,7 @@ include\h*\".*\"  s(); includeFile();
 
 <VAR_DECL>{
 \bis\b		    return yy::parser::make_IS(location());
+\bin\b 	      return yy::parser::make_IN(location());
 [$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
 ":="		      return yy::parser::make_ASSIGN(location());
 ","			      return yy::parser::make_COMMA(location());

@@ -105,12 +105,14 @@ public:
 	void codeEndIfIs();
   void codeInitLoop();
   void codeStartLoop();
-  void codeStartForLoop(const std::string& aId, 
-                        const TypePtr& aType, 
-                        bool aDownTo,
-                        const Expr& aStart,
-                        const Expr& aEnd,
-                        const Expr& aStep);
+  void codeStartForStepLoop(const std::string& aId, 
+														const TypePtr& aType, 
+														bool aDownTo,
+														const Expr& aStart,
+														const Expr& aEnd,
+														const Expr& aStep);
+  void codeStartForRangeLoop(const std::string& aId, 
+														 const Expr& aRange);
   void codeEndLoop();
   void codeLoopWhile(const Expr& aExpr);
   void codeReturn(const Expr& aValue);

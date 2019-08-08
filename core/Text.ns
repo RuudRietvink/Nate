@@ -14,3 +14,8 @@ code 150 rest \u of ($val is text) is text:
   
 code 150 ($val-1 is (any)) \u @ ($val-2 is text) is text:
   Core::formatted($val-1, Core::getFormat($val-2))
+  
+code 65 stream-out (text is text):
+  $text
+
+import SequenceContainer

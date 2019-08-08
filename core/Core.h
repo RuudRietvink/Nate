@@ -136,25 +136,33 @@ public:
 		return result;
 	}
 	
-	template<typename CONTAINER>
-	static std::string join(const CONTAINER& container, const std::string& seperator = ",")
+	template<typename T>
+	static std::string join(const T& aBegin,
+													const T& aEnd,
+													const std::string& seperator = ",")
 	{
 		std::stringstream ss;
-		ss << container.size() << ':';
+		ss << std::distance(aBegin, aEnd) << ':';
 		bool first = true;
 
-		for (auto const& item : container)
+		for (auto iter = aBegin; iter != aEnd; ++iter)
 		{
 			if (!first)
 			{
 				ss << seperator;
 			}
 
-			ss << "(" << item << ")";
+			ss << "(" << *iter << ")";
 			first = false;
 		}
 
 		return ss.str();
+	}
+
+	template<typename CONTAINER>
+	static std::string join(const CONTAINER& container, const std::string& seperator = ",")
+	{
+		return join(container.cbegin(), container.cend(), seperator);
 	}
 
 	// Members are all public and mutable, so if we really don't want

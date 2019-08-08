@@ -49,6 +49,7 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
 	addType(std::make_shared<Type>("list", getType("sequence-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
+	getType("text")->setTypenameType(getType("text"));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -1076,12 +1077,12 @@ void NateParser::codeStartLoop()
 	*mOut << in(-1) << "while (true) {" << std::endl;
 }
 
-void NateParser::codeStartForLoop(const std::string& aId,
-																	const TypePtr& aType,   
-																	bool aDownTo,
-																	const Expr& aStart,
-																	const Expr& aEnd,
-																	const Expr& aStep)
+void NateParser::codeStartForStepLoop(const std::string& aId,
+																			const TypePtr& aType,   
+																			bool aDownTo,
+																			const Expr& aStart,
+																			const Expr& aEnd,
+																			const Expr& aStep)
 {
 	TypePtr type = aType->empty()
 							   ? aStart.type()
@@ -1094,6 +1095,54 @@ void NateParser::codeStartForLoop(const std::string& aId,
 			 << id->codeName() << "= " << aStart.code() << ";" 
 			 << id->name() << (aDownTo ? " >= " : "<=") << aEnd.code() << ";"
 			 << id->name() << (aDownTo ? " -= " : "+=") << aStep.code() << ") {" << std::endl;
+}
+
+void NateParser::codeStartForRangeLoop(const std::string& aId, 
+																			 const Expr& aRange)
+{
+	TypePtr rangeType = aRange.type();
+	if (rangeType->isOfType("container"))
+	{
+		TypePtr type = rangeType->typenameType();
+		IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
+		addIdentifier(id);
+
+		auto range = uniqueName();
+		auto iter = uniqueName();
+		auto next = uniqueName();
+
+		std::string ref = aRange.is(ExprNode::Output) ? "&" : "";
+		std::string increment;
+
+		if (rangeType->isOfType("text"))
+		{
+			increment = iter + "=" + next;
+			*mOut << in(-1) << "const std::string" << ref << " " << range << " = " << aRange.code() << ";" << std::endl; 
+			*mOut << in(-1) << "auto " << next << " = " << range << ".cbegin();" << std::endl;
+		}
+		else
+		{
+			increment = "++" + iter;
+			*mOut << in(-1) << "auto const" << ref << " " << range << " = " << aRange.code() << ";" << std::endl; 
+		}
+
+		*mOut << in(-1) << "for (auto " << iter << " = " << range << ".cbegin(); "
+				 << iter << " != " << range << ".cend(); "
+			   << increment << ") {" << std::endl;
+		if (rangeType->isOfType("text"))
+		{
+			*mOut << in() << "utf8::next(" + next + "," + range + ".cend());" << std::endl;
+			*mOut << in() << "std::string " << aId << "(" << iter << "," << next << ");" << std::endl;
+		}
+		else
+		{
+			*mOut << in() << "auto const& " << aId << " = *" << iter << ";" << std::endl;
+		}
+	}
+	else
+	{
+		error("Range must be a container, got: " + rangeType->name());
+	}
 }
 
 void NateParser::codeEndLoop()

@@ -239,7 +239,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
       ExprNode node = *nodeIter;
 			if (arg.is(Arg::Typename))
 			{
-				node.castToType(templateType->childType());
+				node.castToType(templateType->typenameType());
 				nodeCode = node.code();
 			}
 			else if (!arg.is(Arg::Prop))
@@ -352,7 +352,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 			if (arg->is(Arg::Template))
 			{
 				templateType = nodeIter->type();
-				if (!templateType->childType())
+				if (!templateType->typenameType())
 				{
 					error = "Not a generic: " + templateType->name();
 					result = false;
@@ -423,10 +423,10 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 					error = "No generic supplied for : " + nodeType->name();
 					result = false;
 				}
-				else if (!templateType->childType()->isCompatibleWith(nodeType))
+				else if (!templateType->typenameType()->isCompatibleWith(nodeType))
 				{
 					error = "Not same type: " + arg.identifier()->name() + + " of type " + nodeType->name() +
-									" must be of type " + templateType->childType()->name();
+									" must be of type " + templateType->typenameType()->name();
 					result = false;
 				}
 			}

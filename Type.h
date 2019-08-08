@@ -27,9 +27,10 @@ public:
 	const std::string& name() const;
 	std::string        codeType() const;
 	int                bitSize() const;
-	const TypePtr&		 childType() const;
+	const TypePtr&		 typenameType() const;
+	const TypePtr&		 baseType() const;
 
-	void							 setChildType(const TypePtr& aChildType);
+	void							 setTypenameType(const TypePtr& aTypenameType);
 	void							 setCodeType(const std::string& aCodeType);
 	
 	static const size_t Number     = 0;
@@ -51,7 +52,7 @@ private:
 	std::string mName;
 	std::string mCodeType;
 	int			    mBitSize = 4;
-	TypePtr	    mChildType;
+	TypePtr	    mTypenameType;
 	TypePtr	    mBaseType;
 };
 

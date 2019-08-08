@@ -29,6 +29,7 @@
   bool prevWasValue = false;
   std::stack<Expr> ifExpr;
   std::stack<std::string> ifId;
+  std::string forId;
 	std::list<Code*> curParsedCodes;
 }
 
@@ -57,6 +58,7 @@
 %token INPUT "input"
 %token IS "is"
 %token OF "of"
+%token IN "in"
 %token LOOP "loop"
 %token WHILE "while"
 %token FOR "for"
@@ -77,7 +79,6 @@
 %type <std::string>              id;
 %type <std::string>              arg-id;
 %type <std::vector<std::string>> id-list;
-%type <std::string>              single-id;
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
 %type <std::string>              type-extra;
@@ -390,18 +391,7 @@ id:
 	  IDENTIFIER
 		  { $$ = ($IDENTIFIER[0] == '$') ? $IDENTIFIER.substr(1) : $IDENTIFIER; }
   ;
-
-single-id:
-	  id-list
-		  {
-			  if ($[id-list].size()>1)
-			  {
-				  nate.error("Expecting single identifier.");
-			  }
-			  $$ = $[id-list].front();
-		  }
-  ;
-
+  
 is-type:
     %empty
 		  { $$ = std::make_shared<Type>(""); }
@@ -420,7 +410,7 @@ type:
         if (!$[type-extra].empty())
         {
           $$ = nate.determineType($WORD);
-          $$->setChildType(nate.determineType($[type-extra]));
+          $$->setTypenameType(nate.determineType($[type-extra]));
         }
         else
         {
@@ -721,20 +711,32 @@ opt-while:
   ;
  
 for-loop-statement:
-	  FOR var 
+	  FOR VAR 
 		  { lexer.pushState(Lexer::VAR_DECL); }
-	  single-id 
-		  { lexer.popState(); }
-	  is-type ASSIGN 
-		  { lexer.stateExprValue = yy::Lexer::FOR_EXPR; }
-	  expr[from] for-to expr[to] step 
+	  id 
 		  { 
-			  lexer.stateExprValue = yy::Lexer::EXPR;
-			  nate.codeStartForLoop($[single-id], $[is-type], $[for-to], $from, $to, $step);
-		  }
+        forId = $id;
+        lexer.popState();
+		    lexer.stateExprValue = yy::Lexer::FOR_EXPR;
+      }
+	  for-part
+      { lexer.stateExprValue = yy::Lexer::EXPR; }
 	  for-loop-part-end
   ;
-  
+
+for-part:
+    for-step
+  | for-range
+  ;
+
+for-step:
+	  is-type ASSIGN 
+	  expr[from] for-to expr[to] step 
+		  { 
+			  nate.codeStartForStepLoop(forId, $[is-type], $[for-to], $from, $to, $step);
+		  }
+  ;
+
 for-to:
 	  DOWNTO
 		  { $$ = true; }
@@ -752,6 +754,13 @@ step:
 for-loop-part-end:
 	  while-statement
   | COL
+  ;
+  
+for-range:
+	  IN expr
+		  { 
+			  nate.codeStartForRangeLoop(forId, $expr);
+		  }
   ;
 
 return-statement:
