@@ -733,6 +733,11 @@ for-step:
 	  is-type ASSIGN 
 	  expr[from] for-to expr[to] step 
 		  { 
+	      if ($[is-type]->is(Type::Abstract))
+	      {
+		      nate.error("Abstract type: " + $[is-type]->name());
+	      }
+
 			  nate.codeStartForStepLoop(forId, $[is-type], $[for-to], $from, $to, $step);
 		  }
   ;

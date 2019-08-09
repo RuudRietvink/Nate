@@ -620,6 +620,12 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 																						bool initializeNonScalars)
 {
 	addIdentifier(aIdentifier);
+	if (aIdentifier->type()->is(Type::Abstract))
+	{
+		error("Abstract type: " + aIdentifier->type()->name());
+		return;
+	}
+
 	if (aIdentifier->type()->is(Type::Unknown))
 	{
 		error("Unknown type: " + aIdentifier->type()->name());

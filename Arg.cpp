@@ -20,15 +20,7 @@ bool Arg::setArgFlag(const std::string& aFlag)
 {
   bool ok = true;
 
-	if (aFlag == "num")
-	{
-		setFlag(Num, true);
-	}
-	else if (aFlag == "any")
-	{
-		setFlag(Any, true);
-	}
-	else if (aFlag == "cmp")
+	if (aFlag == "cmp")
 	{
 		setFlag(Cmp, true);
 	}
@@ -81,8 +73,6 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 		aStream << aValue.word();
 	}
 
-	if (aValue.is(Arg::Num)) aStream << ",Num";
-	if (aValue.is(Arg::Any)) aStream << ",Any";
 	if (aValue.is(Arg::Cmp)) aStream << ",Cmp";
 	if (aValue.is(Arg::Same)) aStream << ",Same";
 	if (aValue.is(Arg::Out)) aStream << ",Out";

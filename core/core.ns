@@ -12,34 +12,34 @@ alias "⇓" "dec"
 // operators
 ///////////////////////////////////////////////
 	
-code 90 \u uminus ($val-1 is (num)) is (num,highest,const):
+code 90 \u uminus ($val-1 is number) is number (same,const):
 	-$val-1
 	
-code 90 \u uplus ($val-1 is (num)) is (num,highest,const):
+code 90 \u uplus ($val-1 is number) is number (same,const):
 	$val-1
 	
 code 90 \u not ($cond is boolean) is boolean (const):
 	!$cond
   
-code 80 ($val-1 is (num)) \u * ($val-2 is (num)) is (num,highest,const):
+code 80 ($val-1 is number) \u * ($val-2 is number) is number (highest,const):
 	$val-1 * $val-2
 	
-code 80 ($val-1 is (num)) \u / ($val-2 is (num)) is (num,highest,const):
+code 80 ($val-1 is number) \u / ($val-2 is number) is number (highest,const):
 	$val-1 / $val-2
 	
-code 80 ($val-1 is (num)) \u mod ($val-2 is (num)) is (num,highest,const):
+code 80 ($val-1 is number) \u mod ($val-2 is number) is number (highest,const):
 	$val-1 % $val-2
 
-code 70 ($val-1 is (num)) \u + ($val-2 is (num)) is (num,highest,const):
+code 70 ($val-1 is number) \u + ($val-2 is number) is number (highest,const):
 	$val-1 + $val-2
 
-code 70 ($val-1 is (num)) \u - ($val-2 is (num)) is (num,highest,const):
+code 70 ($val-1 is number) \u - ($val-2 is number) is number (highest,const):
 	$val-1 - $val-2
 	
 code 62 ($val-1 is text) \u + ($val-2 is text) is text (const):
 	$val-1 + $val-2
   
-code 60 ($val-1 is (any)) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
+code 60 ($val-1 is any) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
 	$cond ? $val-1 : $val-2
 
 code 50 ($val-1 is (cmp)) \u = ($val-2 is (cmp)) is boolean (const):
@@ -70,28 +70,28 @@ code 35 ($cond-1 is boolean) \u or ($cond-2 is boolean) is boolean (const):
 // face value
 ///////////////////////////////////////////////
 
-code 120 \u inc ($val is (num,out)) is (same):
+code 120 \u inc ($val is number (out)) is (same):
   ++$val
   
-code 120 ($val is (num,out)) \u inc is (same):
+code 120 ($val is number (out)) \u inc is (same):
   $val++
   
-code 120 \u dec ($val is (num,out)) is (same):
+code 120 \u dec ($val is number (out)) is (same):
   --$val
   
-code 120 ($val is (num,out)) \u dec is (same):
+code 120 ($val is number (out)) \u dec is (same):
   $val--
   
-code 65 \u decrease ($val-1 is (num,out)) \u with ($val-2 is (same)) is (same):
+code 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)) is (same):
   $val-1 -= $val-2
   
-code 65 \u decrease ($val is (num,out)) is (same):
+code 65 \u decrease ($val is number (out)) is (same):
   --$val
   
-code 65 \u increase ($val-1 is (num,out)) \u with ($val-2 is (same)) is (same):
+code 65 \u increase ($val-1 is number (out)) \u with ($val-2 is (same)) is (same):
   $val-1 += $val-2
   
-code 65 \u increase ($val is (num,out)) is (same):
+code 65 \u increase ($val is number (out)) is (same):
   ++$val
 
 ///////////////////////////////////////////////
@@ -104,7 +104,7 @@ code 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
 code 200 ($prop is (prop)) of ($owner is (owner)) is (same):
   $owner.$prop
 
-code 65 stream-out ($val is (num)):
+code 65 stream-out ($val is number):
   $val
 
 code 65 stream-out ($val is boolean):

@@ -66,30 +66,34 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		mCodeType = "float";
-		mBitSize = 32;
+		mBitSize = 132;
 	}
 	else if (aType == "float-64")
 	{
+		setFlag(Abstract, false);
 		mCodeType = "double";
-		mBitSize = 64;
+		mBitSize = 164;
 	}
 	else if (aType == "boolean")
 	{
+		setFlag(Abstract, false);
 		setFlag(Boolean, true);
 		setFlag(Scalar, true);
 		mCodeType = "double";
 		mCodeType = "bool";
-		mBitSize = 32;
+		mBitSize = 232;
 	}
 	else if (aType == "char")
 	{
+		setFlag(Abstract, false);
 		setFlag(Char, true);
 		setFlag(NeedsRef, false);
 		mCodeType = "uint32_t";
-		mBitSize = 32;
+		mBitSize = 332;
 	}
 	else if (aType == "text")
 	{
+		setFlag(Abstract, false);
 		setFlag(Text, true);
 		setFlag(Comparable, true);
 		setFlag(NeedsRef, true);
@@ -139,8 +143,7 @@ void Type::setBaseType(const TypePtr& aType)
 
 bool Type::is(size_t aFlags) const
 {
-	return WithFlags::is(aFlags) || 
-				 (mBaseType && mBaseType->is(aFlags));
+	return WithFlags::is(aFlags);
 }
 
 bool Type::isOfType(const std::string& aType) const

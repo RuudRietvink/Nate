@@ -35,11 +35,7 @@ void Method::setPriority(int aValue)              { mPriority = aValue; }
 
 void Method::setReturnFlag(const std::string& aFlag)
 {
-	if (aFlag == "num")
-	{
-		setFlag(Num);
-	}
-	else if (aFlag == "highest")
+	if (aFlag == "highest")
 	{
 		setFlag(Highest);
 	}
@@ -204,6 +200,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	std::string resultCode = code();
 	TypePtr codeType(type());
 	TypePtr firstType;
+	TypePtr highestType;
 	TypePtr lastType;
 	Flags nodeFlags;
 	bool isConst = is(ConstExpr);
@@ -238,6 +235,11 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			{
 				firstType = nodeType;
 			}
+			
+			if (!highestType || nodeType->bitSize() > highestType->bitSize())
+			{
+				highestType = nodeType;
+			}
 
       ExprNode node = *nodeIter;
 			if (arg.is(Arg::Typename))
@@ -257,12 +259,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 													? nodeCode 
 													: "(" + nodeCode + ")";
 			resultCode = Core::replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
-
-			if (arg.is(Arg::Num) && !type() && (!codeType || nodeType->isBiggerThan(codeType)))
-			{
-				codeType = nodeType;
-			}
-
+			
 			lastType = nodeType;
 			if (!node.is(ExprNode::ConstExpr))
 			{
@@ -280,6 +277,10 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	else if (is(Last))
 	{
 		codeType = lastType;
+	}
+	else if (is(Highest))
+	{
+		codeType = highestType;
 	}
 
 	if (isConst)
@@ -377,12 +378,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				firstType = nodeType;
 			}
 
-			if (arg.is(Arg::Num) && !nodeType->is(Type::Number))
-			{
-				error = "Not a number: " + nodeIter->text() + " for " + arg.identifier()->name();
-				result = false;
-			}
-			else if (argType->is(Type::Number) && !nodeType->is(Type::Number))
+			if (argType->is(Type::Number) && !nodeType->is(Type::Number))
 			{
 				error = "Not a number: " + nodeIter->text() + " for " + arg.identifier()->name();
 				result = false;
