@@ -49,6 +49,7 @@ public:
 	static const size_t Abstract   =12;
 	static const size_t Any        =13;
 	static const size_t Char       =14;
+	static const size_t Fraction   =15;
 
 private:
 	void setBaseType(const TypePtr& aType);

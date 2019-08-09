@@ -54,6 +54,7 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
 	addType(std::make_shared<Type>("char"));
 	getType("text")->setTypenameType(getType("char"));
+	addType(std::make_shared<Type>("fraction", getType("number")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -677,7 +678,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 	}
 
 	auto initIter = aInitValues.cbegin();
-	TypePtr type;
+	TypePtr type(aType);
 
 	for (auto const& name : aNames)
 	{
@@ -688,7 +689,6 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		Expr initValue;
 		if (aInitValues.empty())
 		{
-			type = aType;
 			initValue = Expr(ExprNode("default", "{}", type));
 			initValue.node().setFlag(ExprNode::Default);
 			if (aConst)
@@ -698,8 +698,17 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		}
 		else if (aInitValues.size() != 1 || initIter == aInitValues.cbegin())
 		{
-			type = initIter->type();
+			if (type->empty())
+			{
+				type = initIter->type();
+			}
+			else if (!type->canBeCastedFrom(initIter->type()))
+			{
+				error("Incompatible type for initial value: " + initIter->code());
+			}
+
 			initValue = *initIter++;
+			initValue.node().castToType(aType);
 		}
 		else 
 		{

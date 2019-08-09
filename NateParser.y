@@ -91,6 +91,7 @@
 %type <bool>                     for-to;
 %type <Expr>                     step;
 %type <Expr>                     expr;
+%type <Expr>                     expr-at-end-of-statement;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
 %type <Expr>					           expr-non-word;
@@ -140,7 +141,7 @@ program:
   ;
   
 statement-list:
-    statement opt-eos
+    statement
   | statement-list statement
   ;
 
@@ -369,7 +370,6 @@ var-statement:
 		  { lexer.popState(); }
 	  is-type var-init-assign
 		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
-    opt-eos
   ;
 
 var:
@@ -428,7 +428,7 @@ type-extra:
 var-init-assign:
 	  %empty
 		  { $$.clear(); }
-  | ASSIGN var-init-list
+  | ASSIGN var-init-list EOS
 		  { $$ = $[var-init-list]; }
   ;
 
@@ -440,7 +440,7 @@ var-init-list:
   ;
   
 var-init:
-	  expr
+	  expr-at-end-of-statement
   ;
 
 record-statement:
@@ -791,6 +791,18 @@ expr:
 		  }
   ;
   
+expr-at-end-of-statement:
+    expr-part
+      { lexer.pushState(lexer.stateExprValue); }
+    expr-part-list
+      { 
+			  lexer.popState(); 
+			  $$ = nate.evaluate(Expr($[expr-part], $[expr-part-list]));
+        prevWasValue = false;
+        lexer.space();
+		  }
+  ;
+  
 expr-end:
     %empty
   | EOS
@@ -820,7 +832,7 @@ expr-non-word:
 		  }
 	| FRACTION
 		  { 
-			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\"", nate.determineType("fraction")));
+			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\")", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();

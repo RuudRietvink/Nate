@@ -33,7 +33,23 @@ bool ExprNode::castToType(const TypePtr& aToType)
 
 	if (type()->is(Type::Number) && aToType->is(Type::Number))
 	{
-		if (!aToType->is(Type::Abstract))
+		if (type()->is(Type::Fraction) && aToType->is(Type::Real))
+		{
+			*this = ExprNode(text(), "(" + code() + ".toDouble())", aToType);
+		}
+		else if (type()->is(Type::Real) && aToType->is(Type::Fraction))
+		{
+			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
+		}
+		else if (type()->is(Type::Fraction) && aToType->is(Type::Integer))
+		{
+			*this = ExprNode(text(), "(" + code() + ".toInt())", aToType);
+		}
+		else if (type()->is(Type::Integer) && aToType->is(Type::Fraction))
+		{
+			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
+		}
+		else if (!aToType->is(Type::Abstract))
 		{
 			if (type()->is(Type::Real) && !aToType->is(Type::Real))
 			{
@@ -60,6 +76,14 @@ bool ExprNode::castToType(const TypePtr& aToType)
 	else if (type()->is(Type::Char) && aToType->is(Type::Text))
 	{
 		*this = ExprNode(text(), "Core::toString(" + code() + ")", aToType);
+  }
+	else if (type()->is(Type::Char) && aToType->is(Type::Integer))
+	{
+		*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
+  }
+	else if (type()->is(Type::Integer) && aToType->is(Type::Char))
+	{
+		*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
   }
 	else if (!type()->isOfType(aToType->name()))
 	{

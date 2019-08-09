@@ -388,6 +388,10 @@ include\h*\".*\"  s(); includeFile();
 			     {
 			       return yy::parser::make_EOF(location());
 			     }
+           else
+           {
+			       return yy::parser::make_EOS(location());
+           }
 
 
 %%

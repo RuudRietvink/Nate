@@ -74,6 +74,13 @@ void Type::setType(const std::string& aType)
 		mCodeType = "double";
 		mBitSize = 164;
 	}
+	else if (aType == "fraction")
+	{
+		setFlag(Abstract, false);
+		setFlag(Fraction, true);
+		mCodeType = "Fraction";
+		mBitSize = 264;
+	}
 	else if (aType == "boolean")
 	{
 		setFlag(Abstract, false);

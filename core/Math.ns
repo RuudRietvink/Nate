@@ -27,30 +27,57 @@ constant e is float-64 := 2.718281828459045
 code 110 ($val-1 is number) \u ^ ($val-2 is number) is number (highest,right):
 	std::pow($val-1, $val-2)
   
-code 110 \u \l sqrt ($val is number) is float-64:
+code 110 \u \l sqrt ($val is real) is float-64:
 	std::sqrt($val)
     
-code 110 \u round ($val is number) is int-64:
+code 110 \u round ($val is real) is int-64:
 	std::round($val)
   
-code 110 \u floor ($val is number) is int-64:
+code 110 \u floor ($val is real) is int-64:
 	std::floor($val)
   
-code 110 \u \l floor_l ($val is number) floor_r is int-64:
+code 110 \u \l floor_l ($val is real) floor_r is int-64:
 	std::floor($val)
   
-code 110 \u ceil ($val is number) is int-64:
+code 110 \u ceil ($val is real) is int-64:
 	std::ceil($val)
   
-code 110 \u \l ceil_l ($val is number) ceil_r is int-64:
+code 110 \u \l ceil_l ($val is real) ceil_r is int-64:
 	std::ceil($val)
   
-code 110 \u abs ($val is number) is int-64:
+code 110 \u abs ($val is real) is int-64:
 	std::abs($val)
   
-code 110 \u \l abs_l ($val is number) abs_r is int-64:
+code 110 \u \l abs_l ($val is real) abs_r is int-64:
 	std::abs($val)
-
+  
+code 110 \u sin ($val is real) is (same):
+	std::sin($val)
+  
+code 110 \u cos ($val is real) is (same):
+	std::cos($val)
+  
+code 110 \u tan ($val is real) is (same):
+	std::tan($val)
+  
+code 110 \u sinh ($val is real) is (same):
+	std::sinh($val)
+  
+code 110 \u cosh ($val is real) is (same):
+	std::cosh($val)
+  
+code 110 \u tanh ($val is real) is (same):
+	std::tanh($val)
+  
+code 110 \u asin ($val is real) is (same):
+	std::asin($val)
+  
+code 110 \u acos ($val is real) is (same):
+	std::acos($val)
+  
+code 110 \u atan ($val is real) is (same):
+	std::atan($val)
+  
 code 100 ($val-1 is number) \u monomial ($val-2 is number) is number (highest,const):
 	$val-1 * $val-2
 	

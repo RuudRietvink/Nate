@@ -22,6 +22,7 @@ public:
 	Fraction abs() const;
 	
 	double toDouble() const;
+	int32_t toInt() const;
 	bool convertFromString(const std::string& aString);
 	std::string toString() const;
 	
@@ -42,6 +43,10 @@ public:
 	Fraction operator*(const Fraction& aFraction) const;
 	Fraction operator/(const Fraction& aFraction) const;
 	Fraction operator%(const Fraction& aFraction) const;
+	Fraction operator++();
+	Fraction operator--();
+	Fraction operator++(int);
+	Fraction operator--(int);
 
 	friend Fraction operator+(int32_t aValue, const Fraction& aFraction);
 	friend Fraction operator-(int32_t aValue, const Fraction& aFraction);
@@ -60,7 +65,6 @@ private:
 														 	Fraction& aFrac,
 														 	int32_t aNum2);
 	int32_t signIt(int32_t aValue) const;
-	void getSign(int32_t aValue);
 
 	int32_t mWhole       = 0;
 	int32_t mNumerator   = 0;
