@@ -52,7 +52,7 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
 	addType(std::make_shared<Type>("list", getType("sequence-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
-	addType(std::make_shared<Type>("char", getType("text")));
+	addType(std::make_shared<Type>("char"));
 	getType("text")->setTypenameType(getType("char"));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })

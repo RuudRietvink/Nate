@@ -57,6 +57,10 @@ bool ExprNode::castToType(const TypePtr& aToType)
 	{
 		*this = ExprNode(text(), "(" + code() + "?\"true\":\"false\")", aToType);
   }
+	else if (type()->is(Type::Char) && aToType->is(Type::Text))
+	{
+		*this = ExprNode(text(), "Core::toString(" + code() + ")", aToType);
+  }
 	else if (!type()->isOfType(aToType->name()))
 	{
 		ok = false;

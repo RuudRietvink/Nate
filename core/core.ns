@@ -42,22 +42,22 @@ code 62 ($val-1 is text) \u + ($val-2 is text) is text (const):
 code 60 ($val-1 is any) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
 	$cond ? $val-1 : $val-2
 
-code 50 ($val-1 is (cmp)) \u = ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u = ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 == $val-2
 	
-code 50 ($val-1 is (cmp)) \u != ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u != ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 != $val-2
 	
-code 50 ($val-1 is (cmp)) \u >= ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u >= ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 >= $val-2
 	
-code 50 ($val-1 is (cmp)) \u <= ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u <= ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 <= $val-2
 
-code 50 ($val-1 is (cmp)) \u > ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u > ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 > $val-2
 	
-code 50 ($val-1 is (cmp)) \u < ($val-2 is (cmp)) is boolean (const):
+code 50 ($val-1 is (comphigh, cmp)) \u < ($val-2 is (comphigh, cmp)) is boolean (const):
 	$val-1 < $val-2
 	
 code 40 ($cond-1 is boolean) \u and ($cond-2 is boolean) is boolean (const):

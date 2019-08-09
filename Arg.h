@@ -17,7 +17,8 @@ public:
 	const IdentifierPtr&	identifier() const;
 	const std::string&		word() const;
 	bool									setArgFlag(const std::string& aFlag);
-
+	
+	static const size_t CompHigh	= 2;
 	static const size_t Cmp				= 3;
 	static const size_t Same			= 4;
 	static const size_t Out				= 5;

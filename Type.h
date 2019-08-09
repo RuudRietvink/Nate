@@ -21,7 +21,7 @@ public:
 	bool empty() const;
 	void setType(const std::string& aType);
 	bool isBiggerThan(const TypePtr& aType) const;
-	bool isCompatibleWith(const TypePtr& aType) const;
+	bool canBeCastedFrom(const TypePtr& aType) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 	bool isOfType(const std::string& aType) const;
 

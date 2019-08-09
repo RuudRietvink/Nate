@@ -28,6 +28,10 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	{
 		setFlag(Same, true);
 	}
+	else if (aFlag == "comphigh")
+	{
+		setFlag(CompHigh, true);
+	}
 	else if (aFlag == "out")
 	{
 		setFlag(Out, true);
@@ -75,6 +79,7 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 
 	if (aValue.is(Arg::Cmp)) aStream << ",Cmp";
 	if (aValue.is(Arg::Same)) aStream << ",Same";
+	if (aValue.is(Arg::CompHigh)) aStream << ",CompHigh";
 	if (aValue.is(Arg::Out)) aStream << ",Out";
 	if (aValue.is(Arg::InOut)) aStream << ",InOut";
 	if (aValue.is(Arg::Owner)) aStream << ",Owner";

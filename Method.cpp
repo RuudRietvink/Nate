@@ -213,6 +213,39 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	{
 		if (arg.isIdentifier())
 		{
+			TypePtr nodeType = nodeIter->type();
+
+			if (arg.is(Arg::Prop) && owner != nullptr)
+			{
+				auto identifier = owner->getIdentifier(nodeIter->text());
+				if (identifier)
+				{
+					nodeType = identifier->type();
+				}
+			}
+
+			if (nodeType)
+			{
+				if (!firstType) 
+				{
+					firstType = nodeType;
+				}
+			
+				if (!highestType || nodeType->bitSize() > highestType->bitSize())
+				{
+					highestType = nodeType;
+				}
+			}
+		}
+
+		++nodeIter;
+	}
+		
+	nodeIter = aBegin;
+	for (auto const& arg : mArgs)
+	{
+		if (arg.isIdentifier())
+		{
 			const TypePtr& argType = arg.identifier()->type();
 			TypePtr nodeType = nodeIter->type();
 
@@ -231,16 +264,6 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				nodeCode = nodeIter->code();
 			}
 
-			if (!firstType) 
-			{
-				firstType = nodeType;
-			}
-			
-			if (!highestType || nodeType->bitSize() > highestType->bitSize())
-			{
-				highestType = nodeType;
-			}
-
       ExprNode node = *nodeIter;
 			if (arg.is(Arg::Typename))
 			{
@@ -249,7 +272,19 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			}
 			else if (!arg.is(Arg::Prop))
 			{
-				node.castToType(arg.is(Arg::Same) ? firstType : argType);
+				if (arg.is(Arg::Same))
+				{
+					node.castToType(firstType);
+				}
+				else if (arg.is(Arg::CompHigh))
+				{
+					node.castToType(highestType);
+				}
+				else
+				{
+					node.castToType(argType);
+				}
+
 				nodeCode = node.code();
 			}
 
@@ -326,17 +361,19 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 	std::string error;
 	bool result = true;
 	TypePtr firstType;
+	TypePtr highestType;
 	Record* owner = nullptr;
 	TypePtr templateType;
 	
 	ExprNodesCIter nodeIter = aBegin;
 	for (auto arg = args().cbegin(); arg != args().cend() && owner == nullptr; ++arg, ++nodeIter)
 	{
+		const TypePtr& nodeType = nodeIter->type();
+
 		if (arg->isIdentifier())
 		{
 			if (arg->is(Arg::Owner))
 			{
-				const TypePtr& nodeType = nodeIter->type();
 				if (!nodeType->is(Type::Record))
 				{
 					error = "Not a record: " + nodeType->name();
@@ -360,6 +397,14 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					error = "Not a generic: " + templateType->name();
 					result = false;
+				}
+			}
+			
+			if (nodeType)
+			{
+				if (!highestType || nodeType->bitSize() > highestType->bitSize())
+				{
+					highestType = nodeType;
 				}
 			}
 		}
@@ -388,10 +433,16 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				error = "Not a comparible: " + nodeIter->text() + " for " + arg.identifier()->name();
 				result = false;
 			}
-			else if (arg.is(Arg::Same) && !firstType->isCompatibleWith(nodeType))
+			else if (arg.is(Arg::Same) &&  !firstType->canBeCastedFrom(nodeType))
 			{
 				error = "Not same type: " + arg.identifier()->name() + " of type " + nodeType->name() +
                 " must be of type " + firstType->name();
+				result = false;
+			}
+			else if (arg.is(Arg::CompHigh) && !highestType->canBeCastedFrom(nodeType))
+			{
+				error = "Not same type: " + arg.identifier()->name() + " of type " + nodeType->name() +
+                " must be compatible with type " + highestType->name();
 				result = false;
 			}
 			else if (arg.is(Arg::Owner))
@@ -422,14 +473,14 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					error = "No generic supplied for : " + nodeType->name();
 					result = false;
 				}
-				else if (!templateType->typenameType()->isCompatibleWith(nodeType))
+				else if (!templateType->typenameType()->canBeCastedFrom(nodeType))
 				{
 					error = "Not same type: " + arg.identifier()->name() + + " of type " + nodeType->name() +
 									" must be of type " + templateType->typenameType()->name();
 					result = false;
 				}
 			}
-			else if (argType && !argType->is(Type::Unknown) && !argType->isCompatibleWith(nodeType))
+			else if (argType && !argType->is(Type::Unknown) && !argType->canBeCastedFrom(nodeType))
 			{
 				error = "Not same type: " + arg.identifier()->name() + + " of type " + nodeType->name() +
                 " must be of type " + argType->name();

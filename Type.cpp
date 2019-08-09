@@ -87,7 +87,7 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(Char, true);
-		setFlag(NeedsRef, false);
+		setFlag(Comparable, true);
 		mCodeType = "uint32_t";
 		mBitSize = 332;
 	}
@@ -152,7 +152,7 @@ bool Type::isOfType(const std::string& aType) const
 				 (mBaseType && mBaseType->isOfType(aType));
 }
 
-bool Type::isCompatibleWith(const TypePtr& aType) const
+bool Type::canBeCastedFrom(const TypePtr& aType) const
 {
 	bool result = false;
 	
@@ -164,9 +164,17 @@ bool Type::isCompatibleWith(const TypePtr& aType) const
 	{
 		result = true;
 	}
-	else if (is(Char))
+	else if (is(Char) && aType->is(Integer))
 	{
-		result = false;
+		result = true;
+	}
+	else if (is(Integer) && aType->is(Char))
+	{
+		result = true;
+	}
+	else if (is(Text) && aType->is(Char))
+	{
+		result = true;
 	}
 	else if (is(Text) && aType->is(Text))
 	{
