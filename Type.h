@@ -16,7 +16,8 @@ public:
 	Type();
 	Type(const std::string& aType, const TypePtr& aBaseType = TypePtr());
 	virtual ~Type() = default;
-
+	
+	virtual bool is(size_t aFlags) const override;
 	bool empty() const;
 	void setType(const std::string& aType);
 	bool isBiggerThan(const TypePtr& aType) const;
@@ -34,7 +35,7 @@ public:
 	void							 setCodeType(const std::string& aCodeType);
 	
 	static const size_t Number     = 0;
-	static const size_t Float      = 1;
+	static const size_t Real       = 1;
 	static const size_t Text       = 2;
 	static const size_t Boolean    = 3;
 	static const size_t Unknown    = 4;
@@ -44,7 +45,10 @@ public:
 	static const size_t Scalar     = 8;
 	static const size_t Container  = 9;
 	static const size_t List       =10;
-	static const size_t NoOutput   =11;
+	static const size_t Integer    =11;
+	static const size_t Abstract   =12;
+	static const size_t Any        =13;
+	static const size_t Char       =14;
 
 private:
 	void setBaseType(const TypePtr& aType);

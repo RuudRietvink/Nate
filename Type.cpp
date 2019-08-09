@@ -18,7 +18,77 @@ Type::Type(const std::string& aType, const TypePtr& aBaseType)
 
 void Type::setType(const std::string& aType)
 {
-	if (aType == "text")
+	if (aType == "any")
+	{
+		setFlag(Abstract, true);
+		setFlag(Any, true);
+	}
+	else if (aType == "number")
+	{
+		setFlag(Abstract, true);
+		setFlag(Number, true);
+		setFlag(Scalar, true);
+		setFlag(Comparable, true);
+	}
+	else if (aType == "integer")
+	{
+		setFlag(Integer, true);
+	}
+	else if (aType == "real")
+	{
+		setFlag(Real, true);
+	}
+	else if (aType == "int-8")
+	{
+		setFlag(Abstract, false);
+		mCodeType = "int8_t";
+		mBitSize = 8;
+	}
+	else if (aType == "int-16")
+	{
+		setFlag(Abstract, false);
+		mCodeType = "int16_t";
+		mBitSize = 16;
+	}
+	else if (aType == "int-32")
+	{
+		setFlag(Abstract, false);
+		mCodeType = "int32_t";
+		mBitSize = 32;
+	}
+	else if (aType == "int-64")
+	{
+		setFlag(Abstract, false);
+		mCodeType = "int64_t";
+		mBitSize = 64;
+	}
+	else if (aType == "float-32")
+	{
+		setFlag(Abstract, false);
+		mCodeType = "float";
+		mBitSize = 32;
+	}
+	else if (aType == "float-64")
+	{
+		mCodeType = "double";
+		mBitSize = 64;
+	}
+	else if (aType == "boolean")
+	{
+		setFlag(Boolean, true);
+		setFlag(Scalar, true);
+		mCodeType = "double";
+		mCodeType = "bool";
+		mBitSize = 32;
+	}
+	else if (aType == "char")
+	{
+		setFlag(Char, true);
+		setFlag(NeedsRef, false);
+		mCodeType = "uint32_t";
+		mBitSize = 32;
+	}
+	else if (aType == "text")
 	{
 		setFlag(Text, true);
 		setFlag(Comparable, true);
@@ -26,67 +96,8 @@ void Type::setType(const std::string& aType)
 		mCodeType = "std::string";
 		mBitSize = 1000;
 	}
-	else if (aType == "int-8")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		mCodeType = "int8_t";
-		mBitSize = 8;
-	}
-	else if (aType == "int-16")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		mCodeType = "int16_t";
-		mBitSize = 16;
-	}
-	else if (aType == "int-32")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		mCodeType = "int32_t";
-		mBitSize = 32;
-	}
-	else if (aType == "int-64")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		mCodeType = "int64_t";
-		mBitSize = 64;
-	}
-	else if (aType == "float-32")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		setFlag(Float, true);
-		mCodeType = "float";
-		mBitSize = 32;
-	}
-	else if (aType == "float-64")
-	{
-		setFlag(Scalar, true);
-		setFlag(Number, true);
-		setFlag(Comparable, true);
-		setFlag(Float, true);
-		mCodeType = "double";
-		mBitSize = 64;
-	}
-	else if (aType == "boolean")
-	{
-		setFlag(Scalar, true);
-		setFlag(Boolean, true);
-		setFlag(Comparable, true);
-		mCodeType = "bool";
-		mBitSize = 32;
-	}
 	else if (aType == "record")
 	{
-		setFlag(NoOutput, true);
 		setFlag(Record, true);
 		setFlag(NeedsRef, true);
 		mCodeType = "struct";
@@ -94,10 +105,8 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "container")
 	{
-		setFlag(NoOutput, true);
 		setFlag(Container, true);
 		setFlag(NeedsRef, true);
-		mCodeType = "";
 		mBitSize = 3000;
 	}
 	else if (aType == "sequence-container")
@@ -105,6 +114,7 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "list")
 	{
+		setFlag(Abstract, false);
 		setFlag(List, true);
 		mCodeType = "std::list";
 	}
@@ -127,6 +137,12 @@ void Type::setBaseType(const TypePtr& aType)
 	}
 }
 
+bool Type::is(size_t aFlags) const
+{
+	return WithFlags::is(aFlags) || 
+				 (mBaseType && mBaseType->is(aFlags));
+}
+
 bool Type::isOfType(const std::string& aType) const
 {
 	return mName == aType || 
@@ -136,8 +152,20 @@ bool Type::isOfType(const std::string& aType) const
 bool Type::isCompatibleWith(const TypePtr& aType) const
 {
 	bool result = false;
-
-	if ( is(Number) && aType->is(Number))
+	
+	if (aType->isOfType(name()))
+	{
+		result = true;
+	}
+	else if (is(Number) && aType->is(Number))
+	{
+		result = true;
+	}
+	else if (is(Char))
+	{
+		result = false;
+	}
+	else if (is(Text) && aType->is(Text))
 	{
 		result = true;
 	}
@@ -146,10 +174,6 @@ bool Type::isCompatibleWith(const TypePtr& aType) const
 		result = true;
 	}
 	else if (is(Text) && aType->is(Boolean))
-	{
-		result = true;
-	}
-	else if (aType->isOfType(name()))
 	{
 		result = true;
 	}
@@ -165,7 +189,7 @@ bool Type::isBiggerThan(const TypePtr& aType) const
 	{
 		result = true;
 	}
-	else if (is(Float) && (!aType->is(Float) && aType->is(Number)))
+	else if (is(Real) && (!aType->is(Real) && aType->is(Number)))
 	{
 		result = true;
 	}
@@ -187,7 +211,7 @@ std::string Type::codeType() const
 { 
 	std::string result;
 
-	if (!mTypenameType || name() == "text")
+	if (!mTypenameType || is(Text))
 	{
 	  result = mCodeType;
 	}
@@ -207,8 +231,11 @@ std::ostream& operator<<(std::ostream& aStream, const Type& aValue)
 std::ostream& Type::print(std::ostream& aStream) const
 {
 	aStream << "Type(" << name() << "," << codeType() << "," << bitSize();
+	if (mBaseType) aStream << ",BaseType(" << mBaseType->name() << ")";
+	if (is(Type::Any))  aStream << ",Any";
 	if (is(Type::Number))  aStream << ",Number";
-	if (is(Type::Float))   aStream << ",Float";
+	if (is(Type::Real))   aStream << ",Float";
+	if (is(Type::Integer))   aStream << ",Integer";
 	if (is(Type::Text))  aStream << ",Text";
 	if (is(Type::Boolean)) aStream << ",Boolean";
 	if (is(Type::Unknown)) aStream << ",Unknown";
@@ -217,8 +244,9 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::NeedsRef)) aStream << ",NeedsRef";
 	if (is(Type::Record)) aStream << ",Record";
 	if (is(Type::Container)) aStream << ",Container";
+	if (is(Type::Abstract)) aStream << ",Abstract";
 	if (is(Type::List)) aStream << ",List";
-	if (name() != "text") {
+	if (mTypenameType) {
 		aStream << "TypenameType(" << *mTypenameType << "),";
 	}
 

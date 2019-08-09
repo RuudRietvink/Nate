@@ -117,7 +117,7 @@ public:
   void codeLoopWhile(const Expr& aExpr);
   void codeReturn(const Expr& aValue);
   void codeExpression(const Expr& aExpr);
-  Expr evaluate(const Expr& aExpr);
+  Expr evaluate(const Expr& aExpr, bool aDebug = false);
 	void printLineNr();
 
 private:
@@ -133,14 +133,18 @@ private:
 	void methodMatches(const Method& aMethod,
 		                 ExprNodesCIter& aStartIter, 
 		                 ExprNodesCIter& aEndIter,
-		                 Match& aMatch);
+		                 Match& aMatch,
+										 bool aDebug = false);
   void checkLeftToRightMethod(const Method& aMethod,
 	                            const Expr& aExpr,
-	                            Match& aMatch);
+	                            Match& aMatch,
+															bool aDebug = false);
   void checkRightToLeftMethod(const Method& aMethod,
 	                            const Expr& aExpr,
-	                            Match& aMatch);
-	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch);
+	                            Match& aMatch,
+															bool aDebug = false);
+	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch,
+										 bool aDebug = false);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
 

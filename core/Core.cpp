@@ -295,6 +295,14 @@ std::string Core::toString(const utf8::iterator<std::string::const_iterator>& aI
 	return std::string(aIter.base(), aEnd.base());
 }
 
+std::string Core::toString(uint32_t aChar)
+{
+	std::string result;
+	auto back = std::back_insert_iterator<std::string>(result);
+	utf8::append(aChar, back);
+	return result;
+}
+
 std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
 {
 	aStream << "Core::Format{" 

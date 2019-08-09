@@ -103,3 +103,9 @@ code 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
 
 code 200 ($prop is (prop)) of ($owner is (owner)) is (same):
   $owner.$prop
+
+code 65 stream-out ($val is (num)):
+  $val
+
+code 65 stream-out ($val is boolean):
+  $val

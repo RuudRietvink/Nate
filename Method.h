@@ -19,9 +19,9 @@ public:
 	Method();
 	virtual ~Method() = default;
 
-	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const;
-	virtual std::tuple<std::string, bool> checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const;
-	virtual std::tuple<std::string, std::string, TypePtr, Flags> evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const;
+	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual std::tuple<std::string, bool> checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual std::tuple<std::string, std::string, TypePtr, Flags> evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;

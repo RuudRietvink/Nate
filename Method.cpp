@@ -147,15 +147,18 @@ TypePtr Method::getTemplateType(const ExprNodesCIter& aNodeIter) const
 	return templateType;
 }
 
-bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
+bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
-	//auto exp = Expr();
-	//exp.addNodes(aBegin, aEnd);
-	//std::cerr << "//// " << pattern() << " " << exp.text() << " ";
+	if (aDebug)
+	{
+		auto exp = Expr();
+		exp.addNodes(aBegin, aEnd);
+		std::cerr << "//// " << pattern() << " " << exp.text() << " ";
+	}
 
 	if (mArgs.size() != static_cast<size_t>(std::distance(aBegin, aEnd)))
 	{
-		//std::cerr <<  "diff size "  << mArgs.size() << " " << static_cast<size_t>(std::distance(aBegin, aEnd)) << std::endl;
+		if (aDebug) std::cerr <<  "diff size "  << mArgs.size() << " " << static_cast<size_t>(std::distance(aBegin, aEnd)) << std::endl;
 		return false;
 	}
 	
@@ -167,8 +170,8 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) c
 			Record* owner = getOwner(aBegin);
 			if (owner == nullptr || !owner->getIdentifier(nodeIter->text()))
 			{
-				//if (owner == nullptr) std::cerr << "No owner" << std::endl;
-				//std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
+				if (aDebug) if (owner == nullptr) std::cerr << "No owner" << std::endl;
+				if (aDebug) std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
 				return false;
 			}
 		}
@@ -176,12 +179,12 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) c
 		{
 			if (arg.isIdentifier() != (!nodeIter->is(ExprNode::Word)))
 			{
-				//std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
+				if (aDebug) std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
 				return false;
 			}
 			if (!arg.isIdentifier() && arg.word() != nodeIter->text())
 			{
-				//std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
+				if (aDebug) std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
 				return false;
 			}
 		}
@@ -189,13 +192,13 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) c
 		++nodeIter;
 	}
 
-	//std::cerr << "matches " << std::endl;
+	if (aDebug) std::cerr << "matches " << std::endl;
 
 	return true;
 }
 
 std::tuple<std::string, std::string, TypePtr, Flags> 
-Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
+Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
 	std::string error;
 	std::string resultCode = code();
@@ -317,7 +320,7 @@ const std::string& Method::pattern() const
 }
 
 std::tuple<std::string, bool> 
-Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) const
+Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
 	std::string error;
 	bool result = true;
@@ -440,6 +443,8 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd) 
 
 		++nodeIter;
 	}
+
+	if (aDebug) std::cerr << result << " " << error << std::endl;
 
 	return std::make_tuple(error, result);
 }

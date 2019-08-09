@@ -46,6 +46,7 @@ public:
 	static std::string toString(utf8::iterator<std::string::const_iterator> aIter);
 	static std::string toString(const utf8::iterator<std::string::const_iterator>& aIter,
 											     	  const utf8::iterator<std::string::const_iterator>& aEnd);
+	static std::string toString(uint32_t aChar);
 
 	struct Format
 	{

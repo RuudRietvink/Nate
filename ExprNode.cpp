@@ -33,11 +33,11 @@ bool ExprNode::castToType(const TypePtr& aToType)
 
 	if (type()->is(Type::Number) && aToType->is(Type::Number))
 	{
-		if (type()->is(Type::Float) && !aToType->is(Type::Float))
+		if (type()->is(Type::Real) && !aToType->is(Type::Real))
 		{
 			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
 		}
-		else if (!type()->is(Type::Float) && aToType->is(Type::Float))
+		else if (!type()->is(Type::Real) && aToType->is(Type::Real))
 		{
 			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
 		}

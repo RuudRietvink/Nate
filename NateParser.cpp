@@ -31,25 +31,29 @@ NateParser::~NateParser() = default;
 int NateParser::parse()
 {
 	pushScope("global");
-	for (auto name : { "int-8", "int-16", "int-32", "int-64",
-			               "float-32", "float-64",
-										 "container",
-										 "record",
-										 "boolean"
-									 })
-	{
-		TypePtr type = std::make_shared<Type>(name);
-		addType(type);
-	}
-
+	
+	addType(std::make_shared<Type>("any"));
+	addType(std::make_shared<Type>("number", getType("any")));
+	addType(std::make_shared<Type>("integer", getType("number")));
+	addType(std::make_shared<Type>("real", getType("number")));
+	addType(std::make_shared<Type>("int-8", getType("integer")));
+	addType(std::make_shared<Type>("int-16", getType("integer")));
+	addType(std::make_shared<Type>("int-32", getType("integer")));
+	addType(std::make_shared<Type>("int-64", getType("integer")));
 	addType(getType("int-32"), "int");
+	addType(std::make_shared<Type>("float-32", getType("real")));
+	addType(std::make_shared<Type>("float-64", getType("real")));
 	addType(getType("float-32"), "float");
+	addType(std::make_shared<Type>("boolean", getType("any")));
 	addType(getType("boolean"), "bool");
+	addType(std::make_shared<Type>("record", getType("any")));
 		
+	addType(std::make_shared<Type>("container", getType("any")));
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
 	addType(std::make_shared<Type>("list", getType("sequence-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
-	getType("text")->setTypenameType(getType("text"));
+	addType(std::make_shared<Type>("char", getType("text")));
+	getType("text")->setTypenameType(getType("char"));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -437,11 +441,12 @@ TypePtr NateParser::makeType(const std::string& aValue)
 
 void NateParser::methodMatches(const Method& aMethod,
 														   ExprNodesCIter& aStartIter, ExprNodesCIter& aEndIter,
-														   Match& aMatch)
+														   Match& aMatch,
+															 bool aDebug)
 {
 	bool result;
 	std::string errorMsg;
-	std::tie(errorMsg, result) = aMethod.checkArgTypes(aStartIter, aEndIter);
+	std::tie(errorMsg, result) = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
 
 	if (result)
 	{
@@ -458,7 +463,8 @@ void NateParser::methodMatches(const Method& aMethod,
 
 void NateParser::checkLeftToRightMethod(const Method& aMethod,
 																			  const Expr& aExpr,
-																			  Match& aMatch)
+																			  Match& aMatch, 
+																				bool aDebug)
 {
 	auto size = aMethod.args().size();
 
@@ -467,20 +473,21 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 	{
 		auto endIter = startIter + size;
 		
-		if (aMethod.matches(startIter, endIter) &&
+		if (aMethod.matches(startIter, endIter, aDebug) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
 				 (aMethod.priority() == aMatch.methodFound->priority() &&
           startIter < aMatch.nodeStartIter)))
 		{
-			methodMatches(aMethod, startIter, endIter, aMatch);
+			methodMatches(aMethod, startIter, endIter, aMatch, aDebug);
 		}
 	}
 }
 
 void NateParser::checkRightToLeftMethod(const Method& aMethod,
 																			  const Expr& aExpr,
-																			  Match& aMatch)
+																			  Match& aMatch, 
+																				bool aDebug)
 {
 	auto size = aMethod.args().size();
 
@@ -489,37 +496,37 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 	{
 		auto startIter = endIter - size;
 		
-		if (aMethod.matches(startIter, endIter) &&
+		if (aMethod.matches(startIter, endIter, aDebug) &&
 				(aMatch.methodFound == nullptr || 
 				 aMethod.priority() > aMatch.methodFound->priority() ||
 				 (aMethod.priority() == aMatch.methodFound->priority() &&
           startIter > aMatch.nodeStartIter)))
 		{
-			 methodMatches(aMethod, startIter, endIter, aMatch);
+			 methodMatches(aMethod, startIter, endIter, aMatch, aDebug);
 		}
 	}
 }
 
-void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch)
+void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch, bool aDebug)
 {
 	auto size = aMethod.args().size();
 	if (size <= aExpr.nodes().size())
 	{
 		if (aMethod.is(Code::RightLeft))
 		{
-			checkRightToLeftMethod(aMethod, aExpr, aMatch);
+			checkRightToLeftMethod(aMethod, aExpr, aMatch, aDebug);
 		}
 		else
 		{
-			checkLeftToRightMethod(aMethod, aExpr, aMatch);
+			checkLeftToRightMethod(aMethod, aExpr, aMatch, aDebug);
 		}
 	}
 }
 
-Expr NateParser::evaluate(const Expr& aExpr)
+Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 {
 	Expr result = aExpr;
-	//std::cerr << "+++++ " << aExpr.text() << std::endl;
+	if (aDebug) std::cerr << "+++++ " << aExpr.text() << " " << aExpr << std::endl;
 
 	Match match;
 	match.methodFound = nullptr;
@@ -532,12 +539,12 @@ Expr NateParser::evaluate(const Expr& aExpr)
 		
 		for (auto const& code : mCodes)
 		{
-			checkIfMethod(code, aExpr, match);
+			checkIfMethod(code, aExpr, match, aDebug);
 		}
 		
 		for (auto const& define : mDefines)
 		{
-			checkIfMethod(define, aExpr, match);
+			checkIfMethod(define, aExpr, match, aDebug);
 		}
 
 		if (match.methodFound)
@@ -547,12 +554,12 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			TypePtr methodType;
 			Flags nodeFlags;
 			std::tie(errorMsg, methodStat, methodType, nodeFlags) = 
-				match.methodFound->evaluate(match.nodeStartIter, match.nodeEndIter);
+				match.methodFound->evaluate(match.nodeStartIter, match.nodeEndIter, aDebug);
 			if (!errorMsg.empty())
 			{
 				error(errorMsg);
 			}
-			//std::cerr << "******* " << (methodType ? *methodType : Type()) << " " << methodStat << std::endl;
+			if (aDebug) std::cerr << "******* " << (methodType ? *methodType : Type()) << " " << methodStat << std::endl;
 			
 			ExprNode node(methodStat, methodStat, methodType);
 			node.setFlags(nodeFlags);
@@ -562,7 +569,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 			newExpr.addNode(node);
 			newExpr.addNodes(match.nodeEndIter, aExpr.nodes().cend());
 			//std::cerr << newExpr << std::endl;
-			return evaluate(newExpr);
+			return evaluate(newExpr, aDebug);
 		}
 		else
 		{
@@ -578,7 +585,7 @@ Expr NateParser::evaluate(const Expr& aExpr)
 		error("Bad expression: " + aExpr.text());
 		return Expr();
 	}
-	//std::cerr << result << std::endl;
+	if (aDebug) std::cerr << result << std::endl;
 	return result;
 }
 
@@ -813,10 +820,6 @@ void NateParser::codeOutput(const Expr& aValue)
 		{
 			codeOutput("static_cast<int>(" + aValue.code() + ")");
 		}
-		else if (!aValue.type()->is(Type::NoOutput))
-		{
-			codeOutput("(" + aValue.code() + ")");
-		}
 		else
 		{
 			Expr outExpr(Expr("stream-out"), aValue);
@@ -824,6 +827,10 @@ void NateParser::codeOutput(const Expr& aValue)
 			if (!resExpr.isEmpty())
 			{
 				codeOutput("(" + resExpr.code() + ")");
+			}
+			else
+			{
+				codeOutput("(" + aValue.code() + ")");
 			}
 		}
 	}
@@ -932,7 +939,7 @@ void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr)
 {
 	auto ifIs = mIfIs.top();
 	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
-				aValue.type()->is(Type::Float) == aIfExpr.type()->is(Type::Float)))
+				aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
 	{
 		error("Expected expression with same type as in IF");
 	}
@@ -1131,12 +1138,11 @@ void NateParser::codeStartForRangeLoop(const std::string& aId,
 			   << increment << ") {" << std::endl;
 		if (rangeType->isOfType("text"))
 		{
-			*mOut << in() << "utf8::next(" + next + "," + range + ".cend());" << std::endl;
-			*mOut << in() << "std::string " << aId << "(" << iter << "," << next << ");" << std::endl;
+			*mOut << in() << "uint32_t " << id->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << std::endl;
 		}
 		else
 		{
-			*mOut << in() << "auto const& " << aId << " = *" << iter << ";" << std::endl;
+			*mOut << in() << "auto const& " << id->codeName() << " = *" << iter << ";" << std::endl;
 		}
 	}
 	else
