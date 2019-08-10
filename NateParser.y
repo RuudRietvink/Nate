@@ -832,7 +832,10 @@ expr-non-word:
 		  }
 	| FRACTION
 		  { 
-			  $$ = Expr(ExprNode($FRACTION, "Fraction(\"" + $FRACTION + "\")", nate.determineType("fraction")));
+        Fraction temp($FRACTION);
+        std::stringstream ss;
+        ss << temp.whole() << "," << temp.numerator() << "," << temp.denominator();
+			  $$ = Expr(ExprNode($FRACTION, "Fraction(" + ss.str() + ")", nate.determineType("fraction")));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();

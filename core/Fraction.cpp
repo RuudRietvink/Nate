@@ -82,15 +82,6 @@ Fraction::Fraction()
 {
 }
 
-Fraction::Fraction(int32_t aWhole, int32_t aNumerator, int32_t aDenominator)
-{
-	mNegative = (aWhole < 0 || aNumerator < 0 || aDenominator < 0);
-	mWhole = aWhole < 0 ? -aWhole : aWhole;
-	mNumerator = aNumerator < 0 ? -aNumerator : aNumerator;
-	mDenominator = aDenominator < 0 ? -aDenominator : aDenominator;
-	simplify();
-}
-
 Fraction::Fraction(const std::string& aString)
 {
 	convertFromString(aString);
@@ -102,11 +93,6 @@ Fraction::Fraction(const Fraction& aFraction)
 	mDenominator(aFraction.mDenominator),
 	mNegative(aFraction.mNegative)
 {
-}
-
-Fraction::Fraction(int32_t aValue)
-{
-	*this = aValue;
 }
 
 Fraction::Fraction(float aValue)
@@ -180,11 +166,6 @@ bool Fraction::convertFromString(const std::string& aString)
 	}
 
 	return ok;
-}
-
-int32_t Fraction::signIt(int32_t aValue) const
-{
-	return mNegative ? -aValue : aValue;
 }
 
 int32_t Fraction::trunc() const
@@ -568,18 +549,6 @@ void Fraction::preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
 		aFrac.mNumerator /= 2;
 		aFrac.mDenominator /= 2;
 	}
-}
-
-double Fraction::toDouble() const
-{
-	float result = mWhole + (static_cast<float>(mNumerator) / mDenominator);
-	result = mNegative ? -result : result;
-	return result;
-}
-
-int32_t Fraction::toInt() const
-{
-	return round();
 }
 
 std::string Fraction::toString() const
