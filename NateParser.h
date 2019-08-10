@@ -123,11 +123,12 @@ public:
 private:
 	struct Match
 	{
-		const Method*  methodFound = nullptr;
-		ExprNodesCIter nodeStartIter;
-		ExprNodesCIter nodeEndIter;
-		const Method*  matchedMethod = nullptr;
-		std::string    matchedErrorMsg;
+		const Method*				methodFound = nullptr;
+		ExprNodesCIter			nodeStartIter;
+		ExprNodesCIter			nodeEndIter;
+		const Method*				matchedMethod = nullptr;
+		std::string					matchedErrorMsg;
+		Method::MatchResult matchResult = Method::MatchResult::No;
 	};
 	
 	void methodMatches(const Method& aMethod,

@@ -12,13 +12,13 @@ alias "⇓" "dec"
 // operators
 ///////////////////////////////////////////////
 	
-code 90 \u uminus ($val-1 is number) is number (same,const):
+code 120 \u uminus ($val-1 is number) is number (same,const):
 	-$val-1
 	
-code 90 \u uplus ($val-1 is number) is number (same,const):
+code 120 \u uplus ($val-1 is number) is number (same,const):
 	$val-1
 	
-code 90 \u not ($cond is boolean) is boolean (const):
+code 120 \u not ($cond is boolean) is boolean (const):
 	!$cond
   
 code 80 ($val-1 is number) \u * ($val-2 is number) is number (highest,const):

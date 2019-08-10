@@ -21,7 +21,7 @@ public:
 	bool empty() const;
 	void setType(const std::string& aType);
 	bool isBiggerThan(const TypePtr& aType) const;
-	bool canBeCastedFrom(const TypePtr& aType) const;
+	bool canBeCastedFrom(const TypePtr& aType, bool needExactMatch = false) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 	bool isOfType(const std::string& aType) const;
 
@@ -50,6 +50,8 @@ public:
 	static const size_t Any        =13;
 	static const size_t Char       =14;
 	static const size_t Fraction   =15;
+	static const size_t Imaginary  =16;
+	static const size_t Complex    =17;
 
 private:
 	void setBaseType(const TypePtr& aType);

@@ -57,6 +57,10 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	{
 		setFlag(Typename, true);
 	}
+	else if (aFlag == "exact")
+	{
+		setFlag(Exact, true);
+	}
   else
   {
     ok = false;

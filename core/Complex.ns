@@ -1,0 +1,25 @@
+
+///////////////////////////////////////////////
+// aliases
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+// Complex Math
+///////////////////////////////////////////////
+
+const i is imaginary := 1
+const 𝑖 is imaginary := 1
+
+/*
+code 115 ($val-1 is number) \u + ($val-2 is imaginary) is complex (const):
+	std::complex<double>($val-1, $val-2)
+
+code 115 ($val-1 is number) \u - ($val-2 is imaginary) is complex (const):
+	std::complex<double>($val-1, -$val-2)
+  */
+	
+code 110 \u real ($val is complex) is float-64 (const):
+	$val.real()
+  
+code 110 \u imaginary ($val is complex) is float-64 (const):
+	$val.imag()

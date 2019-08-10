@@ -824,7 +824,11 @@ expr-part:
 expr-non-word:
 	  NUMBER
 		  { 
-			  $$ = Expr(ExprNode($NUMBER, $NUMBER, nate.makeType($NUMBER)));
+        auto number = $NUMBER;
+        bool isImaginary = Complex::checkAndRemoveImaginaryLetter(number);
+        TypePtr type = isImaginary ? nate.getType("imaginary") : nate.makeType(number);
+        //if (isImaginary) std::cerr << "NUMBER " << $NUMBER << " " << number << " " << *type << std::endl;
+			  $$ = Expr(ExprNode(number, number, type));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
@@ -832,10 +836,13 @@ expr-non-word:
 		  }
 	| FRACTION
 		  { 
-        Fraction temp($FRACTION);
+        auto number = $FRACTION;
+        bool isImaginary = Complex::checkAndRemoveImaginaryLetter(number);
+        TypePtr type = isImaginary ? nate.getType("imaginary") : nate.determineType("fraction");
+        Fraction temp(number);
         std::stringstream ss;
         ss << temp.whole() << "," << temp.numerator() << "," << temp.denominator();
-			  $$ = Expr(ExprNode($FRACTION, "Fraction(" + ss.str() + ")", nate.determineType("fraction")));
+			  $$ = Expr(ExprNode(number, "Fraction(" + ss.str() + ")", type));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
@@ -929,7 +936,7 @@ expr-word:
           }    
           else
           {
-            //std::cerr << "monomial " << $WORD << std::endl;
+            //std::cerr << "monomial " << value << std::endl;
             $$ = Expr(ExprNode("monomial"));
 			      $$.addNode(ExprNode(value));
           }

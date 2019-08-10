@@ -50,34 +50,6 @@ namespace
 	}
 }
 
-namespace std
-{
-	int32_t trunc(const Fraction& aFraction)
-	{
-		return aFraction.trunc();
-	}
-
-	int32_t round(const Fraction& aFraction)
-	{
-		return aFraction.round();
-	}
-
-	int32_t floor(const Fraction& aFraction)
-	{
-		return aFraction.floor();
-	}
-
-	int32_t ceil(const Fraction& aFraction)
-	{
-		return aFraction.ceil();
-	}
-
-	Fraction abs(const Fraction& aFraction)
-	{
-		return aFraction.abs();
-	}
-}
-
 Fraction::Fraction()
 {
 }
@@ -193,6 +165,30 @@ Fraction Fraction::abs() const
 	Fraction result = *this;
 	result.mNegative = false;
 	return result;
+}
+
+Fraction Fraction::cos() const { return Fraction(std::cos(toDouble())); }
+Fraction Fraction::sin() const { return Fraction(std::sin(toDouble())); }
+Fraction Fraction::tan() const { return Fraction(std::tan(toDouble())); }
+Fraction Fraction::acos() const { return Fraction(std::acos(toDouble())); }
+Fraction Fraction::asin() const { return Fraction(std::asin(toDouble())); }
+Fraction Fraction::atan() const { return Fraction(std::atan(toDouble())); }
+Fraction Fraction::cosh() const { return Fraction(std::cosh(toDouble())); }
+Fraction Fraction::sinh() const { return Fraction(std::sinh(toDouble())); }
+Fraction Fraction::tanh() const { return Fraction(std::tanh(toDouble())); }
+Fraction Fraction::log() const { return Fraction(std::log(toDouble())); }
+Fraction Fraction::log2() const { return Fraction(std::log2(toDouble())); }
+Fraction Fraction::log10() const { return Fraction(std::log10(toDouble())); }
+Fraction Fraction::sqrt() const { return Fraction(std::sqrt(toDouble())); }
+
+Fraction Fraction::pow(double aPower) const
+{
+	return Fraction(std::pow(toDouble(), aPower));
+}
+
+Fraction Fraction::pow(const Fraction& aPower) const
+{
+	return Fraction(std::pow(toDouble(), aPower.toDouble()));
 }
 
 Fraction& Fraction::operator=(const Fraction& aFraction)
@@ -591,4 +587,29 @@ std::ostream& operator<<(std::ostream& aStream, const Fraction& aFraction)
 {
 	aStream << aFraction.toString();
 	return aStream;
+}
+
+namespace std
+{
+	int32_t trunc(const Fraction& aFraction) { return aFraction.trunc(); }
+	int32_t round(const Fraction& aFraction) { return aFraction.round(); }
+	int32_t floor(const Fraction& aFraction) { return aFraction.floor(); }
+	int32_t ceil(const Fraction& aFraction) { return aFraction.ceil(); }
+	Fraction abs(const Fraction& aFraction) { return aFraction.abs(); }
+	Fraction pow(const Fraction& aFraction, double aPower) { return aFraction.pow(aPower); }
+	Fraction pow(const Fraction& aFraction, const Fraction& aPower) { return aFraction.pow(aPower); }
+	Fraction pow(double aValue, const Fraction& aPower) { return Fraction(std::pow(aValue, aPower.toDouble())); }
+	Fraction cos(const Fraction& aFraction) { return aFraction.cos(); }
+	Fraction sin(const Fraction& aFraction) { return aFraction.sin(); }
+	Fraction tan(const Fraction& aFraction) { return aFraction.tan(); }
+	Fraction acos(const Fraction& aFraction) { return aFraction.acos(); }
+	Fraction asin(const Fraction& aFraction) { return aFraction.asin(); }
+	Fraction atan(const Fraction& aFraction) { return aFraction.atan(); }
+	Fraction cosh(const Fraction& aFraction) { return aFraction.cosh(); }
+	Fraction sinh(const Fraction& aFraction) { return aFraction.sinh(); }
+	Fraction tanh(const Fraction& aFraction) { return aFraction.tanh(); }
+	Fraction log(const Fraction& aFraction) { return aFraction.log(); }
+	Fraction log2(const Fraction& aFraction) { return aFraction.log2(); }
+	Fraction log10(const Fraction& aFraction) { return aFraction.log10(); }
+	Fraction sqrt(const Fraction& aFraction) { return aFraction.sqrt(); }
 }

@@ -24,6 +24,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	*mOut << "#include <cmath>" << std::endl;
 	*mOut << "#include <iostream>" << std::endl;
 	*mOut << "#include <algorithm>" << std::endl;
+	*mOut << "#include <complex>" << std::endl;
 }
 
 NateParser::~NateParser() = default;
@@ -55,6 +56,8 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("char"));
 	getType("text")->setTypenameType(getType("char"));
 	addType(std::make_shared<Type>("fraction", getType("number")));
+	addType(std::make_shared<Type>("imaginary", getType("number")));
+	addType(std::make_shared<Type>("complex", getType("number")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -445,11 +448,13 @@ void NateParser::methodMatches(const Method& aMethod,
 														   Match& aMatch,
 															 bool aDebug)
 {
-	bool result;
+	Method::MatchResult matchResult;
 	std::string errorMsg;
-	std::tie(errorMsg, result) = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
+	std::tie(errorMsg, matchResult) = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
 
-	if (result)
+	aMatch.matchResult = matchResult;
+
+	if (matchResult != Method::MatchResult::No)
 	{
 		aMatch.methodFound = &aMethod;
 		aMatch.nodeStartIter = aStartIter;
@@ -530,14 +535,11 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 	if (aDebug) std::cerr << "+++++ " << aExpr.text() << " " << aExpr << std::endl;
 
 	Match match;
-	match.methodFound = nullptr;
 	match.nodeStartIter = aExpr.nodes().cend();
 	match.nodeEndIter = aExpr.nodes().cend();
 
 	if (aExpr.nodes().size() > 1 || aExpr.node().is(ExprNode::Word))
 	{
-		match.matchedMethod = nullptr;
-		
 		for (auto const& code : mCodes)
 		{
 			checkIfMethod(code, aExpr, match, aDebug);
@@ -584,7 +586,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 	if (aExpr.nodes().size() > 1 || aExpr.nodes().front().is(ExprNode::Word))
 	{
 		error("Bad expression: " + aExpr.text());
-		return Expr();
+		return Expr(ExprNode("1", getType("int-32")));
 	}
 	if (aDebug) std::cerr << result << std::endl;
 	return result;

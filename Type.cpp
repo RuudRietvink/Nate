@@ -81,6 +81,20 @@ void Type::setType(const std::string& aType)
 		mCodeType = "Fraction";
 		mBitSize = 264;
 	}
+	else if (aType == "imaginary")
+	{
+		setFlag(Abstract, false);
+		setFlag(Imaginary, true);
+		mCodeType = "double";
+		mBitSize = 265;
+	}
+	else if (aType == "complex")
+	{
+		setFlag(Abstract, false);
+		setFlag(Complex, true);
+		mCodeType = "std::complex<double>";
+		mBitSize = 267;
+	}
 	else if (aType == "boolean")
 	{
 		setFlag(Abstract, false);
@@ -159,7 +173,7 @@ bool Type::isOfType(const std::string& aType) const
 				 (mBaseType && mBaseType->isOfType(aType));
 }
 
-bool Type::canBeCastedFrom(const TypePtr& aType) const
+bool Type::canBeCastedFrom(const TypePtr& aType, bool needExactMatch) const
 {
 	bool result = false;
 	
@@ -167,33 +181,36 @@ bool Type::canBeCastedFrom(const TypePtr& aType) const
 	{
 		result = true;
 	}
-	else if (is(Number) && aType->is(Number))
+	else if (!needExactMatch)
 	{
-		result = true;
-	}
-	else if (is(Char) && aType->is(Integer))
-	{
-		result = true;
-	}
-	else if (is(Integer) && aType->is(Char))
-	{
-		result = true;
-	}
-	else if (is(Text) && aType->is(Char))
-	{
-		result = true;
-	}
-	else if (is(Text) && aType->is(Text))
-	{
-		result = true;
-	}
-	else if (is(Text) && aType->is(Number))
-	{
-		result = true;
-	}
-	else if (is(Text) && aType->is(Boolean))
-	{
-		result = true;
+		if (is(Number) && aType->is(Number))
+		{
+			result = true;
+		}
+		else if (is(Char) && aType->is(Integer))
+		{
+			result = true;
+		}
+		else if (is(Integer) && aType->is(Char))
+		{
+			result = true;
+		}
+		else if (is(Text) && aType->is(Char))
+		{
+			result = true;
+		}
+		else if (is(Text) && aType->is(Text))
+		{
+			result = true;
+		}
+		else if (is(Text) && aType->is(Number))
+		{
+			result = true;
+		}
+		else if (is(Text) && aType->is(Boolean))
+		{
+			result = true;
+		}
 	}
 
 	return result;

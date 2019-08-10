@@ -121,6 +121,9 @@
     <ClCompile Include="core\Fraction.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="core\Complex.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
@@ -151,6 +154,12 @@
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="core\SequenceContainer.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Complex.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Fraction.ns">
       <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
@@ -228,6 +237,9 @@
       <Filter>Source Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="core\View.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Complex.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>

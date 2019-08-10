@@ -194,6 +194,7 @@
     <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp" />
     <ClCompile Include="Code.cpp" />
     <ClCompile Include="Arg.cpp" />
+    <ClCompile Include="core\Complex.cpp" />
     <ClCompile Include="core\Core.cpp" />
     <ClCompile Include="core\Fraction.cpp" />
     <ClCompile Include="Define.cpp" />
@@ -213,8 +214,10 @@
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\Complex.ns" />
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
+    <None Include="core\Fraction.ns" />
     <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
     <None Include="core\SequenceContainer.ns" />
@@ -227,6 +230,7 @@
   <ItemGroup>
     <ClInclude Include="Code.h" />
     <ClInclude Include="Arg.h" />
+    <ClInclude Include="core\Complex.h" />
     <ClInclude Include="core\Core.h" />
     <ClInclude Include="core\Fraction.h" />
     <ClInclude Include="core\View.h" />

@@ -8,8 +8,8 @@ class Fraction
 public:
 	Fraction();
 	explicit Fraction(const std::string& aString);
-	Fraction(float aValue);
-	Fraction(double aValue);
+	explicit Fraction(float aValue);
+	explicit Fraction(double aValue);
 	Fraction(const Fraction& aFraction);
 
 	constexpr Fraction(int32_t aWhole, int32_t aNumerator, int32_t aDenominator)
@@ -24,6 +24,10 @@ public:
 		: Fraction(aValue, 0, 1)
 	{}
 
+	constexpr explicit Fraction(int64_t aValue)
+		: Fraction(static_cast<int32_t>(aValue), 0, 1)
+	{}
+
 	virtual ~Fraction() = default;
 
 	int32_t trunc() const;
@@ -31,6 +35,21 @@ public:
 	int32_t floor() const;
 	int32_t ceil() const;
 	Fraction abs() const;
+	Fraction cos() const;
+	Fraction sin() const;
+	Fraction tan() const;
+	Fraction acos() const;
+	Fraction asin() const;
+	Fraction atan() const;
+	Fraction cosh() const;
+	Fraction sinh() const;
+	Fraction tanh() const;
+	Fraction log() const;
+	Fraction log2() const;
+	Fraction log10() const;
+	Fraction pow(double aPower) const;
+	Fraction pow(const Fraction& aPower) const;
+	Fraction sqrt() const;
 	
 	bool convertFromString(const std::string& aString);
 	std::string toString() const;
@@ -68,11 +87,11 @@ public:
 	friend Fraction operator/(double aValue, const Fraction& aFraction);
 	friend Fraction operator%(double aValue, const Fraction& aFraction);
 	
-	constexpr double toDouble() 
+	constexpr double toDouble() const
 	{ 
-		return signIt(mWhole + (static_cast<float>(mNumerator) / mDenominator));
+		return signIt(static_cast<double>(mWhole) + (static_cast<float>(mNumerator) / mDenominator));
 	}
-	constexpr int32_t toInt()
+	constexpr int32_t toInt() const
 	{
 		return signIt(mWhole);
 	}
@@ -103,4 +122,20 @@ namespace std {
 	int32_t floor(const Fraction& aFraction);
 	int32_t ceil(const Fraction& aFraction);
 	Fraction abs(const Fraction& aFraction);
+	Fraction pow(const Fraction& aFraction, double aPower);
+	Fraction pow(double aValue, const Fraction& aPower);
+	Fraction pow(const Fraction& aFraction, const Fraction& aPower);
+	Fraction sqrt(const Fraction& aFraction);
+	Fraction cos(const Fraction& aFraction);
+	Fraction sin(const Fraction& aFraction);
+	Fraction tan(const Fraction& aFraction);
+	Fraction acos(const Fraction& aFraction);
+	Fraction asin(const Fraction& aFraction);
+	Fraction atan(const Fraction& aFraction);
+	Fraction cosh(const Fraction& aFraction);
+	Fraction sinh(const Fraction& aFraction);
+	Fraction tanh(const Fraction& aFraction);
+	Fraction log(const Fraction& aFraction);
+	Fraction log2(const Fraction& aFraction);
+	Fraction log10(const Fraction& aFraction);
 }

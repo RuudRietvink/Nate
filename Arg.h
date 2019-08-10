@@ -18,6 +18,7 @@ public:
 	const std::string&		word() const;
 	bool									setArgFlag(const std::string& aFlag);
 	
+	static const size_t Exact   	= 1;
 	static const size_t CompHigh	= 2;
 	static const size_t Cmp				= 3;
 	static const size_t Same			= 4;

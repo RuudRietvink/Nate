@@ -6,6 +6,7 @@
 alias "√" "sqrt"
 alias "⋅" "*"
 alias "π" "pi"
+alias "𝑒" "e"
 alias "τ" "tau"
 alias "⌊" "floor_l"
 alias "⌋" "floor_r"
@@ -13,6 +14,9 @@ alias "⌈" "ceil_l"
 alias "⌉" "ceil_r"
 alias "|" "abs_l"
 alias "⏐" "abs_r"
+alias "log⏨" "log10"
+alias "log₁₀" "log10"
+alias "log₂" "log2"
 
 ///////////////////////////////////////////////
 // Math
@@ -30,40 +34,40 @@ code 110 ($val-1 is number) \u ^ ($val-2 is number) is number (highest,right):
 code 110 \u \l sqrt ($val is real) is float-64:
 	std::sqrt($val)
     
-code 110 \u round ($val is real) is int-64:
+code 110 \u \l round ($val is real) is int-64:
 	std::round($val)
   
-code 110 \u floor ($val is real) is int-64:
+code 110 \u \l floor ($val is real) is int-64:
 	std::floor($val)
   
 code 110 \u \l floor_l ($val is real) floor_r is int-64:
 	std::floor($val)
   
-code 110 \u ceil ($val is real) is int-64:
+code 110 \u \l ceil ($val is real) is int-64:
 	std::ceil($val)
   
 code 110 \u \l ceil_l ($val is real) ceil_r is int-64:
 	std::ceil($val)
   
-code 110 \u abs ($val is real) is int-64:
+code 110 \u \l abs ($val is real) is int-64:
 	std::abs($val)
   
 code 110 \u \l abs_l ($val is real) abs_r is int-64:
 	std::abs($val)
   
-code 110 \u sin ($val is real) is (same):
+code 110 \u \l sin ($val is real) is (same):
 	std::sin($val)
   
-code 110 \u cos ($val is real) is (same):
+code 110 \u \l cos ($val is real) is (same):
 	std::cos($val)
   
-code 110 \u tan ($val is real) is (same):
+code 110 \u \l tan ($val is real) is (same):
 	std::tan($val)
   
-code 110 \u sinh ($val is real) is (same):
+code 110 \u \l sinh ($val is real) is (same):
 	std::sinh($val)
   
-code 110 \u cosh ($val is real) is (same):
+code 110 \u \l cosh ($val is real) is (same):
 	std::cosh($val)
   
 code 110 \u tanh ($val is real) is (same):
@@ -72,11 +76,20 @@ code 110 \u tanh ($val is real) is (same):
 code 110 \u asin ($val is real) is (same):
 	std::asin($val)
   
-code 110 \u acos ($val is real) is (same):
+code 110 \u \l acos ($val is real) is (same):
 	std::acos($val)
   
-code 110 \u atan ($val is real) is (same):
+code 110 \u \l atan ($val is real) is (same):
 	std::atan($val)
+  
+code 110 \u \l log ($val is real) is (same):
+	std::log($val)
+  
+code 110 \u \l log10 ($val is real) is (same):
+	std::log10($val)
+
+code 110 \u \l log2 ($val is real) is (same):
+	std::log2($val)
   
 code 100 ($val-1 is number) \u monomial ($val-2 is number) is number (highest,const):
 	$val-1 * $val-2
@@ -86,3 +99,5 @@ code 85 ($val-1 is number) \u max ($val-2 is number (same)) is number (same,righ
   
 code 85 ($val-1 is number) \u min ($val-2 is number (same)) is number (same,right):
 	std::min($val-1, $val-2)
+
+import Math

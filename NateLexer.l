@@ -4,6 +4,7 @@
 #include "NateParser.h"
 #include "NateFunctions.h"
 #include "core/Core.h"
+#include "core/Complex.h"
 %}
 
 %class{
@@ -61,6 +62,19 @@ public:
 
 		return result;
 	}
+  
+  void unputString(const std::string::const_reverse_iterator& aBegin, const std::string::const_reverse_iterator& aEnd)
+  {
+	  for (auto iter = aBegin; iter != aEnd; ++iter)
+	  {
+      matcher().unput(*iter);
+	  }
+  }
+
+  void unputString(const std::string& aString)
+  {
+	  unputString(aString.crbegin(), aString.crend());
+  }
 
 	yy::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const yy::location& aLocation)
 	{
@@ -71,6 +85,39 @@ public:
 		return isId ? yy::parser::make_IDENTIFIER(name, aLocation)
 		            : yy::parser::make_WORD(name, aLocation);
 	}
+  
+  void determineImaginary(std::string& aString)
+  {
+    auto last = Core::lastOf(aString);
+    auto lastChar = utf8::peek_next(last, aString.cend());
+
+    if (Complex::isImaginaryLetter(lastChar))
+    {
+      auto idString = Core::toString(lastChar);
+      IdentifierPtr id = nate->getIdentifier(idString);
+      if (!id || !id->type()->is(Type::Imaginary))
+      {
+        unputString(aString.crbegin(), std::string::const_reverse_iterator(last));
+        aString.erase(last, aString.cend());
+      }
+    }
+  }
+
+	yy::parser::symbol_type makeNumber(const std::string& aString, const yy::location& aLocation)
+	{
+		std::string number = aString;
+    determineImaginary(number);
+
+		return yy::parser::make_NUMBER(number, aLocation);
+	}
+  
+	yy::parser::symbol_type makeFraction(const std::string& aString, const yy::location& aLocation)
+	{
+		std::string number = aString;
+    determineImaginary(number);
+
+		return yy::parser::make_FRACTION(number, aLocation);
+	}
 
   void outIndents(const std::string& aString)
   {
@@ -80,14 +127,6 @@ public:
     }
   }
   
-  void unputString(const std::string& aString)
-  {
-	  for (auto iter = aString.crbegin(); iter != aString.crend(); ++iter)
-	  {
-      matcher().unput(*iter);
-	  }
-  }
-
   int curState()
   {
 	  return start();
@@ -196,9 +235,10 @@ public:
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
-subscript       [₀₁₂₃₄₅₆₇₈₉]
+imaginary       [𝑖i]?
+subscript       [₀₁₂₃₄₅₆₇₈₉⏨]
 superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
-superNumber     {superscript}+
+superNumber     {superscript}+{imaginary}
 superMinus      [⁻]
 superPlus       [⁺]
 superOpen       [⁽]
@@ -216,9 +256,9 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
+number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?{imaginary}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
-fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+)){imaginary}
 string          ["][^"]*[""]
 
 %%
@@ -291,7 +331,7 @@ include\h*\".*\"  s(); includeFile();
 
 <SUPERSCRIPT_EXPR>{
 {superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
-{superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
+{superNumber} return makeNumber(Core::unSuperscript(str()), location());
 {superMinus}  return yy::parser::make_WORD("-", location());
 {superPlus}   return yy::parser::make_WORD("+", location());
 {superOpen}   return yy::parser::make_OPENPAR(location());
@@ -313,7 +353,7 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 [\\]?{word}		return yy::parser::make_WORD(str(), location());
-{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
+{number}			return makeNumber(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 \h*\k?        // ignore
 }
@@ -365,8 +405,8 @@ include\h*\".*\"  s(); includeFile();
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
-{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
-{fraction}	  return yy::parser::make_FRACTION(str(), location());
+{number}			return makeNumber(Core::parseNumber(str()), location());
+{fraction}	  return makeFraction(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());

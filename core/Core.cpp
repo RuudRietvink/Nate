@@ -88,6 +88,19 @@ std::string Core::restOf(const std::string& aString)
 	return result;
 }
 
+std::string::const_iterator Core::lastOf(const std::string& aString)
+{
+  auto iter = aString.cbegin();
+  auto prev = iter;
+  while (iter != aString.cend())
+	{
+		prev = iter;
+		utf8::next(iter, aString.cend());
+	}
+
+	return prev;
+}
+
 std::string Core::replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo)
 {
   std::string result = aString;
