@@ -88,6 +88,9 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	if (aValue.is(Arg::InOut)) aStream << ",InOut";
 	if (aValue.is(Arg::Owner)) aStream << ",Owner";
 	if (aValue.is(Arg::Prop)) aStream << ",Prop";
+	if (aValue.is(Arg::Exact)) aStream << ",Exact";
+	if (aValue.is(Arg::Typename)) aStream << ",Typename";
+	if (aValue.is(Arg::Template)) aStream << ",Template";
 
 	aStream << "}";
 

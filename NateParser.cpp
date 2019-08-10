@@ -53,7 +53,7 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
 	addType(std::make_shared<Type>("list", getType("sequence-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
-	addType(std::make_shared<Type>("char"));
+	addType(std::make_shared<Type>("char", getType("any")));
 	getType("text")->setTypenameType(getType("char"));
 	addType(std::make_shared<Type>("fraction", getType("number")));
 	addType(std::make_shared<Type>("imaginary", getType("number")));
@@ -443,27 +443,84 @@ TypePtr NateParser::makeType(const std::string& aValue)
 	return result;
 }
 
-void NateParser::methodMatches(const Method& aMethod,
-														   ExprNodesCIter& aStartIter, ExprNodesCIter& aEndIter,
-														   Match& aMatch,
-															 bool aDebug)
+void NateParser::checkIfBetterMatch(const Method& aMethod,
+																		const ExprNodesCIter& aStartIter,
+																		const ExprNodesCIter& aEndIter,
+																		Match& aMatch,
+																		bool aLeftToRight,
+																		bool aDebug)
 {
-	Method::MatchResult matchResult;
-	std::string errorMsg;
-	std::tie(errorMsg, matchResult) = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
-
-	aMatch.matchResult = matchResult;
-
-	if (matchResult != Method::MatchResult::No)
+	if (aMethod.matches(aStartIter, aEndIter, aDebug) &&
+			(aMatch.methodFound == nullptr || 
+			 aMethod.priority() > aMatch.methodFound->priority() ||
+			 (aMethod.priority() == aMatch.methodFound->priority() &&
+        ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
+				 (!aLeftToRight && aStartIter >= aMatch.nodeStartIter)))))
 	{
-		aMatch.methodFound = &aMethod;
-		aMatch.nodeStartIter = aStartIter;
-		aMatch.nodeEndIter = aEndIter;
-	}
-	else
-	{
-		aMatch.matchedMethod = &aMethod;
-		aMatch.matchedErrorMsg = errorMsg;
+		Method::MatchResult matchResult = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
+
+		if (matchResult.matches &&
+				aStartIter == aMatch.nodeStartIter && 
+				aEndIter == aMatch.nodeEndIter && 
+				aMatch.matchResult.castCount > matchResult.castCount)
+		{
+			if (aDebug)
+			{
+				std::cerr << "Better match 1: " << " "
+					        << aMethod.code() 
+					        << matchResult.castCount << " "
+									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
+					        << aMatch.matchResult.castCount << " "
+									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+								  << std::endl;
+			}
+
+			aMatch.matchResult = matchResult;
+			aMatch.methodFound = &aMethod;
+			aMatch.nodeStartIter = aStartIter;
+			aMatch.nodeEndIter = aEndIter;
+		}
+		else if (matchResult.matches &&
+						 (aMatch.methodFound == nullptr ||
+			        (aLeftToRight && aStartIter < aMatch.nodeStartIter) ||
+					    (!aLeftToRight && aStartIter > aMatch.nodeStartIter)))
+		{
+
+			if (aDebug)
+			{
+				std::cerr << "Better match 2: " << " "
+					        << aMethod.code() 
+					        << matchResult.castCount << " "
+									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
+					        << aMatch.matchResult.castCount << " "
+									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+									<< std::endl;
+			}
+
+			aMatch.matchResult = matchResult;
+			aMatch.methodFound = &aMethod;
+			aMatch.nodeStartIter = aStartIter;
+			aMatch.nodeEndIter = aEndIter;
+		}
+		else
+		{
+			if (aDebug)
+			{
+				std::cerr << "No match: " << " "
+					        << aMatch.matchedMethod->code() << " "
+					        << matchResult.castCount << " "
+									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
+					        << aMatch.matchResult.castCount << " "
+									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+									<< std::endl;
+			}
+
+			aMatch.matchedMethod = &aMethod;
+			aMatch.matchResult = matchResult;
+		}
 	}
 }
 
@@ -478,15 +535,7 @@ void NateParser::checkLeftToRightMethod(const Method& aMethod,
 			 size <= static_cast<size_t>(std::distance(startIter, aExpr.nodes().cend())); ++startIter)
 	{
 		auto endIter = startIter + size;
-		
-		if (aMethod.matches(startIter, endIter, aDebug) &&
-				(aMatch.methodFound == nullptr || 
-				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 (aMethod.priority() == aMatch.methodFound->priority() &&
-          startIter < aMatch.nodeStartIter)))
-		{
-			methodMatches(aMethod, startIter, endIter, aMatch, aDebug);
-		}
+		checkIfBetterMatch(aMethod, startIter, endIter, aMatch, true, aDebug);
 	}
 }
 
@@ -501,15 +550,7 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 			 size <= static_cast<size_t>(std::distance(aExpr.nodes().cbegin(), endIter)); --endIter)
 	{
 		auto startIter = endIter - size;
-		
-		if (aMethod.matches(startIter, endIter, aDebug) &&
-				(aMatch.methodFound == nullptr || 
-				 aMethod.priority() > aMatch.methodFound->priority() ||
-				 (aMethod.priority() == aMatch.methodFound->priority() &&
-          startIter > aMatch.nodeStartIter)))
-		{
-			 methodMatches(aMethod, startIter, endIter, aMatch, aDebug);
-		}
+		checkIfBetterMatch(aMethod, startIter, endIter, aMatch, false, aDebug);
 	}
 }
 
@@ -532,6 +573,7 @@ void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& 
 Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 {
 	Expr result = aExpr;
+	//aDebug = true;
 	if (aDebug) std::cerr << "+++++ " << aExpr.text() << " " << aExpr << std::endl;
 
 	Match match;
@@ -562,6 +604,11 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 			{
 				error(errorMsg);
 			}
+			else if (methodStat == "NI")
+			{
+				error("Not implemented: " + aExpr.text());
+			}
+
 			if (aDebug) std::cerr << "******* " << (methodType ? *methodType : Type()) << " " << methodStat << std::endl;
 			
 			ExprNode node(methodStat, methodStat, methodType);
@@ -578,7 +625,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 		{
 			if (match.matchedMethod != nullptr)
 			{
-				error("Bad argument types for code: " + match.matchedMethod->signature() + ": " + match.matchedErrorMsg);
+				error("Bad argument types for code: " + match.matchedMethod->signature() + ": " + match.matchResult.error);
 			}
 		}
 	}
@@ -704,7 +751,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 			{
 				type = initIter->type();
 			}
-			else if (!type->canBeCastedFrom(initIter->type()))
+			else if (type->canBeCastedFrom(initIter->type()) == Type::CompareResult::No)
 			{
 				error("Incompatible type for initial value: " + initIter->code());
 			}
@@ -788,19 +835,35 @@ void NateParser::codeOutputStart(const std::string& aStream)
 {
 	mStream = aStream;
 	printLineNr();
-	*mOut << in() << aStream;
+	mFirstOutput = true;
 	mCachedOutput.clear();
+}
+
+void NateParser::codeOutputNew()
+{
+	if (mFirstOutput)
+	{
+		*mOut << in() << mStream;
+		mFirstOutput = false;
+	}
 }
 
 void NateParser::codeOutput(const std::string& aString)
 {
 	if ((!mCachedOutput.empty()) && aString[0] != '"')
 	{
+		codeOutputNew();
 		*mOut << " << \"" << mCachedOutput << "\"";
 		mCachedOutput.clear();
 		if (!aString.empty())
 		{
-			*mOut << " << " << aString;
+			codeOutputNew();
+			*mOut << " << " << aString << ";";
+			mFirstOutput = true;
+		}
+		else
+		{
+			*mOut << ";";
 		}
 	}
 	else if (!mCachedOutput.empty())
@@ -815,7 +878,9 @@ void NateParser::codeOutput(const std::string& aString)
 	{
 		if (!aString.empty())
 		{
-			*mOut << " << " << aString;
+			codeOutputNew();
+			*mOut << " << " << aString << ";";
+			mFirstOutput = true;
 		}
 	}
 }
@@ -857,6 +922,7 @@ void NateParser::codeOutputEnd(bool aAddEnd)
 {
 	if (aAddEnd)
 	{
+		codeOutputNew();
 		codeOutput("std::endl");
 	}
 	else
@@ -864,7 +930,7 @@ void NateParser::codeOutputEnd(bool aAddEnd)
 		codeOutput("");
 	}
 
-	*mOut << ";" << std::endl;
+	*mOut << std::endl;
 }
 
 void NateParser::codeInputStart(const std::string& aStream)

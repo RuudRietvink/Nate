@@ -2,6 +2,7 @@
 
 #include "../utf8.h"
 #include "Fraction.h"
+#include "Complex.h"
 #include <string>
 #include <codecvt>
 #include <ios>

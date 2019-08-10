@@ -19,14 +19,15 @@ public:
 	Method();
 	virtual ~Method() = default;
 
-	enum class MatchResult
+	struct MatchResult
 	{
-		No = 0,
-		Yes = 1,
+		bool matches = true;
+		std::string error;
+		int32_t castCount = 0;
 	};
 
 	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual std::tuple<std::string, MatchResult> checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual std::tuple<std::string, std::string, TypePtr, Flags> evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);

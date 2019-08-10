@@ -49,6 +49,18 @@ bool ExprNode::castToType(const TypePtr& aToType)
 		{
 			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
 		}
+		else if (type()->is(Type::Imaginary) && aToType->is(Type::Complex))
+		{
+			*this = ExprNode(text(), "Complex(0, " + code() + ")", aToType);
+		}
+		else if (type()->is(Type::Real) && aToType->is(Type::Complex))
+		{
+			*this = ExprNode(text(), "Complex(" + code() + ", 0)", aToType);
+		}
+		else if (type()->is(Type::Integer) && aToType->is(Type::Complex))
+		{
+			*this = ExprNode(text(), "Complex(" + code() + ", 0)", aToType);
+		}
 		else if (!aToType->is(Type::Abstract))
 		{
 			if (type()->is(Type::Real) && !aToType->is(Type::Real))

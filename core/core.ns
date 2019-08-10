@@ -5,8 +5,6 @@
 
 alias "÷" "/"
 alias "×" "*"
-alias "⇑" "inc"
-alias "⇓" "dec"
 
 ///////////////////////////////////////////////
 // operators
@@ -42,22 +40,22 @@ code 62 ($val-1 is text) \u + ($val-2 is text) is text (const):
 code 60 ($val-1 is any) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
 	$cond ? $val-1 : $val-2
 
-code 50 ($val-1 is (comphigh, cmp)) \u = ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u = ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 == $val-2
 	
-code 50 ($val-1 is (comphigh, cmp)) \u != ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u != ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 != $val-2
 	
-code 50 ($val-1 is (comphigh, cmp)) \u >= ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u >= ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 >= $val-2
 	
-code 50 ($val-1 is (comphigh, cmp)) \u <= ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u <= ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 <= $val-2
 
-code 50 ($val-1 is (comphigh, cmp)) \u > ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u > ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 > $val-2
 	
-code 50 ($val-1 is (comphigh, cmp)) \u < ($val-2 is (comphigh, cmp)) is boolean (const):
+code 50 ($val-1 is any (comphigh, cmp)) \u < ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 < $val-2
 	
 code 40 ($cond-1 is boolean) \u and ($cond-2 is boolean) is boolean (const):
@@ -70,16 +68,28 @@ code 35 ($cond-1 is boolean) \u or ($cond-2 is boolean) is boolean (const):
 // face value
 ///////////////////////////////////////////////
 
-code 120 \u inc ($val is number (out)) is (same):
+code 120 \u ⇑ ($val is number (out)) is (same):
   ++$val
   
-code 120 ($val is number (out)) \u inc is (same):
+code 120 ($val is number (out)) \u ⇑ is (same):
   $val++
   
-code 120 \u dec ($val is number (out)) is (same):
+code 120 \u ⇓ ($val is number (out)) is (same):
   --$val
   
-code 120 ($val is number (out)) \u dec is (same):
+code 120 ($val is number (out)) \u ⇓ is (same):
+  $val--
+
+code 120 \u inc# ($val is number (out)) is (same):
+  ++$val
+  
+code 120 ($val is number (out)) \u #inc is (same):
+  $val++
+  
+code 120 \u dec# ($val is number (out)) is (same):
+  --$val
+  
+code 120 ($val is number (out)) \u #dec is (same):
   $val--
   
 code 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)) is (same):
@@ -98,10 +108,10 @@ code 65 \u increase ($val is number (out)) is (same):
 // language
 ///////////////////////////////////////////////
 
-code 200 ($owner is (owner)) 's ($prop is (prop)) is (last):
+code 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
   $owner.$prop
 
-code 200 ($prop is (prop)) of ($owner is (owner)) is (same):
+code 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
   $owner.$prop
 
 code 65 stream-out ($val is number):

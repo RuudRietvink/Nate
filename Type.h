@@ -21,7 +21,6 @@ public:
 	bool empty() const;
 	void setType(const std::string& aType);
 	bool isBiggerThan(const TypePtr& aType) const;
-	bool canBeCastedFrom(const TypePtr& aType, bool needExactMatch = false) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 	bool isOfType(const std::string& aType) const;
 
@@ -34,6 +33,15 @@ public:
 	void							 setTypenameType(const TypePtr& aTypenameType);
 	void							 setCodeType(const std::string& aCodeType);
 	
+	enum class CompareResult
+	{
+		No = 0,
+		Yes = 1,
+		RequiresCast = 2,
+	};
+
+	CompareResult canBeCastedFrom(const TypePtr& aType, bool needExactMatch = false) const;
+
 	static const size_t Number     = 0;
 	static const size_t Real       = 1;
 	static const size_t Text       = 2;

@@ -127,15 +127,15 @@ private:
 		ExprNodesCIter			nodeStartIter;
 		ExprNodesCIter			nodeEndIter;
 		const Method*				matchedMethod = nullptr;
-		std::string					matchedErrorMsg;
-		Method::MatchResult matchResult = Method::MatchResult::No;
+		Method::MatchResult matchResult;
 	};
 	
-	void methodMatches(const Method& aMethod,
-		                 ExprNodesCIter& aStartIter, 
-		                 ExprNodesCIter& aEndIter,
-		                 Match& aMatch,
-										 bool aDebug = false);
+	void checkIfBetterMatch(const Method& aMethod,
+													const ExprNodesCIter& aStartIter,
+													const ExprNodesCIter& aEndIter,
+													Match& aMatch,
+													bool aLeftToRight,
+													bool aDebug);
   void checkLeftToRightMethod(const Method& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
@@ -148,6 +148,7 @@ private:
 										 bool aDebug = false);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
+	void codeOutputNew();
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
@@ -160,6 +161,7 @@ private:
 	int				                  mErrors = 0;
 	std::ostream*               mOut;
 	std::string                 mCachedOutput;
+	bool                        mFirstOutput;
 	std::string                 mStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;

@@ -355,11 +355,10 @@ const std::string& Method::pattern() const
 	return mPattern;
 }
 
-std::tuple<std::string, Method::MatchResult> 
+Method::MatchResult 
 Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
-	std::string error;
-	MatchResult result = MatchResult::Yes;
+	MatchResult result;
 	TypePtr firstType;
 	TypePtr highestType;
 	Record* owner = nullptr;
@@ -376,16 +375,16 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 			{
 				if (!nodeType->is(Type::Record))
 				{
-					error = "Not a record: " + nodeType->name();
-					result = MatchResult::No;
+					result.error = "Not a record: " + nodeType->name();
+					result.matches = false;
 				}
 				else
 				{
 					owner = dynamic_cast<Record*>(nodeType.get());
 					if (owner == nullptr)
 					{
-						error = "Not a record: " + nodeType->name();
-						result = MatchResult::No;
+						result.error = "Not a record: " + nodeType->name();
+						result.matches = false;
 					}
 				}
 			}
@@ -395,8 +394,8 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				templateType = nodeIter->type();
 				if (!templateType->typenameType())
 				{
-					error = "Not a generic: " + templateType->name();
-					result = MatchResult::No;
+					result.error = "Not a generic: " + templateType->name();
+					result.matches = false;
 				}
 			}
 			
@@ -410,43 +409,45 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 		}
 	}
 
-	if (result != MatchResult::No)
+	if (result.matches)
 	{
 		nodeIter = aBegin;
-		for (auto arg = args().cbegin(); arg != args().cend() && result != MatchResult::No; ++arg, ++nodeIter)
+		for (auto arg = args().cbegin(); arg != args().cend() && result.matches; ++arg, ++nodeIter)
 		{
+			Type::CompareResult comp = Type::CompareResult::No;
+
 			if (arg->isIdentifier())
 			{
 				const TypePtr& nodeType = nodeIter->type();
 				const TypePtr& argType = arg->identifier()->type();
 				bool needExactMatch = arg->is(Arg::Exact);
+				if (aDebug) std::cerr << "Arg: " << *arg << std::endl;
 
 				if (!firstType)
 				{
 					firstType = nodeType;
 				}
 
-				if (argType->is(Type::Number) && !nodeType->is(Type::Number))
-				{
-					error = "Not a number: " + nodeIter->text() + " for " + arg->identifier()->name();
-					result = MatchResult::No;
-				}
-				else if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))
+				if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))
 				{				
-					error = "Not a comparible: " + nodeIter->text() + " for " + arg->identifier()->name();
-					result = MatchResult::No;
+					result.error = "Not a comparible: " + nodeIter->text() + " for " + arg->identifier()->name();
+					result.matches = false;
 				}
-				else if (arg->is(Arg::Same) && !firstType->canBeCastedFrom(nodeType, needExactMatch))
+				else if (arg->is(Arg::Same) && 
+								 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) 
+														== Type::CompareResult::No)
 				{
-					error = "Not same type: " + arg->identifier()->name() + " of type " + nodeType->name() +
-									" must be of type " + firstType->name();
-					result = MatchResult::No;
+					result.error = "1 Not same type: " + arg->identifier()->name() + " of type " + nodeType->name() +
+									       " must be of type " + firstType->name();
+					result.matches = false;
 				}
-				else if (arg->is(Arg::CompHigh) && !highestType->canBeCastedFrom(nodeType, needExactMatch))
+				else if (arg->is(Arg::CompHigh) && 
+								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
+														== Type::CompareResult::No)
 				{
-					error = "Not same type: " + arg->identifier()->name() + " of type " + nodeType->name() +
-									" must be compatible with type " + highestType->name();
-					result = MatchResult::No;
+					result.error = "2 Not same type: " + arg->identifier()->name() + " of type " + nodeType->name() +
+									       " must be compatible with type " + highestType->name();
+					result.matches = false;
 				}
 				else if (arg->is(Arg::Owner))
 				{
@@ -456,13 +457,13 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					if (owner == nullptr)
 					{
-						error = "No record specified for property: " + nodeIter->text();
-						result = MatchResult::No;
+						result.error = "No record specified for property: " + nodeIter->text();
+						result.matches = false;
 					}
 					else if (!owner->getIdentifier(nodeIter->text()))
 					{
-						error = "Not a property of '" + owner->name() + "': " + nodeIter->text();
-						result = MatchResult::No;
+						result.error = "Not a property of '" + owner->name() + "': " + nodeIter->text();
+						result.matches = false;
 					}
 				}
 				else if (arg->is(Arg::Template))
@@ -473,29 +474,40 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					if (!templateType)
 					{
-						error = "No generic supplied for : " + nodeType->name();
-						result = MatchResult::No;
+						result.error = "No generic supplied for : " + nodeType->name();
+						result.matches = false;
 					}
-					else if (!templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch))
+					else if ((comp = templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch)) 
+															== Type::CompareResult::No)
 					{
-						error = "Not same type: " + arg->identifier()->name() + + " of type " + nodeType->name() +
-										" must be of type " + templateType->typenameType()->name();
-						result = MatchResult::No;
+						result.error = "3 Not same type: " + arg->identifier()->name() + + " of type " + nodeType->name() +
+									        	" must be of type " + templateType->typenameType()->name();
+						result.matches = false;
 					}
 				}
-				else if (argType && !argType->is(Type::Unknown) && !argType->canBeCastedFrom(nodeType, needExactMatch))
+				else if (argType && !argType->is(Type::Unknown) &&
+								 (comp = argType->canBeCastedFrom(nodeType, needExactMatch)) 
+															== Type::CompareResult::No)
 				{
-					error = "Not same type: " + arg->identifier()->name() + + " of type " + nodeType->name() +
-									" must be of type " + argType->name();
-					result = MatchResult::No;
+					result.error = "4 Not same type: " + arg->identifier()->name() + + " of type " + nodeType->name() +
+								        	" must be of type " + argType->name();
+					result.matches = false;
+				}
+
+				if (comp == Type::CompareResult::RequiresCast)
+				{
+					++result.castCount;
 				}
 			}
 		}
 	}
 
-	if (aDebug) std::cerr << static_cast<int>(result) << " " << error << std::endl;
+	if (aDebug) std::cerr << result.matches << " " 
+		                    << static_cast<int>(result.castCount) << " "
+												<< result.error << std::endl;
 
-	return std::make_tuple(error, result);
+
+	return result;
 }
 
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
