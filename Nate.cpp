@@ -10,7 +10,9 @@ int main()
 	std::ifstream in(filename);
 	std::ofstream out("C:\\Users\\ruud\\source\\repos\\Out\\Out.cpp");
 	NateParser nate(filename, in, out);
-	return (nate.parse() != 0 || nate.errorCount() != 0) ? 1 : 0;
+	auto parseResult = nate.parse();
+	std::cerr << "Errors: " << nate.errorCount() << ", Warnings: " << nate.warningCount() << std::endl;
+	return (parseResult != 0 || nate.errorCount() != 0) ? 1 : 0;
 
 	/*
 	std::vector<Fraction> fracs = {

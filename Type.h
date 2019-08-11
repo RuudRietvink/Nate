@@ -60,6 +60,7 @@ public:
 	static const size_t Fraction   =15;
 	static const size_t Imaginary  =16;
 	static const size_t Complex    =17;
+	static const size_t SingleNr   =18;
 
 private:
 	void setBaseType(const TypePtr& aType);

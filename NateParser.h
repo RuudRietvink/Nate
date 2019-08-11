@@ -33,7 +33,8 @@ public:
 	int parse();
 	void import(const std::string& aName);
 	void addAlias(const std::string& aName, const std::string& aValue);
-	std::string alias(const std::string& aString);;
+	std::string alias(const std::string& aString);
+	bool isReservedName(const std::string& aString) const;
 	void addLeftMonomial(const std::string& aWord);
 	bool isLeftMonomial(const std::string& aWord) const;
 	void addWantsUnary(const std::string& aWord);
@@ -44,7 +45,9 @@ public:
 	void popScope();
 	ScopePtr& curScope();
 	void error(const std::string& anError);
+	void warning(const std::string& aWarning);
 	int errorCount() const { return mErrors; }
+	int warningCount() const { return mWarnings; }
 	void addType(const TypePtr& aType, const std::string& aName = "");
 	TypePtr getType(const std::string& aName, Scope* aScope = nullptr);
 	TypePtr determineType(const std::string& aName);
@@ -159,9 +162,10 @@ private:
 	std::set<std::string>       mWantsUnary;
 	std::set<std::string>       mLeftMonomial;
 	int				                  mErrors = 0;
+	int				                  mWarnings = 0;
 	std::ostream*               mOut;
 	std::string                 mCachedOutput;
-	bool                        mFirstOutput;
+	bool                        mFirstOutput = true;
 	std::string                 mStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;

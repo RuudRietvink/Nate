@@ -3,18 +3,25 @@
 // aliases
 ///////////////////////////////////////////////
 
+alias "𝑖" "i"
+
 ///////////////////////////////////////////////
 // Complex Math
 ///////////////////////////////////////////////
 
 const i is imaginary := 1
-const 𝑖 is imaginary := 1
 
+code 120 ($val-1 is number) \u monomial ($val-2 is imaginary (exact)) is imaginary (const):
+	$val-1
+	
 code 115 ($val-1 is number) \u + ($val-2 is imaginary (exact)) is complex (const):
 	Complex($val-1, $val-2)
 
 code 115 ($val-1 is number) \u - ($val-2 is imaginary (exact)) is complex (const):
 	Complex($val-1, -$val-2)
+	
+code 114 ($val is imaginary (exact)) is complex (const):
+	Complex(0, $val)
 	
 code 110 \u real ($val is complex (exact)) is float-64 (const):
 	$val.real()

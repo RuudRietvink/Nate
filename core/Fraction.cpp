@@ -410,7 +410,7 @@ Fraction Fraction::operator/(const Fraction& aFraction) const
 Fraction Fraction::operator%(const Fraction& aFraction) const
 {
 	int32_t divisor = (*this / aFraction).trunc();
-	Fraction result = *this - (divisor * aFraction);
+	Fraction result = *this - (Fraction(divisor) * aFraction);
 
 	result.simplify();
 

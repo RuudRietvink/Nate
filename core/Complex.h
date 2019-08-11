@@ -57,7 +57,9 @@ public:
 	Complex operator/(const Complex& aComplex) const;
 
 	friend Complex operator+(double aValue, const Complex& aComplex);
+	friend Complex operator+(const Complex& aComplex, double aValue);
 	friend Complex operator-(double aValue, const Complex& aComplex);
+	friend Complex operator-(const Complex& aComplex, double aValue);
 	friend Complex operator*(double aValue, const Complex& aComplex);
 	friend Complex operator*(const Complex& aComplex, double aValue);
 	friend Complex operator/(double aValue, const Complex& aComplex);

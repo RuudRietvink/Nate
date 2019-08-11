@@ -33,10 +33,12 @@ void Type::setType(const std::string& aType)
 	else if (aType == "integer")
 	{
 		setFlag(Integer, true);
+		setFlag(SingleNr, true);
 	}
 	else if (aType == "real")
 	{
 		setFlag(Real, true);
+		setFlag(SingleNr, true);
 	}
 	else if (aType == "int-8")
 	{
@@ -93,7 +95,6 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(Complex, true);
-		setFlag(Scalar, false);
 		mCodeType = "Complex";
 		mBitSize = 267;
 	}

@@ -9,7 +9,7 @@ public:
 	Fraction();
 	explicit Fraction(const std::string& aString);
 	explicit Fraction(float aValue);
-	explicit Fraction(double aValue);
+	Fraction(double aValue);
 	Fraction(const Fraction& aFraction);
 
 	constexpr Fraction(int32_t aWhole, int32_t aNumerator, int32_t aDenominator)
@@ -91,10 +91,22 @@ public:
 	{ 
 		return signIt(static_cast<double>(mWhole) + (static_cast<float>(mNumerator) / mDenominator));
 	}
+
 	constexpr int32_t toInt() const
 	{
 		return signIt(mWhole);
 	}
+	
+	constexpr explicit operator double () const
+	{
+		return toDouble();
+	}
+	
+	constexpr explicit operator int32_t () const
+	{
+		return toInt();
+	}
+
 	constexpr int32_t whole() { return signIt(mWhole); }
 	constexpr int32_t numerator() { return mNumerator; }
 	constexpr int32_t denominator() { return mDenominator; }

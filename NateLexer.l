@@ -235,10 +235,9 @@ public:
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
-imaginary       [𝑖i]?
 subscript       [₀₁₂₃₄₅₆₇₈₉⏨]
 superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
-superNumber     {superscript}+{imaginary}
+superNumber     {superscript}+
 superMinus      [⁻]
 superPlus       [⁺]
 superOpen       [⁽]
@@ -256,9 +255,9 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?{imaginary}
+number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
-fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+)){imaginary}
+fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
 
 %%

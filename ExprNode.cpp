@@ -53,6 +53,10 @@ bool ExprNode::castToType(const TypePtr& aToType)
 		{
 			*this = ExprNode(text(), "Complex(0, " + code() + ")", aToType);
 		}
+		else if (type()->is(Type::Number) && aToType->is(Type::Imaginary))
+		{
+			setFlag(Type::Imaginary);
+		}
 		else if (type()->is(Type::Real) && aToType->is(Type::Complex))
 		{
 			*this = ExprNode(text(), "Complex(" + code() + ", 0)", aToType);

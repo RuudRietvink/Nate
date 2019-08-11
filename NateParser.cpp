@@ -7,6 +7,9 @@
 #include <cctype>
 #include <tuple>
 
+bool gDebug = true && false
+;
+
 NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut)
 : mLexer(new yy::Lexer(aIn)),
 	mParser(new yy::parser(*mLexer, *this)),
@@ -223,6 +226,12 @@ void NateParser::error(const std::string& anError)
 	++mErrors;
 }
 
+void NateParser::warning(const std::string& aWarning)
+{
+	std::cerr << "Warning: " << mLexer->location() << ": " << aWarning << std::endl;
+	++mWarnings;
+}
+
 void NateParser::printLineNr()
 {
 	static int prevLine = 0;
@@ -266,12 +275,19 @@ std::string NateParser::alias(const std::string& aString)
 	return result;
 }
 
+bool NateParser::isReservedName(const std::string& aString) const
+{
+	return std::any_of(mAliases.cbegin(), mAliases.cend(),
+										 [&](const auto& pair) 
+										 { return pair.first == aString || pair.second == aString; });
+}
+
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
 {	
 	std::string name = aString;
 	IdentifierPtr id = getIdentifier(alias(name));
 	size_t pos = 0;
-
+	
 	while (!id && pos != std::string::npos)
 	{
 		pos = name.find_last_of("-");
@@ -301,7 +317,7 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 			}
 			else if (first)
 			{
-				pos = std::distance(iter, next);
+				pos = utf8::distance(iter, next);
 				first = false;
 			}
 			
@@ -313,10 +329,16 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 	{
 		if (pos != 0)
 		{
-			auto iter = aOrig.cbegin();
-			utf8::advance(iter, pos, aOrig.cend());
-			name = aString.substr(0, pos);
-			unput(iter, aOrig.cend());
+			auto iterOrig = aOrig.cbegin();
+			auto iter = aString.cbegin();
+			utf8::advance(iterOrig, pos, aOrig.cend());
+			utf8::advance(iter, pos, aString.cend());
+			name = std::string(aString.cbegin(), iter);
+			unput(iterOrig, aOrig.cend());
+			//std::cerr << "Orig: " << aOrig << std::endl;
+			//std::cerr << "Pos: " << pos << std::endl;
+			//std::cerr << "Name: " << name << std::endl;
+			//std::cerr << "Unput: " << std::string(iter, aOrig.cend()) << std::endl;
 		}
 	}
 	else
@@ -452,66 +474,87 @@ void NateParser::checkIfBetterMatch(const Method& aMethod,
 {
 	if (aMethod.matches(aStartIter, aEndIter, aDebug) &&
 			(aMatch.methodFound == nullptr || 
-			 aMethod.priority() > aMatch.methodFound->priority() ||
-			 (aMethod.priority() == aMatch.methodFound->priority() &&
-        ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
-				 (!aLeftToRight && aStartIter >= aMatch.nodeStartIter)))))
+			 (aMethod.priority() > aMatch.methodFound->priority() ||
+			  (aMethod.priority() == aMatch.methodFound->priority() &&
+         ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
+				  (!aLeftToRight && aStartIter >= aMatch.nodeStartIter))))))
 	{
 		Method::MatchResult matchResult = aMethod.checkArgTypes(aStartIter, aEndIter, aDebug);
-
-		if (matchResult.matches &&
-				aStartIter == aMatch.nodeStartIter && 
-				aEndIter == aMatch.nodeEndIter && 
-				aMatch.matchResult.castCount > matchResult.castCount)
+		
+		if (matchResult.matches)
 		{
-			if (aDebug)
+			if ((aMatch.methodFound == nullptr || 
+					 aMethod.priority() > aMatch.methodFound->priority() ||
+					 (aMethod.priority() == aMatch.methodFound->priority() &&
+						((aLeftToRight  && aStartIter < aMatch.nodeStartIter) ||
+						 (!aLeftToRight && aStartIter > aMatch.nodeStartIter)))))
 			{
-				std::cerr << "Better match 1: " << " "
-					        << aMethod.code() 
-					        << matchResult.castCount << " "
-									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
-					        << aMatch.matchResult.castCount << " "
-									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-								  << std::endl;
+				if (aDebug)
+				{
+					std::cerr << "Better match 1: " << " "
+										<< aMethod.code() 
+										<< matchResult.castCount << " "
+										<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code()) << " "
+										<< aMatch.matchResult.castCount << " "
+										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+										<< std::endl;
+				}
+
+				aMatch.matchResult = matchResult;
+				aMatch.methodFound = &aMethod;
+				aMatch.nodeStartIter = aStartIter;
+				aMatch.nodeEndIter = aEndIter;
 			}
-
-			aMatch.matchResult = matchResult;
-			aMatch.methodFound = &aMethod;
-			aMatch.nodeStartIter = aStartIter;
-			aMatch.nodeEndIter = aEndIter;
-		}
-		else if (matchResult.matches &&
-						 (aMatch.methodFound == nullptr ||
-			        (aLeftToRight && aStartIter < aMatch.nodeStartIter) ||
-					    (!aLeftToRight && aStartIter > aMatch.nodeStartIter)))
-		{
-
-			if (aDebug)
+			else if (aMethod.priority() == aMatch.methodFound->priority() &&
+							 ((aLeftToRight  && aStartIter == aMatch.nodeStartIter) ||
+								(!aLeftToRight && aStartIter == aMatch.nodeStartIter)) &&
+							 matchResult.castCount < aMatch.matchResult.castCount)
 			{
-				std::cerr << "Better match 2: " << " "
-					        << aMethod.code() 
-					        << matchResult.castCount << " "
-									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
-					        << aMatch.matchResult.castCount << " "
-									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-									<< std::endl;
-			}
 
-			aMatch.matchResult = matchResult;
-			aMatch.methodFound = &aMethod;
-			aMatch.nodeStartIter = aStartIter;
-			aMatch.nodeEndIter = aEndIter;
+				if (aDebug)
+				{
+					std::cerr << "Better match 2: " << " "
+										<< aMethod.code() 
+										<< matchResult.castCount << " "
+										<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code()) << " "
+										<< aMatch.matchResult.castCount << " "
+										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+										<< std::endl;
+				}
+
+				aMatch.matchResult = matchResult;
+				aMatch.methodFound = &aMethod;
+				aMatch.nodeStartIter = aStartIter;
+				aMatch.nodeEndIter = aEndIter;
+			}
+			else
+			{
+				if (aDebug)
+				{
+					std::cerr << "No match1: " << " "
+										<< aMethod.code() << " "
+										<< matchResult.castCount << " "
+										<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code()) << " "
+										<< aMatch.matchResult.castCount << " "
+										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
+										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
+										<< std::endl;
+				}
+
+				aMatch.matchedMethod = &aMethod;
+				aMatch.matchResult = matchResult;
+			}
 		}
 		else
 		{
 			if (aDebug)
 			{
-				std::cerr << "No match: " << " "
-					        << aMatch.matchedMethod->code() << " "
+				std::cerr << "No match2: " << " "
+					        << aMethod.code() << " "
 					        << matchResult.castCount << " "
-									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code())
+									<< (aMatch.methodFound == nullptr ? "None" : aMatch.methodFound->code()) << " "
 					        << aMatch.matchResult.castCount << " "
 									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
 									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
@@ -573,7 +616,7 @@ void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& 
 Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 {
 	Expr result = aExpr;
-	//aDebug = true;
+	aDebug = gDebug || aDebug;
 	if (aDebug) std::cerr << "+++++ " << aExpr.text() << " " << aExpr << std::endl;
 
 	Match match;
@@ -735,6 +778,18 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		{
 			error("duplicate declaration of: " + name);
 		}
+		else if (getIdentifier(name))
+		{
+			if (isReservedName(name))
+			{
+				error("reserved name: " + name);
+			}
+			else
+			{
+				warning("hides declaration of: " + name);
+			}
+		}
+
 		Expr initValue;
 		if (aInitValues.empty())
 		{

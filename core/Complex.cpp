@@ -42,11 +42,7 @@ bool Complex::checkAndRemoveImaginaryLetter(std::string& aString)
 }
 
 
-double Complex::abs() const
-{
-	return std::abs(mComplex);
-}
-
+double Complex::abs() const { return std::abs(mComplex); }
 Complex Complex::cos() const { return Complex(std::cos(mComplex)); }
 Complex Complex::sin() const { return Complex(std::sin(mComplex)); }
 Complex Complex::tan() const { return Complex(std::tan(mComplex)); }
@@ -59,16 +55,8 @@ Complex Complex::tanh() const { return Complex(std::tanh(mComplex)); }
 Complex Complex::log() const { return Complex(std::log(mComplex)); }
 Complex Complex::log10() const { return Complex(std::log10(mComplex)); }
 Complex Complex::sqrt() const { return Complex(std::sqrt(mComplex)); }
-
-Complex Complex::pow(double aPower) const
-{
-	return Complex(std::pow(mComplex, aPower));
-}
-
-Complex Complex::pow(const Complex& aPower) const
-{
-	return Complex(std::pow(mComplex, aPower.mComplex));
-}
+Complex Complex::pow(double aPower) const { return Complex(std::pow(mComplex, aPower)); }
+Complex Complex::pow(const Complex& aPower) const { return Complex(std::pow(mComplex, aPower.mComplex)); }
 
 Complex& Complex::operator=(const Complex& aComplex)
 {
@@ -128,9 +116,19 @@ Complex operator+(double aValue, const Complex& aComplex)
 	return Complex(aValue + aComplex.value());
 }
 
+Complex operator+(const Complex& aComplex, double aValue)
+{
+	return Complex(aValue + aComplex.value());
+}
+
 Complex operator-(double aValue, const Complex& aComplex)
 {
 	return Complex(aValue - aComplex.value());
+}
+
+Complex operator-(const Complex& aComplex, double aValue)
+{
+	return Complex(aComplex.value() - aValue);
 }
 
 Complex operator*(double aValue, const Complex& aComplex)
@@ -168,12 +166,23 @@ std::string Complex::toString() const
 		{
 			ss << "+";
 		}
+		
+		if (mComplex.imag() != 1)
+		{
+			ss << mComplex.imag();
+		}
 
-		ss << mComplex.imag() << "i";
+		ss << "i";
 	}
 	else if (mComplex.imag() < 0)
 	{
-		ss << "-" << -mComplex.imag() << "i";
+		ss << "-";
+		if (mComplex.imag() != -1)
+		{
+			ss << -mComplex.imag();
+		}
+		
+		ss << "i";
 	}
 
 	return ss.str();
