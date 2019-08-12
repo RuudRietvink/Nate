@@ -848,11 +848,7 @@ expr-non-word:
 	  NUMBER
 		  { 
         auto number = $NUMBER;
-        TypePtr type = nate.makeType(number);
-        if (type->isOfType("float-32"))
-        {
-          number += "f";
-        }
+        TypePtr type = nate.getNumberType(number);
 			  $$ = Expr(ExprNode($NUMBER, number, type));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);

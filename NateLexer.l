@@ -86,20 +86,6 @@ public:
 		            : yy::parser::make_WORD(name, aLocation);
 	}
   
-	yy::parser::symbol_type makeNumber(const std::string& aString, const yy::location& aLocation)
-	{
-		std::string number = aString;
-
-		return yy::parser::make_NUMBER(number, aLocation);
-	}
-  
-	yy::parser::symbol_type makeFraction(const std::string& aString, const yy::location& aLocation)
-	{
-		std::string number = aString;
-
-		return yy::parser::make_FRACTION(number, aLocation);
-	}
-
   void outIndents(const std::string& aString)
   {
     if (debug())
@@ -236,7 +222,12 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-number          [0-9]+(\.[0-9]+)?(([⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
+numberBase      (0[fF])
+decimal         {numberBase}?[0-9]+(\.[0-9]+)?(([E]|[⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
+binary          [0][bB][0-1]+
+oct             [0][oO][0-7]+
+hex             [0][xX][0-9a-fA-F]+
+number          {decimal}|{binary}|{oct}|{hex}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
 fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
@@ -311,7 +302,7 @@ include\h*\".*\"  s(); includeFile();
 
 <SUPERSCRIPT_EXPR>{
 {superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
-{superNumber} return makeNumber(Core::unSuperscript(str()), location());
+{superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
 {superMinus}  return yy::parser::make_WORD("-", location());
 {superPlus}   return yy::parser::make_WORD("+", location());
 {superOpen}   return yy::parser::make_OPENPAR(location());
@@ -333,7 +324,7 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 [\\]?{word}		return yy::parser::make_WORD(str(), location());
-{number}			return makeNumber(Core::parseNumber(str()), location());
+{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 \h*\k?        // ignore
 }
@@ -385,8 +376,8 @@ include\h*\".*\"  s(); includeFile();
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
-{number}			return makeNumber(Core::parseNumber(str()), location());
-{fraction}	  return makeFraction(str(), location());
+{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
+{fraction}	  return yy::parser::make_FRACTION(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());

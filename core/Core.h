@@ -18,7 +18,8 @@ public:
 	static utf8::iterator<std::string::const_iterator> cend(const std::string& aString);
 	static utf8::iterator<std::string::const_iterator> find(const std::string& aString,
 																											    uint32_t aChar);
-
+	
+	static void parseBaseNumber(std::string& aString);
 	static std::string parseNumber(const std::string& aString);
 	static std::string upperCased(const std::string& aString);
 	static std::string firstOf(const std::string& aString);
@@ -26,8 +27,8 @@ public:
 	static std::string replaceAll(const std::string& aString, const std::string& aFrom, const std::string& aTo);
 	static std::string replaceOne(const std::string& aString, const std::string& aFrom, const std::string& aTo);
 
-	static bool strtoi32(const char* aString, int32_t& aResult);
-	static bool strtoi64(const char* aString, int64_t& aResult);
+	static bool strtoi32(const char* aString, int32_t& aResult, int aBase = 10);
+	static bool strtoi64(const char* aString, int64_t& aResult, int aBase = 10);
 	static bool strtodbl(const char* aString, double& aResult);
 	static int positionIn(const std::string& aString, uint32_t aChar);
 	static bool numberFrom(utf8::iterator<std::string::const_iterator>& aIter,

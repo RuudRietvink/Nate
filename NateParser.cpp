@@ -436,18 +436,6 @@ TypePtr NateParser::makeType(const std::string& aValue)
 	}
 	else if (aValue.find('.') != std::string::npos)
 	{
-		//double value;
-		//Core::strtodbl(aValue.c_str(), value);
-		//if (value > std::numeric_limits<float>::max() || 
-		//		(value < 0 && value < std::numeric_limits<float>::lowest()) ||
-		//		(value > 0 && value < std::numeric_limits<float>::min()))
-		//{
-		//	result = getType("float-64");
-		//}
-		//else
-		//{
-		//	result = getType("float-32");
-		//}
 		result = getType("float-64");
 	}
 	else if (aValue.find('E') != std::string::npos)
@@ -467,6 +455,38 @@ TypePtr NateParser::makeType(const std::string& aValue)
 			result = getType("int-32");
 		}
 	}
+
+	return result;
+}
+
+TypePtr NateParser::getNumberType(std::string& aString)
+{
+  TypePtr result;
+  bool isFloat = false;
+
+  if (aString.size() > 2 &&
+      aString[0] == '0' && (aString[1] == 'f' || aString[1] == 'F'))
+  {
+    aString = aString.substr(2);
+    isFloat = true;
+  }
+
+  Core::parseBaseNumber(aString);
+	        
+  if (isFloat)
+  {
+		if (aString.find('.') == std::string::npos && aString.find('E') == std::string::npos)
+		{
+			aString += ".0";
+		}
+
+    aString += 'f';
+    result = getType("float-32");
+  }
+  else
+  {
+    result = makeType(aString);
+  }
 
 	return result;
 }

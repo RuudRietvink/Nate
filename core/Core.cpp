@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #include <iterator>
+#include <errno.h>
 
 namespace
 {
@@ -25,6 +26,39 @@ namespace
 
 		return result;
 	}
+}
+
+void Core::parseBaseNumber(std::string& aString)
+{
+	int base = 10;
+  if (aString.size() > 2 && aString[0] == '0')
+  {
+		switch (aString[1])
+		{
+		case 'b': case 'B':
+			base = 2;
+			break;
+		case 'o': case 'O':
+			base = 8;
+			break;
+		case 'x': case 'X':
+			base = 16;
+			break;
+		default:
+			break;
+		}
+
+		if (base != 10)
+		{
+			auto number = aString.substr(2); 
+			int64_t temp;
+			bool ok = strtoi64(number.c_str(), temp, base);
+			if (ok)
+			{
+				aString = std::to_string(temp);
+			}
+		}
+  }
 }
 
 std::string Core::parseNumber(const std::string& aString)
@@ -161,13 +195,12 @@ utf8::iterator<std::string::const_iterator> Core::find(const std::string& aStrin
 	return end;
 }
 
-bool Core::strtoi32(const char* aString, int32_t& aResult)
+bool Core::strtoi32(const char* aString, int32_t& aResult, int aBase)
 {
-	char c;
 	int64_t temp;
-	int scanned = sscanf_s(aString, "%" SCNd64 "%c", &temp, &c, 1);
-	bool ok = (scanned == 1);
-	if (temp > std::numeric_limits<int32_t>::max() || temp < std::numeric_limits<int32_t>::lowest())
+	bool ok = strtoi64(aString, temp, aBase);
+
+	if (temp > std::numeric_limits<int32_t>::max())
 	{
 		ok = false;
 	}
@@ -179,11 +212,15 @@ bool Core::strtoi32(const char* aString, int32_t& aResult)
 	return ok;
 }
 
-bool Core::strtoi64(const char* aString, int64_t& aResult)
+bool Core::strtoi64(const char* aString, int64_t& aResult, int aBase)
 {
-	char c;
-	int scanned = sscanf_s(aString, "%" SCNd64 "%c", &aResult, &c, 1);
-	return (scanned == 1);
+	char *endptr = NULL;
+  errno = 0;
+
+  aResult = strtoll(aString, &endptr, aBase);
+	//std::cerr << errno << " " << aString << " " << aResult << " " << (endptr - aString) << " " << (int) *endptr << std::endl;
+  return !(endptr == aString || *endptr != 0 ||
+					 errno != 0 || aResult == LLONG_MAX);
 }
 
 bool Core::strtodbl(const char* aString, double& aResult)

@@ -57,6 +57,7 @@ public:
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 	std::string uniqueName() const;
+	TypePtr getNumberType(std::string& aString);
 
 	void addCode();
 	void endCode();
