@@ -94,7 +94,7 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(Complex, true);
-		mCodeType = "Complex";
+		mCodeType = "Complex<double>";
 		mBitSize = 267;
 	}
 	else if (aType == "boolean")

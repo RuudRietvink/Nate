@@ -121,9 +121,6 @@
     <ClCompile Include="core\Fraction.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="core\Complex.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">

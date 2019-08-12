@@ -194,7 +194,6 @@
     <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp" />
     <ClCompile Include="Code.cpp" />
     <ClCompile Include="Arg.cpp" />
-    <ClCompile Include="core\Complex.cpp" />
     <ClCompile Include="core\Core.cpp" />
     <ClCompile Include="core\Fraction.cpp" />
     <ClCompile Include="Define.cpp" />

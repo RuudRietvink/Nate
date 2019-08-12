@@ -2,94 +2,213 @@
 
 #include <string>
 #include <iostream>
+#include <ostream>
+#include <sstream>
 #include <complex>
 
+template<typename TYPE>
 class Complex
 {
 public:
-	static bool isImaginaryLetter(uint32_t aLetter);
-	static bool checkAndRemoveImaginaryLetter(std::string& aString);
-
-	Complex();
-	explicit Complex(float aValue);
-	explicit Complex(double aValue);
-	Complex(const Complex& aValue);
+	Complex() = default;
+	Complex(const Complex& aValue) = default;
 	
-	constexpr explicit Complex(const std::complex<double>& aComplex)
+	constexpr explicit Complex(const std::complex<TYPE>& aComplex)
 		: mComplex(aComplex)
 	{
 	}
-	constexpr Complex(double aReal, double aImaginary)
+	constexpr Complex(TYPE aReal, TYPE aImaginary = 0)
 		: mComplex(aReal, aImaginary)
 	{
 	}
 	
 	virtual ~Complex() = default;
-
-	double abs() const;
-	Complex cos() const;
-	Complex sin() const;
-	Complex tan() const;
-	Complex acos() const;
-	Complex asin() const;
-	Complex atan() const;
-	Complex cosh() const;
-	Complex sinh() const;
-	Complex tanh() const;
-	Complex log() const;
-	Complex log10() const;
-	Complex pow(double aPower) const;
-	Complex pow(const Complex& aPower) const;
-	Complex sqrt() const;
 	
-	std::string toString() const;
+	Complex<TYPE>& operator=(const Complex<TYPE>& aComplex) = default;
+	Complex<TYPE>& operator=(TYPE aValue)
+	{
+		mComplex.real(aValue);
+		mComplex.imag(TYPE{});
+
+		return *this;
+	}
+
+	bool operator==(const Complex<TYPE>& aComplex) const
+	{
+		return mComplex == aComplex.mComplex;
+	}
+
+	bool operator!=(const Complex<TYPE>& aComplex) const
+	{
+		return !operator==(aComplex);
+	}
+
+	Complex<TYPE> operator-() const
+	{
+		return Complex<TYPE>(-mComplex);
+	}
+
+	Complex<TYPE> operator+(const Complex<TYPE>& aComplex) const
+	{
+		return Complex<TYPE>(mComplex + aComplex.mComplex);
+	}
+
+	Complex<TYPE> operator-(const Complex<TYPE>& aComplex) const
+	{
+		return Complex<TYPE>(mComplex - aComplex.mComplex);
+	}
+
+	Complex<TYPE> operator*(const Complex<TYPE>& aComplex) const
+	{
+		return Complex<TYPE>(mComplex * aComplex.mComplex);
+	}
+
+	Complex<TYPE> operator/(const Complex<TYPE>& aComplex) const
+	{
+		return Complex<TYPE>(mComplex / aComplex.mComplex);
+	}
+
+	friend Complex<TYPE> operator+(TYPE aValue, const Complex<TYPE>& aComplex)
+	{
+		return Complex<TYPE>(aValue + aComplex.value());
+	}
+
+	friend Complex<TYPE> operator+(const Complex<TYPE>& aComplex, TYPE aValue)
+	{
+		return Complex<TYPE>(aValue + aComplex.value());
+	}
+
+	friend Complex<TYPE> operator-(TYPE aValue, const Complex<TYPE>& aComplex)
+	{
+		return Complex<TYPE>(aValue - aComplex.value());
+	}
+
+	friend Complex<TYPE> operator-(const Complex<TYPE>& aComplex, TYPE aValue)
+	{
+		return Complex<TYPE>(aComplex.value() - aValue);
+	}
+
+	friend Complex<TYPE> operator*(TYPE aValue, const Complex<TYPE>& aComplex)
+	{
+		return Complex<TYPE>(aValue * aComplex.value());
+	}
+
+	friend Complex<TYPE> operator*(const Complex<TYPE>& aComplex, TYPE aValue)
+	{
+		return Complex<TYPE>(aValue * aComplex.value());
+	}
+
+	friend Complex<TYPE> operator/(TYPE aValue, const Complex<TYPE>& aComplex)
+	{
+		return Complex<TYPE>(aValue / aComplex.value());
+	}
+
+	friend Complex<TYPE> operator/(const Complex<TYPE>& aComplex, TYPE aValue)
+	{
+		return Complex<TYPE>(aComplex.value() / aValue);
+	}
 	
-	Complex& operator=(const Complex& aComplex);
-	Complex& operator=(double aValue);
-
-	bool operator==(const Complex& aComplex) const;
-	bool operator!=(const Complex& aComplex) const;
-
-	Complex operator-() const;
-	Complex operator+(const Complex& aComplex) const;
-	Complex operator-(const Complex& aComplex) const;
-	Complex operator*(const Complex& aComplex) const;
-	Complex operator/(const Complex& aComplex) const;
-
-	friend Complex operator+(double aValue, const Complex& aComplex);
-	friend Complex operator+(const Complex& aComplex, double aValue);
-	friend Complex operator-(double aValue, const Complex& aComplex);
-	friend Complex operator-(const Complex& aComplex, double aValue);
-	friend Complex operator*(double aValue, const Complex& aComplex);
-	friend Complex operator*(const Complex& aComplex, double aValue);
-	friend Complex operator/(double aValue, const Complex& aComplex);
-	friend Complex operator/(const Complex& aComplex, double aValue);
+	constexpr std::complex<TYPE> value() const { return mComplex; }
+	constexpr TYPE real() const { return mComplex.real(); }
+	constexpr TYPE imaginary() const { return mComplex.imag(); }
 	
-	constexpr std::complex<double> value() const { return mComplex; }
-	constexpr double real() const { return mComplex.real(); }
-	constexpr double imaginary() const { return mComplex.imag(); }
+	TYPE abs() const { return std::abs(mComplex); }
+	Complex<TYPE> cos() const { return Complex<TYPE>(std::cos(mComplex)); }
+	Complex<TYPE> sin() const { return Complex<TYPE>(std::sin(mComplex)); }
+	Complex<TYPE> tan() const { return Complex<TYPE>(std::tan(mComplex)); }
+	Complex<TYPE> acos() const { return Complex<TYPE>(std::acos(mComplex)); }
+	Complex<TYPE> asin() const { return Complex<TYPE>(std::asin(mComplex)); }
+	Complex<TYPE> atan() const { return Complex<TYPE>(std::atan(mComplex)); }
+	Complex<TYPE> cosh() const { return Complex<TYPE>(std::cosh(mComplex)); }
+	Complex<TYPE> sinh() const { return Complex<TYPE>(std::sinh(mComplex)); }
+	Complex<TYPE> tanh() const { return Complex<TYPE>(std::tanh(mComplex)); }
+	Complex<TYPE> log() const { return Complex<TYPE>(std::log(mComplex)); }
+	Complex<TYPE> log10() const { return Complex<TYPE>(std::log10(mComplex)); }
+	Complex<TYPE> sqrt() const { return Complex<TYPE>(std::sqrt(mComplex)); }
+	Complex<TYPE> pow(TYPE aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower)); }
+	Complex<TYPE> pow(const Complex<TYPE>& aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower.mComplex)); }
+	
+	std::string toString() const
+	{
+		std::stringstream ss;
+	
+		if (mComplex.real() != 0 || mComplex.imag() == 0)
+		{
+			ss << mComplex.real();
+		}
 
+		if (mComplex.imag() > 0)
+		{
+			if (mComplex.real() != 0)
+			{
+				ss << "+";
+			}
+		
+			if (mComplex.imag() != 1)
+			{
+				ss << mComplex.imag();
+			}
+
+			ss << "i";
+		}
+		else if (mComplex.imag() < 0)
+		{
+			ss << "-";
+			if (mComplex.imag() != -1)
+			{
+				ss << -mComplex.imag();
+			}
+		
+			ss << "i";
+		}
+
+		return ss.str();
+	}
+
+	
 private:
 	std::complex<double> mComplex;
 };
 
-std::ostream& operator<<(std::ostream& aStream, const Complex& aComplex);
+template<typename TYPE>
+std::ostream& operator<<(std::ostream& aStream, const Complex<TYPE>& aComplex)
+{
+	aStream << aComplex.toString();
+	return aStream;
+}
 
-namespace std {
-	double abs(const Complex& aComplex);
-	Complex pow(const Complex& aComplex, double aPower);
-	Complex pow(double aValue, const Complex& aPower);
-	Complex pow(const Complex& aComplex, const Complex& aPower);
-	Complex sqrt(const Complex& aComplex);
-	Complex cos(const Complex& aComplex);
-	Complex sin(const Complex& aComplex);
-	Complex tan(const Complex& aComplex);
-	Complex acos(const Complex& aComplex);
-	Complex asin(const Complex& aComplex);
-	Complex atan(const Complex& aComplex);
-	Complex cosh(const Complex& aComplex);
-	Complex sinh(const Complex& aComplex);
-	Complex tanh(const Complex& aComplex);
-	Complex log(const Complex& aComplex);
-	Complex log10(const Complex& aComplex);
+namespace std
+{
+	template<typename TYPE>
+	double abs(const Complex<TYPE>& aComplex) { return aComplex.abs(); }
+	template<typename TYPE>
+	Complex<TYPE> pow(const Complex<TYPE>& aComplex, double aPower) { return aComplex.pow(aPower); }
+	template<typename TYPE>
+	Complex<TYPE> pow(const Complex<TYPE>& aComplex, const Complex<TYPE>& aPower) { return aComplex.pow(aPower); }
+	template<typename TYPE>
+	Complex<TYPE> pow(double aValue, const Complex<TYPE>& aPower) { return Complex<TYPE>(std::pow(aValue, aPower.value())); }
+	template<typename TYPE>
+	Complex<TYPE> cos(const Complex<TYPE>& aComplex) { return aComplex.cos(); }
+	template<typename TYPE>
+	Complex<TYPE> sin(const Complex<TYPE>& aComplex) { return aComplex.sin(); }
+	template<typename TYPE>
+	Complex<TYPE> tan(const Complex<TYPE>& aComplex) { return aComplex.tan(); }
+	template<typename TYPE>
+	Complex<TYPE> acos(const Complex<TYPE>& aComplex) { return aComplex.acos(); }
+	template<typename TYPE>
+	Complex<TYPE> asin(const Complex<TYPE>& aComplex) { return aComplex.asin(); }
+	template<typename TYPE>
+	Complex<TYPE> atan(const Complex<TYPE>& aComplex) { return aComplex.atan(); }
+	template<typename TYPE>
+	Complex<TYPE> cosh(const Complex<TYPE>& aComplex) { return aComplex.cosh(); }
+	template<typename TYPE>
+	Complex<TYPE> sinh(const Complex<TYPE>& aComplex) { return aComplex.sinh(); }
+	template<typename TYPE>
+	Complex<TYPE> tanh(const Complex<TYPE>& aComplex) { return aComplex.tanh(); }
+	template<typename TYPE>
+	Complex<TYPE> log(const Complex<TYPE>& aComplex) { return aComplex.log(); }
+	template<typename TYPE>
+	Complex<TYPE> log10(const Complex<TYPE>& aComplex) { return aComplex.log10(); }
+	template<typename TYPE>
+	Complex<TYPE> sqrt(const Complex<TYPE>& aComplex) { return aComplex.sqrt(); }
 }

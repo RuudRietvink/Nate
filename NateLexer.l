@@ -86,27 +86,9 @@ public:
 		            : yy::parser::make_WORD(name, aLocation);
 	}
   
-  void determineImaginary(std::string& aString)
-  {
-    auto last = Core::lastOf(aString);
-    auto lastChar = utf8::peek_next(last, aString.cend());
-
-    if (Complex::isImaginaryLetter(lastChar))
-    {
-      auto idString = Core::toString(lastChar);
-      IdentifierPtr id = nate->getIdentifier(idString);
-      if (!id || !id->type()->is(Type::Imaginary))
-      {
-        unputString(aString.crbegin(), std::string::const_reverse_iterator(last));
-        aString.erase(last, aString.cend());
-      }
-    }
-  }
-
 	yy::parser::symbol_type makeNumber(const std::string& aString, const yy::location& aLocation)
 	{
 		std::string number = aString;
-    determineImaginary(number);
 
 		return yy::parser::make_NUMBER(number, aLocation);
 	}
@@ -114,7 +96,6 @@ public:
 	yy::parser::symbol_type makeFraction(const std::string& aString, const yy::location& aLocation)
 	{
 		std::string number = aString;
-    determineImaginary(number);
 
 		return yy::parser::make_FRACTION(number, aLocation);
 	}
