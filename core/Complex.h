@@ -11,12 +11,20 @@ class Complex
 {
 public:
 	Complex() = default;
-	Complex(const Complex& aValue) = default;
+	Complex(const Complex<TYPE>& aValue) = default;
 	
 	constexpr explicit Complex(const std::complex<TYPE>& aComplex)
 		: mComplex(aComplex)
 	{
 	}
+	
+  template<typename OTHER>
+	constexpr Complex(const Complex<OTHER>& aComplex)
+		: mComplex(static_cast<TYPE>(aComplex.real()),
+							 static_cast<TYPE>(aComplex.imaginary()))
+	{
+	}
+
 	constexpr Complex(TYPE aReal, TYPE aImaginary = 0)
 		: mComplex(aReal, aImaginary)
 	{
@@ -167,7 +175,7 @@ public:
 
 	
 private:
-	std::complex<double> mComplex;
+	std::complex<TYPE> mComplex;
 };
 
 template<typename TYPE>
@@ -180,7 +188,7 @@ std::ostream& operator<<(std::ostream& aStream, const Complex<TYPE>& aComplex)
 namespace std
 {
 	template<typename TYPE>
-	double abs(const Complex<TYPE>& aComplex) { return aComplex.abs(); }
+	TYPE abs(const Complex<TYPE>& aComplex) { return aComplex.abs(); }
 	template<typename TYPE>
 	Complex<TYPE> pow(const Complex<TYPE>& aComplex, double aPower) { return aComplex.pow(aPower); }
 	template<typename TYPE>

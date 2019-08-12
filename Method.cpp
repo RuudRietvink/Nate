@@ -319,6 +319,11 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	{
 	  nodeFlags.push_back(ExprNode::ConstExpr);
 	}
+	
+	if (type())
+	{
+		resultCode = Core::replaceAll(resultCode, "__RETURN__", codeType->codeType());
+	}
 
 	return std::make_tuple(error, resultCode, codeType, nodeFlags);
 }
@@ -399,7 +404,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 			
 			if (nodeType)
 			{
-				if (!highestType || nodeType->bitSize() > highestType->bitSize())
+				if (!highestType || nodeType->isBiggerThan(highestType))
 				{
 					highestType = nodeType;
 				}
@@ -443,7 +448,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
 														== Type::CompareResult::No)
 				{
-					error <<  "2 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+					error <<  "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
 									  " must be compatible with type " << highestType->name();
 					result.matches = false;
 				}
@@ -478,7 +483,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					else if ((comp = templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch)) 
 															== Type::CompareResult::No)
 					{
-						error <<  "3 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+						error <<  "3 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
 									    " must be of type " << templateType->typenameType()->name();
 						result.matches = false;
 					}
@@ -487,7 +492,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 								 (comp = argType->canBeCastedFrom(nodeType, needExactMatch)) 
 															== Type::CompareResult::No)
 				{
-					error <<  "4 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+					error <<  "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
 								    " must be of type " << argType->name();
 					result.matches = false;
 				}

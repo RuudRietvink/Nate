@@ -60,7 +60,9 @@ int NateParser::parse()
 	getType("text")->setTypenameType(getType("char"));
 	addType(std::make_shared<Type>("fraction", getType("number")));
 	addType(std::make_shared<Type>("imaginary", getType("number")));
+	getType("imaginary")->setTypenameType(getType("float-64"));
 	addType(std::make_shared<Type>("complex", getType("number")));
+	getType("complex")->setTypenameType(getType("float-64"));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -434,18 +436,22 @@ TypePtr NateParser::makeType(const std::string& aValue)
 	}
 	else if (aValue.find('.') != std::string::npos)
 	{
-		/*double value;
-		Core::strtodbl(aValue.c_str(), value);
-		if (value > std::numeric_limits<float>::max() || 
-		    (value < 0 && value < std::numeric_limits<float>::lowest()) ||
-		    (value > 0 && value < std::numeric_limits<float>::min()))
-		{
-		  result = getType(float-64");
-		}
-		else
-		{
-		  result = getType("float-32");
-		}*/
+		//double value;
+		//Core::strtodbl(aValue.c_str(), value);
+		//if (value > std::numeric_limits<float>::max() || 
+		//		(value < 0 && value < std::numeric_limits<float>::lowest()) ||
+		//		(value > 0 && value < std::numeric_limits<float>::min()))
+		//{
+		//	result = getType("float-64");
+		//}
+		//else
+		//{
+		//	result = getType("float-32");
+		//}
+		result = getType("float-64");
+	}
+	else if (aValue.find('E') != std::string::npos)
+	{
 		result = getType("float-64");
 	}
 	else

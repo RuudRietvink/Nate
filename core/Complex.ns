@@ -15,13 +15,13 @@ code 120 ($val-1 is number) \u monomial ($val-2 is imaginary (exact)) is imagina
 	$val-1
 	
 code 115 ($val-1 is number) \u + ($val-2 is imaginary (exact)) is complex (const):
-	Complex<double>($val-1, $val-2)
+	__RETURN__($val-1, $val-2)
 
 code 115 ($val-1 is number) \u - ($val-2 is imaginary (exact)) is complex (const):
-	Complex<double>($val-1, -$val-2)
+	__RETURN__($val-1, -$val-2)
 	
 code 114 ($val is imaginary (exact)) is complex (const):
-	Complex<double>(0, $val)
+	__RETURN__(0, $val)
 	
 code 110 \u real ($val is complex (exact)) is float-64 (const):
 	$val.real()
@@ -29,22 +29,25 @@ code 110 \u real ($val is complex (exact)) is float-64 (const):
 code 110 \u imaginary ($val is complex (exact)) is float-64 (const):
 	$val.imag()
   
-code 110 ($val-1 is complex (exact)) \u ^ ($val-2 is number) is complex (right):
+code 110 ($val-1 is complex (exact)) \u ^ ($val-2 is number) is (same,right):
 	std::pow($val-1, $val-2)
     
-code 110 \u \l round ($val is complex (exact)) is complex:
+code 110 \u \l sqrt ($val is complex (exact)) is (same):
+	std::sqrt($val)
+    
+code 110 \u \l round ($val is complex (exact)) is (same):
 	NI
   
-code 110 \u \l floor ($val is complex (exact)) is complex:
+code 110 \u \l floor ($val is complex (exact)) is (same):
 	NI
   
-code 110 \u \l floor_l ($val is complex (exact)) floor_r is complex:
+code 110 \u \l floor_l ($val is complex (exact)) floor_r is (same):
 	NI
   
-code 110 \u \l ceil ($val is complex (exact)) is complex:
+code 110 \u \l ceil ($val is complex (exact)) is (same):
 	std::ceil($val)
   
-code 110 \u \l ceil_l ($val is complex (exact)) ceil_r is complex:
+code 110 \u \l ceil_l ($val is complex (exact)) ceil_r is (same):
 	NI
   
 code 110 \u \l abs ($val is complex (exact)) is float-64:
@@ -53,7 +56,7 @@ code 110 \u \l abs ($val is complex (exact)) is float-64:
 code 110 \u \l abs_l ($val is complex (exact)) abs_r is float-64:
 	std::abs($val)
 
-code 110 \u \l log2 ($val is complex (exact)) is complex:
+code 110 \u \l log2 ($val is complex (exact)) is (same):
 	NI
   
 code 120 \u ⇑ ($val is number (out,exact)) is (same):

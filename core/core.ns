@@ -93,16 +93,16 @@ code 120 \u dec# ($val is number (out)) is (same):
 code 120 ($val is number (out)) \u #dec is (same):
   $val--
   
-code 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)) is (same):
+code 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)):
   $val-1 -= $val-2
   
-code 65 \u decrease ($val is number (out)) is (same):
+code 65 \u decrease ($val is number (out)):
   --$val
   
-code 65 \u increase ($val-1 is number (out)) \u with ($val-2 is (same)) is (same):
+code 65 \u increase ($val-1 is number (out)) \u with ($val-2 is (same)):
   $val-1 += $val-2
   
-code 65 \u increase ($val is number (out)) is (same):
+code 65 \u increase ($val is number (out)):
   ++$val
 
 ///////////////////////////////////////////////

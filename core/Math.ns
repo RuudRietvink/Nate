@@ -31,28 +31,31 @@ constant e is float-64 := 2.718281828459045
 code 110 ($val-1 is number) \u ^ ($val-2 is number) is number (highest,right):
 	std::pow($val-1, $val-2)
   
-code 110 \u \l sqrt ($val is real) is float-64:
+code 110 \u \l sqrt ($val is integer) is float-64:
 	std::sqrt($val)
     
-code 110 \u \l round ($val is real) is int-64:
+code 110 \u \l sqrt ($val is real) is (same):
+	std::sqrt($val)
+    
+code 110 \u \l round ($val is real) is (same):
 	std::round($val)
   
-code 110 \u \l floor ($val is real) is int-64:
+code 110 \u \l floor ($val is real) is (same):
 	std::floor($val)
   
-code 110 \u \l floor_l ($val is real) floor_r is int-64:
+code 110 \u \l floor_l ($val is real) floor_r is (same):
 	std::floor($val)
   
-code 110 \u \l ceil ($val is real) is int-64:
+code 110 \u \l ceil ($val is real) is (same):
 	std::ceil($val)
   
-code 110 \u \l ceil_l ($val is real) ceil_r is int-64:
+code 110 \u \l ceil_l ($val is real) ceil_r is (same):
 	std::ceil($val)
   
-code 110 \u \l abs ($val is real) is int-64:
+code 110 \u \l abs ($val is real) is (same):
 	std::abs($val)
   
-code 110 \u \l abs_l ($val is real) abs_r is int-64:
+code 110 \u \l abs_l ($val is real) abs_r is (same):
 	std::abs($val)
   
 code 110 \u \l sin ($val is real) is (same):

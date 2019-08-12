@@ -18,9 +18,9 @@ public:
 	virtual ~Type() = default;
 	
 	virtual bool is(size_t aFlags) const override;
+	bool isBiggerThan(const TypePtr& aType) const;
 	bool empty() const;
 	void setType(const std::string& aType);
-	bool isBiggerThan(const TypePtr& aType) const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 	bool isOfType(const std::string& aType) const;
 
@@ -61,6 +61,7 @@ public:
 	static const size_t Imaginary  =16;
 	static const size_t Complex    =17;
 	static const size_t SingleNr   =18;
+	static const size_t Template   =19;
 
 private:
 	void setBaseType(const TypePtr& aType);

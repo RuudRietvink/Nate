@@ -47,7 +47,7 @@ bool ExprNode::castToType(const TypePtr& aToType)
 		}
 		else if (type()->is(Type::Imaginary) && aToType->is(Type::Complex))
 		{
-			*this = ExprNode(text(), "Complex<double>(0, " + code() + ")", aToType);
+			*this = ExprNode(text(), aToType->codeType() + "(0, " + code() + ")", aToType);
 		}
 		else if (type()->is(Type::Number) && aToType->is(Type::Imaginary))
 		{
@@ -55,7 +55,7 @@ bool ExprNode::castToType(const TypePtr& aToType)
 		}
 		else if (type()->is(Type::SingleNr) && aToType->is(Type::Complex))
 		{
-			*this = ExprNode(text(), "Complex<double>(" + code() + ", 0)", aToType);
+			*this = ExprNode(text(), aToType->codeType() + "(" + code() + ", 0)", aToType);
 		}
 		else if (!aToType->is(Type::Abstract))
 		{
@@ -67,7 +67,7 @@ bool ExprNode::castToType(const TypePtr& aToType)
 			{
 				*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
 			}
-			else if (type()->bitSize() > aToType->bitSize())
+			else if (type()->isBiggerThan(aToType))
 			{
 				*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
 			}

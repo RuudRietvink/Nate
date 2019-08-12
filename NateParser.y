@@ -410,7 +410,15 @@ type:
         if (!$[type-extra].empty())
         {
           $$ = nate.determineType($WORD);
-          $$->setTypenameType(nate.determineType($[type-extra]));
+          if ($$->is(Type::Template))
+          {
+            $$ = std::make_shared<Type>(*$$); // clone
+            $$->setTypenameType(nate.determineType($[type-extra]));
+          }
+          else
+          {
+            nate.error("Not a template: " + $WORD);
+          }
         }
         else
         {
@@ -519,7 +527,16 @@ output-part-rest:
 
 output-part:
 	  expr
-		  { nate.codeOutput($expr); }
+		  { 
+        if ($expr.type() && !$expr.type()->empty())
+        {
+          nate.codeOutput($expr);
+        }
+        else
+        {
+          nate.error("Cannot output typeless expression");
+        }
+      }
   ;
 
 output-sep:
@@ -775,7 +792,13 @@ return-statement:
   
 expr-statement:
     expr
-      { nate.codeExpression($expr); }
+      { 
+        nate.codeExpression($expr);
+        if ($expr.type() && !$expr.type()->empty())
+        {
+          nate.warning("Ignoring result of expression");
+        }
+      }
   ;
 
 expr:
@@ -824,8 +847,13 @@ expr-part:
 expr-non-word:
 	  NUMBER
 		  { 
-        TypePtr type = nate.makeType($NUMBER);
-			  $$ = Expr(ExprNode($NUMBER, $NUMBER, type));
+        auto number = $NUMBER;
+        TypePtr type = nate.makeType(number);
+        if (type->isOfType("float-32"))
+        {
+          number += "f";
+        }
+			  $$ = Expr(ExprNode($NUMBER, number, type));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();

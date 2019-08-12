@@ -87,14 +87,17 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(Imaginary, true);
-		mCodeType = "double";
+		setFlag(Template, true);
+		mCodeType = "";
 		mBitSize = 265;
 	}
 	else if (aType == "complex")
 	{
 		setFlag(Abstract, false);
 		setFlag(Complex, true);
-		mCodeType = "Complex<double>";
+		setFlag(NeedsRef, true);
+		setFlag(Template, true);
+		mCodeType = "Complex";
 		mBitSize = 267;
 	}
 	else if (aType == "boolean")
@@ -134,6 +137,7 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Container, true);
 		setFlag(NeedsRef, true);
+		setFlag(Template, true);
 		mBitSize = 3000;
 	}
 	else if (aType == "sequence-container")
@@ -175,6 +179,21 @@ bool Type::isOfType(const std::string& aType) const
 				 (mBaseType && mBaseType->isOfType(aType));
 }
 
+bool Type::isBiggerThan(const TypePtr& aType) const
+{
+	bool result = false;
+
+	if (bitSize() > aType->bitSize())
+	{
+		result = true;
+	}
+	else if (is(Real) && (!aType->is(Real) && aType->is(Integer)))
+	{
+		result = true;
+	}
+
+	return result;
+}
 Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMatch) const
 {
 	CompareResult result = CompareResult::No;
@@ -222,22 +241,6 @@ Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMa
 	return result;
 }
 
-bool Type::isBiggerThan(const TypePtr& aType) const
-{
-	bool result = false;
-
-	if (bitSize() > aType->bitSize())
-	{
-		result = true;
-	}
-	else if (is(Real) && (!aType->is(Real) && aType->is(Number)))
-	{
-		result = true;
-	}
-
-	return result;
-}
-
 bool               Type::empty()     const { return mName.empty(); }
 const std::string& Type::name()      const { return mName; }
 int                Type::bitSize()   const { return mBitSize; }
@@ -258,7 +261,14 @@ std::string Type::codeType() const
 	}
 	else
 	{
-		result = mCodeType + "<" + mTypenameType->codeType() + ">";
+		if (!mCodeType.empty())
+		{
+			result = mCodeType + "<" + mTypenameType->codeType() + ">";
+		}
+		else
+		{
+			result = mTypenameType->codeType();
+		}
 	}
 
 	return result;
