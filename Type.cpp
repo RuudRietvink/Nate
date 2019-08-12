@@ -80,7 +80,6 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(Fraction, true);
-		setFlag(Scalar, false);
 		mCodeType = "Fraction";
 		mBitSize = 264;
 	}

@@ -35,17 +35,13 @@ bool ExprNode::castToType(const TypePtr& aToType)
 	{
 		if (type()->is(Type::Fraction) && aToType->is(Type::Real))
 		{
-			*this = ExprNode(text(), "(" + code() + ".toDouble())", aToType);
-		}
-		else if (type()->is(Type::Real) && aToType->is(Type::Fraction))
-		{
-			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
+			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ".toDouble())", aToType);
 		}
 		else if (type()->is(Type::Fraction) && aToType->is(Type::Integer))
 		{
-			*this = ExprNode(text(), "(" + code() + ".toInt())", aToType);
+			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ".toInt())", aToType);
 		}
-		else if (type()->is(Type::Integer) && aToType->is(Type::Fraction))
+		else if (type()->is(Type::SingleNr) && aToType->is(Type::Fraction))
 		{
 			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
 		}
@@ -57,11 +53,7 @@ bool ExprNode::castToType(const TypePtr& aToType)
 		{
 			setFlag(Type::Imaginary);
 		}
-		else if (type()->is(Type::Real) && aToType->is(Type::Complex))
-		{
-			*this = ExprNode(text(), "Complex(" + code() + ", 0)", aToType);
-		}
-		else if (type()->is(Type::Integer) && aToType->is(Type::Complex))
+		else if (type()->is(Type::SingleNr) && aToType->is(Type::Complex))
 		{
 			*this = ExprNode(text(), "Complex(" + code() + ", 0)", aToType);
 		}

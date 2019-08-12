@@ -576,7 +576,7 @@ std::string Fraction::toString() const
 		}
 		else
 		{
-			ss << Core::toString(mNumerator, superDigits) << "/" << Core::toString(mDenominator, subDigits);
+			ss << Core::toString(mNumerator, superDigits) << "⁄" << Core::toString(mDenominator, subDigits);
 		}
 	}
 
