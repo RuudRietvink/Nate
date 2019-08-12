@@ -101,10 +101,11 @@ bool ExprNode::castToType(const TypePtr& aToType)
 	return ok;
 }
 
-const std::string& ExprNode::text()            const { return mText; }
-const std::string& ExprNode::code()            const { return mCode; }
-TypePtr            ExprNode::type()            const { return mType; }
-bool               ExprNode::isEmpty()         const { return mText.empty(); }
+const std::string& ExprNode::text()			const { return mText; }
+const std::string& ExprNode::code()			const { return mCode; }
+std::string&       ExprNode::code()						{ return mCode; }
+TypePtr            ExprNode::type()			const { return mType; }
+bool               ExprNode::isEmpty()	const { return mText.empty(); }
 
 std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 {

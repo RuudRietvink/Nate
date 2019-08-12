@@ -59,6 +59,7 @@ public:
 		char align = '<';
 		char sign = '-';
 		int32_t base = 10;
+		std::string error;
 
 		std::string toString() const;
 	};
@@ -76,6 +77,12 @@ public:
 	static std::string formatted(const T& aValue, const Core::Format& aFormat)
 	{
 		std::string result;
+
+		if (!aFormat.error.empty())
+		{
+			std::cerr << aFormat.error << std::endl;
+		}
+
 		//std::cerr << aValue << " " << aFormat << std::endl;
 
 		if (((aFormat.align != '=' && aFormat.fill <= 255) || aFormat.width < 0) && aFormat.sign != ' ')

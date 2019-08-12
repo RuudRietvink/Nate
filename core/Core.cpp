@@ -360,8 +360,8 @@ std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
 						<< aFormat.precision << ", "
 						<< aFormat.fill << ", "
 						<< "'" << aFormat.align << "',"
-						<< "'" << aFormat.sign << "'"
-						<< aFormat.base << ", "
+						<< "'" << aFormat.sign << "',"
+						<< aFormat.base
 					  << "} ";
 
 	return aStream;
@@ -414,7 +414,7 @@ Core::Format Core::getFormat(const std::string& aFormat)
 						}
 						else if (!ok && *iter != '|')
 						{
-							std::cerr << "Missing output format width, got: " << toString(iter) << std::endl;
+							result.error = "Missing output format width, got: " + toString(iter);
 						}
 					}
 				}
@@ -441,12 +441,12 @@ Core::Format Core::getFormat(const std::string& aFormat)
 						result.align = '=';
 						if (result.width < 0)
 						{
-							std::cerr << "Center align requires width specified" << std::endl;
+							result.error = "Center align requires width specified";
 						}
 					}
 					else
 					{
-						std::cerr << "Unknown output format align, got: " << align << std::endl;
+						result.error = "Unknown output format align, got: " + align;
 					}
 				}
 				else if (header == "F" || header == "FILL")
@@ -477,7 +477,7 @@ Core::Format Core::getFormat(const std::string& aFormat)
 					}
 					else
 					{
-						std::cerr << "Unknown output format sign, got: " << sign << std::endl;
+						result.error = "Unknown output format sign, got: " + sign;
 					}
 				}
 				else if (header == "B" || header == "BASE")
@@ -504,33 +504,33 @@ Core::Format Core::getFormat(const std::string& aFormat)
 					}
 					else if (base == "2" || base == "B" || base == "BIN" || base == "BINARY")
 					{
-						std::cerr << "Binary output format base is not supported" << std::endl;
+						result.error = "Binary output format base is not supported";
 					}
 					else
 					{
-						std::cerr << "Unknown output format base, got: " << base << std::endl;
+						result.error = "Unknown output format base, got: " + base;
 					}
 				}
 				else
 				{
-					std::cerr << "Unknown output format header, got: " << header << std::endl;
+					result.error = "Unknown output format header, got: " + header;
 				}
 			}
 			else
 			{
-				std::cerr << "Missing format value" << std::endl;
+				result.error = "Missing format value";
 			}
 		}
 		else if (!header.empty())
 		{
-			std::cerr << "Missing format colon" << std::endl;
+			result.error = "Missing format colon";
 		}
 
 		if (iter != end)
 		{
 			if (*iter != ',')
 			{
-				std::cerr << "Missing output format seperator: got: " << toString(iter) << std::endl;
+				result.error = "Missing output format seperator: got: " + toString(iter);
 			}
 			else
 			{

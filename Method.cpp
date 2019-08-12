@@ -190,21 +190,21 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 	return true;
 }
 
-std::tuple<std::string, std::string, TypePtr, Flags> 
+Method::EvaluateResult
 Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
-	std::string error;
-	std::string resultCode = code();
-	TypePtr codeType(type());
+	EvaluateResult result;
 	TypePtr firstType;
 	TypePtr highestType;
 	TypePtr lastType;
-	Flags nodeFlags;
 	bool isConst = is(ConstExpr);
 	Record* owner = getOwner(aBegin);
 	TypePtr templateType = getTemplateType(aBegin);
 	std::string nodeCode;
 			
+	result.code = code();
+	result.type = type();
+
 	ExprNodesCIter nodeIter = aBegin;
 	for (auto const& arg : mArgs)
 	{
@@ -253,7 +253,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				{
 					nodeCode = identifier->codeName();
 					nodeType = identifier->type();
-					nodeFlags.push_back(ExprNode::Output);
+					result.flags.push_back(ExprNode::Output);
 				}
 			}
 			else
@@ -290,7 +290,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 													node.is(ExprNode::Literal))
 													? nodeCode 
 													: "(" + nodeCode + ")";
-			resultCode = Core::replaceAll(resultCode, "${" + arg.identifier()->name() + "}", code);
+			result.code = Core::replaceAll(result.code, "${" + arg.identifier()->name() + "}", code);
 			
 			lastType = nodeType;
 			if (!node.is(ExprNode::ConstExpr))
@@ -299,33 +299,35 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			}
 		}
 
+		result.origText.append(nodeIter->text());
+
 		++nodeIter;
 	}
 
 	if (is(Same))
 	{
-		codeType = firstType;
+		result.type = firstType;
 	}
 	else if (is(Last))
 	{
-		codeType = lastType;
+		result.type = lastType;
 	}
 	else if (is(Highest))
 	{
-		codeType = highestType;
+		result.type = highestType;
 	}
 
 	if (isConst)
 	{
-	  nodeFlags.push_back(ExprNode::ConstExpr);
+	  result.flags.push_back(ExprNode::ConstExpr);
 	}
 	
 	if (type())
 	{
-		resultCode = Core::replaceAll(resultCode, "__RETURN__", codeType->codeType());
+		result.code = Core::replaceAll(result.code, "__RETURN__", result.type->codeType());
 	}
 
-	return std::make_tuple(error, resultCode, codeType, nodeFlags);
+	return result;
 }
 
 std::string Method::toCodeWord(const std::string& aWord) const

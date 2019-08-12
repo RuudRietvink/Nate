@@ -133,7 +133,9 @@ private:
 		const Method*				matchedMethod = nullptr;
 		Method::MatchResult matchResult;
 	};
-	
+
+	std::string handleCompileCommand(const std::string& aCommand, const std::string& aData);
+	void handleCompileCommands(Expr& aExpr);
 	void checkIfBetterMatch(const Method& aMethod,
 													const ExprNodesCIter& aStartIter,
 													const ExprNodesCIter& aEndIter,

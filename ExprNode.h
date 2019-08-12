@@ -18,10 +18,11 @@ public:
 
 	bool castToType(const TypePtr& aToType);
 
-	const std::string& text()            const;
-	const std::string& code()            const;
-	TypePtr            type()            const;
-	bool               isEmpty()         const;
+	const std::string& text()			const;
+	const std::string& code()			const;
+	std::string&       code();
+	TypePtr            type()			const;
+	bool               isEmpty()	const;
 	
 	static const size_t Word      = 0;
 	static const size_t Output    = 1;

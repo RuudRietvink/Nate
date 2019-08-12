@@ -663,25 +663,21 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 
 		if (match.methodFound)
 		{
-			std::string errorMsg;
-			std::string methodStat;
-			TypePtr methodType;
-			Flags nodeFlags;
-			std::tie(errorMsg, methodStat, methodType, nodeFlags) = 
+			Method::EvaluateResult evalResult = 
 				match.methodFound->evaluate(match.nodeStartIter, match.nodeEndIter, aDebug);
-			if (!errorMsg.empty())
+			if (!evalResult.error.empty())
 			{
-				error(errorMsg);
+				error(evalResult.error);
 			}
-			else if (methodStat == "NI")
+			else if (evalResult.code == "NI")
 			{
 				error("Not implemented: " + aExpr.text());
 			}
 
-			if (aDebug) std::cerr << "******* " << (methodType ? *methodType : Type()) << " " << methodStat << std::endl;
+			if (aDebug) std::cerr << "******* " << (evalResult.type ? *evalResult.type : Type()) << " " << evalResult.code << std::endl;
 			
-			ExprNode node(methodStat, methodStat, methodType);
-			node.setFlags(nodeFlags);
+			ExprNode node(evalResult.origText, evalResult.code, evalResult.type);
+			node.setFlags(evalResult.flags);
 
 			Expr newExpr;
 			newExpr.addNodes(aExpr.nodes().cbegin(), match.nodeStartIter);
@@ -704,8 +700,88 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 		error("Bad expression: " + aExpr.text());
 		return Expr(ExprNode("1", getType("int-32")));
 	}
+
+	handleCompileCommands(result);
+
 	if (aDebug) std::cerr << result << std::endl;
 	return result;
+}
+
+std::string NateParser::handleCompileCommand(const std::string& aCommand, const std::string& aData)
+{
+	std::string result = aData;
+
+	if (aCommand == "GETFORMAT")
+	{
+	  static const std::string preData = "Core::getFormat(";
+	  static const std::string postData = ")";
+		size_t endPre = preData.size();
+
+		if (aData.substr(0, endPre) == preData && aData.back() == ')')
+		{
+			// Core::getFormat("..."), literal string
+			if (aData[endPre] == '"')
+			{
+				size_t endString = aData.find('"', endPre + 1);
+				if (endString == aData.size() - 2)
+				{
+					Core::Format format = Core::getFormat(aData.substr(endPre + 1, endString - endPre - 1));
+					result = format.toString();
+				}
+			}
+		}
+		else
+		{
+			error("Unknown compile data: " + aData);
+		}
+	}
+	else
+	{
+		error("Unknown compile command: " + aCommand);
+	}
+
+	return result;
+}
+
+void NateParser::handleCompileCommands(Expr& aExpr)
+{
+	size_t pos;
+	std::string& code = aExpr.node().code();
+	bool ok = true;
+
+	do
+	{
+		pos = code.find("__X__");
+		if (pos != std::string::npos)
+		{
+			size_t commandStart = pos + 5;
+			size_t commandEnd = code.find("__", commandStart);
+			if (commandEnd != std::string::npos)
+			{
+				size_t dataStart = commandEnd + 2;
+				size_t dataEnd = code.find("__", dataStart);
+				if (dataEnd != std::string::npos)
+				{
+					code.replace(pos, dataEnd + 2 - pos,
+											 handleCompileCommand(code.substr(commandStart, commandEnd - commandStart),
+																					  code.substr(dataStart, dataEnd - dataStart)));
+				}
+				else
+				{
+					ok = false;
+				}
+			}
+			else
+			{
+				ok = false;
+			}
+		}
+	} while (pos != std::string::npos && ok);
+
+	if (!ok)
+	{
+		error("Badly formatted compile command in: " + code);
+	}
 }
 
 void NateParser::codeStartProgram()

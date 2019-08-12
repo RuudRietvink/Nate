@@ -13,7 +13,7 @@ code 150 rest \u of ($val is text) is text:
   Core::restOf($val)
   
 code 150 ($val-1 is any) \u @ ($val-2 is text) is text:
-  Core::formatted($val-1, Core::getFormat($val-2))
+  Core::formatted($val-1, __X__GETFORMAT__Core::getFormat($val-2)__)
   
 code 65 stream-out ($char-1 is char):
   Core::toString($char-1)
