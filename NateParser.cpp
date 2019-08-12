@@ -736,7 +736,7 @@ void NateParser::codeEndScope()
 }
 
 void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
-																						bool initializeNonScalars)
+																						bool initializeObjects)
 {
 	addIdentifier(aIdentifier);
 	if (aIdentifier->type()->is(Type::Abstract))
@@ -765,7 +765,10 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 	}
 
 	*mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
-	if (aIdentifier->type()->is(Type::Scalar) || initializeNonScalars)
+	//if (aIdentifier->type()->is(Type::Scalar) || initializeNonScalars)
+	if (!aIdentifier->initValue().is(ExprNode::Default) || 
+			aIdentifier->type()->is(Type::SingleNr) || 
+			initializeObjects)
 	{
 		*mOut << " = " << aIdentifier->initValue().code();
 	}
@@ -782,7 +785,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 																						 const std::vector<std::string>& aNames,
 																						 const TypePtr& aType,
 																					 	 const std::vector<Expr>& aInitValues,
-																						 bool initializeNonScalars)
+																						 bool initializeObjects)
 {
 	//std::cout << Core::join(aNames, ", ") << ":" << aType << ":" << Core::join(aInitValues, ", ") << std::endl;
 
@@ -849,7 +852,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		IdentifierPtr id = std::make_shared<Identifier>(curScope(), name, type, initValue);
 		id->setFlag(Identifier::Const, aConst);
 
-		codeDeclareLocalIdentifier(id, initializeNonScalars);
+		codeDeclareLocalIdentifier(id, initializeObjects);
 	}
 }
 
@@ -869,7 +872,7 @@ void NateParser::codeDeclareRecordIdentifiers(bool aConst,
 
 	for (auto& id : curScope()->getIdentifiers())
 	{
-		if (!id->type()->is(Type::Scalar) && !id->initValue().is(ExprNode::Default))
+		if (!id->type()->is(Type::SingleNr) && !id->initValue().is(ExprNode::Default))
 		{
 			error("Cannot initialize member: " + id->name() + " of record " + curScope()->name());
 		}

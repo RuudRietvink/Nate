@@ -74,12 +74,12 @@ public:
 	void codeStartScope();
 	void codeEndScope();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
-																	bool initializeNonScalars = false);
+																	bool initializeObjects = false);
 	void codeDeclareLocalIdentifiers(bool aConst,
 																	 const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
 																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeNonScalars = false);
+																	 bool initializeObjects = false);
 	void codeStartRecord(const RecordPtr& aRecord);
 	void codeDeclareRecordIdentifiers(bool aConst,
 																	  const std::vector<std::string>& aNames,

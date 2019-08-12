@@ -58,6 +58,7 @@ public:
 		uint32_t fill = ' ';
 		char align = '<';
 		char sign = '-';
+		int32_t base = 10;
 
 		std::string toString() const;
 	};
@@ -69,6 +70,7 @@ public:
 	static void setAlign(std::ostream& aStream, char aAlign);
 	static void setSign(std::ostream& aStream, char aSign);
 	static void setFill(std::ostream& aStream, uint32_t aFill);
+	static void setBase(std::ostream& aStream, int32_t aBase);
 
 	template <typename T>
 	static std::string formatted(const T& aValue, const Core::Format& aFormat)
@@ -84,6 +86,7 @@ public:
 			setAlign(ss, aFormat.align);
 			setFill(ss, aFormat.fill);
 			setSign(ss, aFormat.sign);
+			setBase(ss, aFormat.base);
 			ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
 			ss.setf(std::ios_base::boolalpha);
 

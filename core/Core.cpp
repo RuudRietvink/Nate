@@ -361,6 +361,7 @@ std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
 						<< aFormat.fill << ", "
 						<< "'" << aFormat.align << "',"
 						<< "'" << aFormat.sign << "'"
+						<< aFormat.base << ", "
 					  << "} ";
 
 	return aStream;
@@ -479,6 +480,37 @@ Core::Format Core::getFormat(const std::string& aFormat)
 						std::cerr << "Unknown output format sign, got: " << sign << std::endl;
 					}
 				}
+				else if (header == "B" || header == "BASE")
+				{
+					std::string base;
+					while (iter != end && *iter != ',')
+					{
+						base += *iter++;
+					}
+
+					base = upperCased(base);
+
+					if (base == "10" || base == "D"|| base == "DEC"|| base == "DECIMAL")
+					{
+						result.base = 10;
+					}
+					else if (base == "8" || base == "O" || base == "OCT"|| base == "OCTAL")
+					{
+						result.base = 8;
+					}
+					else if (base == "16" || base == "X" || base == "HEX"|| base == "HEXADECIMAL")
+					{
+						result.base = 16;
+					}
+					else if (base == "2" || base == "B" || base == "BIN" || base == "BINARY")
+					{
+						std::cerr << "Binary output format base is not supported" << std::endl;
+					}
+					else
+					{
+						std::cerr << "Unknown output format base, got: " << base << std::endl;
+					}
+				}
 				else
 				{
 					std::cerr << "Unknown output format header, got: " << header << std::endl;
@@ -569,4 +601,9 @@ void Core::setSign(std::ostream& aStream, char aSign)
 void Core::setFill(std::ostream& aStream, uint32_t aFill)
 {
 	aStream.fill(aFill);
+}
+
+void Core::setBase(std::ostream& aStream, int32_t aBase)
+{
+	aStream << std::setbase(aBase);
 }
