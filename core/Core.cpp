@@ -483,20 +483,43 @@ static bool tryGetBase(const std::string& aInput, Core::Format& aFormat, const s
 {
 	bool ok = true;
 	int flags = 0;
+	std::string flag = aFlag;
 	
-	if (aFlag == "10" || aFlag == "D"|| aFlag == "DEC"|| aFlag == "DECIMAL")
+	auto dash = flag.find('-');
+	if (dash != std::string::npos)
+	{
+		for (auto iter = aFlag.cbegin(); *iter != '-'; ++iter)
+		{
+			if (*iter == '0')
+			{
+				aFormat.flags |= F::ShowBase;
+			}
+			else if (*iter == 'U' || *iter == 'u')
+			{
+				aFormat.flags |= F::Uppercase;
+			}
+			else
+			{
+				aFormat.setError("Bad base option in: " + aInput);
+			}
+		}
+
+		flag = flag.substr(dash + 1);
+	}
+
+	if (flag == "10" || flag == "D"|| flag == "DEC"|| flag == "DECIMAL")
 	{
 		flags |= F::Base10;
 	}
-	else if (aFlag == "8" || aFlag == "O" || aFlag == "OCT"|| aFlag == "OCTAL")
+	else if (flag == "8" || flag == "O" || flag == "OCT"|| flag == "OCTAL")
 	{
 		flags |= F::Base08;
 	}
-	else if (aFlag == "16" || aFlag == "X" || aFlag == "HEX"|| aFlag == "HEXADECIMAL")
+	else if (flag == "16" || flag == "X" || flag == "HEX"|| flag == "HEXADECIMAL")
 	{
 		flags |= F::Base16;
 	}
-	else if (aFlag == "2" || aFlag == "B" || aFlag == "BIN" || aFlag == "BINARY")
+	else if (flag == "2" || flag == "B" || flag == "BIN" || flag == "BINARY")
 	{
 		aFormat.setError("Binary output format base is not supported in: " + aInput);
 	}
@@ -747,5 +770,15 @@ void Core::setBase(std::ostream& aStream, int32_t aBase)
 	else if (aBase & F::Base08)
 	{
 		aStream << std::setbase(8);
+	}
+
+	if (aBase & F::ShowBase)
+	{
+		aStream << std::showbase;
+	}
+
+	if (aBase & F::Uppercase)
+	{
+		aStream << std::uppercase;
 	}
 }
