@@ -359,9 +359,7 @@ std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat)
 						<< aFormat.width << ", "
 						<< aFormat.precision << ", "
 						<< aFormat.fill << ", "
-						<< "'" << aFormat.align << "',"
-						<< "'" << aFormat.sign << "',"
-						<< aFormat.base
+						<< aFormat.flags
 					  << "} ";
 
 	return aStream;
@@ -374,14 +372,156 @@ std::string Core::Format::toString() const
 	return ss.str();
 }
 
-Core::Format Core::getFormat(const std::string& aFormat)
+using F = Core::Format::Flags;
+using Uci = utf8::iterator<std::string::const_iterator>;
+
+static std::string getFlag(Uci& aIter, const Uci& aEnd)
 {
-	utf8::iterator<std::string::const_iterator> iter(aFormat.cbegin(), aFormat.cbegin(), aFormat.cend());
-	utf8::iterator<std::string::const_iterator> end(aFormat.cend(), aFormat.cbegin(), aFormat.cend());
-	
-	Format result;
+	std::string result;
+	while (aIter != aEnd && *aIter != ',')
+	{
+		result += *aIter++;
+	}
+
+	return Core::upperCased(result);
+}
+
+static void getFormatWidth(const std::string& aInput, Core::Format& aFormat, Uci& aIter, const Uci& aEnd)
+{
 	int32_t temp;
-			
+	bool ok = Core::numberFrom(aIter, aEnd, temp);
+	if (ok)
+	{
+		aFormat.width = temp;
+	}
+					
+	if (aIter != aEnd)
+	{
+		if (*aIter == '.')
+		{
+			++aIter;
+			Core::numberFrom(aIter, aEnd, temp);
+			aFormat.precision = temp;
+		}
+		else if (!ok && *aIter != ',')
+		{
+			aFormat.setError("Missing output format width in " + aInput);
+		}
+	}
+}
+
+static bool tryGetAlign(const std::string& aInput, Core::Format& aFormat, const std::string aFlag)
+{
+	bool ok = true;
+	int flags = 0;
+
+	if (aFlag == "<" || aFlag == "L" || aFlag == "LEFT")
+	{
+		flags |= F::AlignLeft;
+	}
+	else if (aFlag == ">" || aFlag == "R" || aFlag == "RIGHT")
+	{
+		flags |= F::AlignRight;
+	}
+	else if (aFlag == "^" || aFlag == "C" || aFlag == "CENTER")
+	{
+		flags |= F::AlignCenter;
+
+		if (aFormat.width < 0)
+		{
+			aFormat.setError("Center align requires width specified in: " + aInput);
+		}
+	}
+	else
+	{
+		ok = false;
+	}
+
+	if (ok)
+	{
+		aFormat.flags &= ~F::Align;
+		aFormat.flags |= flags;
+	}
+
+	//std::cerr << "Align " << flags << std::endl;
+	return ok;
+}
+
+static bool tryGetSign(const std::string& aInput, Core::Format& aFormat, const std::string aFlag)
+{
+	bool ok = true;
+	int flags = 0;
+	
+	if (aFlag == "-" || aFlag == "MINUS")
+	{
+		flags |= F::SignMinus;
+	}
+	else if (aFlag == "+" || aFlag == "+-" || aFlag == "PLUS" || aFlag == "PLUSMINUS")
+	{
+		flags |= F::SignPlusMinus;
+	}
+	else if (aFlag == " " || aFlag == " -" || aFlag == "SPACE" || aFlag == "SPACEMINUS")
+	{
+		flags |= F::SignSpaceMinus;
+	}
+	else
+	{
+		ok = false;
+	}
+
+	if (ok)
+	{
+		aFormat.flags &= ~F::Sign;
+		aFormat.flags |= flags;
+	}
+	
+	//std::cerr << "Sign " << flags << std::endl;
+	return ok;
+}
+
+static bool tryGetBase(const std::string& aInput, Core::Format& aFormat, const std::string aFlag)
+{
+	bool ok = true;
+	int flags = 0;
+	
+	if (aFlag == "10" || aFlag == "D"|| aFlag == "DEC"|| aFlag == "DECIMAL")
+	{
+		flags |= F::Base10;
+	}
+	else if (aFlag == "8" || aFlag == "O" || aFlag == "OCT"|| aFlag == "OCTAL")
+	{
+		flags |= F::Base08;
+	}
+	else if (aFlag == "16" || aFlag == "X" || aFlag == "HEX"|| aFlag == "HEXADECIMAL")
+	{
+		flags |= F::Base16;
+	}
+	else if (aFlag == "2" || aFlag == "B" || aFlag == "BIN" || aFlag == "BINARY")
+	{
+		aFormat.setError("Binary output format base is not supported in: " + aInput);
+	}
+	else
+	{
+		ok = false;
+	}
+
+	if (ok)
+	{
+		aFormat.flags &= ~F::Base;
+		aFormat.flags |= flags;
+	}
+	
+	//std::cerr << "Base " << flags << std::endl;
+	return ok;
+}
+
+static Core::Format getFormatWithHeaders(const std::string& aInput)
+{
+	Uci iter(aInput.cbegin(), aInput.cbegin(), aInput.cend());
+	Uci end(aInput.cend(), aInput.cbegin(), aInput.cend());
+	
+	Core::Format result;
+
 	while (iter != end)
 	{
 		std::string header;
@@ -390,63 +530,23 @@ Core::Format Core::getFormat(const std::string& aFormat)
 			header += *iter++;
 		}
 
-		header = upperCased(header);
-		if (*iter == ':' && !header.empty())
+		header = Core::upperCased(header);
+		if (iter != end && *iter == ':' && !header.empty())
 		{
 			++iter;
 			if (iter != end)
 			{
 				if (header == "W" || header == "WIDTH")
 				{
-					bool ok = numberFrom(iter, end, temp);
-					if (ok)
-					{
-						result.width = temp;
-					}
-					
-					if (iter != end)
-					{
-						if (*iter == '.')
-						{
-							++iter;
-							numberFrom(iter, end, temp);
-							result.precision = temp;
-						}
-						else if (!ok && *iter != '|')
-						{
-							result.error = "Missing output format width, got: " + toString(iter);
-						}
-					}
+					getFormatWidth(aInput, result, iter, end);
 				}
 				else if (header == "A" || header == "ALIGN")
 				{
-					std::string align;
-					while (iter != end && *iter != ',')
-					{
-						align += *iter++;
-					}
+					std::string align = getFlag(iter, end);
 
-					align = upperCased(align);
-
-					if (align == "<" || align == "L" || align == "LEFT")
+					if (!tryGetAlign(aInput, result, align))
 					{
-						result.align = '<';
-					}
-					else if (align == ">" || align == "R" || align == "RIGHT")
-					{
-						result.align = '>';
-					}
-					else if (align == "^" || align == "C" || align == "CENTER")
-					{
-						result.align = '=';
-						if (result.width < 0)
-						{
-							result.error = "Center align requires width specified";
-						}
-					}
-					else
-					{
-						result.error = "Unknown output format align, got: " + align;
+						result.setError("Unknown output format align in: "  + aInput);
 					}
 				}
 				else if (header == "F" || header == "FILL")
@@ -455,88 +555,119 @@ Core::Format Core::getFormat(const std::string& aFormat)
 				}
 				else if (header == "S" || header == "SIGN")
 				{
-					std::string sign;
-					while (iter != end && *iter != ',')
-					{
-						sign += *iter++;
-					}
+					std::string sign = getFlag(iter, end);
 
-					sign = upperCased(sign);
-
-					if (sign == "-" || sign == "MINUS")
+					if (!tryGetSign(aInput, result, sign))
 					{
-						result.sign = '-';
-					}
-					else if (sign == "+" || sign == "PLUS")
-					{
-						result.sign = '+';
-					}
-					else if (sign == " " || sign == "SPACE")
-					{
-						result.sign = ' ';
-					}
-					else
-					{
-						result.error = "Unknown output format sign, got: " + sign;
+						result.setError("Unknown output format sign in: "  + aInput);
 					}
 				}
 				else if (header == "B" || header == "BASE")
 				{
-					std::string base;
-					while (iter != end && *iter != ',')
-					{
-						base += *iter++;
-					}
+					std::string base = getFlag(iter, end);
 
-					base = upperCased(base);
-
-					if (base == "10" || base == "D"|| base == "DEC"|| base == "DECIMAL")
+					if (!tryGetBase(aInput, result, base))
 					{
-						result.base = 10;
-					}
-					else if (base == "8" || base == "O" || base == "OCT"|| base == "OCTAL")
-					{
-						result.base = 8;
-					}
-					else if (base == "16" || base == "X" || base == "HEX"|| base == "HEXADECIMAL")
-					{
-						result.base = 16;
-					}
-					else if (base == "2" || base == "B" || base == "BIN" || base == "BINARY")
-					{
-						result.error = "Binary output format base is not supported";
-					}
-					else
-					{
-						result.error = "Unknown output format base, got: " + base;
+						result.setError("Unknown output format base in: "  + aInput);
 					}
 				}
 				else
 				{
-					result.error = "Unknown output format header, got: " + header;
+					result.setError("Unknown output format header in: "  + aInput);
 				}
 			}
 			else
 			{
-				result.error = "Missing format value";
+				result.setError("Missing format value in: "  + aInput);
 			}
 		}
 		else if (!header.empty())
 		{
-			result.error = "Missing format colon";
+			result.setError("Missing format colon in: "  + aInput);
 		}
 
 		if (iter != end)
 		{
-			if (*iter != ',')
+			if (header.empty() && *iter == ':')
 			{
-				result.error = "Missing output format seperator: got: " + toString(iter);
+				result.setError("Missing output format header in: " + aInput);
+				++iter;
+			}
+			else if (*iter != ',')
+			{
+				result.setError("Missing output format seperator in: "  + aInput);
 			}
 			else
 			{
 				++iter;
 			}
 		}
+	}
+
+	return result;
+}
+
+static Core::Format getFormatHeaderless(const std::string& aInput)
+{
+	Uci iter(aInput.cbegin(), aInput.cbegin(), aInput.cend());
+	Uci end(aInput.cend(), aInput.cbegin(), aInput.cend());
+	
+	Core::Format result;
+	int32_t commaCount = 0;
+
+	while (iter != end)
+	{
+		if (*iter != ',')
+		{
+			if (commaCount == 0)
+			{
+				getFormatWidth(aInput, result, iter, end);
+			}
+			else if (commaCount == 1)
+			{
+				result.fill = *iter++;
+			}
+			else
+			{
+				std::string flag = getFlag(iter, end);
+
+				if (!tryGetAlign(aInput, result, flag) &&
+						!tryGetSign(aInput, result, flag) &&
+						!tryGetBase(aInput, result, flag))
+				{
+					result.setError("Unknown output format flag in: "  + aInput);
+				}
+			}
+		}
+
+		++commaCount;
+		if (iter != end && *iter != ',')
+		{
+			result.setError("Expected comma in: "  + aInput);
+		}
+
+		if (iter != end)
+		{
+			++iter;
+		}
+	}
+
+	return result;
+}
+
+Core::Format Core::getFormat(const std::string& aInput)
+{
+	Format result;
+			
+	size_t colon = aInput.find(':');
+	if (colon == std::string::npos ||
+			(colon == aInput.size() - 1 || aInput[colon+1] == ','))
+	{
+		result = getFormatHeaderless(aInput);
+	}
+	else
+	{
+		result = getFormatWithHeaders(aInput);
 	}
 
 	return result;
@@ -574,25 +705,25 @@ void Core::setPrecision(std::ostream& aStream, int32_t aPrecision)
 	}
 }
 
-void Core::setAlign(std::ostream& aStream, char aAlign)
+void Core::setAlign(std::ostream& aStream, int32_t aAlign)
 {
-	if (aAlign == '<')
+	if (aAlign & F::AlignLeft)
 	{
 		aStream.setf(std::ios::left);
 	}
-	else if (aAlign == '>')
+	else if (aAlign & F::AlignRight)
 	{
 		aStream.setf(std::ios::right);
 	}
 }
 	
-void Core::setSign(std::ostream& aStream, char aSign)
+void Core::setSign(std::ostream& aStream, int32_t aSign)
 {
-	if (aSign == '-')
+	if (aSign & F::SignMinus)
 	{
 		aStream.unsetf(std::ios_base::showpos);
 	}
-	else if (aSign == '+')
+	else if (aSign & F::SignPlusMinus)
 	{
 		aStream.setf(std::ios_base::showpos);
 	}
@@ -605,5 +736,16 @@ void Core::setFill(std::ostream& aStream, uint32_t aFill)
 
 void Core::setBase(std::ostream& aStream, int32_t aBase)
 {
-	aStream << std::setbase(aBase);
+	if (aBase & F::Base10)
+	{
+		aStream << std::setbase(10);
+	}
+	else if (aBase & F::Base16)
+	{
+		aStream << std::setbase(16);
+	}
+	else if (aBase & F::Base08)
+	{
+		aStream << std::setbase(8);
+	}
 }

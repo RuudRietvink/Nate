@@ -56,11 +56,35 @@ public:
 		int32_t width = -1;
 		int32_t precision = -1;
 		uint32_t fill = ' ';
-		char align = '<';
-		char sign = '-';
-		int32_t base = 10;
+
+		struct Flags
+		{
+			static const int AlignLeft			= 0x0001;
+			static const int AlignRight			= 0x0002;
+			static const int AlignCenter		= 0x0004;
+			static const int Align					= AlignLeft | AlignRight | AlignCenter;
+			static const int SignMinus			= 0x0008;
+			static const int SignPlusMinus	= 0x0010;
+			static const int SignSpaceMinus	= 0x0020;
+			static const int Sign  					= SignMinus | SignPlusMinus | SignSpaceMinus;
+			static const int ShowBase				= 0x0040;
+			static const int Uppercase			= 0x0080;
+			static const int Base10   			= 0x0100;
+			static const int Base16   			= 0x0200;
+			static const int Base08   			= 0x0400;
+			static const int Base     			= Base10 | Base16 | Base08;
+		};
+
+		int flags = Flags::AlignLeft | Flags::SignMinus | Flags::Base10;
 		std::string error;
 
+		void setError(const std::string& aError)
+		{
+			if (error.empty())
+			{
+				error = aError;
+			}
+		}
 		std::string toString() const;
 	};
 	
@@ -68,14 +92,16 @@ public:
 	
 	static void setWidth(std::ostream& aStream, int32_t aWidth);
 	static void setPrecision(std::ostream& aStream, int32_t aPrecision);
-	static void setAlign(std::ostream& aStream, char aAlign);
-	static void setSign(std::ostream& aStream, char aSign);
+	static void setAlign(std::ostream& aStream, int32_t aAlign);
+	static void setSign(std::ostream& aStream, int32_t aSign);
 	static void setFill(std::ostream& aStream, uint32_t aFill);
 	static void setBase(std::ostream& aStream, int32_t aBase);
 
 	template <typename T>
 	static std::string formatted(const T& aValue, const Core::Format& aFormat)
 	{
+		using F = Format::Flags;
+
 		std::string result;
 
 		if (!aFormat.error.empty())
@@ -85,15 +111,16 @@ public:
 
 		//std::cerr << aValue << " " << aFormat << std::endl;
 
-		if (((aFormat.align != '=' && aFormat.fill <= 255) || aFormat.width < 0) && aFormat.sign != ' ')
+		if (((!(aFormat.flags & F::AlignCenter) && aFormat.fill <= 255) || aFormat.width < 0) &&
+				!(aFormat.flags & F::SignSpaceMinus))
 		{
 			std::stringstream ss;
 			setWidth(ss, aFormat.width);
 			setPrecision(ss, aFormat.precision);
-			setAlign(ss, aFormat.align);
+			setAlign(ss, aFormat.flags);
 			setFill(ss, aFormat.fill);
-			setSign(ss, aFormat.sign);
-			setBase(ss, aFormat.base);
+			setSign(ss, aFormat.flags);
+			setBase(ss, aFormat.flags);
 			ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
 			ss.setf(std::ios_base::boolalpha);
 
@@ -106,13 +133,15 @@ public:
 			Format subFormat = aFormat;
 		  subFormat.width = -1;
 		  subFormat.fill = ' ';
-			subFormat.align = '<';
-			subFormat.sign = (aFormat.sign == ' ' ? '+' : aFormat.sign);
+			subFormat.flags &= ~(F::Align | F::Sign);
+			subFormat.flags |= F::AlignLeft;
+			subFormat.flags |= (aFormat.flags & F::SignSpaceMinus) 
+												 ? F::SignPlusMinus : (F::SignMinus);
 
 			result = formatted(aValue, subFormat);
 			//std::cerr << "|" << result << "|";
 
-			if (aFormat.sign == ' ')
+			if (aFormat.flags & F::SignSpaceMinus)
 			{
 				result = replaceOne(result, "+", " ");
 			}
@@ -122,12 +151,12 @@ public:
 			int32_t half = 0;
 			int32_t otherHalf = 0;
 			int32_t size = static_cast<int32_t>(result.size());
-			if (aFormat.align == '=')
+			if (aFormat.flags & F::AlignCenter)
 			{
 				half = (aFormat.width - size) / 2;
 				otherHalf = aFormat.width - size - half;
 			}
-			else if (aFormat.align == '>')
+			else if (aFormat.flags & F::AlignRight)
 			{
 				half = aFormat.width - size;
 			}

@@ -727,6 +727,10 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 				{
 					Core::Format format = Core::getFormat(aData.substr(endPre + 1, endString - endPre - 1));
 					result = format.toString();
+					if (!format.error.empty())
+					{
+						error(format.error);
+					}
 				}
 			}
 		}
