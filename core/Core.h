@@ -111,36 +111,22 @@ public:
 
 		//std::cerr << aValue << " " << aFormat << std::endl;
 
-		if (((!(aFormat.flags & F::AlignCenter) && aFormat.fill <= 255) || aFormat.width < 0) &&
-				!(aFormat.flags & F::SignSpaceMinus))
+		std::stringstream ss;
+		setPrecision(ss, aFormat.precision);
+		setAlign(ss, F::AlignLeft);
+		setSign(ss, F::SignPlusMinus);
+		setBase(ss, aFormat.flags);
+		ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
+		ss.setf(std::ios_base::boolalpha);
+
+		ss << aValue;
+		result = ss.str();
+
+		//std::cerr << "|" << result << "|";
+			
+		//if (aFormat.fill != ' ' || 
+		//		(aFormat.flags & F::SignSpaceMinus))
 		{
-			std::stringstream ss;
-			setWidth(ss, aFormat.width);
-			setPrecision(ss, aFormat.precision);
-			setAlign(ss, aFormat.flags);
-			setFill(ss, aFormat.fill);
-			setSign(ss, aFormat.flags);
-			setBase(ss, aFormat.flags);
-			ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
-			ss.setf(std::ios_base::boolalpha);
-
-			ss << aValue;
-			result = ss.str();
-			//std::cerr << ss.width() << " " << ss.precision() << " " << ss.flags() << " {" << result << "}" << std::endl;
-		}
-		else
-		{
-			Format subFormat = aFormat;
-		  subFormat.width = -1;
-		  subFormat.fill = ' ';
-			subFormat.flags &= ~(F::Align | F::Sign);
-			subFormat.flags |= F::AlignLeft;
-			subFormat.flags |= (aFormat.flags & F::SignSpaceMinus) 
-												 ? F::SignPlusMinus : (F::SignMinus);
-
-			result = formatted(aValue, subFormat);
-			//std::cerr << "|" << result << "|";
-
 			if (aFormat.flags & F::SignSpaceMinus)
 			{
 				result = replaceOne(result, "+", " ");
@@ -169,12 +155,18 @@ public:
 			{
 				utf8::append(aFormat.fill, back);
 			}
+
 			temp += result;
+
+			while (otherHalf-- > 0)
+			{
+				utf8::append(aFormat.fill, back);
+			}
 				
-			temp += std::string(otherHalf, ' ');
 			result = std::move(temp);
-			//std::cerr << result << "|" << std::endl;
 		}
+
+		//std::cerr << result << "|" << std::endl;
 
 		return result;
 	}

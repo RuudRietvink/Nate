@@ -415,15 +415,15 @@ static bool tryGetAlign(const std::string& aInput, Core::Format& aFormat, const 
 	bool ok = true;
 	int flags = 0;
 
-	if (aFlag == "<" || aFlag == "L" || aFlag == "LEFT")
+	if (aFlag == "<" || aFlag == "LT" || aFlag == "LEFT")
 	{
 		flags |= F::AlignLeft;
 	}
-	else if (aFlag == ">" || aFlag == "R" || aFlag == "RIGHT")
+	else if (aFlag == ">" || aFlag == "RT" || aFlag == "RIGHT")
 	{
 		flags |= F::AlignRight;
 	}
-	else if (aFlag == "^" || aFlag == "C" || aFlag == "CENTER")
+	else if (aFlag == "^" || aFlag == "CR" || aFlag == "CENTER")
 	{
 		flags |= F::AlignCenter;
 
@@ -452,15 +452,15 @@ static bool tryGetSign(const std::string& aInput, Core::Format& aFormat, const s
 	bool ok = true;
 	int flags = 0;
 	
-	if (aFlag == "-" || aFlag == "MINUS")
+	if (aFlag == "-" || aFlag == "MS" || aFlag == "MINUS")
 	{
 		flags |= F::SignMinus;
 	}
-	else if (aFlag == "+" || aFlag == "+-" || aFlag == "PLUS" || aFlag == "PLUSMINUS")
+	else if (aFlag == "+" || aFlag == "+-" || aFlag == "PM" || aFlag == "PLUSMINUS")
 	{
 		flags |= F::SignPlusMinus;
 	}
-	else if (aFlag == " " || aFlag == " -" || aFlag == "SPACE" || aFlag == "SPACEMINUS")
+	else if (aFlag == " " || aFlag == " -" || aFlag == "SM" || aFlag == "SPACEMINUS")
 	{
 		flags |= F::SignSpaceMinus;
 	}
@@ -483,43 +483,20 @@ static bool tryGetBase(const std::string& aInput, Core::Format& aFormat, const s
 {
 	bool ok = true;
 	int flags = 0;
-	std::string flag = aFlag;
-	
-	auto dash = flag.find('-');
-	if (dash != std::string::npos)
-	{
-		for (auto iter = aFlag.cbegin(); *iter != '-'; ++iter)
-		{
-			if (*iter == '0')
-			{
-				aFormat.flags |= F::ShowBase;
-			}
-			else if (*iter == 'U' || *iter == 'u')
-			{
-				aFormat.flags |= F::Uppercase;
-			}
-			else
-			{
-				aFormat.setError("Bad base option in: " + aInput);
-			}
-		}
 
-		flag = flag.substr(dash + 1);
-	}
-
-	if (flag == "10" || flag == "D"|| flag == "DEC"|| flag == "DECIMAL")
+	if (aFlag == "10" || aFlag == "B10" || aFlag == "DL"|| aFlag == "DECIMAL")
 	{
 		flags |= F::Base10;
 	}
-	else if (flag == "8" || flag == "O" || flag == "OCT"|| flag == "OCTAL")
+	else if (aFlag == "8" || aFlag == "B8" || aFlag == "OL"|| aFlag == "OCTAL")
 	{
 		flags |= F::Base08;
 	}
-	else if (flag == "16" || flag == "X" || flag == "HEX"|| flag == "HEXADECIMAL")
+	else if (aFlag == "16" || aFlag == "B16" || aFlag == "HL"|| aFlag == "HEXADECIMAL")
 	{
 		flags |= F::Base16;
 	}
-	else if (flag == "2" || flag == "B" || flag == "BIN" || flag == "BINARY")
+	else if (aFlag == "2" || aFlag == "B2" || aFlag == "BY" || aFlag == "BINARY")
 	{
 		aFormat.setError("Binary output format base is not supported in: " + aInput);
 	}
@@ -532,6 +509,17 @@ static bool tryGetBase(const std::string& aInput, Core::Format& aFormat, const s
 	{
 		aFormat.flags &= ~F::Base;
 		aFormat.flags |= flags;
+	}
+
+	if (aFlag == "UC" || aFlag == "UPPERCASE")
+	{
+		aFormat.flags |= F::Uppercase;
+		ok = true;
+	}
+	else if (aFlag == "0X" || aFlag == "SB" || aFlag == "SHOWBASE")
+	{
+		aFormat.flags |= F::ShowBase;
+		ok = true;
 	}
 	
 	//std::cerr << "Base " << flags << std::endl;
@@ -638,9 +626,11 @@ static Core::Format getFormatHeaderless(const std::string& aInput)
 	Core::Format result;
 	int32_t commaCount = 0;
 
-	while (iter != end)
+	if (iter != end && *iter == '[')
 	{
-		if (*iter != ',')
+		++iter;
+
+		while (iter != end && *iter != ']')
 		{
 			if (commaCount == 0)
 			{
@@ -648,22 +638,64 @@ static Core::Format getFormatHeaderless(const std::string& aInput)
 			}
 			else if (commaCount == 1)
 			{
-				result.fill = *iter++;
-			}
-			else
-			{
-				std::string flag = getFlag(iter, end);
-
-				if (!tryGetAlign(aInput, result, flag) &&
-						!tryGetSign(aInput, result, flag) &&
-						!tryGetBase(aInput, result, flag))
+				if (*iter == '\\')
 				{
-					result.setError("Unknown output format flag in: "  + aInput);
+					++iter;
+					if (iter != end)
+					{
+						result.fill = *iter++;
+					}
+					else
+					{
+						result.setError("Missing fill character in [] part in "  + aInput);
+					}
 				}
+				else if (*iter != ']' && *iter != ',')
+				{
+					result.fill = *iter++;
+				}
+			}
+
+			if (iter != end && *iter == ',')
+			{
+			  ++iter;
+				++commaCount;
+				if (commaCount > 1)
+				{
+					result.setError("Too many commas in [] part in "  + aInput);
+				}
+			}
+			else if (iter != end && *iter != ']')
+			{
+				result.setError("Unexpected character in [] part in "  + aInput);
+			  ++iter;
 			}
 		}
 
-		++commaCount;
+		if (iter != end && *iter == ']')
+		{
+			++iter;
+		}
+		else
+		{
+			result.setError("Missing ] in [] part in "  + aInput);
+		}
+	}
+
+	while (iter != end)
+	{
+		if (*iter != ',' )
+		{
+			std::string flag = getFlag(iter, end);
+
+			if (!tryGetAlign(aInput, result, flag) &&
+					!tryGetSign(aInput, result, flag) &&
+					!tryGetBase(aInput, result, flag))
+			{
+				result.setError("Unknown output format flag in: "  + aInput);
+			}
+		}
+
 		if (iter != end && *iter != ',')
 		{
 			result.setError("Expected comma in: "  + aInput);
@@ -684,7 +716,8 @@ Core::Format Core::getFormat(const std::string& aInput)
 			
 	size_t colon = aInput.find(':');
 	if (colon == std::string::npos ||
-			(colon == aInput.size() - 1 || aInput[colon+1] == ','))
+			(colon == aInput.size() - 1 && aInput[colon+1] == ',') ||
+			(colon != 0 && aInput[colon-1] == '\\'))
 	{
 		result = getFormatHeaderless(aInput);
 	}
