@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core.h"
+
 #include <string>
 #include <iostream>
 #include <ostream>
@@ -136,43 +138,66 @@ public:
 	Complex<TYPE> pow(TYPE aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower)); }
 	Complex<TYPE> pow(const Complex<TYPE>& aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower.mComplex)); }
 	
-	std::string toString() const
+	std::string toString(std::stringstream& aStream) const
 	{
-		std::stringstream ss;
-	
 		if (mComplex.real() != 0 || mComplex.imag() == 0)
 		{
-			ss << mComplex.real();
+			aStream << mComplex.real();
 		}
 
 		if (mComplex.imag() > 0)
 		{
-			if (mComplex.real() != 0)
-			{
-				ss << "+";
-			}
-		
 			if (mComplex.imag() != 1)
 			{
-				ss << mComplex.imag();
-			}
+				if (mComplex.real() != 0 && !(aStream.flags() & std::ios_base::showpos))
+				{
+					aStream << '+';
+				}
 
-			ss << "i";
+				aStream << mComplex.imag() << 'i';
+			}
+			else 
+			{
+				if (aStream.flags() & std::ios_base::showpos)
+				{
+					aStream << '+';
+				}
+
+				aStream << 'i';
+			}
 		}
 		else if (mComplex.imag() < 0)
 		{
-			ss << "-";
 			if (mComplex.imag() != -1)
 			{
-				ss << -mComplex.imag();
+				aStream << mComplex.imag() << 'i';
 			}
-		
-			ss << "i";
+			else
+			{
+				aStream << "-i";
+			}
 		}
-
-		return ss.str();
+		
+		return aStream.str();
+	}
+	
+	std::string toString() const
+	{
+		std::stringstream ss;
+		return toString(ss);
 	}
 
+	std::string toString(const Core::Format& aFormat) const
+	{
+		using F = Core::Format::Flags;
+		
+		std::stringstream ss;
+		Core::setTempFormat(ss, aFormat);
+		std::string result = toString(ss);
+
+		return result;
+	}
+	
 	
 private:
 	std::complex<TYPE> mComplex;
@@ -219,4 +244,13 @@ namespace std
 	Complex<TYPE> log10(const Complex<TYPE>& aComplex) { return aComplex.log10(); }
 	template<typename TYPE>
 	Complex<TYPE> sqrt(const Complex<TYPE>& aComplex) { return aComplex.sqrt(); }
+}
+
+namespace Core
+{
+	template <typename T>
+	std::string outputValue(const Complex<T>& aValue, const Core::Format& aFormat)
+	{
+		return aValue.toString(aFormat);
+	}
 }

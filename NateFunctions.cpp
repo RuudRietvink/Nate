@@ -1,4 +1,8 @@
 #include "NateFunctions.h"
+
+#include "core/Core.h"
+#include "utf8.h"
+
 #include <vector>
 #include <inttypes.h>
 #include <iostream>

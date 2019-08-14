@@ -494,8 +494,11 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 								 (comp = argType->canBeCastedFrom(nodeType, needExactMatch)) 
 															== Type::CompareResult::No)
 				{
-					error <<  "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-								    " must be of type " << argType->name();
+					if (args().size() > 1)
+					{
+						error <<  "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+											" must be of type " << argType->name();
+					}
 					result.matches = false;
 				}
 

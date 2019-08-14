@@ -159,6 +159,9 @@
     <None Include="core\Fraction.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="core\Output-Stream.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">

@@ -21,11 +21,14 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	*mOut << "#define NOMINMAX" << std::endl;
 	*mOut << "#include <windows.h>" << std::endl;
 	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
+	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Fraction.h\"" << std::endl;
+	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Complex.h\"" << std::endl;
 	*mOut << "#include <string>" << std::endl;
 	*mOut << "#include <list>" << std::endl;
 	*mOut << "#include <cstdint>" << std::endl;
 	*mOut << "#include <cmath>" << std::endl;
 	*mOut << "#include <iostream>" << std::endl;
+	*mOut << "#include <fstream>" << std::endl;
 	*mOut << "#include <algorithm>" << std::endl;
 	*mOut << "#include <complex>" << std::endl;
 }
@@ -63,6 +66,7 @@ int NateParser::parse()
 	getType("imaginary")->setTypenameType(getType("float-64"));
 	addType(std::make_shared<Type>("complex", getType("number")));
 	getType("complex")->setTypenameType(getType("float-64"));
+	addType(std::make_shared<Type>("output-stream", getType("any")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -690,7 +694,11 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 		{
 			if (match.matchedMethod != nullptr)
 			{
-				error("Bad argument types for code: " + match.matchedMethod->signature() + ": " + match.matchResult.error);
+				if (!match.matchResult.error.empty())
+				{
+					error("Bad argument types for code: " + match.matchedMethod->signature() + ": " + 
+								match.matchResult.error);
+				}
 			}
 		}
 	}
@@ -993,6 +1001,17 @@ void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)
 std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 {
 	return getOrFakeIdentifier(aName, aScope)->codeName();
+}
+
+void NateParser::codeWriteStart(const Expr& aValue)
+{
+	if (aValue.type()->isOfType("output-stream"))
+	{
+		mStream = "*" + aValue.code();
+		printLineNr();
+		mFirstOutput = true;
+		mCachedOutput.clear();
+	}
 }
 
 void NateParser::codeOutputStart(const std::string& aStream)

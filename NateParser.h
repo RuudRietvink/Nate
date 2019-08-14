@@ -92,6 +92,7 @@ public:
 	void codeOutput(const std::string& aString);
 	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
+	void codeWriteStart(const Expr& aValue);
 	void codeInputStart(const std::string& aStream);
 	void codeInputSpace();
 	void codeInputNoSpace();

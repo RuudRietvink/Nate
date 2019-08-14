@@ -112,8 +112,6 @@ public:
       "VAR_DECL",
       "DECL_TYPE",
       "FOR_EXPR",
-      "OUTPUT_EXPR",
-      "INPUT_EXPR",
       "SUPERSCRIPT_EXPR",
       "COMMENT"
     };
@@ -189,16 +187,14 @@ public:
 //%option debug
 %option fast
 
-%s EXPR
+%x EXPR
 %s LOOP
 %s DEFINE
 %x CODE
 %x ARGS
 %x VAR_DECL
 %x DECL_TYPE
-%s FOR_EXPR
-%s OUTPUT_EXPR
-%s INPUT_EXPR
+%x FOR_EXPR
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
@@ -241,7 +237,7 @@ string          ["][^"]*[""]
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^OUTPUT_EXPR,^INPUT_EXPR,^COMMENT,^DECL_TYPE>\n s(); // ignore
+<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^COMMENT,^DECL_TYPE>\n s(); // ignore
 }
 
 // *** comments
@@ -288,16 +284,30 @@ include\h*\".*\"  s(); includeFile();
 \breturn\b	  return yy::parser::make_RETURN(location());
 }
 
+<EXPR,FOR_EXPR,DECL_TYPE>{
+\n            return yy::parser::make_EOS(location());
+":="			    return yy::parser::make_ASSIGN(location());
+":"				    return yy::parser::make_COL(location());
+"("					  return yy::parser::make_OPENPAR(location());
+")"					  return yy::parser::make_CLOSEPAR(location());
+","					  return yy::parser::make_COMMA(location());
+"&"					  return yy::parser::make_CONCAT(location());
+";"				    return yy::parser::make_EOS(location());
+{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
+{fraction}	  return yy::parser::make_FRACTION(str(), location());
+{string}    	return yy::parser::make_STRING(str(), location());
+"true"|"false" return yy::parser::make_BOOL(str(), location());
+<^DECL_TYPE>{word}	  		return makeIdOrWord(str(), str(), location());
+[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
+{oper}				return yy::parser::make_WORD(str(), location());
+}
+
 <FOR_EXPR>{
-\bdown-to\b	  return yy::parser::make_DOWNTO(location());
 \bto\b		    return yy::parser::make_TO(location());
+\bdown-to\b	  return yy::parser::make_DOWNTO(location());
 \bstep\b	    return yy::parser::make_STEP(location());
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 \bin\b 	      return yy::parser::make_IN(location());
-}
-
-<EXPR,FOR_EXPR,OUTPUT_EXPR,INPUT_EXPR,DECL_TYPE>{
-\n            return yy::parser::make_EOS(location());
 }
 
 <SUPERSCRIPT_EXPR>{
@@ -323,22 +333,21 @@ include\h*\".*\"  s(); includeFile();
 ","					  return yy::parser::make_COMMA(location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
-[\\]?{word}		return yy::parser::make_WORD(str(), location());
+[\\]{word}		return yy::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
+{word}		    return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 \h*\k?        // ignore
 }
 
 <CODE>{
-[\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
-[^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
+[\p{Alpha}]+[\h]*  return yy::parser::make_WORD(str(), location());
+[^\${Alpha}\h\n]+[\h]*	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 }
 
 <DECL_TYPE>{
 \bof\b		    return yy::parser::make_OF(location());
-":="			    return yy::parser::make_ASSIGN(location());
-";"				    return yy::parser::make_EOS(location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
 
@@ -361,13 +370,16 @@ include\h*\".*\"  s(); includeFile();
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
+\berror\b		  return yy::parser::make_ERROR(location());
 \binput\b		  return yy::parser::make_INPUT(location());
+\bwrite\b		  return yy::parser::make_WRITE(location());
 \bif\b   		  return yy::parser::make_IF(location());
 \belse\b 		  return yy::parser::make_ELSE(location());
 \bis\b		    return yy::parser::make_IS(location());
 \bloop\b 		  return yy::parser::make_LOOP(location());
 \bfor\b 		  return yy::parser::make_FOR(location());
 \brecord\b    return yy::parser::make_RECORD(location());
+\bto\b		    return yy::parser::make_TO(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ","				    return yy::parser::make_COMMA(location());

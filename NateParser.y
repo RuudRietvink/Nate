@@ -16,6 +16,7 @@
   class NateParser;
   #include "Expr.h"
   #include "Type.h"
+  #include "core/Fraction.h"
 }
 %parse-param { yy::Lexer& lexer } { NateParser& nate }
 %code{
@@ -47,7 +48,6 @@
 %token IMPORT "import"
 %token PROGRAM "program"
 %token SCOPE "scope"
-%token ERR "error"
 %token VAR "var"
 %token CONST "const"
 %token CODE "code"
@@ -55,7 +55,9 @@
 %token IF "if"
 %token ELSE "else"
 %token OUTPUT "output"
+%token ERROR "error"
 %token INPUT "input"
+%token WRITE "write"
 %token IS "is"
 %token OF "of"
 %token IN "in"
@@ -150,7 +152,9 @@ statement:
   | scope-statement
   | assign-statement
   | output-statement
+  | error-statement
   | input-statement
+  | write-statement
   | if-statement
   | loop-statement
   | return-statement
@@ -429,6 +433,7 @@ type:
 
 type-extra:
     %empty
+      { $$ = ""; }
   | OF WORD
       { $$ = $WORD; }
   ;
@@ -489,26 +494,51 @@ assign-statement:
   ;
 
 expr-list:
-	  expr
+    expr
 		  { $$.push_back($expr); }
-  | expr-list COMMA expr
-		  { $$ = $1; $$.push_back($expr); }
+  | expr-list[list] COMMA expr
+		  { 
+        $$ = $list;
+        $$.push_back($expr);
+      }
   ;
-
+  
 output-statement:
 	  OUTPUT 
 		  { 
         nate.codeOutputStart("std::cout");
-        lexer.stateExprValue = yy::Lexer::OUTPUT_EXPR;
       }
 	  output-list
 		  { 
-        lexer.stateExprValue = yy::Lexer::EXPR;
         nate.codeOutputEnd(outputEnd);
         outputEnd = true;
       }
   ;
-
+  
+error-statement:
+	  ERROR 
+		  { 
+        nate.codeOutputStart("std::cerr");
+      }
+	  output-list
+		  { 
+        nate.codeOutputEnd(outputEnd);
+        outputEnd = true;
+      }
+  ;
+  
+write-statement:
+	  WRITE TO expr COL
+		  { 
+        nate.codeWriteStart($expr);
+      }
+	  output-list
+		  { 
+        nate.codeOutputEnd(outputEnd);
+        outputEnd = true;
+      }
+  ;
+  
 output-list:
 	  %empty
   | output-part-list
@@ -549,11 +579,9 @@ input-statement:
 	  INPUT 
 		  { 
         nate.codeInputStart("std::cin");
-        lexer.stateExprValue = yy::Lexer::INPUT_EXPR;
       }
 	  input-list
 		  { 
-        lexer.stateExprValue = yy::Lexer::EXPR;
         nate.codeInputEnd(inputEnd);
         inputEnd = true;
       }

@@ -149,6 +149,12 @@ void Type::setType(const std::string& aType)
 		setFlag(List, true);
 		mCodeType = "std::list";
 	}
+	else if (aType == "output-stream")
+	{
+		setFlag(Abstract, false);
+		setFlag(NeedsRef, true);
+		mCodeType = "std::shared_ptr<std::ostream>";
+	}
 	else
 	{
 		setFlag(Unknown, true);

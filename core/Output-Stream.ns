@@ -1,0 +1,10 @@
+
+///////////////////////////////////////////////
+// Output-stream
+///////////////////////////////////////////////
+  
+code 65 open \u ($stream is output-stream (out)) for write to file \u ($file is text):
+  $stream.reset(new std::ofstream($file, std::ios::out))
+  
+code 65 \u ($stream is output-stream) \is ok is boolean:
+  $stream->good()
