@@ -25,7 +25,8 @@
   #undef yylex
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
 
-  bool outputEnd = true;
+  bool outputEnd;
+  std::string prevWriteSink;
   bool inputEnd = true;
   bool prevWasValue = false;
   std::stack<Expr> ifExpr;
@@ -93,17 +94,20 @@
 %type <bool>                     for-to;
 %type <Expr>                     step;
 %type <Expr>                     expr;
+%type <Expr>                     definitely-expr;
+%type <Expr>                     inline-expr;
 %type <Expr>                     expr-at-end-of-statement;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
 %type <Expr>					           expr-non-word;
 %type <Expr>					           expr-word;
 %type <std::string>              string;
+%type <Expr>                     write-sink;
 
 %%
 
 prog-statement-list:
-	  prog-statement opt-eos
+	  prog-statement
   | prog-statement-list prog-statement
   ;
 
@@ -133,12 +137,25 @@ import:
       { nate.import($WORD); }
   ;
 
+col:
+    COL opt-eos
+  ;
+
+begin:
+    EOS begin
+  | BEGIN
+  ;
+  
+end:
+    END
+  ;
+
 program:
-	  PROGRAM COL 
+	  PROGRAM col 
 		  { nate.codeStartProgram(); }
-	  BEGIN 
+	  begin 
 		  statement-list
-	  END
+	  end
 		  { nate.codeEndProgram(); }
   ;
   
@@ -175,9 +192,9 @@ define:
 			  lexer.pushState(Lexer::DEFINE);
 			  nate.declareDefine();
 		  }
-	  BEGIN
+	  begin
 		  statement-list
-	  END
+	  end
 		  { 
 			  lexer.popState(); 
 			  nate.endDefine();
@@ -197,9 +214,9 @@ code:
 			  lexer.popState();
 			  lexer.pushState(Lexer::CODE);
 		  }
-	  BEGIN
+	  begin
 		  code-stat-list
-	  END
+	  end
 		  { 
 			  lexer.popState();
 			  nate.endCode();
@@ -218,7 +235,7 @@ code:
 
 code-list:
     code-decl
-  | code-list COMMA 
+  | code-list COMMA opt-eos
       {
 			  nate.endCode();
 			  nate.addCode();
@@ -241,7 +258,7 @@ code-start:
 code-stat-list:
     code-stat
   | code-stat-list code-stat
-  | BEGIN code-stat-list END
+  | begin code-stat-list end
   ;
 
 code-stat:
@@ -359,11 +376,11 @@ call-return-flag:
   ;
 
 scope-statement:
-    SCOPE COL
+    SCOPE col
       { nate.codeStartScope(); }
-    BEGIN
+    begin
       statement-list
-    END
+    end
       { nate.codeEndScope(); }
   ;
 
@@ -457,7 +474,7 @@ var-init:
   ;
 
 record-statement:
-    RECORD WORD[id] COL
+    RECORD WORD[id] col
       { 
         if (nate.curScope()->getType($id))
         {
@@ -467,9 +484,9 @@ record-statement:
         nate.curScope()->addRecord(record, $id);
         nate.codeStartRecord(record);
       }
-    BEGIN
-    record-var-list
-    END
+    begin
+      record-var-list
+    end
       { nate.codeEndRecord(); }
   ;
 
@@ -511,7 +528,6 @@ output-statement:
 	  output-list
 		  { 
         nate.codeOutputEnd(outputEnd);
-        outputEnd = true;
       }
   ;
   
@@ -523,29 +539,44 @@ error-statement:
 	  output-list
 		  { 
         nate.codeOutputEnd(outputEnd);
-        outputEnd = true;
       }
   ;
   
 write-statement:
-	  WRITE TO expr COL
-		  { 
-        nate.codeWriteStart($expr);
+	  WRITE write-sink COL
+      {
+        nate.codeWriteStart($[write-sink]);
+        if (!$[write-sink].isEmpty())
+        {
+          prevWriteSink = $[write-sink].code();
+        }
       }
 	  output-list
 		  { 
         nate.codeOutputEnd(outputEnd);
-        outputEnd = true;
       }
   ;
   
+write-sink:
+    %empty
+		  { 
+        $$ = Expr();
+      }
+  | TO definitely-expr[expr]
+		  { 
+        $$ = $expr;
+      }
+  ;
+    
 output-list:
 	  %empty
+		  { outputEnd = true; }
   | output-part-list
   ;
 
 output-part-list:
 	  output-part
+		  { outputEnd = true; }
   | output-part output-sep output-part-rest
   ;
 
@@ -553,6 +584,7 @@ output-part-rest:
 	  %empty
 		  { outputEnd = false; }
   | output-part-list
+		  { outputEnd = true; }
   ;
 
 output-part:
@@ -616,7 +648,7 @@ input-sep:
   ;
 
 if-statement:
-	  IF expr COL
+	  IF expr col
       { 
         ifExpr.push($expr);
         ifId.push(nate.uniqueName());
@@ -634,11 +666,11 @@ if-rest:
   ;
 
 if-then:
-	  BEGIN 
+	  begin 
 		  { nate.codeIf(ifExpr.top()); }
 		  statement-list
 		  { nate.codeEndIf(); }
-	  END
+	  end
 	  else
   ;
 
@@ -647,12 +679,12 @@ else:
   | ELSE 
 	  	{ nate.codeElseIf(); }
 		  if-statement
-  | ELSE COL 
+  | ELSE col 
 		  { nate.codeElse(); }
-    BEGIN
+    begin
 		statement-list
 		  { nate.codeEndIf(); }
-	  END
+	  end
   ;
 
 if-is:
@@ -678,29 +710,29 @@ is-block:
   ;
   
 is-part:
-    expr COL
+    expr col
 	  	{ nate.codeIs($expr, ifExpr.top()); }
     is-part-block
   ;
 
 is-part-block:
     %empty
-  | BEGIN 
+  | begin 
       { nate.codeBeginIs(); }
     statement-list 
       { nate.codeEndIs(); }
-    END
+    end
   ;
   
 is-else:
     %empty
-  | ELSE COL 
+  | ELSE col 
 	  	{ nate.codeElseIs(); }
-    BEGIN 
+    begin 
       { nate.codeBeginIs(); }
     statement-list 
       { nate.codeEndIs(); }
-    END
+    end
   ;
 
 loop-statement:
@@ -711,19 +743,19 @@ loop-statement:
       }
 	  for-part
 	  opt-while 
-    BEGIN
+    begin
 		loop-part-statement-list
 		  { 
         nate.codeEndLoop();
         lexer.popState();
       }
-    END
+    end
   ;
 
 for-part:
 	  while-loop-statement
   | for-loop-statement
-  | COL
+  | col
 		  { nate.codeStartLoop(); }
   ;
 
@@ -738,7 +770,7 @@ loop-part-statement:
   ;
 
 while-loop-statement:
-	  WHILE expr COL
+	  WHILE expr col
 		  { 
 		    nate.codeStartLoop();
 			  nate.codeLoopWhile($expr);
@@ -746,7 +778,7 @@ while-loop-statement:
   ;
   
 while-statement:
-	  WHILE expr COL
+	  WHILE expr col
 		  { nate.codeLoopWhile($expr); }
   ;
 
@@ -803,7 +835,7 @@ step:
 
 for-loop-part-end:
 	  while-statement
-  | COL
+  | col
   ;
   
 for-range:
@@ -828,12 +860,26 @@ expr-statement:
         }
       }
   ;
+  
+definitely-expr:
+      { lexer.pushState(lexer.stateExprValue); }
+    expr
+      { 
+        lexer.popState();
+        $$ = $expr;
+      }
+  ;
 
 expr:
+    inline-expr
+    expr-end
+      { $$ = $[inline-expr]; }
+  ;
+
+inline-expr:
     expr-part
       { lexer.pushState(lexer.stateExprValue); }
     expr-part-list
-    expr-end
       { 
 			  lexer.popState(); 
 			  $$ = nate.evaluate(Expr($[expr-part], $[expr-part-list]));
@@ -843,15 +889,7 @@ expr:
   ;
   
 expr-at-end-of-statement:
-    expr-part
-      { lexer.pushState(lexer.stateExprValue); }
-    expr-part-list
-      { 
-			  lexer.popState(); 
-			  $$ = nate.evaluate(Expr($[expr-part], $[expr-part-list]));
-        prevWasValue = false;
-        lexer.space();
-		  }
+    inline-expr
   ;
   
 expr-end:

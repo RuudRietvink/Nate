@@ -216,10 +216,11 @@
     <None Include="core\Complex.ns" />
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
+    <None Include="core\File-Output.ns" />
     <None Include="core\Fraction.ns" />
     <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
-    <None Include="core\Output-Stream.ns" />
+    <None Include="core\Output.ns" />
     <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
     <None Include="D:\nate.define" />

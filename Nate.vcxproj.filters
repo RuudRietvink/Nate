@@ -159,7 +159,10 @@
     <None Include="core\Fraction.ns">
       <Filter>Source Files\Core</Filter>
     </None>
-    <None Include="core\Output-Stream.ns">
+    <None Include="core\Output.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\File-Output.ns">
       <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>

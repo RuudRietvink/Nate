@@ -171,6 +171,7 @@ private:
 	std::string                 mCachedOutput;
 	bool                        mFirstOutput = true;
 	std::string                 mStream;
+	std::string                 mLastWriteStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;
 

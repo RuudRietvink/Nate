@@ -237,7 +237,7 @@ string          ["][^"]*[""]
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^EXPR,^FOR_EXPR,^COMMENT,^DECL_TYPE>\n s(); // ignore
+<^SUPERSCRIPT_EXPR,^COMMENT,^CODE>\n  return yy::parser::make_EOS(location());
 }
 
 // *** comments
@@ -285,7 +285,6 @@ include\h*\".*\"  s(); includeFile();
 }
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
-\n            return yy::parser::make_EOS(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 "("					  return yy::parser::make_OPENPAR(location());
@@ -344,6 +343,7 @@ include\h*\".*\"  s(); includeFile();
 [\p{Alpha}]+[\h]*  return yy::parser::make_WORD(str(), location());
 [^\${Alpha}\h\n]+[\h]*	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
+\n            // ignore
 }
 
 <DECL_TYPE>{

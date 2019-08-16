@@ -66,7 +66,8 @@ int NateParser::parse()
 	getType("imaginary")->setTypenameType(getType("float-64"));
 	addType(std::make_shared<Type>("complex", getType("number")));
 	getType("complex")->setTypenameType(getType("float-64"));
-	addType(std::make_shared<Type>("output-stream", getType("any")));
+	addType(std::make_shared<Type>("output", getType("any")));
+	addType(std::make_shared<Type>("file-output", getType("output")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 	{
@@ -191,6 +192,7 @@ void NateParser::endDefine()
 {
 	curDefine().endDecl();
 	popScope();
+	mLastWriteStream.clear();
 	*mOut << in() << "}" << std::endl;
 }
 
@@ -243,12 +245,15 @@ void NateParser::printLineNr()
 	static int prevLine = 0;
 	static std::string prevFile;
 
-	auto const& begin = mLexer->location().begin;
-	if (prevLine + 1 != begin.line || prevFile != mLexer->filenames.back())
+	if (mLexer->has_matcher())
 	{
-		prevLine = begin.line;
-		prevFile = mLexer->filenames.back();
-		*mOut << "#line " << prevLine << " \"" << prevFile << "\"" << std::endl;
+		auto const& begin = mLexer->location().begin;
+		if (prevLine + 1 != begin.line || prevFile != mLexer->filenames.back())
+		{
+			prevLine = begin.line;
+			prevFile = mLexer->filenames.back();
+			*mOut << "#line " << prevLine << " \"" << prevFile << "\"" << std::endl;
+		}
 	}
 }
 
@@ -801,6 +806,8 @@ void NateParser::codeStartProgram()
 	printLineNr();
 	*mOut << in() << "int main(int argc, char** argv)\n{" << std::endl;
 	pushScope("main");
+	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
+	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << std::endl;
 	*mOut << in() << "SetConsoleOutputCP(65001);" << std::endl;
 	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
     
@@ -1005,13 +1012,30 @@ std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 
 void NateParser::codeWriteStart(const Expr& aValue)
 {
-	if (aValue.type()->isOfType("output-stream"))
+	if (aValue.isEmpty())
+	{
+		if (!mLastWriteStream.empty())
+		{
+			mStream = mLastWriteStream;
+		}
+		else
+		{
+			error("Need to specify where to write to");
+		}
+	}
+	else if (aValue.type()->isOfType("output"))
 	{
 		mStream = "*" + aValue.code();
-		printLineNr();
-		mFirstOutput = true;
-		mCachedOutput.clear();
+		mLastWriteStream = mStream;
 	}
+	else
+	{
+		error("Cannot write to type: " + aValue.type()->name());
+	}
+
+	printLineNr();
+	mFirstOutput = true;
+	mCachedOutput.clear();
 }
 
 void NateParser::codeOutputStart(const std::string& aStream)
