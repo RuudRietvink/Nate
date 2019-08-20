@@ -3,10 +3,12 @@
 #include "core/Fraction.h"
 
 #include <iostream>
+#include <direct.h>
 
 int main()
 {
-	std::string filename("d:\\nate.in");
+	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\input");
+	std::string filename("nate.in");
 	std::ifstream in(filename);
 	std::ofstream out("C:\\Users\\ruud\\source\\repos\\Out\\Out.cpp");
 	NateParser nate(filename, in, out);

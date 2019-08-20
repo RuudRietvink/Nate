@@ -205,6 +205,7 @@
     <ClCompile Include="Nate.cpp" />
     <ClCompile Include="NateFunctions.cpp" />
     <ClCompile Include="NateParser.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="Record.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -223,9 +224,10 @@
     <None Include="core\Output.ns" />
     <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
-    <None Include="D:\nate.define" />
-    <None Include="D:\nate.import" />
-    <None Include="D:\nate.in" />
+    <None Include="input\hello.nd" />
+    <None Include="input\nate.define" />
+    <None Include="input\nate.import" />
+    <None Include="input\nate.in" />
     <None Include="NateLexer.l" />
   </ItemGroup>
   <ItemGroup>
@@ -246,7 +248,9 @@
     <ClInclude Include="NateFunctions.h" />
     <ClInclude Include="NateParser.h" />
     <ClInclude Include="NateParser.tab.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Record.h" />
+    <ClInclude Include="Role.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="utf8.h" />

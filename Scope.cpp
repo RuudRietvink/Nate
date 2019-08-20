@@ -1,8 +1,5 @@
 #include "Scope.h"
-#include "Identifier.h"
-#include "Record.h"
-
-#include "iostream"
+#include <iostream>
 
 Scope::Scope(const std::string& aName)
 	: mName(aName)

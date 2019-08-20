@@ -5,6 +5,9 @@
 
 code 150 \u uppercased ($val is text) is text:
   Core::upperCased($val)
+  
+code 150 \u uppercased ($val is text) is text:
+  Core::upperCased($val)
 
 code 150 first \u of ($val is text) is text:
   Core::firstOf($val)

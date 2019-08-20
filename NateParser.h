@@ -15,6 +15,7 @@
 #include "Identifier.h"
 #include "Scope.h"
 #include "Record.h"
+#include "Object.h"
 
 namespace yy
 {
@@ -44,12 +45,15 @@ public:
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
 	ScopePtr& curScope();
+	IRecordHolderPtr& curRecordHolder();
+	ITypeHolderPtr& curTypeHolder();
+
 	void error(const std::string& anError);
 	void warning(const std::string& aWarning);
 	int errorCount() const { return mErrors; }
 	int warningCount() const { return mWarnings; }
 	void addType(const TypePtr& aType, const std::string& aName = "");
-	TypePtr getType(const std::string& aName, Scope* aScope = nullptr);
+	TypePtr getType(const std::string& aName, ITypeHolder* aTypeHolder = nullptr);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
 	IdentifierPtr getIdentifier(const std::string& aName, Scope* aScope = nullptr);
@@ -58,14 +62,21 @@ public:
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 	std::string uniqueName() const;
 	TypePtr getNumberType(std::string& aString);
+	
+	void addObject(const ObjectPtr& aObject);
+	void endObject();
+	ObjectPtr curObject();
+	ObjectPtr getObject(const std::string& aId);
 
 	void addCode();
 	void endCode();
 	Code& curCode();
+
 	void addDefine();
-	void declareDefine();
+	void declareDefine(bool aIsDecl = false);
 	void endDefine();
 	Define& curDefine();
+
 	Method& curMethod();
 	void addArgWord(const std::string& aWord);
 
@@ -126,6 +137,11 @@ public:
 	void printLineNr();
 
 private:
+	void pushRecordHolder(const IRecordHolderPtr& aRecordHolder);
+	void popRecordHolder();
+	void pushTypeHolder(const ITypeHolderPtr& aTypeHolder);
+	void popTypeHolder();
+
 	struct Match
 	{
 		const Method*				methodFound = nullptr;
@@ -159,6 +175,10 @@ private:
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
+	std::list<ObjectPtr>        mObjects;
+	ObjectPtr                   mCurObject;
+	std::list<IRecordHolderPtr> mRecordHolders;
+	std::list<ITypeHolderPtr>   mTypeHolders;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
 	std::list<Define>           mDefines;
@@ -167,7 +187,7 @@ private:
 	std::set<std::string>       mLeftMonomial;
 	int				                  mErrors = 0;
 	int				                  mWarnings = 0;
-	std::ostream*               mOut;
+	std::ostream*               mOut = nullptr;
 	std::string                 mCachedOutput;
 	bool                        mFirstOutput = true;
 	std::string                 mStream;

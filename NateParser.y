@@ -33,6 +33,19 @@
   std::stack<std::string> ifId;
   std::string forId;
 	std::list<Code*> curParsedCodes;
+
+  void copyParsedCodes(NateParser& aNate)
+  {
+    for (auto code : curParsedCodes)
+    {
+      if (&aNate.curCode() != code)
+      {
+        code->copyFrom(aNate.curCode());
+      }
+    }
+
+    curParsedCodes.clear();
+  }
 }
 
 %define api.token.prefix {TOK_}
@@ -50,7 +63,11 @@
 %token PROGRAM "program"
 %token SCOPE "scope"
 %token VAR "var"
+%token PROP "property"
 %token CONST "const"
+%token DECLARE "declare"
+%token IMPLEMENT "implement"
+%token OBJECT "object"
 %token CODE "code"
 %token DEFINE "define"
 %token IF "if"
@@ -112,13 +129,14 @@ prog-statement-list:
   ;
 
 prog-statement:
-	  import
-  | alias
-  | program
-  | code
-  | define
+	  import-statement
+  | alias-statement
+  | program-statement
+  | code-statement
+  | define-statement
   | record-statement
   | var-statement
+  | declare-object-statement
   | EOS
   ;
   
@@ -127,12 +145,12 @@ opt-eos:
   | EOS opt-eos
   ;
 
-alias:
+alias-statement:
     ALIAS STRING[STR1] STRING[STR2]
       { nate.addAlias(unquote($STR1), unquote($STR2)); }
   ;
 
-import:
+import-statement:
     IMPORT WORD
       { nate.import($WORD); }
   ;
@@ -150,7 +168,7 @@ end:
     END
   ;
 
-program:
+program-statement:
 	  PROGRAM col 
 		  { nate.codeStartProgram(); }
 	  begin 
@@ -179,14 +197,55 @@ statement:
   | expr-statement
   | EOS
   ;
+  
+declare-object-statement:
+	  DECLARE OBJECT 
+		  { lexer.pushState(Lexer::VAR_DECL); }
+	  id 
+		  { 
+        lexer.popState();
+        auto object = std::make_shared<Object>($id, nate.getType("object"));
+        object->setCodeType(toCodeName($id));
+        object->setFlag(Type::Abstract, false);
+        object->setFlag(Type::Unknown, false);
+        nate.addObject(object);
+		  }
+    col
+	  begin
+		  declare-object-content-statement-list
+	  end
+		  { 
+			  nate.endObject();
+		  }
+  ;
+  
+declare-object-content-statement-list:
+    declare-object-content-statement
+  | declare-object-content-statement-list declare-object-content-statement
+  ;
 
-define:
+declare-object-content-statement:
+	  record-statement
+  | define-decl
+			{ 
+			  lexer.popState();
+			  nate.declareDefine(true);
+        nate.endDefine();
+      }
+  | EOS
+  ;
+  
+define-decl:
 	  DEFINE 
 		  { 
 			  nate.addDefine();
 			  lexer.pushState(Lexer::ARGS);
 		  }
-	  arg-list call-return COL
+	  arg-list call-return
+  ;
+
+define-statement:
+	  define-decl COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::DEFINE);
@@ -200,8 +259,8 @@ define:
 			  nate.endDefine();
 		  }
   ;
-
-code:
+  
+code-decl:
 	  CODE 
 		  { 
 			  nate.addCode();
@@ -209,7 +268,11 @@ code:
 			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
-	  code-list call-return COL
+	  code-list call-return
+  ;
+
+code-statement:
+	  code-decl COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::CODE);
@@ -220,16 +283,7 @@ code:
 		  { 
 			  lexer.popState();
 			  nate.endCode();
-
-        for (auto code : curParsedCodes)
-        {
-          if (&nate.curCode() != code)
-          {
-            code->copyFrom(nate.curCode());
-          }
-        }
-
-        curParsedCodes.clear();
+        copyParsedCodes(nate);
 		  }
   ;
 
@@ -476,12 +530,12 @@ var-init:
 record-statement:
     RECORD WORD[id] col
       { 
-        if (nate.curScope()->getType($id))
+        if (nate.curTypeHolder()->getType($id))
         {
 				  nate.error("Duplicate type of :" + $id);
         }
         RecordPtr record = std::make_shared<Record>($id);
-        nate.curScope()->addRecord(record, $id);
+        nate.curRecordHolder()->addRecord(record, $id);
         nate.codeStartRecord(record);
       }
     begin

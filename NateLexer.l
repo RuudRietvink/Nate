@@ -365,8 +365,13 @@ include\h*\".*\"  s(); includeFile();
 \balias\b 		return yy::parser::make_ALIAS(location());
 \bvariable\b  |
 \bvar\b			  return yy::parser::make_VAR(location());
+\bproperty\b  |
+\bprop\b      return yy::parser::make_PROP(location());
 \bconstant\b  |
 \bconst\b		  return yy::parser::make_CONST(location());
+\bdeclare\b	  return yy::parser::make_DECLARE(location());
+\bimplement\b	return yy::parser::make_IMPLEMENT(location());
+\bobject\b	  return yy::parser::make_OBJECT(location());
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());

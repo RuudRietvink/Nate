@@ -7,8 +7,15 @@
 #include <memory>
 
 class Type;
-
 typedef std::shared_ptr<Type> TypePtr;
+
+class ITypeHolder
+{
+public:
+	virtual TypePtr getType(const std::string& aName) = 0;
+	virtual void addType(const TypePtr& aType, const std::string& aName = "") = 0;
+};
+typedef std::shared_ptr<ITypeHolder> ITypeHolderPtr;
 
 class Type : public WithFlags
 {
@@ -62,6 +69,7 @@ public:
 	static const size_t Complex    =17;
 	static const size_t SingleNr   =18;
 	static const size_t Template   =19;
+	static const size_t Object     =20;
 
 private:
 	void setBaseType(const TypePtr& aType);

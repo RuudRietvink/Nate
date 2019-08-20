@@ -121,19 +121,13 @@
     <ClCompile Include="core\Fraction.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="D:\nate.import">
-      <Filter>Source Files\Input</Filter>
-    </None>
-    <None Include="D:\nate.in">
-      <Filter>Source Files\Input</Filter>
-    </None>
-    <None Include="D:\nate.define">
-      <Filter>Source Files\Input</Filter>
     </None>
     <None Include="core\core.ns">
       <Filter>Source Files\Core</Filter>
@@ -164,6 +158,18 @@
     </None>
     <None Include="core\File-Output.ns">
       <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="input\nate.define">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="input\nate.import">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="input\nate.in">
+      <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="input\hello.nd">
+      <Filter>Source Files\Input</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -244,6 +250,12 @@
     </ClInclude>
     <ClInclude Include="core\Complex.h">
       <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Role.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Source Files\Structs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

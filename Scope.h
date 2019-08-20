@@ -3,33 +3,33 @@
 #include "Container.h"
 #include "Record.h"
 #include "Type.h"
-#include "Identifier.h"
 
-#include <list>
-
-class Scope
+class Scope : public IRecordHolder, public ITypeHolder
 {
 public:
 	Scope(const std::string& aName = "");
 	virtual ~Scope() = default;
 
 	const std::string& name() const;
+	
 	IdentifierPtr getIdentifier(const std::string& aName);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	const std::list<IdentifierPtr>& getIdentifiers() const;
+	
+	// ITypeHolder
+	TypePtr getType(const std::string& aName) override;
+	void addType(const TypePtr& aType, const std::string& aName = "") override;
 
-	RecordPtr getRecord(const std::string& aName);
-	void addRecord(RecordPtr& aRecord, const std::string& aName);
+	// IRecordHolder
+	RecordPtr getRecord(const std::string& aName) override;
+	void addRecord(RecordPtr& aRecord, const std::string& aName) override;
 
-	TypePtr getType(const std::string& aName);
-	void addType(const TypePtr& aType, const std::string& aName = "");
-
-private:
-	std::string					     mName;
+private:					
+	std::string					     mName;								
 	Container<IdentifierPtr> mIds;
-	std::list<IdentifierPtr> mIdentifierList;
+	std::list<IdentifierPtr> mIdentifierList;	
 	Container<RecordPtr>     mRecords;					
-	Container<TypePtr>       mTypes;													
+	Container<TypePtr>       mTypes;						
 };
 
 typedef std::shared_ptr<Scope> ScopePtr;

@@ -123,6 +123,7 @@ void Type::setType(const std::string& aType)
 		setFlag(Text, true);
 		setFlag(Comparable, true);
 		setFlag(NeedsRef, true);
+		setFlag(Object, false);
 		mCodeType = "std::string";
 		mBitSize = 1000;
 	}
@@ -132,6 +133,13 @@ void Type::setType(const std::string& aType)
 		setFlag(NeedsRef, true);
 		mCodeType = "struct";
 		mBitSize = 2000;
+	}
+	else if (aType == "object")
+	{
+		setFlag(Object, true);
+		setFlag(NeedsRef, true);
+		mCodeType = "";
+		mBitSize = 2500;
 	}
 	else if (aType == "container")
 	{

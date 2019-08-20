@@ -9,7 +9,7 @@ code 65 open \u ($stream is file-output (out)) for write to file \u ($file is te
   $stream.reset(new std::ofstream($file, std::ios::out))
   
 code 65 \u ($stream is output) \is opened is boolean:
-  $stream->is_open()
+  ($stream && $stream->is_open())
 
 code 65 close \u ($stream is file-output (out)):
   if ($stream) $stream->close()

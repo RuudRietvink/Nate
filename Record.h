@@ -5,6 +5,16 @@
 #include <list>
 
 class Scope;
+class Record;
+typedef std::shared_ptr<Record> RecordPtr;
+
+class IRecordHolder
+{
+public:
+	virtual RecordPtr getRecord(const std::string& aName) = 0;
+	virtual void addRecord(RecordPtr& aRecord, const std::string& aName) = 0;
+};
+typedef std::shared_ptr<IRecordHolder> IRecordHolderPtr;
 
 class Record : public Type
 {
@@ -24,4 +34,3 @@ private:
 	std::shared_ptr<Scope>	mScope;
 };
 
-typedef std::shared_ptr<Record> RecordPtr;

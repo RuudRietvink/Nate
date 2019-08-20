@@ -53,20 +53,23 @@ int NateParser::parse()
 	addType(getType("float-32"), "float");
 	addType(std::make_shared<Type>("boolean", getType("any")));
 	addType(getType("boolean"), "bool");
-	addType(std::make_shared<Type>("record", getType("any")));
 		
-	addType(std::make_shared<Type>("container", getType("any")));
-	addType(std::make_shared<Type>("sequence-container", getType("container")));
-	addType(std::make_shared<Type>("list", getType("sequence-container")));
-	addType(std::make_shared<Type>("text", getType("sequence-container")));
-	addType(std::make_shared<Type>("char", getType("any")));
-	getType("text")->setTypenameType(getType("char"));
 	addType(std::make_shared<Type>("fraction", getType("number")));
 	addType(std::make_shared<Type>("imaginary", getType("number")));
 	getType("imaginary")->setTypenameType(getType("float-64"));
 	addType(std::make_shared<Type>("complex", getType("number")));
 	getType("complex")->setTypenameType(getType("float-64"));
-	addType(std::make_shared<Type>("output", getType("any")));
+
+	addType(std::make_shared<Type>("object", getType("any")));
+	addType(std::make_shared<Type>("record", getType("object")));
+	addType(std::make_shared<Type>("container", getType("object")));
+	addType(std::make_shared<Type>("sequence-container", getType("container")));
+	addType(std::make_shared<Type>("list", getType("sequence-container")));
+	addType(std::make_shared<Type>("text", getType("sequence-container")));
+	addType(std::make_shared<Type>("char", getType("any")));
+	getType("text")->setTypenameType(getType("char"));
+
+	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
 
 	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
@@ -129,20 +132,54 @@ std::string NateParser::uniqueName() const
 	return "tmp__" + std::to_string(count++) + "__";
 }
 
+IRecordHolderPtr& NateParser::curRecordHolder()
+{
+	return mRecordHolders.front();
+}
+
+void NateParser::pushRecordHolder(const IRecordHolderPtr& aRecordHolder)
+{
+	mRecordHolders.push_front(aRecordHolder);
+}
+
+void NateParser::popRecordHolder()
+{
+	mRecordHolders.pop_front();
+}
+
+ITypeHolderPtr& NateParser::curTypeHolder()
+{
+	return mTypeHolders.front();
+}
+
+void NateParser::pushTypeHolder(const ITypeHolderPtr& aTypeHolder)
+{
+	mTypeHolders.push_front(aTypeHolder);
+}
+
+void NateParser::popTypeHolder()
+{
+	mTypeHolders.pop_front();
+}
+
 void NateParser::pushScope(const std::string& aName)
 {
-	mScopes.push_front(std::make_shared<Scope>(aName));
+	pushScope(std::make_shared<Scope>(aName));
 }
 
 void NateParser::pushScope(const ScopePtr& aScope)
 {
 	if (mLexer->debug()) std::cerr << "push " << aScope->name() << std::endl;
 	mScopes.push_front(aScope);
+	pushRecordHolder(aScope);
+	pushTypeHolder(aScope);
 }
 
 void NateParser::popScope()
 {
 	mScopes.pop_front();
+	popRecordHolder();
+	popTypeHolder();
 	if (mLexer->debug()) std::cerr << "pop to " << mScopes.front()->name() << std::endl;
 }
 
@@ -156,6 +193,45 @@ Method& NateParser::curMethod()
 	return mMethodType == MethodType::Code 
 			   ? static_cast<Method&>(curCode()) 
 		     : static_cast<Method&>(curDefine());
+}
+
+void NateParser::addObject(const ObjectPtr& aObject)
+{
+	if (getType(aObject->name()))
+	{
+		error("Redefinition of type: " + aObject->name());
+	}
+	else if (getObject(aObject->name()))
+	{
+		error("Redefinition of object: " + aObject->name());
+	}
+
+	addType(aObject, aObject->name());
+	
+	pushRecordHolder(aObject);
+	pushTypeHolder(aObject);
+	mCurObject = aObject;
+
+	mObjects.push_back(aObject);
+}
+
+void NateParser::endObject()
+{
+	popRecordHolder();
+	popTypeHolder();
+}
+
+ObjectPtr NateParser::getObject(const std::string& aId)
+{
+	auto iter = std::find_if(mObjects.cbegin(), mObjects.cend(),
+												 	 [&](ObjectPtr const& aObject)
+													 { return aObject->name() == aId; });
+	return iter != mObjects.cend() ? *iter : ObjectPtr();
+}
+
+ObjectPtr NateParser::curObject()
+{
+	return mCurObject;
 }
 
 void NateParser::addCode()
@@ -182,9 +258,9 @@ void NateParser::addDefine()
 	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 }
 
-void NateParser::declareDefine()
+void NateParser::declareDefine(bool aIsDecl)
 {
-	*mOut << in(-1) << curDefine().createCodeDecl() << " {" << std::endl;
+	*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
 	curDefine().createCodeCall();
 }
 
@@ -399,30 +475,30 @@ void NateParser::addIdentifier(const IdentifierPtr& aIdentifier)
 	mScopes.front()->addIdentifier(aIdentifier);
 }
 
-TypePtr NateParser::getType(const std::string& aName, Scope* aScope)
+TypePtr NateParser::getType(const std::string& aName, ITypeHolder* aTypeHolder)
 {
-	if (aScope == nullptr)
+	if (aTypeHolder == nullptr)
 	{
 		for (auto& scope : mScopes)
 		{
 			auto type = scope->getType(aName);
-			if (type != nullptr)
+			if (type)
 			{
 				return type;
 			}
 		}
-
+		
 		return TypePtr();
 	}
 	else
 	{
-		return aScope->getType(aName);
+		return aTypeHolder->getType(aName);
 	}
 }
 
 void NateParser::addType(const TypePtr& aType, const std::string& aName)
 {
-	curScope()->addType(aType, aName);
+	curTypeHolder()->addType(aType, aName);
 }
 
 TypePtr NateParser::determineType(const std::string& aName)
@@ -660,6 +736,14 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 
 	if (aExpr.nodes().size() > 1 || aExpr.node().is(ExprNode::Word))
 	{
+		for (auto const& object : mObjects)
+		{		
+			for (auto const& define : object->getDefines())
+			{
+				checkIfMethod(define, aExpr, match, aDebug);
+			}
+		}
+
 		for (auto const& code : mCodes)
 		{
 			checkIfMethod(code, aExpr, match, aDebug);
