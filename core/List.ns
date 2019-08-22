@@ -3,4 +3,7 @@
 // List
 ///////////////////////////////////////////////
 
+code:
+  #include <list>
+
 import SequenceContainer

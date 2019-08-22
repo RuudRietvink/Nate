@@ -84,6 +84,7 @@ public:
 	void codeEndProgram();
 	void codeStartScope();
 	void codeEndScope();
+	void codeCodeInclude();
 	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 																	bool initializeObjects = false);
 	void codeDeclareLocalIdentifiers(bool aConst,
@@ -97,6 +98,8 @@ public:
 																  	const TypePtr& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
+	void codeStartObject(const ObjectPtr& aObject, bool aIsDecl);
+	void codeEndObject();
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);
@@ -177,11 +180,14 @@ private:
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
+	std::ostream*               mIncludeOut = nullptr;
+	std::ostream*               mSavedOut = nullptr;
 	std::list<IRecordHolderPtr> mRecordHolders;
 	std::list<ITypeHolderPtr>   mTypeHolders;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
 	std::list<Define>           mDefines;
+	bool												mDefineDecl = false;
 	std::list<int>              mLoopWhileCounts;
 	std::set<std::string>       mWantsUnary;
 	std::set<std::string>       mLeftMonomial;
@@ -207,6 +213,16 @@ private:
 		std::ostream* savedOut = nullptr;
 	};
 	std::stack<IfIs> mIfIs;
+
+	struct ObjectInfo
+	{
+		ObjectPtr		  object;
+		std::string   filename;
+		bool          isDecl = false;
+		std::shared_ptr<std::ofstream> out;
+		std::ostream* savedOut = nullptr;
+	};
+	std::stack<ObjectInfo> mObjectInfo;
 
 	enum class MethodType
 	{

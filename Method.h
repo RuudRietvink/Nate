@@ -79,6 +79,7 @@ private:
 	std::string          mSignature;
 	mutable std::string  mPattern;
 	int                  mPriority = 0;
+	ArgConstIterator		 mObjectArg;
 	ArgConstIterator		 mOwnerArg;
 	ArgConstIterator		 mPropArg;
 	ArgConstIterator		 mTemplateArg;

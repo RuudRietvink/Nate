@@ -1,3 +1,4 @@
+import Text
 
 declare object Hello:
   define ($me is Hello) ($world is text) is text

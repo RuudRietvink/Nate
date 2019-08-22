@@ -23,6 +23,7 @@ const std::string&		Identifier::codeName()  const { return mCodeName; }
 const Expr&						Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
 std::weak_ptr<Scope>	Identifier::scope()     const { return mScope; }
+bool					 		    Identifier::isObjectMe()const { return mName == "me"; }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 {

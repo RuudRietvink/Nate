@@ -9,76 +9,80 @@ alias "𝑖" "i"
 // Complex Math
 ///////////////////////////////////////////////
 
+code:
+  #include "C:\Users\ruud\source\repos\Nate\core\Complex.h"
+	#include <complex>
+
 const i is imaginary := 1
 
-code 120 ($val-1 is number) \u monomial ($val-2 is imaginary (exact)) is imaginary (const):
+code define 120 ($val-1 is number) \u monomial ($val-2 is imaginary (exact)) is imaginary (const):
 	$val-1
 	
-code 115 ($val-1 is number) \u + ($val-2 is imaginary (exact)) is complex (const):
+code define 115 ($val-1 is number) \u + ($val-2 is imaginary (exact)) is complex (const):
 	__RETURN__($val-1, $val-2)
 
-code 115 ($val-1 is number) \u - ($val-2 is imaginary (exact)) is complex (const):
+code define 115 ($val-1 is number) \u - ($val-2 is imaginary (exact)) is complex (const):
 	__RETURN__($val-1, -$val-2)
 	
-code 114 ($val is imaginary (exact)) is complex (const):
+code define 114 ($val is imaginary (exact)) is complex (const):
 	__RETURN__(0, $val)
 	
-code 110 \u real ($val is complex (exact)) is float-64 (const):
+code define 110 \u real ($val is complex (exact)) is float-64 (const):
 	$val.real()
   
-code 110 \u imaginary ($val is complex (exact)) is float-64 (const):
+code define 110 \u imaginary ($val is complex (exact)) is float-64 (const):
 	$val.imag()
   
-code 110 ($val-1 is complex (exact)) \u ^ ($val-2 is number) is (same,right):
+code define 110 ($val-1 is complex (exact)) \u ^ ($val-2 is number) is (same,right):
 	std::pow($val-1, $val-2)
     
-code 110 \u \l sqrt ($val is complex (exact)) is (same):
+code define 110 \u \l sqrt ($val is complex (exact)) is (same):
 	std::sqrt($val)
     
-code 110 \u \l round ($val is complex (exact)) is (same):
+code define 110 \u \l round ($val is complex (exact)) is (same):
 	NI
   
-code 110 \u \l floor ($val is complex (exact)) is (same):
+code define 110 \u \l floor ($val is complex (exact)) is (same):
 	NI
   
-code 110 \u \l floor_l ($val is complex (exact)) floor_r is (same):
+code define 110 \u \l floor_l ($val is complex (exact)) floor_r is (same):
 	NI
   
-code 110 \u \l ceil ($val is complex (exact)) is (same):
+code define 110 \u \l ceil ($val is complex (exact)) is (same):
 	std::ceil($val)
   
-code 110 \u \l ceil_l ($val is complex (exact)) ceil_r is (same):
+code define 110 \u \l ceil_l ($val is complex (exact)) ceil_r is (same):
 	NI
   
-code 110 \u \l abs ($val is complex (exact)) is float-64:
+code define 110 \u \l abs ($val is complex (exact)) is float-64:
 	std::abs($val)
   
-code 110 \u \l abs_l ($val is complex (exact)) abs_r is float-64:
+code define 110 \u \l abs_l ($val is complex (exact)) abs_r is float-64:
 	std::abs($val)
 
-code 110 \u \l log2 ($val is complex (exact)) is (same):
+code define 110 \u \l log2 ($val is complex (exact)) is (same):
 	NI
   
-code 120 \u ⇑ ($val is number (out,exact)) is (same):
+code define 120 \u ⇑ ($val is number (out,exact)) is (same):
   ++$val
   
-code 120 ($val is number (out,exact)) \u ⇑ is (same):
+code define 120 ($val is number (out,exact)) \u ⇑ is (same):
   $val++
   
-code 120 \u ⇓ ($val is number (out,exact)) is (same):
+code define 120 \u ⇓ ($val is number (out,exact)) is (same):
   NI
   
-code 120 ($val is number (out,exact)) \u ⇓ is (same):
+code define 120 ($val is number (out,exact)) \u ⇓ is (same):
   NI
 
-code 120 \u inc# ($val is number (out,exact)) is (same):
+code define 120 \u inc# ($val is number (out,exact)) is (same):
   NI
   
-code 120 ($val is number (out,exact)) \u #inc is (same):
+code define 120 ($val is number (out,exact)) \u #inc is (same):
   NI
   
-code 120 \u dec# ($val is number (out,exact)) is (same):
+code define 120 \u dec# ($val is number (out,exact)) is (same):
   NI
   
-code 120 ($val is number (out,exact)) \u #dec is (same):
+code define 120 ($val is number (out,exact)) \u #dec is (same):
   NI

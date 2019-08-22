@@ -18,6 +18,13 @@ public:
   int stateExprValue = EXPR;
   bool spaceBeen = false;
 		
+  std::string fileLocation()
+  {
+    std::stringstream ss;
+    ss << filenames.back() << ": " << location();
+    return ss.str();
+  }
+
 	void includeFile(const std::string& aFile)
 	{
 		if (depth > 99)
@@ -341,7 +348,7 @@ include\h*\".*\"  s(); includeFile();
 
 <CODE>{
 [\p{Alpha}]+[\h]*  return yy::parser::make_WORD(str(), location());
-[^\${Alpha}\h\n]+[\h]*	  return yy::parser::make_WORD(str(), location());
+[^\${Alpha}\h\n]+[\h]*[\n]?	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            // ignore
 }

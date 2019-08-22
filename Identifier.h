@@ -21,7 +21,8 @@ public:
 	const std::string&	 codeName()  const;
 	const Expr&					 initValue() const;
 	TypePtr							 type()      const;
-	std::weak_ptr<Scope> scope()      const;
+	std::weak_ptr<Scope> scope()     const;
+	bool							   isObjectMe()const;
 	
 	static const size_t Const      = 0;
 

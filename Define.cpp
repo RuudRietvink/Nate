@@ -30,7 +30,7 @@ std::string Define::createCodeDecl()
 
 	for (auto const& arg : args())
 	{
-		if (arg.isIdentifier())
+		if (arg.isIdentifier() && !arg.identifier()->isObjectMe())
 		{
 			if (!first)
 			{
@@ -71,13 +71,16 @@ void Define::createCodeCall()
 	{
 		if (arg.isIdentifier())
 		{
-			if (!first)
+			if (!arg.identifier()->isObjectMe())
 			{
-				buf << ", ";
-			}
-			first = false;
+				if (!first)
+				{
+					buf << ", ";
+				}
+				first = false;
 
-			buf << "${" << arg.identifier()->name() << "}";
+				buf << "${" << arg.identifier()->name() << "}";
+			}
 		}
 	}
 		

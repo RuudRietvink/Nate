@@ -47,6 +47,14 @@ namespace Core
 											 const utf8::iterator<std::string::const_iterator>& aEnd);
 	std::string toString(uint32_t aChar);
 	std::string::const_iterator lastOf(const std::string& aString);
+	bool exists(const std::string& aFileName);
+	bool isDirectory(const std::string& aDirectoryName);
+	bool isOrdinaryFile(const std::string& aFileName);
+	bool isReadable(const std::string& aFileName);
+	bool isWritable(const std::string& aFileName);
+	std::string directorySeperator();
+	std::string currentDirectory();
+	void makeDirectory(const std::string& aDirectoryName);
 
 	struct Format
 	{

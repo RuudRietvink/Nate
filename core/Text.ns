@@ -3,25 +3,28 @@
 // Text
 ///////////////////////////////////////////////
 
-code 150 \u uppercased ($val is text) is text:
+code:
+  #include <string>
+
+code define 150 \u uppercased ($val is text) is text:
   Core::upperCased($val)
   
-code 150 \u uppercased ($val is text) is text:
+code define 150 \u uppercased ($val is text) is text:
   Core::upperCased($val)
 
-code 150 first \u of ($val is text) is text:
+code define 150 first \u of ($val is text) is text:
   Core::firstOf($val)
 
-code 150 rest \u of ($val is text) is text:
+code define 150 rest \u of ($val is text) is text:
   Core::restOf($val)
   
-code 60 ($val-1 is any) \u @ ($val-2 is text) is text:
+code define 60 ($val-1 is any) \u @ ($val-2 is text) is text:
   Core::formatted($val-1, __X__GETFORMAT__Core::getFormat($val-2)__)
   
-code 65 stream-out ($char-1 is char):
+code define 65 stream-out ($char-1 is char):
   Core::toString($char-1)
 
-code 65 stream-out ($text is text):
+code define 65 stream-out ($text is text):
   $text
   
 import SequenceContainer

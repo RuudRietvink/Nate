@@ -33,6 +33,8 @@
   std::stack<std::string> ifId;
   std::string forId;
 	std::list<Code*> curParsedCodes;
+  bool inObject = false;
+  bool objectMe = false;
 
   void copyParsedCodes(NateParser& aNate)
   {
@@ -200,7 +202,10 @@ statement:
   
 declare-object-statement:
 	  DECLARE OBJECT 
-		  { lexer.pushState(Lexer::VAR_DECL); }
+		  { 
+        inObject = true;
+        lexer.pushState(Lexer::VAR_DECL);
+      }
 	  id 
 		  { 
         lexer.popState();
@@ -209,13 +214,16 @@ declare-object-statement:
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
         nate.addObject(object);
+        nate.codeStartObject(object, true);
 		  }
     col
 	  begin
 		  declare-object-content-statement-list
 	  end
 		  { 
+        inObject = false;
 			  nate.endObject();
+        nate.codeEndObject();
 		  }
   ;
   
@@ -240,6 +248,7 @@ define-decl:
 		  { 
 			  nate.addDefine();
 			  lexer.pushState(Lexer::ARGS);
+        objectMe = false;
 		  }
 	  arg-list call-return
   ;
@@ -260,19 +269,36 @@ define-statement:
 		  }
   ;
   
-code-decl:
-	  CODE 
+code-statement:
+    code-define
+  | code-include
+  ;
+
+code-include:
+    CODE COL
+		  { 
+			  nate.addCode();
+			  lexer.pushState(Lexer::CODE);
+		  }
+	  begin
+		  code-stat-list
+	  end
+		  { 
+			  lexer.popState();
+			  nate.endCode();
+        nate.codeCodeInclude();
+		  }
+  ;
+
+code-define:
+	  CODE DEFINE
 		  { 
 			  nate.addCode();
         curParsedCodes.push_back(&nate.curCode());
 			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
-	  code-list call-return
-  ;
-
-code-statement:
-	  code-decl COL
+	  code-list call-return COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::CODE);
@@ -288,20 +314,16 @@ code-statement:
   ;
 
 code-list:
-    code-decl
+    arg-list
   | code-list COMMA opt-eos
       {
 			  nate.endCode();
 			  nate.addCode();
         curParsedCodes.push_back(&nate.curCode());
       }
-    code-decl
+    arg-list
   ;
-
-code-decl:
-	  arg-list
-  ;
-
+  
 code-start:
     NUMBER 
 		  { 
@@ -338,6 +360,20 @@ arg:
         if (!$inout.empty())
         {
           nate.curMethod().curArg().setArgFlag($inout);
+        }
+
+        if (id->isObjectMe())
+        {
+          if (!inObject)
+          {
+            nate.error("The id 'me' is reserved for objects");
+          }
+          else if (objectMe)
+          {
+            nate.error("The id 'me' may only occur once in a define");
+          }
+
+          objectMe = true;
         }
 		  }
     opt-arg-flags CLOSEPAR

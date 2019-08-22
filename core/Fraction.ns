@@ -3,66 +3,69 @@
 // Fraction
 ///////////////////////////////////////////////
 
-code 110 ($val-1 is fraction (exact)) \u ^ ($val-2 is number) is fraction (right):
+code:
+  #include "C:\Users\ruud\source\repos\Nate\core\Fraction.h"
+
+code define 110 ($val-1 is fraction (exact)) \u ^ ($val-2 is number) is fraction (right):
 	std::pow($val-1, $val-2)
   
-code 110 \u \l sqrt ($val is fraction (exact)) is fraction:
+code define 110 \u \l sqrt ($val is fraction (exact)) is fraction:
 	std::sqrt($val)
     
-code 110 \u \l round ($val is fraction (exact)) is fraction:
+code define 110 \u \l round ($val is fraction (exact)) is fraction:
 	std::round($val)
   
-code 110 \u \l floor ($val is fraction (exact)) is fraction:
+code define 110 \u \l floor ($val is fraction (exact)) is fraction:
 	std::floor($val)
   
-code 110 \u \l floor_l ($val is fraction (exact)) floor_r is fraction:
+code define 110 \u \l floor_l ($val is fraction (exact)) floor_r is fraction:
 	std::floor($val)
   
-code 110 \u \l ceil ($val is fraction (exact)) is fraction:
+code define 110 \u \l ceil ($val is fraction (exact)) is fraction:
 	std::ceil($val)
   
-code 110 \u \l ceil_l ($val is fraction (exact)) ceil_r is fraction:
+code define 110 \u \l ceil_l ($val is fraction (exact)) ceil_r is fraction:
 	std::ceil($val)
   
-code 110 \u \l abs ($val is fraction (exact)) is fraction:
+code define 110 \u \l abs ($val is fraction (exact)) is fraction:
 	std::abs($val)
   
-code 110 \u \l abs_l ($val is fraction (exact)) abs_r is fraction:
+code define 110 \u \l abs_l ($val is fraction (exact)) abs_r is fraction:
 	std::abs($val)
   
-code 110 \u \l sin ($val is fraction (exact)) is fraction:
+code define 110 \u \l sin ($val is fraction (exact)) is fraction:
 	std::sin($val)
   
-code 110 \u \l cos ($val is fraction (exact)) is fraction:
+code define 110 \u \l cos ($val is fraction (exact)) is fraction:
 	std::cos($val)
   
-code 110 \u \l tan ($val is fraction (exact)) is fraction:
+code define 110 \u \l tan ($val is fraction (exact)) is fraction:
 	std::tan($val)
   
-code 110 \u \l sinh ($val is fraction (exact)) is fraction:
+code define 110 \u \l sinh ($val is fraction (exact)) is fraction:
 	std::sinh($val)
   
-code 110 \u \l cosh ($val is fraction (exact)) is fraction:
+code define 110 \u \l cosh ($val is fraction (exact)) is fraction:
 	std::cosh($val)
   
-code 110 \u tanh ($val is fraction (exact)) is fraction:
+code define 110 \u tanh ($val is fraction (exact)) is fraction:
 	std::tanh($val)
   
-code 110 \u asin ($val is fraction (exact)) is fraction:
+code define 110 \u asin ($val is fraction (exact)) is fraction:
 	std::asin($val)
   
-code 110 \u \l acos ($val is fraction (exact)) is fraction:
+code define 110 \u \l acos ($val is fraction (exact)) is fraction:
 	std::acos($val)
   
-code 110 \u \l atan ($val is fraction (exact)) is fraction:
+code define 110 \u \l atan ($val is fraction (exact)) is fraction:
 	std::atan($val)
   
-code 110 \u \l log ($val is fraction (exact)) is fraction:
+code define 110 \u \l log ($val is fraction (exact)) is fraction:
 	std::log($val)
   
-code 110 \u \l log10 ($val is fraction (exact)) is fraction:
+code define 110 \u \l log10 ($val is fraction (exact)) is fraction:
 	std::log10($val)
 
-code 110 \u \l log2 ($val is fraction (exact)) is fraction:
+code define 110 \u \l log2 ($val is fraction (exact)) is fraction:
 	std::log2($val)
   

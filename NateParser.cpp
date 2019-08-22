@@ -21,16 +21,10 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	*mOut << "#define NOMINMAX" << std::endl;
 	*mOut << "#include <windows.h>" << std::endl;
 	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
-	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Fraction.h\"" << std::endl;
-	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Complex.h\"" << std::endl;
-	*mOut << "#include <string>" << std::endl;
-	*mOut << "#include <list>" << std::endl;
 	*mOut << "#include <cstdint>" << std::endl;
 	*mOut << "#include <cmath>" << std::endl;
 	*mOut << "#include <iostream>" << std::endl;
-	*mOut << "#include <fstream>" << std::endl;
 	*mOut << "#include <algorithm>" << std::endl;
-	*mOut << "#include <complex>" << std::endl;
 }
 
 NateParser::~NateParser() = default;
@@ -95,8 +89,25 @@ void NateParser::import(const std::string& aName)
 	if (mImports.find(aName) == mImports.cend())
 	{
 		mImports.insert(aName);
-		std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core\\";
-		mLexer->includeFile(library + aName + ".ns");
+		std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core";
+		std::string path = library + Core::directorySeperator() + aName + ".ns";
+		if (Core::exists(path))
+		{
+			mLexer->includeFile(path);
+		}
+		else
+		{
+			library = ".";
+			std::string path = library + Core::directorySeperator() + aName + ".nd";
+			if (Core::exists(path))
+			{
+				mLexer->includeFile(path);
+			}
+			else
+			{
+				error("No path to import: " + aName);
+			}
+		}
 	}
 }
 
@@ -244,6 +255,12 @@ void NateParser::addCode()
 
 void NateParser::endCode()
 {
+	auto size = curCode().code().size();
+	if (size > 0 && curCode().code()[size - 1] == '\n')
+	{
+		curCode().code().pop_back();
+	}
+
 	curCode().endDecl();
 	popScope();
 }
@@ -260,6 +277,7 @@ void NateParser::addDefine()
 
 void NateParser::declareDefine(bool aIsDecl)
 {
+	mDefineDecl = aIsDecl;
 	*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
 	curDefine().createCodeCall();
 }
@@ -269,7 +287,10 @@ void NateParser::endDefine()
 	curDefine().endDecl();
 	popScope();
 	mLastWriteStream.clear();
-	*mOut << in() << "}" << std::endl;
+	if (!mDefineDecl)
+	{
+		*mOut << in() << "}" << std::endl;
+	}
 }
 
 Define& NateParser::curDefine() { return mDefines.back(); }
@@ -306,13 +327,13 @@ void NateParser::addArgWord(const std::string& aWord)
 
 void NateParser::error(const std::string& anError)
 {
-	std::cerr << mLexer->location() << ": " << anError << std::endl;
+	std::cerr << mLexer->fileLocation() << ": " << anError << std::endl;
 	++mErrors;
 }
 
 void NateParser::warning(const std::string& aWarning)
 {
-	std::cerr << "Warning: " << mLexer->location() << ": " << aWarning << std::endl;
+	std::cerr << "Warning: " << mLexer->fileLocation() << ": " << aWarning << std::endl;
 	++mWarnings;
 }
 
@@ -908,10 +929,17 @@ void NateParser::codeStartScope()
 	*mOut << in() << "{" << std::endl;
 	pushScope("scope");
 }
+
 void NateParser::codeEndScope()
 {
 	popScope();
 	*mOut << in() << "}" << std::endl;
+}
+
+void NateParser::codeCodeInclude()
+{
+	*mOut << in() << mCodes.back().code() << std::endl;
+	mCodes.pop_back();
 }
 
 void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
@@ -1062,6 +1090,60 @@ void NateParser::codeEndRecord()
 {
 	popScope();
 	*mOut << in() << "};" << std::endl;
+}
+
+void NateParser::codeStartObject(const ObjectPtr& aObject, bool aIsDecl)
+{
+	ObjectInfo info;
+	info.object = aObject;
+	info.isDecl = aIsDecl;
+	info.savedOut = mOut;
+
+	if (aIsDecl)
+	{
+		std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
+		if (!Core::isDirectory(tempDir))
+		{
+			Core::makeDirectory(tempDir);
+		}
+
+		if (!Core::isDirectory(tempDir) || !Core::isWritable(tempDir))
+		{
+			error("Can't create include directory: " + tempDir);
+		}
+		else
+		{
+			info.filename = tempDir + Core::directorySeperator() + aObject->name() + "." + "h";
+			info.out = std::make_shared<std::ofstream>(info.filename);
+			if (!info.out->good())
+			{
+				error("Can't create include file: " + info.filename);
+			}
+			else
+			{
+				*mOut << "#include \"" << info.filename << "\"" << std::endl;
+
+				mOut = info.out.get();
+				*mOut << "#pragma once" << std::endl;
+			}
+		}										
+	}
+
+	*mOut << "class " << toCodeName(aObject->name()) << std::endl;
+	*mOut << "{" << std::endl;
+	*mOut << "public:" << std::endl;
+
+	mObjectInfo.push(info);
+}
+
+void NateParser::codeEndObject()
+{
+	ObjectInfo info = mObjectInfo.top();
+	*mOut << "};" << std::endl;
+
+	mOut = info.savedOut;
+
+	mObjectInfo.pop();
 }
 
 void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)

@@ -243,6 +243,7 @@
     <ClInclude Include="ExprNode.h" />
     <ClInclude Include="Container.h" />
     <ClInclude Include="Identifier.h" />
+    <ClInclude Include="input\created\Hello.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="location.hpp" />
     <ClInclude Include="NateFunctions.h" />

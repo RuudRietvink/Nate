@@ -5,9 +5,9 @@
 
 import Container
 
-code 65 \u add ($val is (typename)) to ($container is container (template, out)),
-        \u append ($val is (typename)) to ($container is container (template, out)):
+code define 65 \u add ($val is (typename)) to ($container is container (template, out)),
+               \u append ($val is (typename)) to ($container is container (template, out)):
   $container.push_back($val)
   
-code 65 \u insert ($val is (typename)) to ($container is container (template, out)):
+code define 65 \u insert ($val is (typename)) to ($container is container (template, out)):
   $container.insert($container.cbegin(), $val)

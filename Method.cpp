@@ -83,6 +83,7 @@ void Method::addArgId(const IdentifierPtr& aId)
 
 void Method::endDecl()
 {
+	mObjectArg = args().cend();
 	mOwnerArg = args().cend();
 	mPropArg = args().cend();
 	mTemplateArg = args().cend();
@@ -92,6 +93,11 @@ void Method::endDecl()
 	{
 		if (arg->isIdentifier())
 		{
+			if (arg->identifier()->isObjectMe())
+			{
+				mObjectArg = arg;
+			}
+
 			if (arg->is(Arg::Owner))
 			{
 				mOwnerArg = arg;
@@ -239,14 +245,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	}
 		
 	nodeIter = aBegin;
-	for (auto const& arg : mArgs)
+	for (auto arg = args().cbegin(); arg != args().cend(); ++arg)
 	{
-		if (arg.isIdentifier())
+		if (arg->isIdentifier())
 		{
-			const TypePtr& argType = arg.identifier()->type();
+			const TypePtr& argType = arg->identifier()->type();
 			TypePtr nodeType = nodeIter->type();
 
-			if (arg.is(Arg::Prop) && owner != nullptr)
+			if (arg->is(Arg::Prop) && owner != nullptr)
 			{
 				auto identifier = owner->getIdentifier(nodeIter->text());
 				if (identifier)
@@ -261,19 +267,19 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				nodeCode = nodeIter->code();
 			}
 
-      ExprNode node = *nodeIter;
-			if (arg.is(Arg::Typename))
+			ExprNode node = *nodeIter;
+			if (arg->is(Arg::Typename))
 			{
 				node.castToType(templateType->typenameType());
 				nodeCode = node.code();
 			}
-			else if (!arg.is(Arg::Prop))
+			else if (!arg->is(Arg::Prop))
 			{
-				if (arg.is(Arg::Same))
+				if (arg->is(Arg::Same))
 				{
 					node.castToType(firstType);
 				}
-				else if (arg.is(Arg::CompHigh))
+				else if (arg->is(Arg::CompHigh))
 				{
 					node.castToType(highestType);
 				}
@@ -284,14 +290,23 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 
 				nodeCode = node.code();
 			}
-
-			std::string code = (arg.is(Arg::Prop) || 
-													arg.is(Arg::Out) ||
+			
+			std::string code = (arg->is(Arg::Prop) || 
+													arg->is(Arg::Out) ||
 													node.is(ExprNode::Literal))
 													? nodeCode 
 													: "(" + nodeCode + ")";
-			result.code = Core::replaceAll(result.code, "${" + arg.identifier()->name() + "}", code);
+
+			if (arg != mObjectArg)
+			{
+				result.code = Core::replaceAll(result.code, "${" + arg->identifier()->name() + "}", code);
 			
+			}
+			else
+			{				
+				result.code = code + "." + result.code;
+			}
+
 			lastType = nodeType;
 			if (!node.is(ExprNode::ConstExpr))
 			{

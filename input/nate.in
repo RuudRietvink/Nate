@@ -6,7 +6,7 @@ import List
 import File-Output
 
 include "nate.define"
-include "hello.nd"
+import Hello
 
 // √⌊⌋⌈⌉|⏐
 // ⏨ю

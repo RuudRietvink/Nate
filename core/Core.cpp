@@ -12,6 +12,20 @@
 #include <iostream>
 #include <iterator>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#define MakeDir _mkdir
+#define RemoveFile _unlink
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#define MakeDir mkdir
+#define RemoveFile unlink
+#endif
 
 namespace
 {
@@ -30,6 +44,87 @@ namespace
 
 namespace Core
 {
+	std::string directorySeperator()
+	{
+		#ifdef _WIN32
+				return "\\";
+		#else
+				return "/";
+		#endif
+	}
+	
+	std::string currentDirectory()
+	{  
+		char buffer[FILENAME_MAX];
+		(void) GetCurrentDir(buffer, FILENAME_MAX);
+		return buffer;
+	}
+	
+	void makeDirectory(const std::string& aDirectoryName)
+	{
+		(void) MakeDir(aDirectoryName.c_str());
+	}
+
+	bool exists(const std::string& aFileName)
+	{
+		struct stat info;
+
+		return (stat(aFileName.c_str(), &info) == 0);
+	}
+	
+	bool isOrdinaryFile(const std::string& aFileName)
+	{
+		struct stat info;
+
+		return (stat(aFileName.c_str(), &info) == 0 && (info.st_mode & S_IFREG));
+	}
+
+	bool isDirectory(const std::string& aDirectoryName)
+	{
+		struct stat info;
+
+		return (stat(aDirectoryName.c_str(), &info) == 0 && (info.st_mode & S_IFDIR));
+	}
+	
+	bool isReadable(const std::string& aFileName)
+	{
+		FILE *fp;
+		bool result = fopen_s(&fp, aFileName.c_str(), "r") == 0;
+		if (result)
+		{
+			fclose(fp);
+		}
+		return result;
+	}
+	
+	bool isWritable(const std::string& aFileName)
+	{
+		bool result = false;
+
+		if (isDirectory(aFileName))
+		{
+			std::string tempName = aFileName + directorySeperator() + ".___temp";
+			FILE *fp;
+			result = fopen_s(&fp, tempName.c_str(), "w") == 0;
+			if (result)
+			{
+				fclose(fp);
+				RemoveFile(tempName.c_str());
+			}
+		}
+		else
+		{
+			FILE *fp = nullptr;
+			result = fopen_s(&fp, aFileName.c_str(), "r+") == 0;
+			if (result)
+			{
+				fclose(fp);
+			}
+		}
+
+		return result;
+	}
+
 	void parseBaseNumber(std::string& aString)
 	{
 		int base = 10;

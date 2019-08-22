@@ -14,112 +14,112 @@ var error is output;
 // operators
 ///////////////////////////////////////////////
 	
-code 120 \u uminus ($val-1 is number) is number (same,const):
+code define 120 \u uminus ($val-1 is number) is number (same,const):
 	-$val-1
 	
-code 120 \u uplus ($val-1 is number) is number (same,const):
+code define 120 \u uplus ($val-1 is number) is number (same,const):
 	$val-1
 	
-code 120 \u not ($cond is boolean) is boolean (const):
+code define 120 \u not ($cond is boolean) is boolean (const):
 	!$cond
   
-code 80 ($val-1 is number) \u * ($val-2 is number) is number (highest,const):
+code define 80 ($val-1 is number) \u * ($val-2 is number) is number (highest,const):
 	$val-1 * $val-2
 	
-code 80 ($val-1 is number) \u / ($val-2 is number) is number (highest,const):
+code define 80 ($val-1 is number) \u / ($val-2 is number) is number (highest,const):
 	$val-1 / $val-2
 	
-code 80 ($val-1 is number) \u mod ($val-2 is number) is number (highest,const):
+code define 80 ($val-1 is number) \u mod ($val-2 is number) is number (highest,const):
 	$val-1 % $val-2
 
-code 70 ($val-1 is number) \u + ($val-2 is number) is number (highest,const):
+code define 70 ($val-1 is number) \u + ($val-2 is number) is number (highest,const):
 	$val-1 + $val-2
 
-code 70 ($val-1 is number) \u - ($val-2 is number) is number (highest,const):
+code define 70 ($val-1 is number) \u - ($val-2 is number) is number (highest,const):
 	$val-1 - $val-2
 	
-code 62 ($val-1 is text) \u + ($val-2 is text) is text (const):
+code define 62 ($val-1 is text) \u + ($val-2 is text) is text (const):
 	$val-1 + $val-2
   
-code 60 ($val-1 is any) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
+code define 60 ($val-1 is any) \u if ($cond is boolean) \u else ($val-2 is (same)) is (same,const):
 	$cond ? $val-1 : $val-2
 
-code 50 ($val-1 is any (comphigh, cmp)) \u = ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u = ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 == $val-2
 	
-code 50 ($val-1 is any (comphigh, cmp)) \u != ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u != ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 != $val-2
 	
-code 50 ($val-1 is any (comphigh, cmp)) \u >= ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u >= ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 >= $val-2
 	
-code 50 ($val-1 is any (comphigh, cmp)) \u <= ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u <= ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 <= $val-2
 
-code 50 ($val-1 is any (comphigh, cmp)) \u > ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u > ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 > $val-2
 	
-code 50 ($val-1 is any (comphigh, cmp)) \u < ($val-2 is any (comphigh, cmp)) is boolean (const):
+code define 50 ($val-1 is any (comphigh, cmp)) \u < ($val-2 is any (comphigh, cmp)) is boolean (const):
 	$val-1 < $val-2
 	
-code 40 ($cond-1 is boolean) \u and ($cond-2 is boolean) is boolean (const):
+code define 40 ($cond-1 is boolean) \u and ($cond-2 is boolean) is boolean (const):
 	$cond-1 && $cond-2
 
-code 35 ($cond-1 is boolean) \u or ($cond-2 is boolean) is boolean (const):
+code define 35 ($cond-1 is boolean) \u or ($cond-2 is boolean) is boolean (const):
 	$cond-1 || $cond-2
   
 ///////////////////////////////////////////////
 // face value
 ///////////////////////////////////////////////
 
-code 120 \u ⇑ ($val is number (out)) is (same):
+code define 120 \u ⇑ ($val is number (out)) is (same):
   ++$val
   
-code 120 ($val is number (out)) \u ⇑ is (same):
+code define 120 ($val is number (out)) \u ⇑ is (same):
   $val++
   
-code 120 \u ⇓ ($val is number (out)) is (same):
+code define 120 \u ⇓ ($val is number (out)) is (same):
   --$val
   
-code 120 ($val is number (out)) \u ⇓ is (same):
+code define 120 ($val is number (out)) \u ⇓ is (same):
   $val--
 
-code 120 \u inc# ($val is number (out)) is (same):
+code define 120 \u inc# ($val is number (out)) is (same):
   ++$val
   
-code 120 ($val is number (out)) \u #inc is (same):
+code define 120 ($val is number (out)) \u #inc is (same):
   $val++
   
-code 120 \u dec# ($val is number (out)) is (same):
+code define 120 \u dec# ($val is number (out)) is (same):
   --$val
   
-code 120 ($val is number (out)) \u #dec is (same):
+code define 120 ($val is number (out)) \u #dec is (same):
   $val--
   
-code 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)):
+code define 65 \u decrease ($val-1 is number (out)) \u with ($val-2 is (same)):
   $val-1 -= $val-2
   
-code 65 \u decrease ($val is number (out)):
+code define 65 \u decrease ($val is number (out)):
   --$val
   
-code 65 \u increase ($val-1 is number (out)) \u with ($val-2 is (same)):
+code define 65 \u increase ($val-1 is number (out)) \u with ($val-2 is (same)):
   $val-1 += $val-2
   
-code 65 \u increase ($val is number (out)):
+code define 65 \u increase ($val is number (out)):
   ++$val
 
 ///////////////////////////////////////////////
 // language
 ///////////////////////////////////////////////
 
-code 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
+code define 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
   $owner.$prop
 
-code 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
+code define 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
   $owner.$prop
 
-code 65 stream-out ($val is number):
+code define 65 stream-out ($val is number):
   $val
 
-code 65 stream-out ($val is boolean):
+code define 65 stream-out ($val is boolean):
   $val
