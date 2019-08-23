@@ -28,7 +28,14 @@ class ExprNode;
 class NateParser
 {
 public:
-	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut);
+	enum class FileType
+	{
+		Normal,
+		ObjectDecl
+	};
+	
+	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
+						 FileType aFileType = FileType::Normal);
 	virtual ~NateParser();
 	std::string in(int aOffset = 0) const;
 	int parse();
@@ -44,9 +51,13 @@ public:
 	void pushScope(const std::string& aName);
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
+	void pushDefineScope(const std::string& aName);
+	void pushDefineScope(const ScopePtr& aScope);
+	void popDefineScope();
 	ScopePtr& curScope();
 	IRecordHolderPtr& curRecordHolder();
 	ITypeHolderPtr& curTypeHolder();
+	IDefineHolderPtr& curDefineHolder();
 
 	void error(const std::string& anError);
 	void warning(const std::string& aWarning);
@@ -98,8 +109,8 @@ public:
 																  	const TypePtr& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
-	void codeStartObject(const ObjectPtr& aObject, bool aIsDecl);
-	void codeEndObject();
+	void codeStartDeclObject(const ObjectPtr& aObject);
+	void codeEndDeclObject();
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);
@@ -144,6 +155,8 @@ private:
 	void popRecordHolder();
 	void pushTypeHolder(const ITypeHolderPtr& aTypeHolder);
 	void popTypeHolder();
+	void pushDefineHolder(const IDefineHolderPtr& aDefineHolder);
+	void popDefineHolder();
 
 	struct Match
 	{
@@ -184,9 +197,9 @@ private:
 	std::ostream*               mSavedOut = nullptr;
 	std::list<IRecordHolderPtr> mRecordHolders;
 	std::list<ITypeHolderPtr>   mTypeHolders;
+	std::list<IDefineHolderPtr> mDefineHolders;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
-	std::list<Define>           mDefines;
 	bool												mDefineDecl = false;
 	std::list<int>              mLoopWhileCounts;
 	std::set<std::string>       mWantsUnary;
@@ -200,6 +213,7 @@ private:
 	std::string                 mLastWriteStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;
+	FileType										mFileType = FileType::Normal;
 
 	struct IfIs
 	{
@@ -213,17 +227,7 @@ private:
 		std::ostream* savedOut = nullptr;
 	};
 	std::stack<IfIs> mIfIs;
-
-	struct ObjectInfo
-	{
-		ObjectPtr		  object;
-		std::string   filename;
-		bool          isDecl = false;
-		std::shared_ptr<std::ofstream> out;
-		std::ostream* savedOut = nullptr;
-	};
-	std::stack<ObjectInfo> mObjectInfo;
-
+	
 	enum class MethodType
 	{
 		Code,

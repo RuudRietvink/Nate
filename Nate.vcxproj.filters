@@ -171,6 +171,9 @@
     <None Include="input\hello.nd">
       <Filter>Source Files\Input</Filter>
     </None>
+    <None Include="input\Hello.ns">
+      <Filter>Source Files\Input</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">

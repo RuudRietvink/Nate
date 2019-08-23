@@ -225,6 +225,7 @@
     <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
     <None Include="input\hello.nd" />
+    <None Include="input\Hello.ns" />
     <None Include="input\nate.define" />
     <None Include="input\nate.import" />
     <None Include="input\nate.in" />

@@ -36,6 +36,7 @@ define test:
   
   var hello is Hello
   output hello "World"
+  output hello
 
   scope:
     var out is file-output

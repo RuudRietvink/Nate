@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Container.h"
+#include "Define.h"
 #include "Record.h"
 #include "Type.h"
 
-class Scope : public IRecordHolder, public ITypeHolder
+class Scope : public IRecordHolder, public ITypeHolder, public IDefineHolder
 {
 public:
 	Scope(const std::string& aName = "");
@@ -16,6 +17,10 @@ public:
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	const std::list<IdentifierPtr>& getIdentifiers() const;
 	
+	// IDefineHolderPtr
+	std::list<Define>& getDefines() override;
+	void addDefine(const Define& aDefine) override;
+
 	// ITypeHolder
 	TypePtr getType(const std::string& aName) override;
 	void addType(const TypePtr& aType, const std::string& aName = "") override;
@@ -30,6 +35,7 @@ private:
 	std::list<IdentifierPtr> mIdentifierList;	
 	Container<RecordPtr>     mRecords;					
 	Container<TypePtr>       mTypes;						
+	std::list<Define>        mDefines;						
 };
 
 typedef std::shared_ptr<Scope> ScopePtr;

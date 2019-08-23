@@ -214,7 +214,7 @@ declare-object-statement:
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
         nate.addObject(object);
-        nate.codeStartObject(object, true);
+        nate.codeStartDeclObject(object);
 		  }
     col
 	  begin
@@ -223,7 +223,7 @@ declare-object-statement:
 		  { 
         inObject = false;
 			  nate.endObject();
-        nate.codeEndObject();
+        nate.codeEndDeclObject();
 		  }
   ;
   

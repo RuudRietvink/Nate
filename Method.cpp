@@ -540,7 +540,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 {
 	aStream << "Method(" 
-		    << aValue.type() << ","
+		    << (aValue.type() ? *aValue.type() : Type()) << ","
 		    << aValue.code() << ","
 		    << Core::join(aValue.args())  << ","
 		    << aValue.pattern();

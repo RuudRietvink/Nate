@@ -45,3 +45,13 @@ void Scope::addType(const TypePtr& aType, const std::string& aName)
 {
 	mTypes.addData(aType, aName);
 }
+
+std::list<Define>& Scope::getDefines()
+{
+	return mDefines;
+}
+
+void Scope::addDefine(const Define& aDefine)
+{
+	mDefines.push_back(aDefine);
+}

@@ -22,7 +22,7 @@ void Object::addType(const TypePtr& aType, const std::string& aName)
 	mTypes.addData(aType, aName);
 }
 
-const std::list<Define>& Object::getDefines() const
+std::list<Define>& Object::getDefines()
 {
 	return mDefines;
 }

@@ -10,21 +10,26 @@
 bool gDebug = true && false
 ;
 
-NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut)
+NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
+											 FileType aFileType)
 : mLexer(new yy::Lexer(aIn)),
 	mParser(new yy::parser(*mLexer, *this)),
-	mOut(&aOut)
+	mOut(&aOut),
+	mFileType(aFileType)
 {
 	mLexer->nate = this;
 	mLexer->filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
 	  
-	*mOut << "#define NOMINMAX" << std::endl;
-	*mOut << "#include <windows.h>" << std::endl;
+	if (aFileType == FileType::ObjectDecl)
+	{
+		*mOut << "#pragma once" << std::endl;
+	}
+
 	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
 	*mOut << "#include <cstdint>" << std::endl;
-	*mOut << "#include <cmath>" << std::endl;
 	*mOut << "#include <iostream>" << std::endl;
 	*mOut << "#include <algorithm>" << std::endl;
+	*mOut << "#include <memory>" << std::endl;
 }
 
 NateParser::~NateParser() = default;
@@ -66,14 +71,17 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
 
-	for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
+	if (mFileType == FileType::Normal)
 	{
-		std::ifstream stream(file);
-	  yy::Lexer lexer(stream);
-		lexer.nate = this;
-		lexer.filenames.push_back(Core::replaceAll(file, "\\", "\\\\"));
-		yy::parser parser(lexer, *this);
-		parser.parse();
+		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
+		{
+			std::ifstream stream(file);
+			yy::Lexer lexer(stream);
+			lexer.nate = this;
+			lexer.filenames.push_back(Core::replaceAll(file, "\\", "\\\\"));
+			yy::parser parser(lexer, *this);
+			parser.parse();
+		}
 	}
 
 	return mParser->parse();
@@ -97,11 +105,42 @@ void NateParser::import(const std::string& aName)
 		}
 		else
 		{
+			std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
+			if (!Core::isDirectory(tempDir))
+			{
+				Core::makeDirectory(tempDir);
+			}
+
+			if (!Core::isDirectory(tempDir) || !Core::isWritable(tempDir))
+			{
+				error("Can't create temp directory: " + tempDir);
+			}
+
 			library = ".";
 			std::string path = library + Core::directorySeperator() + aName + ".nd";
 			if (Core::exists(path))
 			{
-				mLexer->includeFile(path);
+				std::ifstream in(path);
+				std::string outPath = tempDir + Core::directorySeperator() + aName + "." + "h";
+				std::ofstream out(outPath);
+				if (!out.good())
+				{
+					error("Can't create include file: " + outPath);
+				}
+				else
+				{
+					NateParser nate(path, in, out, FileType::ObjectDecl);
+					auto parseResult = nate.parse();
+					mErrors += nate.errorCount();
+					mWarnings += nate.warningCount();
+					*mOut << "#include \"" << outPath << "\"" << std::endl;
+
+					for (auto const& object : nate.mObjects)
+					{
+						mObjects.push_back(object);
+						addType(object, object->name());
+					}
+				}
 			}
 			else
 			{
@@ -173,6 +212,21 @@ void NateParser::popTypeHolder()
 	mTypeHolders.pop_front();
 }
 
+IDefineHolderPtr& NateParser::curDefineHolder()
+{
+	return mDefineHolders.front();
+}
+
+void NateParser::pushDefineHolder(const IDefineHolderPtr& aDefineHolder)
+{
+	mDefineHolders.push_front(aDefineHolder);
+}
+
+void NateParser::popDefineHolder()
+{
+	mDefineHolders.pop_front();
+}
+
 void NateParser::pushScope(const std::string& aName)
 {
 	pushScope(std::make_shared<Scope>(aName));
@@ -180,13 +234,30 @@ void NateParser::pushScope(const std::string& aName)
 
 void NateParser::pushScope(const ScopePtr& aScope)
 {
+	pushDefineScope(aScope);
+	pushDefineHolder(aScope);
+}
+
+void NateParser::popScope()
+{
+	popDefineScope();
+	popDefineHolder();
+}
+
+void NateParser::pushDefineScope(const std::string& aName)
+{
+	pushDefineScope(std::make_shared<Scope>(aName));
+}
+
+void NateParser::pushDefineScope(const ScopePtr& aScope)
+{
 	if (mLexer->debug()) std::cerr << "push " << aScope->name() << std::endl;
 	mScopes.push_front(aScope);
 	pushRecordHolder(aScope);
 	pushTypeHolder(aScope);
 }
 
-void NateParser::popScope()
+void NateParser::popDefineScope()
 {
 	mScopes.pop_front();
 	popRecordHolder();
@@ -221,6 +292,7 @@ void NateParser::addObject(const ObjectPtr& aObject)
 	
 	pushRecordHolder(aObject);
 	pushTypeHolder(aObject);
+	pushDefineHolder(aObject);
 	mCurObject = aObject;
 
 	mObjects.push_back(aObject);
@@ -230,6 +302,7 @@ void NateParser::endObject()
 {
 	popRecordHolder();
 	popTypeHolder();
+	popDefineHolder();
 }
 
 ObjectPtr NateParser::getObject(const std::string& aId)
@@ -269,8 +342,8 @@ Code& NateParser::curCode() { return mCodes.back(); }
 
 void NateParser::addDefine()
 {
-	pushScope("define");
-	mDefines.emplace_back();
+	curDefineHolder()->getDefines().emplace_back();
+	pushDefineScope("define");
 	mMethodType = MethodType::Define;
 	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 }
@@ -285,7 +358,7 @@ void NateParser::declareDefine(bool aIsDecl)
 void NateParser::endDefine()
 {
 	curDefine().endDecl();
-	popScope();
+	popDefineScope();
 	mLastWriteStream.clear();
 	if (!mDefineDecl)
 	{
@@ -293,7 +366,7 @@ void NateParser::endDefine()
 	}
 }
 
-Define& NateParser::curDefine() { return mDefines.back(); }
+Define& NateParser::curDefine() { return curDefineHolder()->getDefines().back(); }
 
 void NateParser::addArgWord(const std::string& aWord)
 {
@@ -757,7 +830,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 
 	if (aExpr.nodes().size() > 1 || aExpr.node().is(ExprNode::Word))
 	{
-		for (auto const& object : mObjects)
+		for (auto& object : mObjects)
 		{		
 			for (auto const& define : object->getDefines())
 			{
@@ -770,9 +843,12 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 			checkIfMethod(code, aExpr, match, aDebug);
 		}
 		
-		for (auto const& define : mDefines)
+		for (auto& scope : mScopes)
 		{
-			checkIfMethod(define, aExpr, match, aDebug);
+			for (auto const& define : scope->getDefines())
+			{
+				checkIfMethod(define, aExpr, match, aDebug);
+			}
 		}
 
 		if (match.methodFound)
@@ -908,7 +984,11 @@ void NateParser::handleCompileCommands(Expr& aExpr)
 
 void NateParser::codeStartProgram()
 {
+	*mOut << in() << "#define NOMINMAX" << std::endl;
+	*mOut << in() << "#include <windows.h>" << std::endl;
+
 	printLineNr();
+
 	*mOut << in() << "int main(int argc, char** argv)\n{" << std::endl;
 	pushScope("main");
 	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
@@ -1092,58 +1172,18 @@ void NateParser::codeEndRecord()
 	*mOut << in() << "};" << std::endl;
 }
 
-void NateParser::codeStartObject(const ObjectPtr& aObject, bool aIsDecl)
-{
-	ObjectInfo info;
-	info.object = aObject;
-	info.isDecl = aIsDecl;
-	info.savedOut = mOut;
-
-	if (aIsDecl)
-	{
-		std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
-		if (!Core::isDirectory(tempDir))
-		{
-			Core::makeDirectory(tempDir);
-		}
-
-		if (!Core::isDirectory(tempDir) || !Core::isWritable(tempDir))
-		{
-			error("Can't create include directory: " + tempDir);
-		}
-		else
-		{
-			info.filename = tempDir + Core::directorySeperator() + aObject->name() + "." + "h";
-			info.out = std::make_shared<std::ofstream>(info.filename);
-			if (!info.out->good())
-			{
-				error("Can't create include file: " + info.filename);
-			}
-			else
-			{
-				*mOut << "#include \"" << info.filename << "\"" << std::endl;
-
-				mOut = info.out.get();
-				*mOut << "#pragma once" << std::endl;
-			}
-		}										
-	}
-
+void NateParser::codeStartDeclObject(const ObjectPtr& aObject)
+{	
 	*mOut << "class " << toCodeName(aObject->name()) << std::endl;
 	*mOut << "{" << std::endl;
 	*mOut << "public:" << std::endl;
-
-	mObjectInfo.push(info);
 }
 
-void NateParser::codeEndObject()
+void NateParser::codeEndDeclObject()
 {
-	ObjectInfo info = mObjectInfo.top();
+	*mOut << "private:" << std::endl;
+	*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> mImpl;"  << std::endl;
 	*mOut << "};" << std::endl;
-
-	mOut = info.savedOut;
-
-	mObjectInfo.pop();
 }
 
 void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)

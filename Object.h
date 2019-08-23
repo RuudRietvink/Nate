@@ -7,13 +7,14 @@
 
 #include <list>
 
-class Object : public Type, public IRecordHolder, public ITypeHolder
+class Object : public Type, public IRecordHolder, public ITypeHolder, public IDefineHolder
 {
 public:
 	using Type::Type;
 
-	const std::list<Define>& getDefines() const;
-	void addDefine(const Define& aDefine);
+	// IDefineHolderPtr
+	std::list<Define>& getDefines() override;
+	void addDefine(const Define& aDefine) override;
 	
 	// IRecordHolder
 	RecordPtr getRecord(const std::string& aName) override;
