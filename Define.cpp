@@ -12,7 +12,7 @@ Define::Define()
 	setPriority(65);
 }
 
-std::string Define::createCodeDecl()
+std::string Define::createCodeDecl(const std::string& aObjectName)
 {
 	std::stringstream buf;
 	bool first = true;
@@ -24,6 +24,11 @@ std::string Define::createCodeDecl()
 	else
 	{
 		buf << type()->codeType() << " ";
+	}
+
+	if (!aObjectName.empty())
+	{
+		buf << aObjectName << "::";
 	}
 
 	buf << pattern() << "(";

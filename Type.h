@@ -70,6 +70,7 @@ public:
 	static const size_t SingleNr   =18;
 	static const size_t Template   =19;
 	static const size_t Object     =20;
+	static const size_t ObjectImpl =21;
 
 private:
 	void setBaseType(const TypePtr& aType);

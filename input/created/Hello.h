@@ -4,6 +4,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+extern std::shared_ptr<std::ostream> output;
+extern std::shared_ptr<std::ostream> error;
 #include <string>
 class Hello
 {

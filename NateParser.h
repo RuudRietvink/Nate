@@ -31,7 +31,8 @@ public:
 	enum class FileType
 	{
 		Normal,
-		ObjectDecl
+		ObjectDecl,
+		ObjectImpl
 	};
 	
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
@@ -77,6 +78,7 @@ public:
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
 	ObjectPtr curObject();
+	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
 
 	void addCode();
@@ -84,7 +86,7 @@ public:
 	Code& curCode();
 
 	void addDefine();
-	void declareDefine(bool aIsDecl = false);
+	void declareDefine(bool aIsDecl = false, bool aInObject = false);
 	void endDefine();
 	Define& curDefine();
 
@@ -96,7 +98,8 @@ public:
 	void codeStartScope();
 	void codeEndScope();
 	void codeCodeInclude();
-	void codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
+	void codeDeclareLocalIdentifier(bool aExtern,
+																	const IdentifierPtr& aIdentifier,
 																	bool initializeObjects = false);
 	void codeDeclareLocalIdentifiers(bool aConst,
 																	 const std::vector<std::string>& aNames,
@@ -111,6 +114,8 @@ public:
 	void codeEndRecord();
 	void codeStartDeclObject(const ObjectPtr& aObject);
 	void codeEndDeclObject();
+	void codeStartImplObject(const ObjectPtr& aObject, bool aExistingDecl);
+	void codeEndImplObject(bool aExistingDecl);
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);

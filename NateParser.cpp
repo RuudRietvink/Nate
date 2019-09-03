@@ -71,7 +71,11 @@ int NateParser::parse()
 	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
 
-	if (mFileType == FileType::Normal)
+	bool externDecl = mFileType != FileType::Normal;
+	codeDeclareLocalIdentifier(externDecl, std::make_shared<Identifier>(curScope(), "output", getType("output")));
+	codeDeclareLocalIdentifier(externDecl, std::make_shared<Identifier>(curScope(), "error", getType("output")));
+
+	if (mFileType != FileType::ObjectDecl)
 	{
 		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 		{
@@ -318,6 +322,11 @@ ObjectPtr NateParser::curObject()
 	return mCurObject;
 }
 
+void NateParser::setCurObject(const ObjectPtr& aObject)
+{
+	mCurObject = aObject;
+}
+
 void NateParser::addCode()
 {
 	pushScope("code");
@@ -348,10 +357,17 @@ void NateParser::addDefine()
 	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 }
 
-void NateParser::declareDefine(bool aIsDecl)
+void NateParser::declareDefine(bool aIsDecl, bool aInObject)
 {
 	mDefineDecl = aIsDecl;
-	*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
+	if (aInObject && !aIsDecl)
+	{
+		*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << (aIsDecl ? ";" : "{") << std::endl;
+	}
+	else
+	{
+		*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
+	}
 	curDefine().createCodeCall();
 }
 
@@ -1022,7 +1038,8 @@ void NateParser::codeCodeInclude()
 	mCodes.pop_back();
 }
 
-void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
+void NateParser::codeDeclareLocalIdentifier(bool aExtern,
+																						const IdentifierPtr& aIdentifier,
 																						bool initializeObjects)
 {
 	addIdentifier(aIdentifier);
@@ -1039,6 +1056,11 @@ void NateParser::codeDeclareLocalIdentifier(const IdentifierPtr& aIdentifier,
 	}
 
 	printLineNr();
+	if (aExtern)
+	{
+	  *mOut << in() << "extern ";	
+	}
+
 	if (aIdentifier->is(Identifier::Const))
 	{
 		if (aIdentifier->type()->is(Type::Scalar))
@@ -1139,7 +1161,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 		IdentifierPtr id = std::make_shared<Identifier>(curScope(), name, type, initValue);
 		id->setFlag(Identifier::Const, aConst);
 
-		codeDeclareLocalIdentifier(id, initializeObjects);
+		codeDeclareLocalIdentifier(false, id, initializeObjects);
 	}
 }
 
@@ -1184,6 +1206,26 @@ void NateParser::codeEndDeclObject()
 	*mOut << "private:" << std::endl;
 	*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> mImpl;"  << std::endl;
 	*mOut << "};" << std::endl;
+}
+
+void NateParser::codeStartImplObject(const ObjectPtr& aObject, bool aExistingDecl)
+{	
+	if (!aExistingDecl)
+	{
+		*mOut << "class " << toCodeName(aObject->name()) << std::endl;
+		*mOut << "{" << std::endl;
+		*mOut << "public:" << std::endl;
+	}
+}
+
+void NateParser::codeEndImplObject(bool aExistingDecl)
+{
+	if (!aExistingDecl)
+	{
+		*mOut << "private:" << std::endl;
+		*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> mImpl;"  << std::endl;
+		*mOut << "};" << std::endl;
+	}
 }
 
 void NateParser::codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue)

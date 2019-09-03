@@ -23,7 +23,7 @@ public:
 	virtual ~Define() = default;
   
 	void createCodeCall();
-	std::string createCodeDecl();
+	std::string createCodeDecl(const std::string& aObjectName = "");
 
 private:
 };

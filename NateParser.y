@@ -35,6 +35,7 @@
 	std::list<Code*> curParsedCodes;
   bool inObject = false;
   bool objectMe = false;
+  bool existingObjectDecl = false;
 
   void copyParsedCodes(NateParser& aNate)
   {
@@ -139,6 +140,7 @@ prog-statement:
   | record-statement
   | var-statement
   | declare-object-statement
+  | implement-object-statement
   | EOS
   ;
   
@@ -243,6 +245,54 @@ declare-object-content-statement:
   | EOS
   ;
   
+implement-object-statement:
+	  IMPLEMENT OBJECT 
+		  { 
+        inObject = true;
+        lexer.pushState(Lexer::VAR_DECL);
+      }
+	  id 
+		  { 
+        lexer.popState();
+        auto objectDecl = nate.getObject($id);
+        existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
+        if (!existingObjectDecl)
+        {
+          auto object = std::make_shared<Object>($id, nate.getType("object"));
+          object->setCodeType(toCodeName($id));
+          object->setFlag(Type::Abstract, false);
+          object->setFlag(Type::Unknown, false);
+          nate.addObject(object);
+          nate.codeStartImplObject(object, false);
+        }
+        else
+        {
+          nate.setCurObject(objectDecl);
+          nate.codeStartImplObject(objectDecl, true);
+        }
+		  }
+    col
+	  begin
+		  implement-object-content-statement-list
+	  end
+		  { 
+        inObject = false;
+			  nate.endObject();
+        nate.codeEndImplObject(existingObjectDecl);
+		  }
+  ;
+  
+implement-object-content-statement-list:
+    implement-object-content-statement
+  | implement-object-content-statement-list implement-object-content-statement
+  ;
+
+implement-object-content-statement:
+	  record-statement
+  | define-statement
+  | EOS
+  ;
+
 define-decl:
 	  DEFINE 
 		  { 
@@ -258,7 +308,7 @@ define-statement:
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.declareDefine();
+			  nate.declareDefine(false/*aIsDecl*/, inObject);
 		  }
 	  begin
 		  statement-list
