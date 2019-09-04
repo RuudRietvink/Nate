@@ -1,6 +1,7 @@
 #include "Method.h"
 
 #include "Identifier.h"
+#include "Object.h"
 #include "Record.h"
 #include "NateFunctions.h"
 #include "core/Core.h"
@@ -29,6 +30,9 @@ int                     Method::priority()  const { return mPriority; }
 
 const std::string&      Method::code()			const { return mCode; }
 std::string&            Method::code()						{ return mCode; }
+
+const Object*           Method::object()    const { return mObject; }
+void                    Method::setObject(const Object* aObject) { mObject = aObject; }
 
 void Method::setType(const TypePtr& aType)        { mType = aType; }
 void Method::setPriority(int aValue)              { mPriority = aValue; }
@@ -65,6 +69,16 @@ void Method::setReturnFlag(const std::string& aFlag)
 	}
 }
 
+bool Method::isObjectMethod() const
+{
+	return object() != nullptr;
+}
+
+bool Method::isStatic() const
+{
+	return isObjectMethod() && mObjectArg == mArgs.cend();
+}
+
 void Method::addArgWord(const std::string& aWord)
 {
 	mArgs.push_back(Arg(aWord));
@@ -96,6 +110,7 @@ void Method::endDecl()
 			if (arg->identifier()->isObjectMe())
 			{
 				mObjectArg = arg;
+				setFlag(ConstMethod, !arg->is(Arg::Out));
 			}
 
 			if (arg->is(Arg::Owner))
@@ -304,7 +319,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			}
 			else
 			{				
-				result.code = code + "." + result.code;
+				if (nodeCode == "me")
+				{
+					result.code = "this->" + result.code;
+				}
+				else
+				{
+					result.code = code + "->" + result.code;
+				}
 			}
 
 			lastType = nodeType;
@@ -337,6 +359,11 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	  result.flags.push_back(ExprNode::ConstExpr);
 	}
 	
+	if (isStatic())
+	{
+		result.code = toCodeName(object()->name()) + "::" + result.code;
+	}
+
 	if (type())
 	{
 		result.code = Core::replaceAll(result.code, "__RETURN__", result.type->codeType());

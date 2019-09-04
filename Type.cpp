@@ -161,13 +161,13 @@ void Type::setType(const std::string& aType)
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
-		mCodeType = "std::shared_ptr<std::ostream>";
+		mCodeType = "std::ostream";
 	}
 	else if (aType == "file-output")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
-		mCodeType = "std::shared_ptr<std::ofstream>";
+		mCodeType = "std::ofstream";
 	}
 	else
 	{
@@ -277,7 +277,14 @@ std::string Type::codeType() const
 
 	if (!mTypenameType || is(Text))
 	{
-	  result = mCodeType;
+		if (is(Object))
+		{
+			result = "std::shared_ptr<" + mCodeType + ">";
+		}
+		else
+		{
+			result = mCodeType;
+		}
 	}
 	else
 	{
@@ -290,6 +297,7 @@ std::string Type::codeType() const
 			result = mTypenameType->codeType();
 		}
 	}
+	
 
 	return result;
 }

@@ -7,8 +7,8 @@ code define 65 size \u of ($container is container),
                ($container is container) 's size is int-32 (const):
   static_cast<int32_t>($container.size())
 
-code define 65 clear ($container is container),
-               empty ($container is container):
+code define 65 clear ($container is container (out)),
+               empty ($container is container (out)):
   $container.clear()
 
 code define 65 stream-out ($container is container):

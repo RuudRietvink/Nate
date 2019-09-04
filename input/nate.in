@@ -34,7 +34,7 @@ define test:
   */ */
     // // comment  
   
-  var hello is Hello
+  var hello := new Hello
   output hello "World"
   output hello
 

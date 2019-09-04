@@ -1,8 +1,11 @@
 import Hello
 
 implement object Hello:
-  define ($me is Hello) ($world is text) is text:
+  define new Hello is Hello:
+    return construct me
+    
+  define (me is Hello) (world is text) is text:
     return "Hello" + $world
   
   define stream-out ($me is Hello) is text:
-    return "Hello, it's me."
+    return "Hello, it's " + me " angry world"

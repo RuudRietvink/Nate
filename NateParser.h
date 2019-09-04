@@ -85,8 +85,8 @@ public:
 	void endCode();
 	Code& curCode();
 
-	void addDefine();
-	void declareDefine(bool aIsDecl = false, bool aInObject = false);
+	void addDefine(bool aInObject);
+	void declareDefine(bool aIsDecl = false);
 	void endDefine();
 	Define& curDefine();
 

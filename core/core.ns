@@ -115,6 +115,9 @@ code define 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
 code define 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
   $owner.$prop
 
+code define 60 construct ($object is object) is (same):
+  std::make_shared<__X__TYPE__$object__>()
+
 code define 65 stream-out ($val is number):
   $val
 

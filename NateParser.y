@@ -296,7 +296,7 @@ implement-object-content-statement:
 define-decl:
 	  DEFINE 
 		  { 
-			  nate.addDefine();
+			  nate.addDefine(inObject);
 			  lexer.pushState(Lexer::ARGS);
         objectMe = false;
 		  }
@@ -308,7 +308,7 @@ define-statement:
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.declareDefine(false/*aIsDecl*/, inObject);
+			  nate.declareDefine(false/*aIsDecl*/);
 		  }
 	  begin
 		  statement-list

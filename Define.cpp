@@ -16,7 +16,7 @@ std::string Define::createCodeDecl(const std::string& aObjectName)
 {
 	std::stringstream buf;
 	bool first = true;
-
+	
 	if (is(None))
 	{
 		buf << "void ";
@@ -61,6 +61,11 @@ std::string Define::createCodeDecl(const std::string& aObjectName)
 	}
 
 	buf << ")";
+
+	if (is(ConstMethod))
+	{
+		buf << " const";
+	}
 
 	return buf.str();
 }

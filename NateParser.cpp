@@ -349,31 +349,50 @@ void NateParser::endCode()
 
 Code& NateParser::curCode() { return mCodes.back(); }
 
-void NateParser::addDefine()
+void NateParser::addDefine(bool aInObject)
 {
 	curDefineHolder()->getDefines().emplace_back();
 	pushDefineScope("define");
 	mMethodType = MethodType::Define;
 	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
+	if (aInObject)
+	{
+		curDefine().setObject(curObject().get());
+	}
 }
 
-void NateParser::declareDefine(bool aIsDecl, bool aInObject)
+void NateParser::declareDefine(bool aIsDecl)
 {
+	curDefine().endDecl();
 	mDefineDecl = aIsDecl;
-	if (aInObject && !aIsDecl)
+
+	if (curDefine().isObjectMethod())
 	{
-		*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << (aIsDecl ? ";" : "{") << std::endl;
+		if (!aIsDecl)
+		{
+			*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "{" << std::endl;
+		}
+		else
+		{
+			*mOut << in(-1) << (curDefine().isStatic() ? "static " : "") << 
+											   curDefine().createCodeDecl() << ";" << std::endl;
+		}
+
+		if (curDefine().isStatic())
+		{
+			addIdentifier(std::make_shared<Identifier>(curScope(), "me", curObject()));
+		}
 	}
 	else
 	{
 		*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
 	}
+
 	curDefine().createCodeCall();
 }
 
 void NateParser::endDefine()
 {
-	curDefine().endDecl();
 	popDefineScope();
 	mLastWriteStream.clear();
 	if (!mDefineDecl)
@@ -949,6 +968,15 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 			error("Unknown compile data: " + aData);
 		}
 	}
+	else if (aCommand == "TYPE")
+	{
+		while (result.size() > 1 && result[0] == '(')
+		{
+			result = result.substr(1, result.size() - 2);
+		}
+
+		result = toCodeName(getOrFakeIdentifier(result)->type()->name());
+	}
 	else
 	{
 		error("Unknown compile command: " + aCommand);
@@ -1074,7 +1102,7 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 	}
 
 	*mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
-	//if (aIdentifier->type()->is(Type::Scalar) || initializeNonScalars)
+
 	if (!aIdentifier->initValue().is(ExprNode::Default) || 
 			aIdentifier->type()->is(Type::SingleNr) || 
 			initializeObjects)
@@ -1204,7 +1232,7 @@ void NateParser::codeStartDeclObject(const ObjectPtr& aObject)
 void NateParser::codeEndDeclObject()
 {
 	*mOut << "private:" << std::endl;
-	*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> mImpl;"  << std::endl;
+	*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> _impl;"  << std::endl;
 	*mOut << "};" << std::endl;
 }
 

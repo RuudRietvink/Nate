@@ -12,6 +12,7 @@
 
 class Identifier;
 class Record;
+class Object;
 
 class Method : public WithFlags
 {
@@ -57,12 +58,16 @@ public:
 	const std::string&  signature() const;
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
 	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
+	bool						    isStatic() const;
+	bool						    isObjectMethod() const;
 		
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
 	void                setReturnFlag(const std::string& aFlag);
+	void                setObject(const Object* aObject);
 	const std::string&  code() const;
 	std::string&        code();
+	const Object*       object() const;
 
 	static const size_t Highest      = 1;
 	static const size_t Num          = 2;
@@ -71,6 +76,7 @@ public:
 	static const size_t None         = 5;
 	static const size_t Last         = 6;
 	static const size_t ConstExpr    = 7;
+	static const size_t ConstMethod  = 8;
   
 private:
 	std::string          mCode;
@@ -79,6 +85,7 @@ private:
 	std::string          mSignature;
 	mutable std::string  mPattern;
 	int                  mPriority = 0;
+	const Object*        mObject = nullptr;
 	ArgConstIterator		 mObjectArg;
 	ArgConstIterator		 mOwnerArg;
 	ArgConstIterator		 mPropArg;
