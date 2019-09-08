@@ -35,7 +35,6 @@
 	std::list<Code*> curParsedCodes;
   bool inObject = false;
   bool objectMe = false;
-  bool existingObjectDecl = false;
 
   void copyParsedCodes(NateParser& aNate)
   {
@@ -216,7 +215,7 @@ declare-object-statement:
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
         nate.addObject(object);
-        nate.codeStartDeclObject(object);
+        nate.codeStartDeclObject();
 		  }
     col
 	  begin
@@ -255,20 +254,21 @@ implement-object-statement:
 		  { 
         lexer.popState();
         auto objectDecl = nate.getObject($id);
-        existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
+        bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
         if (!existingObjectDecl)
         {
           auto object = std::make_shared<Object>($id, nate.getType("object"));
           object->setCodeType(toCodeName($id));
           object->setFlag(Type::Abstract, false);
           object->setFlag(Type::Unknown, false);
+          object->setFlag(Type::ObjectImpl);
           nate.addObject(object);
-          nate.codeStartImplObject(object, false);
+          nate.codeStartImplObject();
         }
         else
         {
           nate.setCurObject(objectDecl);
-          nate.codeStartImplObject(objectDecl, true);
+          nate.codeStartImplObject();
         }
 		  }
     col
@@ -277,8 +277,8 @@ implement-object-statement:
 	  end
 		  { 
         inObject = false;
+        nate.codeEndImplObject();
 			  nate.endObject();
-        nate.codeEndImplObject(existingObjectDecl);
 		  }
   ;
   

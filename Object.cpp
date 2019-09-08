@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "NateFunctions.h"
 
 RecordPtr Object::getRecord(const std::string& aName)
 {

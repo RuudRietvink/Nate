@@ -23,7 +23,7 @@ public:
 	// ITypeHolder
 	TypePtr getType(const std::string& aName) override;
 	void addType(const TypePtr& aType, const std::string& aName = "") override;
-
+	
 private:
 	::Container<RecordPtr>   mRecords;				
 	::Container<TypePtr>     mTypes;							

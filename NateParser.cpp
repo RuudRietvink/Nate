@@ -374,7 +374,7 @@ void NateParser::declareDefine(bool aIsDecl)
 		}
 		else
 		{
-			*mOut << in(-1) << (curDefine().isStatic() ? "static " : "") << 
+			*mOut << in(-1) << (curDefine().isStatic() ? "static " : "virtual ") << 
 											   curDefine().createCodeDecl() << ";" << std::endl;
 		}
 
@@ -455,9 +455,16 @@ void NateParser::printLineNr()
 		auto const& begin = mLexer->location().begin;
 		if (prevLine + 1 != begin.line || prevFile != mLexer->filenames.back())
 		{
+			*mOut << "#line " << begin.line;
+			if (prevFile != mLexer->filenames.back())
+			{
+			  *mOut << " \"" << mLexer->filenames.back() << "\"";
+			}
+			
+			*mOut << std::endl;
+
 			prevLine = begin.line;
 			prevFile = mLexer->filenames.back();
-			*mOut << "#line " << prevLine << " \"" << prevFile << "\"" << std::endl;
 		}
 	}
 }
@@ -977,6 +984,10 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 
 		result = toCodeName(getOrFakeIdentifier(result)->type()->name());
 	}
+	else if (aCommand == "OBJECT_TYPE")
+	{
+		result = toCodeName(curObject()->name());
+	}
 	else
 	{
 		error("Unknown compile command: " + aCommand);
@@ -1222,36 +1233,50 @@ void NateParser::codeEndRecord()
 	*mOut << in() << "};" << std::endl;
 }
 
-void NateParser::codeStartDeclObject(const ObjectPtr& aObject)
+void NateParser::codeStartDeclObject()
 {	
-	*mOut << "class " << toCodeName(aObject->name()) << std::endl;
+	auto name = toCodeName(curObject()->name());
+	*mOut << "class " << name << std::endl;
 	*mOut << "{" << std::endl;
+	*mOut << "private:" << std::endl;
+	*mOut << "  class __impl;"  << std::endl;
+	*mOut << "  __impl* _impl;"  << std::endl;
 	*mOut << "public:" << std::endl;
+	*mOut << "  " << name << "();" << std::endl;
+	*mOut << "  virtual ~" << name << "();" << std::endl;
 }
 
 void NateParser::codeEndDeclObject()
 {
-	*mOut << "private:" << std::endl;
-	*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> _impl;"  << std::endl;
 	*mOut << "};" << std::endl;
 }
 
-void NateParser::codeStartImplObject(const ObjectPtr& aObject, bool aExistingDecl)
+void NateParser::codeStartImplObject()
 {	
-	if (!aExistingDecl)
+	auto name = toCodeName(curObject()->name());
+	if (curObject()->is(Type::ObjectImpl))
 	{
-		*mOut << "class " << toCodeName(aObject->name()) << std::endl;
+		*mOut << "class " << name << std::endl;
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 	}
+	else
+	{
+		*mOut << "class " << name << "::__impl" << std::endl;
+		*mOut << "{" << std::endl;
+		*mOut << "public:" << std::endl;
+		*mOut << "  __impl() {}" << std::endl;
+		*mOut << "};" << std::endl;
+		*mOut << name << "::" << name << "()" << std::endl;
+		*mOut << "  : _impl(new __impl()) {}" << std::endl;
+		*mOut << name << "::~" << name << "() { delete _impl; }" << std::endl;
+	}
 }
 
-void NateParser::codeEndImplObject(bool aExistingDecl)
+void NateParser::codeEndImplObject()
 {
-	if (!aExistingDecl)
+	if (curObject()->is(Type::ObjectImpl))
 	{
-		*mOut << "private:" << std::endl;
-		*mOut << "std::unique_ptr<" << toCodeName(curObject()->name()) << "> mImpl;"  << std::endl;
 		*mOut << "};" << std::endl;
 	}
 }

@@ -112,10 +112,10 @@ public:
 																  	const TypePtr& aType,
 																	  const std::vector<Expr>& aInitValues);
 	void codeEndRecord();
-	void codeStartDeclObject(const ObjectPtr& aObject);
+	void codeStartDeclObject();
 	void codeEndDeclObject();
-	void codeStartImplObject(const ObjectPtr& aObject, bool aExistingDecl);
-	void codeEndImplObject(bool aExistingDecl);
+	void codeStartImplObject();
+	void codeEndImplObject();
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream);

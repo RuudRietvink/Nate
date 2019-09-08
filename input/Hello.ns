@@ -2,7 +2,8 @@ import Hello
 
 implement object Hello:
   define new Hello is Hello:
-    return construct me
+    construct me
+    return me
     
   define (me is Hello) (world is text) is text:
     return "Hello" + $world
