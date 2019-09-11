@@ -5,8 +5,11 @@ implement object Hello:
     construct me
     return me
     
+  define greetings is text:
+    return "Hello"
+
   define (me is Hello) (world is text) is text:
-    return "Hello" + $world
+    return greetings + " " + $world
   
   define stream-out ($me is Hello) is text:
-    return "Hello, it's " + me " angry world"
+    return greetings  + ", it's " + me " angry world"

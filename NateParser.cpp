@@ -396,13 +396,18 @@ void NateParser::declareDefine(bool aIsDecl)
 				}
 
 				defineDecl->setFlag(Method::Defined);
+				mOut = &curObject()->getNormalOut();
+				*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "\n{" << std::endl;
 			}
 			else
 			{
 				curDefine().setFlag(Method::Defined);
+				curDefine().setFlag(Method::Undeclared);
+				mOut = &curObject()->getImplOut();
+				*mOut << in(-1) << (curDefine().isStatic() ? "static " : "") <<
+					                 curDefine().createCodeDecl() << "\n{" << std::endl;
 			}
 
-			*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "\n{" << std::endl;
 		}
 		else
 		{
@@ -940,7 +945,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 
 			if (aDebug) std::cerr << "******* " << (evalResult.type ? *evalResult.type : Type()) << " " << evalResult.code << std::endl;
 			
-			ExprNode node(evalResult.origText, evalResult.code, evalResult.type);
+			ExprNode node(evalResult.origText + " ", evalResult.code, evalResult.type);
 			node.setFlags(evalResult.flags);
 
 			Expr newExpr;
@@ -1286,27 +1291,34 @@ void NateParser::codeEndDeclObject()
 void NateParser::codeStartImplObject()
 {	
 	auto name = toCodeName(curObject()->name());
+	mSavedOut = mOut;
+
 	if (curObject()->is(Type::ObjectImpl))
 	{
+		mOut = &curObject()->getNormalOut();
 		*mOut << "class " << name << std::endl;
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 	}
 	else
 	{
+		mOut = &curObject()->getImplOut();
 		*mOut << "class " << name << "::__impl" << std::endl;
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 		*mOut << "  __impl() {}" << std::endl;
-		*mOut << "};\n" << std::endl;
+
+		mOut = &curObject()->getNormalOut();
 		*mOut << name << "::" << name << "()" << std::endl;
-		*mOut << "  : _impl(new __impl()) {}" << std::endl;
-		*mOut << name << "::~" << name << "() { delete _impl; }" << std::endl;
+		*mOut << "  : _impl(new __impl()) {}\n" << std::endl;
+		*mOut << name << "::~" << name << "() { delete _impl; }\n" << std::endl;
 	}
 }
 
 void NateParser::codeEndImplObject()
 {
+	mOut = mSavedOut;
+
 	if (curObject()->is(Type::ObjectImpl))
 	{
 		for (const auto& define : curObject()->getDefines())
@@ -1316,8 +1328,15 @@ void NateParser::codeEndImplObject()
 				error("Undefined method: " + define.signature());
 			}
 		}
-
+		
+		*mOut << curObject()->getNormalOut().str();
 		*mOut << "};\n" << std::endl;
+	}
+	else
+	{
+		*mOut << curObject()->getImplOut().str();
+		*mOut << "};\n" << std::endl;
+		*mOut << curObject()->getNormalOut().str();
 	}
 }
 

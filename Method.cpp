@@ -321,7 +321,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			{				
 				if (nodeCode == "me")
 				{
-					result.code = "this->" + result.code;
+					if (is(Method::Undeclared))
+					{
+						result.code = "_impl->" + result.code;
+					}
+					else
+					{
+						result.code = "this->" + result.code;
+					}
 				}
 				else
 				{
@@ -361,7 +368,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	
 	if (isStatic())
 	{
-		result.code = toCodeName(object()->name()) + "::" + result.code;
+		if (is(Method::Undeclared))
+		{
+			result.code = "__impl::" + result.code;
+		}
+		else
+		{
+			result.code = toCodeName(object()->name()) + "::" + result.code;
+		}
 	}
 
 	if (type())

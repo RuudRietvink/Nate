@@ -7,6 +7,7 @@
 
 #include <list>
 #include <ostream>
+#include <sstream>
 
 class Object : public Type, public IRecordHolder, public ITypeHolder, public IDefineHolder
 {
@@ -26,10 +27,15 @@ public:
 	TypePtr getType(const std::string& aName) override;
 	void addType(const TypePtr& aType, const std::string& aName = "") override;
 	
+	std::stringstream& getImplOut();
+	std::stringstream& getNormalOut();
+
 private:
 	::Container<RecordPtr>   mRecords;				
 	::Container<TypePtr>     mTypes;							
-	std::list<Define>        mDefines;					
+	std::list<Define>        mDefines;
+	std::stringstream        mImplOut;			
+	std::stringstream        mNormalOut;					
 };
 
 typedef std::shared_ptr<Object> ObjectPtr;

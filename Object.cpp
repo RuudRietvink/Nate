@@ -3,6 +3,9 @@
 
 #include <algorithm>
 
+std::stringstream& Object::getImplOut() { return mImplOut; }
+std::stringstream& Object::getNormalOut() { return mNormalOut; }
+
 RecordPtr Object::getRecord(const std::string& aName)
 {
 	return mRecords.getData(aName);

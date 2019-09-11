@@ -200,7 +200,6 @@ private:
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
-	std::ostream*               mIncludeOut = nullptr;
 	std::ostream*               mSavedOut = nullptr;
 	std::list<IRecordHolderPtr> mRecordHolders;
 	std::list<ITypeHolderPtr>   mTypeHolders;
