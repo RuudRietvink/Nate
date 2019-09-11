@@ -88,10 +88,10 @@ void Method::addArgWord(const std::string& aWord)
 void Method::addArgId(const IdentifierPtr& aId)
 {
 	mArgs.push_back(Arg(aId));
-	mSignature += aId->name();
+	mSignature += aId->name() + " ";
 	if (type())
 	{
-		mSignature += " is " + aId->type()->name() + " ";
+		mSignature += "is " + aId->type()->name() + " ";
 	}
 }
 
@@ -388,6 +388,11 @@ const std::string& Method::pattern() const
 			if (arg.isIdentifier())
 			{
 				buf << "_E_";
+				if (arg.is(Arg::Out))
+				{
+					buf << "O_";
+				}
+				buf << toCodeName(arg.identifier()->type()->name()) << "_";
 			}
 			else
 			{
@@ -569,8 +574,9 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	aStream << "Method(" 
 		    << (aValue.type() ? *aValue.type() : Type()) << ","
 		    << aValue.code() << ","
-		    << Core::join(aValue.args())  << ","
-		    << aValue.pattern();
+		    << Core::join(aValue.args()) << ","
+		    << aValue.pattern() << ","
+		    << aValue.signature();
 	
 	if (aValue.is(Method::Highest)) aStream << ",Highest";
 	if (aValue.is(Method::Num)) aStream << ",Num";
@@ -578,6 +584,10 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::None)) aStream << ",None";
 	if (aValue.is(Method::RightLeft)) aStream << ",RightLeft";
 	if (aValue.is(Method::Last)) aStream << ",Last";
+	if (aValue.is(Method::ConstExpr)) aStream << ",ConstExpr";
+	if (aValue.is(Method::ConstMethod)) aStream << ",ConstMethod";
+	if (aValue.is(Method::Defined)) aStream << ",Defined";
+	if (aValue.is(Method::Undeclared)) aStream << ",Undeclared";
 
 	aStream << ")";
 	return aStream;

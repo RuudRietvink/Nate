@@ -317,14 +317,22 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::Integer))   aStream << ",Integer";
 	if (is(Type::Text))  aStream << ",Text";
 	if (is(Type::Boolean)) aStream << ",Boolean";
+	if (is(Type::Char)) aStream << ",Char";
+	if (is(Type::Fraction)) aStream << ",Fraction";
+	if (is(Type::Imaginary)) aStream << ",Imaginary";
+	if (is(Type::Complex)) aStream << ",Complex";
+	if (is(Type::Record)) aStream << ",Record";
 	if (is(Type::Unknown)) aStream << ",Unknown";
 	if (is(Type::Scalar)) aStream << ",Scalar";
+	if (is(Type::Abstract)) aStream << ",Abstract";
+	if (is(Type::SingleNr)) aStream << ",SingleNr";
+	if (is(Type::Object)) aStream << ",Object";
+	if (is(Type::ObjectImpl)) aStream << ",ObjectImpl";
 	if (is(Type::Comparable)) aStream << ",Comparable";
 	if (is(Type::NeedsRef)) aStream << ",NeedsRef";
-	if (is(Type::Record)) aStream << ",Record";
 	if (is(Type::Container)) aStream << ",Container";
-	if (is(Type::Abstract)) aStream << ",Abstract";
 	if (is(Type::List)) aStream << ",List";
+	if (is(Type::Template)) aStream << ",Template";
 	if (mTypenameType) {
 		aStream << "TypenameType(" << *mTypenameType << "),";
 	}

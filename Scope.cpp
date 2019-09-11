@@ -1,5 +1,6 @@
 #include "Scope.h"
 #include <iostream>
+#include <algorithm>
 
 Scope::Scope(const std::string& aName)
 	: mName(aName)
@@ -54,4 +55,12 @@ std::list<Define>& Scope::getDefines()
 void Scope::addDefine(const Define& aDefine)
 {
 	mDefines.push_back(aDefine);
+}
+
+Define* Scope::getDefineLike(const Define& aDefine)
+{
+	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
+													 [&aDefine](const Define& item)
+													 { return aDefine.pattern() == item.pattern(); });
+	return (iter != mDefines.end()) ? &(*iter) : nullptr;
 }

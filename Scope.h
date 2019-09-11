@@ -20,6 +20,7 @@ public:
 	// IDefineHolderPtr
 	std::list<Define>& getDefines() override;
 	void addDefine(const Define& aDefine) override;
+	Define* getDefineLike(const Define& aDefine) override;
 
 	// ITypeHolder
 	TypePtr getType(const std::string& aName) override;

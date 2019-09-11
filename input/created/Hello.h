@@ -16,6 +16,7 @@ public:
   Hello();
   virtual ~Hello();
 static std::shared_ptr<Hello> new_Hello_();
-virtual std::string _E__E_(const std::string& world) const;
-virtual std::string stream_out__E_() const;
+virtual std::string _E_Hello__E_text_(const std::string& world) const;
+virtual std::string stream_out__E_Hello_() const;
 };
+

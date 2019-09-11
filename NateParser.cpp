@@ -96,6 +96,57 @@ std::string NateParser::in(int aOffset) const
 	return std::string(mScopes.size() + aOffset - 1, '\t');
 }
 
+std::string NateParser::makeTempDir()
+{
+	std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
+	if (!Core::isDirectory(tempDir))
+	{
+		Core::makeDirectory(tempDir);
+	}
+
+	if (!Core::isDirectory(tempDir) || !Core::isWritable(tempDir))
+	{
+		error("Can't create temp directory: " + tempDir);
+	}
+
+	return tempDir;
+}
+
+bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::string& aName)
+{
+	bool found = false;
+
+	std::string path = aLibrary + Core::directorySeperator() + aName + ".nd";
+	if (Core::exists(path))
+	{
+		found = true;
+		std::string tempDir = makeTempDir();
+		std::ifstream in(path);
+		std::string outPath = tempDir + Core::directorySeperator() + aName + "." + "h";
+		std::ofstream out(outPath);
+		if (!out.good())
+		{
+			error("Can't create include file: " + outPath);
+		}
+		else
+		{
+			NateParser nate(path, in, out, FileType::ObjectDecl);
+			auto parseResult = nate.parse();
+			mErrors += nate.errorCount();
+			mWarnings += nate.warningCount();
+			*mOut << "#include \"" << outPath << "\"" << std::endl;
+
+			for (auto const& object : nate.mObjects)
+			{
+				mObjects.push_back(object);
+				addType(object, object->name());
+			}
+		}
+	}
+
+	return found;
+}
+
 void NateParser::import(const std::string& aName)
 {
 	if (mImports.find(aName) == mImports.cend())
@@ -109,46 +160,12 @@ void NateParser::import(const std::string& aName)
 		}
 		else
 		{
-			std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
-			if (!Core::isDirectory(tempDir))
-			{
-				Core::makeDirectory(tempDir);
-			}
-
-			if (!Core::isDirectory(tempDir) || !Core::isWritable(tempDir))
-			{
-				error("Can't create temp directory: " + tempDir);
-			}
-
-			library = ".";
-			std::string path = library + Core::directorySeperator() + aName + ".nd";
-			if (Core::exists(path))
-			{
-				std::ifstream in(path);
-				std::string outPath = tempDir + Core::directorySeperator() + aName + "." + "h";
-				std::ofstream out(outPath);
-				if (!out.good())
+			if (!importObjectDefinition(library, aName))
+			{ 
+				if (!importObjectDefinition(".", aName))
 				{
-					error("Can't create include file: " + outPath);
+					error("No path to import: " + aName);
 				}
-				else
-				{
-					NateParser nate(path, in, out, FileType::ObjectDecl);
-					auto parseResult = nate.parse();
-					mErrors += nate.errorCount();
-					mWarnings += nate.warningCount();
-					*mOut << "#include \"" << outPath << "\"" << std::endl;
-
-					for (auto const& object : nate.mObjects)
-					{
-						mObjects.push_back(object);
-						addType(object, object->name());
-					}
-				}
-			}
-			else
-			{
-				error("No path to import: " + aName);
 			}
 		}
 	}
@@ -370,7 +387,22 @@ void NateParser::declareDefine(bool aIsDecl)
 	{
 		if (!aIsDecl)
 		{
-			*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "{" << std::endl;
+			Define* defineDecl = curObject()->getDefineLike(curDefine());
+			if (defineDecl != nullptr)
+			{
+				if (defineDecl->is(Method::Defined))
+				{
+					error("Redefinition of method: " + defineDecl->signature());
+				}
+
+				defineDecl->setFlag(Method::Defined);
+			}
+			else
+			{
+				curDefine().setFlag(Method::Defined);
+			}
+
+			*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "\n{" << std::endl;
 		}
 		else
 		{
@@ -385,7 +417,7 @@ void NateParser::declareDefine(bool aIsDecl)
 	}
 	else
 	{
-		*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "{") << std::endl;
+		*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "\n{") << std::endl;
 	}
 
 	curDefine().createCodeCall();
@@ -397,7 +429,7 @@ void NateParser::endDefine()
 	mLastWriteStream.clear();
 	if (!mDefineDecl)
 	{
-		*mOut << in() << "}" << std::endl;
+		*mOut << in() << "}\n" << std::endl;
 	}
 }
 
@@ -1056,7 +1088,7 @@ void NateParser::codeStartProgram()
 void NateParser::codeEndProgram()
 {
 	popScope();
-	*mOut << in() << "}" << std::endl;
+	*mOut << in() << "}\n" << std::endl;
 }
 
 void NateParser::codeStartScope()
@@ -1068,7 +1100,7 @@ void NateParser::codeStartScope()
 void NateParser::codeEndScope()
 {
 	popScope();
-	*mOut << in() << "}" << std::endl;
+	*mOut << in() << "}\n" << std::endl;
 }
 
 void NateParser::codeCodeInclude()
@@ -1230,7 +1262,7 @@ void NateParser::codeDeclareRecordIdentifiers(bool aConst,
 void NateParser::codeEndRecord()
 {
 	popScope();
-	*mOut << in() << "};" << std::endl;
+	*mOut << in() << "};\n" << std::endl;
 }
 
 void NateParser::codeStartDeclObject()
@@ -1248,7 +1280,7 @@ void NateParser::codeStartDeclObject()
 
 void NateParser::codeEndDeclObject()
 {
-	*mOut << "};" << std::endl;
+	*mOut << "};\n" << std::endl;
 }
 
 void NateParser::codeStartImplObject()
@@ -1266,7 +1298,7 @@ void NateParser::codeStartImplObject()
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 		*mOut << "  __impl() {}" << std::endl;
-		*mOut << "};" << std::endl;
+		*mOut << "};\n" << std::endl;
 		*mOut << name << "::" << name << "()" << std::endl;
 		*mOut << "  : _impl(new __impl()) {}" << std::endl;
 		*mOut << name << "::~" << name << "() { delete _impl; }" << std::endl;
@@ -1277,7 +1309,15 @@ void NateParser::codeEndImplObject()
 {
 	if (curObject()->is(Type::ObjectImpl))
 	{
-		*mOut << "};" << std::endl;
+		for (const auto& define : curObject()->getDefines())
+		{
+			if (!define.is(Method::Undeclared) && !define.is(Method::Defined))
+			{
+				error("Undefined method: " + define.signature());
+			}
+		}
+
+		*mOut << "};\n" << std::endl;
 	}
 }
 

@@ -77,6 +77,8 @@ public:
 	static const size_t Last         = 6;
 	static const size_t ConstExpr    = 7;
 	static const size_t ConstMethod  = 8;
+	static const size_t Defined      = 9;
+	static const size_t Undeclared   =10;
   
 private:
 	std::string          mCode;

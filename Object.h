@@ -6,6 +6,7 @@
 #include "Container.h"
 
 #include <list>
+#include <ostream>
 
 class Object : public Type, public IRecordHolder, public ITypeHolder, public IDefineHolder
 {
@@ -15,6 +16,7 @@ public:
 	// IDefineHolderPtr
 	std::list<Define>& getDefines() override;
 	void addDefine(const Define& aDefine) override;
+	Define* getDefineLike(const Define& aDefine) override;
 	
 	// IRecordHolder
 	RecordPtr getRecord(const std::string& aName) override;
@@ -31,3 +33,4 @@ private:
 };
 
 typedef std::shared_ptr<Object> ObjectPtr;
+std::ostream& operator<<(std::ostream& aStream, const Method& aValue);

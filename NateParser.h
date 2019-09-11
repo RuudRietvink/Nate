@@ -193,6 +193,8 @@ private:
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
 	void codeOutputNew();
+	std::string makeTempDir();
+	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
