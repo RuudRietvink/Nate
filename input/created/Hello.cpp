@@ -10,11 +10,17 @@ class Hello::__impl
 {
 public:
   __impl() {}
-static std::string greetings_()
-{
+	static std::string greetings_()
+	{
 #line 9
-	return "Hello";
-}
+		return "Hello";
+	}
+
+	std::string _E_Hello_greetings_() const
+	{
+#line 12
+		return "Hello";
+	}
 
 };
 
@@ -33,13 +39,13 @@ std::shared_ptr<Hello> Hello::new_Hello_()
 
 std::string Hello::_E_Hello__E_text_(const std::string& world) const
 {
-#line 12
+#line 15
 	return ((__impl::greetings_())+ " ")+ (world);
 }
 
 std::string Hello::stream_out__E_Hello_() const
 {
-#line 15
-	return ((__impl::greetings_())+ ", it's ")+ (this->_E_Hello__E_text_(" angry world"));
+#line 18
+	return ((_impl->_E_Hello_greetings_())+ ", it's ")+ (this->_E_Hello__E_text_(" angry world"));
 }
 

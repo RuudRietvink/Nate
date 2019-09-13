@@ -1,0 +1,5 @@
+import BaseObject
+
+implement object BaseObject:
+  define initialize ($me is BaseObject (out)):
+    var a is int

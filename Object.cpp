@@ -3,8 +3,11 @@
 
 #include <algorithm>
 
-std::stringstream& Object::getImplOut() { return mImplOut; }
-std::stringstream& Object::getNormalOut() { return mNormalOut; }
+std::stringstream& Object::getImplOut()      { return mImplOut; }
+std::stringstream& Object::getNormalOut()    { return mNormalOut; }
+
+ObjectPtr          Object::getBase()         { return mBase; }
+void Object::setBase(const ObjectPtr& aBase) { mBase = aBase; }
 
 RecordPtr Object::getRecord(const std::string& aName)
 {

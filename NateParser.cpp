@@ -15,26 +15,20 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 : mLexer(new yy::Lexer(aIn)),
 	mParser(new yy::parser(*mLexer, *this)),
 	mOut(&aOut),
-	mFileType(aFileType)
+	mFileType(aFileType),
+	mFileName(aFilename),
+	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\core")
 {
 	mLexer->nate = this;
 	mLexer->filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
 	  
-	if (aFileType == FileType::ObjectDecl)
-	{
-		*mOut << "#pragma once" << std::endl;
-	}
-
-	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
-	*mOut << "#include <cstdint>" << std::endl;
-	*mOut << "#include <iostream>" << std::endl;
-	*mOut << "#include <algorithm>" << std::endl;
-	*mOut << "#include <memory>" << std::endl;
+	initOutput();
+	initTypesAndObjects();
 }
 
 NateParser::~NateParser() = default;
 
-int NateParser::parse()
+void NateParser::initTypesAndObjects()
 {
 	pushScope("global");
 	
@@ -74,26 +68,73 @@ int NateParser::parse()
 	bool externDecl = mFileType != FileType::Normal;
 	codeDeclareLocalIdentifier(externDecl, std::make_shared<Identifier>(curScope(), "output", getType("output")));
 	codeDeclareLocalIdentifier(externDecl, std::make_shared<Identifier>(curScope(), "error", getType("output")));
+}
+
+void NateParser::initOutput()
+{
+	if (mFileType == FileType::ObjectDecl)
+	{
+		*mOut << "#pragma once" << std::endl;
+	}
+
+	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
+	*mOut << "#include <cstdint>" << std::endl;
+	*mOut << "#include <iostream>" << std::endl;
+	*mOut << "#include <algorithm>" << std::endl;
+	*mOut << "#include <memory>" << std::endl;
+}
+
+int NateParser::parse()
+{
+	if (mLexer->debug())
+	{
+		std::cerr << "Seperate parsing: " << mFileName << std::endl;
+	}
 
 	if (mFileType != FileType::ObjectDecl)
 	{
 		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
 		{
-			std::ifstream stream(file);
-			yy::Lexer lexer(stream);
-			lexer.nate = this;
-			lexer.filenames.push_back(Core::replaceAll(file, "\\", "\\\\"));
-			yy::parser parser(lexer, *this);
-			parser.parse();
+			parseFile(file);
 		}
 	}
+		
+	auto result = mParser->parse();
 
-	return mParser->parse();
+	if (mLexer->debug())
+	{
+		std::cerr << "End seperate parsing: " << mFileName << std::endl;
+	}
+
+	return result;
+}
+
+void NateParser::parseFile(const std::string& aFilename)
+{
+	std::ifstream stream(aFilename);
+	yy::Lexer lexer(stream);
+	lexer.nate = this;
+	lexer.filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
+	yy::parser parser(lexer, *this);
+	if (mLexer->debug())
+	{
+		std::cerr << "Parsing: " << aFilename << std::endl;
+	}
+	parser.parse();
+	if (mLexer->debug())
+	{
+		std::cerr << "End parsing: " << aFilename << std::endl;
+	}
 }
 
 std::string NateParser::in(int aOffset) const
 {
-	return std::string(mScopes.size() + aOffset - 1, '\t');
+	int size = static_cast<int>(mTypeHolders.size()) + aOffset - 1; 
+	if (mCurObject && mOut == &mCurObject->getImplOut())
+	{
+		++size;
+	}
+	return std::string(size, '\t');
 }
 
 std::string NateParser::makeTempDir()
@@ -110,6 +151,23 @@ std::string NateParser::makeTempDir()
 	}
 
 	return tempDir;
+}
+
+std::string NateParser::baseObjectName() const
+{
+	return "BaseObject";
+}
+
+void NateParser::importBaseObject(const std::string& aInObjectName)
+{
+	auto baseName = baseObjectName();
+	if (aInObjectName != baseName)
+	{
+		if (mImports.find(baseName) == mImports.cend())
+		{
+			importObjectDefinition(mLibrary, baseName);
+		}
+	}
 }
 
 bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::string& aName)
@@ -131,15 +189,29 @@ bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::
 		else
 		{
 			NateParser nate(path, in, out, FileType::ObjectDecl);
+			if (mLexer->debug())
+			{
+				std::cerr << "Importing: " << path << std::endl;
+			}
+			
 			auto parseResult = nate.parse();
+
 			mErrors += nate.errorCount();
 			mWarnings += nate.warningCount();
 			*mOut << "#include \"" << outPath << "\"" << std::endl;
 
 			for (auto const& object : nate.mObjects)
 			{
-				mObjects.push_back(object);
-				addType(object, object->name());
+				if (!getObject(object->name()))
+				{
+					mObjects.push_back(object);
+					addType(object, object->name());
+				}
+			}
+
+			if (mLexer->debug())
+			{
+				std::cerr << "End importing: " << path << std::endl;
 			}
 		}
 	}
@@ -152,7 +224,8 @@ void NateParser::import(const std::string& aName)
 	if (mImports.find(aName) == mImports.cend())
 	{
 		mImports.insert(aName);
-		std::string library = "C:\\Users\\ruud\\source\\repos\\Nate\\core";
+
+		std::string library = mLibrary;
 		std::string path = library + Core::directorySeperator() + aName + ".ns";
 		if (Core::exists(path))
 		{
@@ -397,7 +470,7 @@ void NateParser::declareDefine(bool aIsDecl)
 
 				defineDecl->setFlag(Method::Defined);
 				mOut = &curObject()->getNormalOut();
-				*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "\n{" << std::endl;
+				*mOut << in(-1) << curDefine().createCodeDecl(toCodeName(curObject()->name())) << "\n" << in(-1) << "{" << std::endl;
 			}
 			else
 			{
@@ -405,7 +478,7 @@ void NateParser::declareDefine(bool aIsDecl)
 				curDefine().setFlag(Method::Undeclared);
 				mOut = &curObject()->getImplOut();
 				*mOut << in(-1) << (curDefine().isStatic() ? "static " : "") <<
-					                 curDefine().createCodeDecl() << "\n{" << std::endl;
+					                 curDefine().createCodeDecl() << "\n" << in(-1) << "{" << std::endl;
 			}
 
 		}
@@ -422,7 +495,15 @@ void NateParser::declareDefine(bool aIsDecl)
 	}
 	else
 	{
-		*mOut << in(-1) << curDefine().createCodeDecl() << (aIsDecl ? ";" : "\n{") << std::endl;
+		*mOut << in(-1) << curDefine().createCodeDecl();
+		if (aIsDecl)
+		{
+			*mOut << ";" << std::endl;
+		}
+		else
+		{
+			*mOut << "\n" << in(-1) << "{" << std::endl;
+		}
 	}
 
 	curDefine().createCodeCall();
@@ -1081,7 +1162,7 @@ void NateParser::codeStartProgram()
 
 	printLineNr();
 
-	*mOut << in() << "int main(int argc, char** argv)\n{" << std::endl;
+	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << std::endl;
 	pushScope("main");
 	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
 	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << std::endl;
@@ -1244,7 +1325,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 void NateParser::codeStartRecord(const RecordPtr& aRecord)
 {
 	printLineNr();
-	*mOut << in() << "struct " << aRecord->codeType() << " {" << std::endl;
+	*mOut << in() << "struct " << aRecord->codeType() << "\n" << in() << "{" << std::endl;
 	pushScope(aRecord->scope());
 }
 
@@ -1273,7 +1354,12 @@ void NateParser::codeEndRecord()
 void NateParser::codeStartDeclObject()
 {	
 	auto name = toCodeName(curObject()->name());
-	*mOut << "class " << name << std::endl;
+	*mOut << "class " << name;
+	if (curObject()->getBase())
+	{
+		*mOut << ": public " << toCodeName(curObject()->getBase()->name());
+	}
+	*mOut << std::endl;
 	*mOut << "{" << std::endl;
 	*mOut << "private:" << std::endl;
 	*mOut << "  class __impl;"  << std::endl;
@@ -1296,7 +1382,11 @@ void NateParser::codeStartImplObject()
 	if (curObject()->is(Type::ObjectImpl))
 	{
 		mOut = &curObject()->getNormalOut();
-		*mOut << "class " << name << std::endl;
+		*mOut << "class " << name;
+		if (curObject()->getBase())
+		{
+			*mOut << ": public " << toCodeName(curObject()->getBase()->name());
+		}
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 	}
@@ -1550,7 +1640,7 @@ void NateParser::NateParser::codeIf(const Expr& aValue)
 		error("Expected boolean expression for IF statement");
 	}
 
-	*mOut << in() << "if (" << aValue.code() << ") {" << std::endl;
+	*mOut << in() << "if (" << aValue.code() << ")\n" << in() << "{" << std::endl;
 	pushScope("if");
 }
 
@@ -1562,7 +1652,7 @@ void NateParser::codeElseIf()
 void NateParser::codeElse()
 {
 	printLineNr();
-	*mOut << in() << "else {" << std::endl;
+	*mOut << in() << "else\n" << in() << "{" << std::endl;
 	pushScope("else");
 }
 
@@ -1659,7 +1749,7 @@ void NateParser::codeElseIs()
 	ifIs.nextCase = ifIs.isSwitch && !ifIs.out->str().empty();
 	if (ifIs.nextCase)
 	{
-		*mOut << in() << "switch (" << ifIs.idName << ") {" << std::endl;
+		*mOut << in() << "switch (" << ifIs.idName << ")\n" << in() << "{" << std::endl;
 		*mOut << in() << ifIs.out->str();
 		*mOut << in() << "default:" << std::endl;
 		mOut = ifIs.savedOut;
@@ -1731,7 +1821,7 @@ void NateParser::codeInitLoop()
 
 void NateParser::codeStartLoop()
 {
-	*mOut << in(-1) << "while (true) {" << std::endl;
+	*mOut << in(-1) << "while (true)\n" << in(-1) << "{" << std::endl;
 }
 
 void NateParser::codeStartForStepLoop(const std::string& aId,
@@ -1751,7 +1841,7 @@ void NateParser::codeStartForStepLoop(const std::string& aId,
 	*mOut << in(-1) << "for (" << id->type()->codeType() << " " 
 			 << id->codeName() << "= " << aStart.code() << ";" 
 			 << id->name() << (aDownTo ? " >= " : "<=") << aEnd.code() << ";"
-			 << id->name() << (aDownTo ? " -= " : "+=") << aStep.code() << ") {" << std::endl;
+			 << id->name() << (aDownTo ? " -= " : "+=") << aStep.code() << ")\n" << in(-1) << "{" << std::endl;
 }
 
 void NateParser::codeStartForRangeLoop(const std::string& aId, 
@@ -1785,7 +1875,7 @@ void NateParser::codeStartForRangeLoop(const std::string& aId,
 
 		*mOut << in(-1) << "for (auto " << iter << " = " << range << ".cbegin(); "
 				 << iter << " != " << range << ".cend(); "
-			   << increment << ") {" << std::endl;
+			   << increment << ")\n" << in(-1) << "{" << std::endl;
 		if (rangeType->isOfType("text"))
 		{
 			*mOut << in() << "uint32_t " << id->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << std::endl;

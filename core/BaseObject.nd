@@ -1,0 +1,3 @@
+
+declare object BaseObject:
+  define initialize ($me is BaseObject (out))

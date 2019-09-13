@@ -127,6 +127,9 @@
     <ClCompile Include="input\created\Hello.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
+    <ClCompile Include="core\Created\BaseObject.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">
@@ -176,6 +179,12 @@
     </None>
     <None Include="input\Hello.ns">
       <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="core\BaseObjects\BaseObject.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\BaseObject.nd">
+      <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="input\created\Hello.h">
       <Filter>Source Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Created\BaseObject.h">
+      <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

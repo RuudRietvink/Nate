@@ -115,11 +115,11 @@ code define 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
 code define 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
   $owner.$prop
 
-code define 60 construct me:
-  auto me = std::make_shared<__X__OBJECT_TYPE__.__>()
-
 code define 65 stream-out ($val is number):
   $val
 
 code define 65 stream-out ($val is boolean):
   $val
+  
+code define 60 construct me:
+  auto me = std::make_shared<__X__OBJECT_TYPE__.__>()

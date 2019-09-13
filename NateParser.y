@@ -24,21 +24,10 @@
   #include "NateParser.h"
   #undef yylex
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
-
-  bool outputEnd;
-  std::string prevWriteSink;
-  bool inputEnd = true;
-  bool prevWasValue = false;
-  std::stack<Expr> ifExpr;
-  std::stack<std::string> ifId;
-  std::string forId;
-	std::list<Code*> curParsedCodes;
-  bool inObject = false;
-  bool objectMe = false;
-
+  
   void copyParsedCodes(NateParser& aNate)
   {
-    for (auto code : curParsedCodes)
+    for (auto code : aNate.data.curParsedCodes)
     {
       if (&aNate.curCode() != code)
       {
@@ -46,7 +35,7 @@
       }
     }
 
-    curParsedCodes.clear();
+    aNate.data.curParsedCodes.clear();
   }
 }
 
@@ -204,7 +193,7 @@ statement:
 declare-object-statement:
 	  DECLARE OBJECT 
 		  { 
-        inObject = true;
+        nate.data.inObject = true;
         lexer.pushState(Lexer::VAR_DECL);
       }
 	  id 
@@ -214,6 +203,13 @@ declare-object-statement:
         object->setCodeType(toCodeName($id));
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
+
+        if (nate.baseObjectName() != object->name())
+        {
+          nate.importBaseObject(object->name());
+          object->setBase(nate.getObject(nate.baseObjectName()));
+        }
+
         nate.addObject(object);
         nate.codeStartDeclObject();
 		  }
@@ -222,7 +218,7 @@ declare-object-statement:
 		  declare-object-content-statement-list
 	  end
 		  { 
-        inObject = false;
+        nate.data.inObject = false;
 			  nate.endObject();
         nate.codeEndDeclObject();
 		  }
@@ -247,7 +243,7 @@ declare-object-content-statement:
 implement-object-statement:
 	  IMPLEMENT OBJECT 
 		  { 
-        inObject = true;
+        nate.data.inObject = true;
         lexer.pushState(Lexer::VAR_DECL);
       }
 	  id 
@@ -262,6 +258,13 @@ implement-object-statement:
           object->setFlag(Type::Abstract, false);
           object->setFlag(Type::Unknown, false);
           object->setFlag(Type::ObjectImpl);
+
+          if (nate.baseObjectName() != object->name())
+          {
+            nate.importBaseObject(object->name());
+            object->setBase(nate.getObject(nate.baseObjectName()));
+          }
+
           nate.addObject(object);
           nate.codeStartImplObject();
         }
@@ -276,7 +279,7 @@ implement-object-statement:
 		  implement-object-content-statement-list
 	  end
 		  { 
-        inObject = false;
+        nate.data.inObject = false;
         nate.codeEndImplObject();
 			  nate.endObject();
 		  }
@@ -296,9 +299,9 @@ implement-object-content-statement:
 define-decl:
 	  DEFINE 
 		  { 
-			  nate.addDefine(inObject);
+			  nate.addDefine(nate.data.inObject);
 			  lexer.pushState(Lexer::ARGS);
-        objectMe = false;
+        nate.data.objectMe = false;
 		  }
 	  arg-list call-return
   ;
@@ -344,7 +347,7 @@ code-define:
 	  CODE DEFINE
 		  { 
 			  nate.addCode();
-        curParsedCodes.push_back(&nate.curCode());
+        nate.data.curParsedCodes.push_back(&nate.curCode());
 			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
@@ -369,7 +372,7 @@ code-list:
       {
 			  nate.endCode();
 			  nate.addCode();
-        curParsedCodes.push_back(&nate.curCode());
+        nate.data.curParsedCodes.push_back(&nate.curCode());
       }
     arg-list
   ;
@@ -414,16 +417,16 @@ arg:
 
         if (id->isObjectMe())
         {
-          if (!inObject)
+          if (!nate.data.inObject)
           {
             nate.error("The id 'me' is reserved for objects");
           }
-          else if (objectMe)
+          else if (nate.data.objectMe)
           {
             nate.error("The id 'me' may only occur once in a define");
           }
 
-          objectMe = true;
+          nate.data.objectMe = true;
         }
 		  }
     opt-arg-flags CLOSEPAR
@@ -667,7 +670,7 @@ output-statement:
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(outputEnd);
+        nate.codeOutputEnd(nate.data.outputEnd);
       }
   ;
   
@@ -678,7 +681,7 @@ error-statement:
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(outputEnd);
+        nate.codeOutputEnd(nate.data.outputEnd);
       }
   ;
   
@@ -688,12 +691,12 @@ write-statement:
         nate.codeWriteStart($[write-sink]);
         if (!$[write-sink].isEmpty())
         {
-          prevWriteSink = $[write-sink].code();
+          nate.data.prevWriteSink = $[write-sink].code();
         }
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(outputEnd);
+        nate.codeOutputEnd(nate.data.outputEnd);
       }
   ;
   
@@ -710,21 +713,21 @@ write-sink:
     
 output-list:
 	  %empty
-		  { outputEnd = true; }
+		  { nate.data.outputEnd = true; }
   | output-part-list
   ;
 
 output-part-list:
 	  output-part
-		  { outputEnd = true; }
+		  { nate.data.outputEnd = true; }
   | output-part output-sep output-part-rest
   ;
 
 output-part-rest:
 	  %empty
-		  { outputEnd = false; }
+		  { nate.data.outputEnd = false; }
   | output-part-list
-		  { outputEnd = true; }
+		  { nate.data.outputEnd = true; }
   ;
 
 output-part:
@@ -754,8 +757,8 @@ input-statement:
       }
 	  input-list
 		  { 
-        nate.codeInputEnd(inputEnd);
-        inputEnd = true;
+        nate.codeInputEnd(nate.data.inputEnd);
+        nate.data.inputEnd = true;
       }
   ;
 
@@ -771,7 +774,7 @@ input-part-list:
 
 input-part-rest:
 	  %empty
-		  { inputEnd = false; }
+		  { nate.data.inputEnd = false; }
   | input-part-list
   ;
 
@@ -790,13 +793,13 @@ input-sep:
 if-statement:
 	  IF expr col
       { 
-        ifExpr.push($expr);
-        ifId.push(nate.uniqueName());
+        nate.data.ifExpr.push($expr);
+        nate.data.ifId.push(nate.uniqueName());
       }
     if-rest
       { 
-        ifExpr.pop(); 
-        ifId.pop(); 
+        nate.data.ifExpr.pop(); 
+        nate.data.ifId.pop(); 
       }
   ;
 
@@ -807,7 +810,7 @@ if-rest:
 
 if-then:
 	  begin 
-		  { nate.codeIf(ifExpr.top()); }
+		  { nate.codeIf(nate.data.ifExpr.top()); }
 		  statement-list
 		  { nate.codeEndIf(); }
 	  end
@@ -829,7 +832,7 @@ else:
 
 if-is:
     IS 
-	  	{ nate.codeIfIs(ifExpr.top(), ifId.top()); }
+	  	{ nate.codeIfIs(nate.data.ifExpr.top(), nate.data.ifId.top()); }
     is-rest
     is-else
 	  	{ nate.codeEndIfIs(); }
@@ -851,7 +854,7 @@ is-block:
   
 is-part:
     expr col
-	  	{ nate.codeIs($expr, ifExpr.top()); }
+	  	{ nate.codeIs($expr, nate.data.ifExpr.top()); }
     is-part-block
   ;
 
@@ -932,7 +935,7 @@ for-loop-statement:
 		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id 
 		  { 
-        forId = $id;
+        nate.data.forId = $id;
         lexer.popState();
 		    lexer.stateExprValue = yy::Lexer::FOR_EXPR;
       }
@@ -955,7 +958,7 @@ for-step:
 		      nate.error("Abstract type: " + $[is-type]->name());
 	      }
 
-			  nate.codeStartForStepLoop(forId, $[is-type], $[for-to], $from, $to, $step);
+			  nate.codeStartForStepLoop(nate.data.forId, $[is-type], $[for-to], $from, $to, $step);
 		  }
   ;
 
@@ -981,7 +984,7 @@ for-loop-part-end:
 for-range:
 	  IN expr
 		  { 
-			  nate.codeStartForRangeLoop(forId, $expr);
+			  nate.codeStartForRangeLoop(nate.data.forId, $expr);
 		  }
   ;
 
@@ -1023,7 +1026,7 @@ inline-expr:
       { 
 			  lexer.popState(); 
 			  $$ = nate.evaluate(Expr($[expr-part], $[expr-part-list]));
-        prevWasValue = false;
+        nate.data.prevWasValue = false;
         lexer.space();
 		  }
   ;
@@ -1059,7 +1062,7 @@ expr-non-word:
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
-        prevWasValue = true;
+        nate.data.prevWasValue = true;
 		  }
 	| FRACTION
 		  { 
@@ -1071,7 +1074,7 @@ expr-non-word:
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
-        prevWasValue = true;
+        nate.data.prevWasValue = true;
 		  }
 	| string
 		  { 
@@ -1079,7 +1082,7 @@ expr-non-word:
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
-        prevWasValue = true;
+        nate.data.prevWasValue = true;
 		  }
   | BOOL
 		  { 
@@ -1087,7 +1090,7 @@ expr-non-word:
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();
-        prevWasValue = true;
+        nate.data.prevWasValue = true;
 		  }
   | id
 		  { 
@@ -1095,7 +1098,7 @@ expr-non-word:
         //std::cerr << "Id: " << $id << " " << value << std::endl;
         auto identifier = nate.getOrFakeIdentifier(value);
 
-        if (!lexer.spaceBeen && prevWasValue)
+        if (!lexer.spaceBeen && nate.data.prevWasValue)
         {
           //std::cerr << "monomial " << value << std::endl;
           $$ = Expr(ExprNode("monomial"));
@@ -1107,32 +1110,33 @@ expr-non-word:
 			    $$.node().setFlag(ExprNode::Output, !identifier->is(Identifier::Const));
           //std::cerr << "spacebeen " << $$ << std::endl;
         }
-        prevWasValue = true;
+
+        nate.data.prevWasValue = true;
         lexer.noSpace();
         $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
 		  } 
   | OPENPAR 
       { 
         lexer.space();
-        prevWasValue = false;
+        nate.data.prevWasValue = false;
       }
     expr
     CLOSEPAR
 		  { 
         lexer.noSpace();
-        prevWasValue = true;
+        nate.data.prevWasValue = true;
         $$ = nate.evaluate(Expr($expr));
 
       }
   | IF
 		  { 
         $$ = Expr(ExprNode("if"));
-        prevWasValue = false;
+        nate.data.prevWasValue = false;
       }
   | ELSE
 		  { 
         $$ = Expr(ExprNode("else"));
-        prevWasValue = false;
+        nate.data.prevWasValue = false;
       }
   ;
   
@@ -1141,21 +1145,21 @@ expr-word:
 		  { 
         auto value = nate.alias($WORD);
 
-        if (value == "-" && !prevWasValue)
+        if (value == "-" && !nate.data.prevWasValue)
         {
           value = "uminus";
-          prevWasValue = false;
+          nate.data.prevWasValue = false;
           $$ = Expr(value);
         }
-        else if (value == "+" && !prevWasValue)
+        else if (value == "+" && !nate.data.prevWasValue)
         {
           value = "uplus";
-          prevWasValue = false;
+          nate.data.prevWasValue = false;
           $$ = Expr(value);
         }
         else
         {        
-          if (!nate.isLeftMonomial(value) || lexer.spaceBeen || !prevWasValue)
+          if (!nate.isLeftMonomial(value) || lexer.spaceBeen || !nate.data.prevWasValue)
           {
             lexer.space();
             $$ = Expr(value);
@@ -1167,7 +1171,7 @@ expr-word:
 			      $$.addNode(ExprNode(value));
           }
 
-          prevWasValue = !nate.wantsUnary(value);
+          nate.data.prevWasValue = !nate.wantsUnary(value);
           lexer.noSpace();
         }
       }

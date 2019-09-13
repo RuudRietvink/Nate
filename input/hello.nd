@@ -1,6 +1,10 @@
 import Text
 
 declare object Hello:
+  record Data:
+    var greet is text
+    var count is int
+
   define new Hello is Hello
 
   define ($me is Hello) ($world is text) is text

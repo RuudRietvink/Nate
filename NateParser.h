@@ -28,6 +28,20 @@ class ExprNode;
 class NateParser
 {
 public:
+	struct ParseData
+	{
+		bool outputEnd = false;
+		std::string prevWriteSink;
+		bool inputEnd = true;
+		bool prevWasValue = false;
+		std::stack<Expr> ifExpr;
+		std::stack<std::string> ifId;
+		std::string forId;
+		std::list<Code*> curParsedCodes;
+		bool inObject = false;
+		bool objectMe = false;
+	};
+
 	enum class FileType
 	{
 		Normal,
@@ -35,12 +49,16 @@ public:
 		ObjectImpl
 	};
 	
+	ParseData data;
+
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 						 FileType aFileType = FileType::Normal);
 	virtual ~NateParser();
 	std::string in(int aOffset = 0) const;
 	int parse();
 	void import(const std::string& aName);
+	void importBaseObject(const std::string& aInObjectName);
+	std::string baseObjectName() const;
 	void addAlias(const std::string& aName, const std::string& aValue);
 	std::string alias(const std::string& aString);
 	bool isReservedName(const std::string& aString) const;
@@ -156,6 +174,9 @@ public:
 	void printLineNr();
 
 private:
+	void initTypesAndObjects();
+	void initOutput();
+	void parseFile(const std::string& aFilename);
 	void pushRecordHolder(const IRecordHolderPtr& aRecordHolder);
 	void popRecordHolder();
 	void pushTypeHolder(const ITypeHolderPtr& aTypeHolder);
@@ -220,6 +241,8 @@ private:
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;
 	FileType										mFileType = FileType::Normal;
+	std::string                 mFileName;
+	std::string                 mLibrary;
 
 	struct IfIs
 	{

@@ -9,6 +9,9 @@
 #include <ostream>
 #include <sstream>
 
+class Object;
+typedef std::shared_ptr<Object> ObjectPtr;
+
 class Object : public Type, public IRecordHolder, public ITypeHolder, public IDefineHolder
 {
 public:
@@ -30,13 +33,16 @@ public:
 	std::stringstream& getImplOut();
 	std::stringstream& getNormalOut();
 
+	ObjectPtr getBase();
+	void setBase(const ObjectPtr& aBase);
+
 private:
 	::Container<RecordPtr>   mRecords;				
 	::Container<TypePtr>     mTypes;							
 	std::list<Define>        mDefines;
+	ObjectPtr                mBase;
 	std::stringstream        mImplOut;			
 	std::stringstream        mNormalOut;					
 };
 
-typedef std::shared_ptr<Object> ObjectPtr;
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);

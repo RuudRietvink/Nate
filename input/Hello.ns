@@ -8,8 +8,11 @@ implement object Hello:
   define greetings is text:
     return "Hello"
 
+  define (me is Hello) greetings is text:
+    return "Hello"
+
   define (me is Hello) (world is text) is text:
     return greetings + " " + $world
   
   define stream-out ($me is Hello) is text:
-    return greetings  + ", it's " + me " angry world"
+    return me greetings  + ", it's " + me " angry world"

@@ -195,6 +195,12 @@
     <ClCompile Include="Code.cpp" />
     <ClCompile Include="Arg.cpp" />
     <ClCompile Include="core\Core.cpp" />
+    <ClCompile Include="core\Created\BaseObject.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="core\Fraction.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
@@ -220,6 +226,7 @@
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\BaseObjects\BaseObject.ns" />
     <None Include="core\Complex.ns" />
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
@@ -227,6 +234,7 @@
     <None Include="core\Fraction.ns" />
     <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
+    <None Include="core\BaseObject.nd" />
     <None Include="core\Output.ns" />
     <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
@@ -242,6 +250,7 @@
     <ClInclude Include="Arg.h" />
     <ClInclude Include="core\Complex.h" />
     <ClInclude Include="core\Core.h" />
+    <ClInclude Include="core\Created\BaseObject.h" />
     <ClInclude Include="core\Fraction.h" />
     <ClInclude Include="core\View.h" />
     <ClInclude Include="core\UpperLower.h" />

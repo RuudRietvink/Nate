@@ -17,6 +17,8 @@ int parse(const std::string& aIn, const std::string& aOut, NateParser::FileType 
 
 int main()
 {
+	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\core");
+	parse("BaseObjects\\BaseObject.ns", "created\\BaseObject.cpp", NateParser::FileType::ObjectImpl);
 	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\input");
 	parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
 	return parse("nate.in", "C:\\Users\\ruud\\source\\repos\\Out\\Out.cpp");

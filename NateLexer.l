@@ -27,6 +27,11 @@ public:
 
 	void includeFile(const std::string& aFile)
 	{
+    if (debug())
+    {
+      std::cerr << "Including: " << aFile << std::endl;
+    }
+
 		if (depth > 99)
 		{
 			std::cerr << "Include depth overflow on " << aFile << std::endl;
@@ -60,11 +65,19 @@ public:
 		bool result = true;
 		if (depth > 0)
 		{
+      if (debug())
+      {
+        std::cerr << "End parsing: " << filenames.back() << std::endl;
+      }
 			fclose(in());                   // close current input in() (a FILE*)
 			pop_matcher();                  // delete current matcher, pop matcher
 			filenames.pop_back();
 			--depth;
 			result = false;                 // continue reading
+      if (debug() && !filenames.empty())
+      {
+        std::cerr << "Continue parsing: " << filenames.back() << std::endl;
+      }
 		}
 
 		return result;
@@ -191,6 +204,7 @@ public:
 %option lexer=Lexer
 %option unicode
 %option tabs=2
+%option reentrant
 //%option debug
 %option fast
 
