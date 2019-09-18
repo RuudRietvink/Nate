@@ -90,6 +90,7 @@
 %type <std::string>              id;
 %type <std::string>              arg-id;
 %type <std::vector<std::string>> id-list;
+%type <TypePtr>                  optional-is-type;
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
 %type <std::string>              type-extra;
@@ -231,6 +232,7 @@ declare-object-content-statement-list:
 
 declare-object-content-statement:
 	  record-statement
+	| property-statement
   | define-decl
 			{ 
 			  lexer.popState();
@@ -322,6 +324,15 @@ define-statement:
 		  }
   ;
   
+property-statement:
+	  PROP 
+		  { lexer.pushState(Lexer::VAR_DECL); }
+	  id-list 
+		  { lexer.popState(); }
+	  is-type
+		  { nate.declareProperties(false, $[id-list], $[is-type]); }
+  ;
+
 code-statement:
     code-define
   | code-include
@@ -532,8 +543,8 @@ var-statement:
 		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
 		  { lexer.popState(); }
-	  is-type var-init-assign
-		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
+	  optional-is-type var-init-assign
+		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign]); }
   ;
 
 var:
@@ -556,10 +567,14 @@ id:
 		  { $$ = ($IDENTIFIER[0] == '$') ? $IDENTIFIER.substr(1) : $IDENTIFIER; }
   ;
   
-is-type:
+optional-is-type:
     %empty
 		  { $$ = std::make_shared<Type>(""); }
-  | IS 
+  | is-type 
+  ;
+
+is-type:
+    IS 
       { lexer.pushState(Lexer::DECL_TYPE); }
     type
 	  	{ 
@@ -619,12 +634,12 @@ var-init:
 record-statement:
     RECORD WORD[id] col
       { 
-        if (nate.curTypeHolder()->getType($id))
+        if (nate.curTypesHolder()->types().get($id))
         {
 				  nate.error("Duplicate type of :" + $id);
         }
         RecordPtr record = std::make_shared<Record>($id);
-        nate.curRecordHolder()->addRecord(record, $id);
+        nate.curRecordsHolder()->records().add(record, $id);
         nate.codeStartRecord(record);
       }
     begin
@@ -643,8 +658,8 @@ record-var:
 		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
 		  { lexer.popState(); }
-	  is-type var-init-assign
-		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[is-type], $[var-init-assign]); }
+	  optional-is-type var-init-assign
+		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign]); }
     opt-eos
   ;
 
@@ -950,15 +965,15 @@ for-part:
   ;
 
 for-step:
-	  is-type ASSIGN 
+	  optional-is-type ASSIGN 
 	  expr[from] for-to expr[to] step 
 		  { 
-	      if ($[is-type]->is(Type::Abstract))
+	      if ($[optional-is-type]->is(Type::Abstract))
 	      {
-		      nate.error("Abstract type: " + $[is-type]->name());
+		      nate.error("Abstract type: " + $[optional-is-type]->name());
 	      }
 
-			  nate.codeStartForStepLoop(nate.data.forId, $[is-type], $[for-to], $from, $to, $step);
+			  nate.codeStartForStepLoop(nate.data.forId, $[optional-is-type], $[for-to], $from, $to, $step);
 		  }
   ;
 

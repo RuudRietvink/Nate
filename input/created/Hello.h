@@ -1,11 +1,5 @@
 #pragma once
 #include "C:\Users\ruud\source\repos\Nate\core\Core.h"
-#include <cstdint>
-#include <iostream>
-#include <algorithm>
-#include <memory>
-extern std::shared_ptr<std::ostream> output;
-extern std::shared_ptr<std::ostream> error;
 #include <string>
 #include "C:\Users\ruud\source\repos\Nate\input\created\BaseObject.h"
 class Hello: public BaseObject
@@ -20,12 +14,20 @@ public:
 	struct Data
 	{
 #line 5
-		std::string greet;
-		int32_t count = {};
+	std::string greet;
+	int32_t count;
+	Data()
+		: greet()
+		, count()
+		{}
 	};
 
+	const std::string& get_name() const;
+	const std::string& get_address() const;
+	int32_t get_age() const;
 	static std::shared_ptr<Hello> new_Hello_();
 	virtual std::string _E_Hello__E_text_(const std::string& world) const;
+	static std::string hi__E_Hello_(const std::shared_ptr<Hello>& other);
 	virtual std::string stream_out__E_Hello_() const;
 };
 

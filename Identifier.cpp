@@ -30,3 +30,19 @@ std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 	aStream << "Identifier(" << aValue.name() << "," << aValue.codeName() << "," << *aValue.type() << "," << aValue.initValue() << ")";
 	return aStream;
 }
+
+IdentifierPtr Identifiers::get(const std::string& aName)
+{
+	return mIds.getData(aName);
+}
+
+const std::list<IdentifierPtr>& Identifiers::get() const
+{
+	return mIdentifierList;
+}
+
+void Identifiers::add(const IdentifierPtr& aIdentifier)
+{
+	mIds.addData(aIdentifier);
+	mIdentifierList.push_back(aIdentifier);
+}

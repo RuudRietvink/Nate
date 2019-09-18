@@ -6,6 +6,7 @@
 #include <reflex/matcher.h>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 Define::Define()
 {
@@ -104,4 +105,22 @@ std::ostream& operator<<(std::ostream& aStream, const Define& aValue)
 	aStream << "Define(";
   operator<<(aStream, static_cast<const Method&>(aValue));
 	return aStream;
+}
+
+std::list<Define>& Defines::get()
+{
+	return mDefines;
+}
+
+void Defines::add(const Define& aDefine)
+{
+	mDefines.push_back(aDefine);
+}
+
+Define* Defines::getLike(const Define& aDefine)
+{
+	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
+													 [&aDefine](const Define& item)
+													 { return aDefine.pattern() == item.pattern(); });
+	return (iter != mDefines.end()) ? &(*iter) : nullptr;
 }

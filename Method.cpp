@@ -179,7 +179,7 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 		if (arg.is(Arg::Prop))
 		{
 			Record* owner = getOwner(aBegin);
-			if (owner == nullptr || !owner->getIdentifier(nodeIter->text()))
+			if (owner == nullptr || !owner->identifiers().get(nodeIter->text()))
 			{
 				if (aDebug) if (owner == nullptr) std::cerr << "No owner" << std::endl;
 				if (aDebug) std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
@@ -235,7 +235,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 
 			if (arg.is(Arg::Prop) && owner != nullptr)
 			{
-				auto identifier = owner->getIdentifier(nodeIter->text());
+				auto identifier = owner->identifiers().get(nodeIter->text());
 				if (identifier)
 				{
 					nodeType = identifier->type();
@@ -269,7 +269,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 
 			if (arg->is(Arg::Prop) && owner != nullptr)
 			{
-				auto identifier = owner->getIdentifier(nodeIter->text());
+				auto identifier = owner->identifiers().get(nodeIter->text());
 				if (identifier)
 				{
 					nodeCode = identifier->codeName();
@@ -526,7 +526,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 						error <<  "No record specified for property: " << nodeIter->text();
 						result.matches = false;
 					}
-					else if (!owner->getIdentifier(nodeIter->text()))
+					else if (!owner->identifiers().get(nodeIter->text()))
 					{
 						error <<  "Not a property of '" << owner->name() << "': " << nodeIter->text();
 						result.matches = false;

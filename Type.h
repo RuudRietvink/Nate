@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Container.h"
 #include "WithFlags.h"
 
 #include <string>
@@ -8,14 +9,6 @@
 
 class Type;
 typedef std::shared_ptr<Type> TypePtr;
-
-class ITypeHolder
-{
-public:
-	virtual TypePtr getType(const std::string& aName) = 0;
-	virtual void addType(const TypePtr& aType, const std::string& aName = "") = 0;
-};
-typedef std::shared_ptr<ITypeHolder> ITypeHolderPtr;
 
 class Type : public WithFlags
 {
@@ -58,7 +51,7 @@ public:
 	static const size_t NeedsRef   = 6;
 	static const size_t Record     = 7;
 	static const size_t Scalar     = 8;
-	static const size_t Container  = 9;
+	static const size_t IsContainer= 9;
 	static const size_t List       =10;
 	static const size_t Integer    =11;
 	static const size_t Abstract   =12;
@@ -83,3 +76,20 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);
+
+class Types
+{
+public:
+	virtual TypePtr get(const std::string& aName);
+	virtual void add(const TypePtr& aType, const std::string& aName = "");
+
+private:			
+	Container<TypePtr>       mTypes;			
+};
+
+class ITypesHolder
+{
+public:
+	virtual Types& types() = 0;
+};
+typedef std::shared_ptr<ITypesHolder> ITypesHolderPtr;

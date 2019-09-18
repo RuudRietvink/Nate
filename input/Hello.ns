@@ -7,12 +7,16 @@ implement object Hello:
     
   define greetings is text:
     return "Hello"
-
+    
   define (me is Hello) greetings is text:
-    return "Hello"
+    var other := new Hello
+    return "Hello " + hi other
 
   define (me is Hello) (world is text) is text:
     return greetings + " " + $world
+
+  define hi ($other is Hello) is text:
+    return other " earth"
   
   define stream-out ($me is Hello) is text:
     return me greetings  + ", it's " + me " angry world"

@@ -1,10 +1,4 @@
 #include "C:\Users\ruud\source\repos\Nate\core\Core.h"
-#include <cstdint>
-#include <iostream>
-#include <algorithm>
-#include <memory>
-extern std::shared_ptr<std::ostream> output;
-extern std::shared_ptr<std::ostream> error;
 #include "C:\Users\ruud\source\repos\Nate\input\created\Hello.h"
 class Hello::__impl
 {
@@ -19,7 +13,8 @@ public:
 	std::string _E_Hello_greetings_() const
 	{
 #line 12
-		return "Hello";
+		std::shared_ptr<Hello> other = Hello::new_Hello_();
+		return "Hello "+ (Hello::hi__E_Hello_((other)));
 	}
 
 };
@@ -39,13 +34,19 @@ std::shared_ptr<Hello> Hello::new_Hello_()
 
 std::string Hello::_E_Hello__E_text_(const std::string& world) const
 {
-#line 15
+#line 16
 	return ((__impl::greetings_())+ " ")+ (world);
+}
+
+std::string Hello::hi__E_Hello_(const std::shared_ptr<Hello>& other)
+{
+#line 19
+	return (other)->_E_Hello__E_text_(" earth");
 }
 
 std::string Hello::stream_out__E_Hello_() const
 {
-#line 18
+#line 22
 	return ((_impl->_E_Hello_greetings_())+ ", it's ")+ (this->_E_Hello__E_text_(" angry world"));
 }
 

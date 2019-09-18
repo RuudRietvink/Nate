@@ -8,6 +8,15 @@
 #include <ostream>
 #include <sstream>
 
+// for created code //////
+#include <cstdint>
+#include <iostream>
+#include <algorithm>
+#include <memory>
+extern std::shared_ptr<std::ostream> output;
+extern std::shared_ptr<std::ostream> error;
+//////////////////////////
+
 namespace Core
 {
 	std::wstring u16(const std::string& str);

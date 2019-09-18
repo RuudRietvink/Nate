@@ -40,6 +40,7 @@ public:
 		std::list<Code*> curParsedCodes;
 		bool inObject = false;
 		bool objectMe = false;
+		std::stack<RecordPtr> curRecord;
 	};
 
 	enum class FileType
@@ -74,20 +75,21 @@ public:
 	void pushDefineScope(const ScopePtr& aScope);
 	void popDefineScope();
 	ScopePtr& curScope();
-	IRecordHolderPtr& curRecordHolder();
-	ITypeHolderPtr& curTypeHolder();
-	IDefineHolderPtr& curDefineHolder();
+	IIdentifiersHolderPtr& curIdentifiersHolder();
+	IRecordsHolderPtr& curRecordsHolder();
+	ITypesHolderPtr& curTypesHolder();
+	IDefinesHolderPtr& curDefinesHolder();
 
 	void error(const std::string& anError);
 	void warning(const std::string& aWarning);
 	int errorCount() const { return mErrors; }
 	int warningCount() const { return mWarnings; }
 	void addType(const TypePtr& aType, const std::string& aName = "");
-	TypePtr getType(const std::string& aName, ITypeHolder* aTypeHolder = nullptr);
+	TypePtr getType(const std::string& aName, ITypesHolder* aTypesHolder = nullptr);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
-	IdentifierPtr getIdentifier(const std::string& aName, Scope* aScope = nullptr);
-	IdentifierPtr getOrFakeIdentifier(const std::string& aName, Scope* aScope = nullptr);
+	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
+	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 	std::string uniqueName() const;
@@ -98,6 +100,9 @@ public:
 	ObjectPtr curObject();
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
+	void declareProperties(bool aReadonly,
+											   const std::vector<std::string>& aNames,
+												 const TypePtr& aType);
 
 	void addCode();
 	void endCode();
@@ -118,12 +123,12 @@ public:
 	void codeCodeInclude();
 	void codeDeclareLocalIdentifier(bool aExtern,
 																	const IdentifierPtr& aIdentifier,
-																	bool initializeObjects = false);
+																	bool initializeVariables = true);
 	void codeDeclareLocalIdentifiers(bool aConst,
 																	 const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
 																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeObjects = false);
+																	 bool initializeVariables = true);
 	void codeStartRecord(const RecordPtr& aRecord);
 	void codeDeclareRecordIdentifiers(bool aConst,
 																	  const std::vector<std::string>& aNames,
@@ -174,15 +179,18 @@ public:
 	void printLineNr();
 
 private:
+	void checkIdentifierName(const std::string& aName);
 	void initTypesAndObjects();
 	void initOutput();
 	void parseFile(const std::string& aFilename);
-	void pushRecordHolder(const IRecordHolderPtr& aRecordHolder);
-	void popRecordHolder();
-	void pushTypeHolder(const ITypeHolderPtr& aTypeHolder);
-	void popTypeHolder();
-	void pushDefineHolder(const IDefineHolderPtr& aDefineHolder);
-	void popDefineHolder();
+	void pushIdentifiersHolder(const IIdentifiersHolderPtr& aIdentifiersHolder);
+	void popIdentifiersHolder();
+	void pushRecordsHolder(const IRecordsHolderPtr& aRecordsHolder);
+	void popRecordsHolder();
+	void pushTypesHolder(const ITypesHolderPtr& aTypesHolder);
+	void popTypesHolder();
+	void pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder);
+	void popDefinesHolder();
 
 	struct Match
 	{
@@ -222,9 +230,10 @@ private:
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
 	std::ostream*               mSavedOut = nullptr;
-	std::list<IRecordHolderPtr> mRecordHolders;
-	std::list<ITypeHolderPtr>   mTypeHolders;
-	std::list<IDefineHolderPtr> mDefineHolders;
+	std::list<IIdentifiersHolderPtr> mIdentifiersHolders;
+	std::list<IRecordsHolderPtr>mRecordsHolders;
+	std::list<ITypesHolderPtr>  mTypesHolders;
+	std::list<IDefinesHolderPtr>mDefinesHolders;
 	std::list<ScopePtr>         mScopes;
 	std::list<Code>             mCodes;
 	bool												mDefineDecl = false;

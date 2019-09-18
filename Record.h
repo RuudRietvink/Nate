@@ -4,33 +4,42 @@
 
 #include <list>
 
-class Scope;
 class Record;
 typedef std::shared_ptr<Record> RecordPtr;
 
-class IRecordHolder
-{
-public:
-	virtual RecordPtr getRecord(const std::string& aName) = 0;
-	virtual void addRecord(RecordPtr& aRecord, const std::string& aName) = 0;
-};
-typedef std::shared_ptr<IRecordHolder> IRecordHolderPtr;
-
-class Record : public Type
+class Record : public Type, public IIdentifiersHolder
 {
 public:
 	Record() = default;
 	Record(const std::string& aName);
 	virtual ~Record() = default;
-
-	std::shared_ptr<Scope>& scope();
-
-	IdentifierPtr getIdentifier(const std::string& aName);
-	void addIdentifier(const IdentifierPtr& aIdentifier);
-	const std::list<IdentifierPtr>& getIdentifiers() const;
+		
+	// IIdentifiersHolder
+	Identifiers& identifiers() { return mIdentifiers; }
+	
+	const std::string& name() const { return mName; }
 	virtual std::ostream& print(std::ostream& aStream) const override;
 
 private:
-	std::shared_ptr<Scope>	mScope;
+	std::string					    mName;	
+	Identifiers             mIdentifiers;
 };
 
+class Records
+{
+public:
+	Records(Types& aTypes);
+	virtual RecordPtr get(const std::string& aName);
+	virtual void add(RecordPtr& aRecord, const std::string& aName);
+
+private:			
+	Container<RecordPtr>       mRecords;	
+	Types&                     mTypes;			
+};
+
+class IRecordsHolder
+{
+public:
+	virtual Records& records() = 0;
+};
+typedef std::shared_ptr<IRecordsHolder> IRecordsHolderPtr;

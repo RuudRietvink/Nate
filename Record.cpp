@@ -5,29 +5,9 @@
 
 Record::Record(const std::string& aName)
 	: Type("record"),
-	  mScope(std::make_shared<Scope>(aName))
+	  mName(aName)
 {
 	setCodeType(toCodeName(aName));
-}
-
-ScopePtr& Record::scope()
-{
-	return mScope;
-}
-
-IdentifierPtr Record::getIdentifier(const std::string& aName)
-{
-	return mScope->getIdentifier(aName);
-}
-
-void Record::addIdentifier(const IdentifierPtr& aIdentifier)
-{
-	mScope->addIdentifier(aIdentifier);
-}
-
-const std::list<IdentifierPtr>& Record::getIdentifiers() const
-{
-	return mScope->getIdentifiers();
 }
 
 std::ostream& Record::print(std::ostream& aStream) const
@@ -35,11 +15,27 @@ std::ostream& Record::print(std::ostream& aStream) const
 	aStream << "Record(";
 	Type::print(aStream);
 	aStream << "Identifiers(";
-	for (auto id : getIdentifiers())
+	for (auto id : mIdentifiers.get())
 	{
 		aStream << *id << ",";
 	}
 	aStream << ")";
 	aStream << ")";
 	return aStream;
+}
+
+Records::Records(Types& aTypes)
+	: mTypes(aTypes)
+{}
+
+RecordPtr Records::get(const std::string& aName)
+{
+	return mRecords.getData(aName);
+}
+
+void Records::add(RecordPtr& aRecord, const std::string& aName)
+{
+	aRecord->setFlag(Type::Record, true);
+	mRecords.addData(aRecord);
+	mTypes.add(aRecord, aName);
 }

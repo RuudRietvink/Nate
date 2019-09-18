@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Container.h"
+#include "Identifier.h"
 #include "Define.h"
 #include "Record.h"
 #include "Type.h"
 
-class Scope : public IRecordHolder, public ITypeHolder, public IDefineHolder
+class Scope : public IIdentifiersHolder, public IRecordsHolder, public ITypesHolder, public IDefinesHolder
 {
 public:
 	Scope(const std::string& aName = "");
@@ -13,30 +14,24 @@ public:
 
 	const std::string& name() const;
 	
-	IdentifierPtr getIdentifier(const std::string& aName);
-	void addIdentifier(const IdentifierPtr& aIdentifier);
-	const std::list<IdentifierPtr>& getIdentifiers() const;
+	// IIdentifiersHolder
+	Identifiers& identifiers() { return mIdentifiers; }
 	
-	// IDefineHolderPtr
-	std::list<Define>& getDefines() override;
-	void addDefine(const Define& aDefine) override;
-	Define* getDefineLike(const Define& aDefine) override;
+	// ITypesHolder
+	Types& types() { return mTypes; }
 
-	// ITypeHolder
-	TypePtr getType(const std::string& aName) override;
-	void addType(const TypePtr& aType, const std::string& aName = "") override;
+	// IDefinesHolder
+	Defines& defines() { return mDefines; }
 
 	// IRecordHolder
-	RecordPtr getRecord(const std::string& aName) override;
-	void addRecord(RecordPtr& aRecord, const std::string& aName) override;
+	Records& records() { return mRecords; }
 
 private:					
-	std::string					     mName;								
-	Container<IdentifierPtr> mIds;
-	std::list<IdentifierPtr> mIdentifierList;	
-	Container<RecordPtr>     mRecords;					
-	Container<TypePtr>       mTypes;						
-	std::list<Define>        mDefines;						
-};
+	std::string					     mName;	
+	Identifiers              mIdentifiers;		
+	Types                    mTypes;		
+	Records                  mRecords;							
+	Defines                  mDefines;						
+};    
 
 typedef std::shared_ptr<Scope> ScopePtr;

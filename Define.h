@@ -8,14 +8,23 @@
 class Identifier;
 class Define;
 
-class IDefineHolder
+class Defines
 {
 public:
-	virtual std::list<Define>& getDefines() = 0;
-	virtual void addDefine(const Define& aDefine) = 0;
-	virtual Define* getDefineLike(const Define& aDefine) = 0;
+	virtual std::list<Define>& get();
+	virtual void add(const Define& aDefine);
+	virtual Define* getLike(const Define& aDefine);
+
+private:			
+	std::list<Define> mDefines;			
 };
-typedef std::shared_ptr<IDefineHolder> IDefineHolderPtr;
+
+class IDefinesHolder
+{
+public:
+	virtual Defines& defines() = 0;
+};
+typedef std::shared_ptr<IDefinesHolder> IDefinesHolderPtr;
 
 class Define : public Method
 {

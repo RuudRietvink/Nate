@@ -143,7 +143,7 @@ void Type::setType(const std::string& aType)
 	}
 	else if (aType == "container")
 	{
-		setFlag(Container, true);
+		setFlag(IsContainer, true);
 		setFlag(NeedsRef, true);
 		setFlag(Template, true);
 		mBitSize = 3000;
@@ -330,7 +330,7 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::ObjectImpl)) aStream << ",ObjectImpl";
 	if (is(Type::Comparable)) aStream << ",Comparable";
 	if (is(Type::NeedsRef)) aStream << ",NeedsRef";
-	if (is(Type::Container)) aStream << ",Container";
+	if (is(Type::IsContainer)) aStream << ",IsContainer";
 	if (is(Type::List)) aStream << ",List";
 	if (is(Type::Template)) aStream << ",Template";
 	if (mTypenameType) {
@@ -339,4 +339,14 @@ std::ostream& Type::print(std::ostream& aStream) const
 
 	aStream << ")";
 	return aStream;
+}
+
+TypePtr Types::get(const std::string& aName)
+{
+	return mTypes.getData(aName);
+}
+
+void Types::add(const TypePtr& aType, const std::string& aName)
+{
+	mTypes.addData(aType, aName);
 }

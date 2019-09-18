@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Identifier.h"
 #include "Record.h"
 #include "Define.h"
 #include "Type.h"
-#include "Container.h"
 
 #include <list>
 #include <ostream>
@@ -12,34 +12,37 @@
 class Object;
 typedef std::shared_ptr<Object> ObjectPtr;
 
-class Object : public Type, public IRecordHolder, public ITypeHolder, public IDefineHolder
+class Object : public IIdentifiersHolder, public Type, public IRecordsHolder, 
+							 public ITypesHolder, public IDefinesHolder
 {
 public:
-	using Type::Type;
-
-	// IDefineHolderPtr
-	std::list<Define>& getDefines() override;
-	void addDefine(const Define& aDefine) override;
-	Define* getDefineLike(const Define& aDefine) override;
+	Object();
+	Object(const std::string& aType, const TypePtr& aBaseType = TypePtr());
+	virtual ~Object() = default;
 	
-	// IRecordHolder
-	RecordPtr getRecord(const std::string& aName) override;
-	void addRecord(RecordPtr& aRecord, const std::string& aName) override;
+	// IIdentifiersHolder
+	Identifiers& identifiers() { return mIdentifiers; }
 
-	// ITypeHolder
-	TypePtr getType(const std::string& aName) override;
-	void addType(const TypePtr& aType, const std::string& aName = "") override;
+	// ITypesHolder
+	Types& types() { return mTypes; }
 	
+	// IDefinesHolderPtr
+	Defines& defines() { return mDefines; }
+	
+	// IRecordsHolder
+	Records& records() { return mRecords; }
+
 	std::stringstream& getImplOut();
 	std::stringstream& getNormalOut();
 
 	ObjectPtr getBase();
 	void setBase(const ObjectPtr& aBase);
 
-private:
-	::Container<RecordPtr>   mRecords;				
-	::Container<TypePtr>     mTypes;							
-	std::list<Define>        mDefines;
+private:	
+	Identifiers              mIdentifiers;		
+	Types                    mTypes;			
+	Records                  mRecords;						
+	Defines                  mDefines;
 	ObjectPtr                mBase;
 	std::stringstream        mImplOut;			
 	std::stringstream        mNormalOut;					

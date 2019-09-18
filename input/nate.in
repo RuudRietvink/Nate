@@ -379,7 +379,7 @@ define test:
  
 record shop:
   var beer-inventory is int := 255
-  var name is text
+  var name is text := "shop"
 
 define (bottles is int) in (store is shop) or on wall is boolean:
   return store's beer-inventory + bottles > 0  
