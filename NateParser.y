@@ -418,7 +418,7 @@ arg:
 		  { nate.addArgWord($WORD); }
   | OPENPAR inout arg-id[id] IS type 
 		  { 
-			  auto id = std::make_shared<Identifier>(nate.curScope(), $id, $type);
+			  auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, $type);
 			  nate.addIdentifier(id);
 		    nate.curMethod().addArgId(id);
         if (!$inout.empty())
@@ -447,7 +447,7 @@ arg:
 id-with-arg-flags:
     OPENPAR inout arg-id[id] IS
 		{ 
-			auto id = std::make_shared<Identifier>(nate.curScope(), $id, std::make_shared<Type>(""));
+			auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, std::make_shared<Type>(""));
 			nate.addIdentifier(id);
 		  nate.curMethod().addArgId(id);
       if (!$inout.empty())
@@ -1129,6 +1129,7 @@ expr-non-word:
         nate.data.prevWasValue = true;
         lexer.noSpace();
         $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
+        $$.node().setFlag(ExprNode::Property, identifier->is(Identifier::Property));
 		  } 
   | OPENPAR 
       { 

@@ -74,7 +74,6 @@ public:
 	void pushDefineScope(const std::string& aName);
 	void pushDefineScope(const ScopePtr& aScope);
 	void popDefineScope();
-	ScopePtr& curScope();
 	IIdentifiersHolderPtr& curIdentifiersHolder();
 	IRecordsHolderPtr& curRecordsHolder();
 	ITypesHolderPtr& curTypesHolder();
@@ -84,7 +83,8 @@ public:
 	void warning(const std::string& aWarning);
 	int errorCount() const { return mErrors; }
 	int warningCount() const { return mWarnings; }
-	void addType(const TypePtr& aType, const std::string& aName = "");
+	void addType(TypePtr aType, const std::string& aName = "");
+	ITypesHolderPtr getTypesHolder(const TypePtr& aType) const;
 	TypePtr getType(const std::string& aName, ITypesHolder* aTypesHolder = nullptr);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
@@ -224,6 +224,7 @@ private:
 	void codeOutputNew();
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
+	std::string typeScopeName() const;
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;

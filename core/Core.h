@@ -15,6 +15,20 @@
 #include <memory>
 extern std::shared_ptr<std::ostream> output;
 extern std::shared_ptr<std::ostream> error;
+
+#define PROP_(DECL_TYPE, TYPE, NAME) \
+	struct T_ ## NAME \
+	{ \
+		TYPE get() const; \
+		TYPE set(TYPE value); \
+		operator TYPE () const { return get(); } \
+		TYPE operator = (TYPE value) { return set(value); } \
+  private: \
+    DECL_TYPE _value; \
+	} NAME;
+
+#define PROP_GET(OBJECT, TYPE, NAME) \
+	TYPE OBJECT ## :: ## T_ ## NAME ::get() const { return _value; }
 //////////////////////////
 
 namespace Core

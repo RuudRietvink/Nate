@@ -50,3 +50,7 @@ std::string Hello::stream_out__E_Hello_() const
 	return ((_impl->_E_Hello_greetings_())+ ", it's ")+ (this->_E_Hello__E_text_(" angry world"));
 }
 
+PROP_GET(Hello, const std::string&, name)
+PROP_GET(Hello, int32_t, age)
+PROP_GET(Hello, const std::string&, address)
+PROP_GET(Hello, const Hello::Data&, data)

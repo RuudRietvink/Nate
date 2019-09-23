@@ -29,6 +29,7 @@ public:
 	static const size_t Literal   = 2;
 	static const size_t ConstExpr = 3;
 	static const size_t Default   = 4;
+	static const size_t Property  = 5;
 
 private:
 	std::string       mText;

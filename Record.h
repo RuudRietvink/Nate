@@ -11,13 +11,13 @@ class Record : public Type, public IIdentifiersHolder
 {
 public:
 	Record() = default;
-	Record(const std::string& aName);
+	Record(const std::string& aName, const TypePtr& aBaseType = TypePtr());
 	virtual ~Record() = default;
 		
 	// IIdentifiersHolder
-	Identifiers& identifiers() { return mIdentifiers; }
+	Identifiers& identifiers() override { return mIdentifiers; }
 	
-	const std::string& name() const { return mName; }
+	const std::string& name() const override { return mName; }
 	virtual std::ostream& print(std::ostream& aStream) const override;
 
 private:

@@ -3,14 +3,14 @@
 #include "ExprNode.h"
 #include "NateFunctions.h"
 
-Identifier::Identifier(const std::shared_ptr<Scope>& aScope, const std::string& aName, const TypePtr& aType)
-	: Identifier(aScope, aName, aType, Expr(ExprNode("default", "{}", aType)))
+Identifier::Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
+	: Identifier(aIdentifiersHolder, aName, aType, Expr(ExprNode("default", "{}", aType)))
 {
 	mInitValue.node().setFlag(ExprNode::Default, true);
 }
 
-Identifier::Identifier(const std::shared_ptr<Scope>& aScope, const std::string& aName, const TypePtr& aType, const Expr& aInitValue)
-	: mScope(aScope),
+Identifier::Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const Expr& aInitValue)
+	: mIdentifiersHolder(aIdentifiersHolder),
 	mName(aName),
 	mCodeName(toCodeName(aName)),
 	mType(aType ? aType : std::make_shared<Type>()),
@@ -22,7 +22,7 @@ const std::string&		Identifier::name()      const { return mName; }
 const std::string&		Identifier::codeName()  const { return mCodeName; }
 const Expr&						Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
-std::weak_ptr<Scope>	Identifier::scope()     const { return mScope; }
+std::weak_ptr<IIdentifiersHolder>	Identifier::identifiersHolder() const { return mIdentifiersHolder; }
 bool					 		    Identifier::isObjectMe()const { return mName == "me"; }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)

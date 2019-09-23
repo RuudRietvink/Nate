@@ -67,13 +67,13 @@ void NateParser::initTypesAndObjects()
 
 	if (mFileType == FileType::Normal)
 	{
-		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curScope(), "output", getType("output")));
-		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curScope(), "error", getType("output")));
+		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
+		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
 	}
 	else
 	{	
-		addIdentifier(std::make_shared<Identifier>(curScope(), "output", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curScope(), "error", getType("output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
 	}
 }
 
@@ -379,11 +379,6 @@ void NateParser::popDefineScope()
 	if (mLexer->debug()) std::cerr << "pop to " << mScopes.front()->name() << std::endl;
 }
 
-ScopePtr& NateParser::curScope()
-{
-	return mScopes.front();
-}
-
 Method& NateParser::curMethod()
 {
 	return mMethodType == MethodType::Code 
@@ -403,14 +398,13 @@ void NateParser::addObject(const ObjectPtr& aObject)
 	}
 
 	addType(aObject, aObject->name());
-	
+	mObjects.push_back(aObject);
+	//setCurObject(aObject);
+	mCurObject = aObject;
 	pushIdentifiersHolder(aObject);
 	pushRecordsHolder(aObject);
 	pushTypesHolder(aObject);
 	pushDefinesHolder(aObject);
-	mCurObject = aObject;
-
-	mObjects.push_back(aObject);
 }
 
 void NateParser::endObject()
@@ -512,7 +506,7 @@ void NateParser::declareDefine(bool aIsDecl)
 
 		if (curDefine().isStatic())
 		{
-			addIdentifier(std::make_shared<Identifier>(curScope(), "me", curObject()));
+			addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "me", curObject()));
 		}
 	}
 	else
@@ -739,7 +733,7 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, IIdentif
 	if (!result)
 	{
 		error(std::string("Undeclared identifier: ") + aName);
-		addIdentifier(std::make_shared<Identifier>(curScope(), aName, getType("int-32")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), aName, getType("int-32")));
 		result = getIdentifier(aName);
 	}
 
@@ -751,13 +745,26 @@ void NateParser::addIdentifier(const IdentifierPtr& aIdentifier)
 	curIdentifiersHolder()->identifiers().add(aIdentifier);
 }
 
+ITypesHolderPtr NateParser::getTypesHolder(const TypePtr& aType) const
+{
+	for (auto& typesHolder : mTypesHolders)
+	{
+		if (typesHolder->types().contains(aType))
+		{
+			return typesHolder;
+		}
+	}
+		
+	return ITypesHolderPtr();
+}
+
 TypePtr NateParser::getType(const std::string& aName, ITypesHolder* aTypesHolder)
 {
 	if (aTypesHolder == nullptr)
 	{
-		for (auto& typeHolder : mTypesHolders)
+		for (auto& typesHolder : mTypesHolders)
 		{
-			auto type = typeHolder->types().get(aName);
+			auto type = typesHolder->types().get(aName);
 			if (type)
 			{
 				return type;
@@ -772,8 +779,10 @@ TypePtr NateParser::getType(const std::string& aName, ITypesHolder* aTypesHolder
 	}
 }
 
-void NateParser::addType(const TypePtr& aType, const std::string& aName)
+void NateParser::addType(TypePtr aType, const std::string& aName)
 {
+	aType->setTypeScopeName(typeScopeName());
+	if (!aName.empty()) std::cerr << aName << " " << typeScopeName() << " " << aType->typeScopeName() << std::endl;
 	curTypesHolder()->types().add(aType, aName);
 }
 
@@ -1321,7 +1330,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 			initValue.node().setFlag(ExprNode::ConstExpr, aConst);
 		}
 
-		IdentifierPtr id = std::make_shared<Identifier>(curScope(), name, type, initValue);
+		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, type, initValue);
 		id->setFlag(Identifier::Const, aConst);
 
 		codeDeclareLocalIdentifier(false, id, initializeVariables);
@@ -1330,7 +1339,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aConst,
 
 void NateParser::checkIdentifierName(const std::string& aName)
 {
-	if (getIdentifier(aName, curScope().get()))
+	if (getIdentifier(aName, curIdentifiersHolder().get()))
 	{
 		error("duplicate declaration of: " + aName);
 	}
@@ -1352,6 +1361,7 @@ void NateParser::codeStartRecord(const RecordPtr& aRecord)
 	printLineNr();
 	*mOut << in() << "struct " << aRecord->codeType() << "\n" << in() << "{" << std::endl;
   data.curRecord.push(aRecord);
+	addType(aRecord, aRecord->name());
 	pushIdentifiersHolder(aRecord);
 }
 
@@ -1452,6 +1462,23 @@ void NateParser::codeStartImplObject()
 
 void NateParser::codeEndImplObject()
 {
+	auto name = toCodeName(curObject()->name());
+
+	mOut = &curObject()->getNormalOut();
+	for (const auto& propMethod : curObject()->propertyMethods())
+	{
+		const auto& id = propMethod.first;
+		const auto& method = propMethod.second;
+		auto scopeName = id->type()->typeScopeName();
+		std::string propType = (id->type()->is(Type::NeedsRef))
+											     ? "const " + scopeName + id->type()->codeType() + "&"
+			                     : id->type()->codeType();
+		if (method == "get")
+		{
+			*mOut << in() << "PROP_GET(" << name << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		}
+	}
+
 	mOut = mSavedOut;
 
 	if (curObject()->is(Type::ObjectImpl))
@@ -1475,6 +1502,23 @@ void NateParser::codeEndImplObject()
 	}
 }
 
+std::string NateParser::typeScopeName() const
+{
+	std::string result;
+
+	for (auto const& holder : mTypesHolders)
+	{
+		auto name = holder->typeScopeName();
+		if (!name.empty())
+		{
+			result += toCodeName(name);
+			result += "::";
+		}
+	}
+
+	return result;
+}
+
 void NateParser::declareProperties(bool aReadonly,
 																	 const std::vector<std::string>& aNames,
 																	 const TypePtr& aType)
@@ -1482,23 +1526,19 @@ void NateParser::declareProperties(bool aReadonly,
 	for (auto const& name : aNames)
 	{
 		checkIdentifierName(name);
-		IdentifierPtr id = std::make_shared<Identifier>(curScope(), name, aType);
+		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, aType);
 		id->setFlag(Identifier::Const, aReadonly);
 		id->setFlag(Identifier::Property);
 		addIdentifier(id);
 
-		*mOut << in() ;
+		std::string propType = (id->type()->is(Type::NeedsRef))
+											     ? "const " + id->type()->codeType() + "&"
+			                     : id->type()->codeType();
+		std::string declType = id->type()->codeType();
 
-		if (id->type()->is(Type::NeedsRef))
-		{
-			*mOut << "const " << id->type()->codeType() << "&";
-		}
-		else
-		{
-			*mOut << id->type()->codeType();
-		}
-
-		*mOut << " get_" << id->codeName() << "() const;" << std::endl;
+		*mOut << in() << "PROP_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		curObject()->propertyMethods().insert(std::make_pair(id, "get"));
+		curObject()->propertyMethods().insert(std::make_pair(id, "set"));
 	}
 }
 
@@ -1907,7 +1947,7 @@ void NateParser::codeStartForStepLoop(const std::string& aId,
 							   ? aStart.type()
 							   : aType;
 
-	IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 	addIdentifier(id);
 
 	*mOut << in(-1) << "for (" << id->type()->codeType() << " " 
@@ -1923,7 +1963,7 @@ void NateParser::codeStartForRangeLoop(const std::string& aId,
 	if (rangeType->isOfType("container"))
 	{
 		TypePtr type = rangeType->typenameType();
-		IdentifierPtr id = std::make_shared<Identifier>(curScope(), aId, type);
+		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 		addIdentifier(id);
 
 		auto range = uniqueName();

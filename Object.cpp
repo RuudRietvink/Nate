@@ -4,13 +4,13 @@
 #include <algorithm>
 
 Object::Object()
-	: Type(),
+	: Record(),
 		mRecords(mTypes)
 {
 }
 
-Object::Object(const std::string& aType, const TypePtr& aBaseType)
-	: Type(aType, aBaseType),
+Object::Object(const std::string& aName, const TypePtr& aBaseType)
+	: Record(aName, aBaseType),
 		mRecords(mTypes)
 {
 }

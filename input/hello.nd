@@ -7,6 +7,7 @@ declare object Hello:
 
   property name,address is text
   property age is int
+  property data is Data
 
   define new Hello is Hello
 

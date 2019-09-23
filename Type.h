@@ -14,7 +14,7 @@ class Type : public WithFlags
 {
 public:
 	Type();
-	Type(const std::string& aType, const TypePtr& aBaseType = TypePtr());
+	Type(const std::string& aName, const TypePtr& aBaseType = TypePtr());
 	virtual ~Type() = default;
 	
 	virtual bool is(size_t aFlags) const override;
@@ -24,7 +24,11 @@ public:
 	virtual std::ostream& print(std::ostream& aStream) const;
 	bool isOfType(const std::string& aType) const;
 
-	const std::string& name() const;
+	virtual const std::string& name() const;
+	
+	void setTypeScopeName(const std::string& aTypeScopeName) { mTypeScopeName = aTypeScopeName; }
+	const std::string& typeScopeName() const { return mTypeScopeName; }
+
 	std::string        codeType() const;
 	int                bitSize() const;
 	const TypePtr&		 typenameType() const;
@@ -73,6 +77,7 @@ private:
 	int			    mBitSize = 4;
 	TypePtr	    mTypenameType;
 	TypePtr	    mBaseType;
+	std::string mTypeScopeName;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);
@@ -82,6 +87,7 @@ class Types
 public:
 	virtual TypePtr get(const std::string& aName);
 	virtual void add(const TypePtr& aType, const std::string& aName = "");
+	virtual bool contains(const TypePtr& aType);
 
 private:			
 	Container<TypePtr>       mTypes;			
@@ -91,5 +97,6 @@ class ITypesHolder
 {
 public:
 	virtual Types& types() = 0;
+	virtual std::string typeScopeName() const = 0;
 };
 typedef std::shared_ptr<ITypesHolder> ITypesHolderPtr;

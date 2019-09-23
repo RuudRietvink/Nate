@@ -9,81 +9,81 @@ Type::Type()
 {
 }
 
-Type::Type(const std::string& aType, const TypePtr& aBaseType)
-	: mName(aType)
+Type::Type(const std::string& aName, const TypePtr& aBaseType)
+	: mName(aName)
 {
 	setBaseType(aBaseType);
-	setType(aType);
+	setType(aName);
 }
 
-void Type::setType(const std::string& aType)
+void Type::setType(const std::string& aName)
 {
-	if (aType == "any")
+	if (aName == "any")
 	{
 		setFlag(Abstract, true);
 		setFlag(Any, true);
 	}
-	else if (aType == "number")
+	else if (aName == "number")
 	{
 		setFlag(Abstract, true);
 		setFlag(Number, true);
 		setFlag(Scalar, true);
 		setFlag(Comparable, true);
 	}
-	else if (aType == "integer")
+	else if (aName == "integer")
 	{
 		setFlag(Integer, true);
 		setFlag(SingleNr, true);
 	}
-	else if (aType == "real")
+	else if (aName == "real")
 	{
 		setFlag(Real, true);
 		setFlag(SingleNr, true);
 	}
-	else if (aType == "int-8")
+	else if (aName == "int-8")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "int8_t";
 		mBitSize = 8;
 	}
-	else if (aType == "int-16")
+	else if (aName == "int-16")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "int16_t";
 		mBitSize = 16;
 	}
-	else if (aType == "int-32")
+	else if (aName == "int-32")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "int32_t";
 		mBitSize = 32;
 	}
-	else if (aType == "int-64")
+	else if (aName == "int-64")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "int64_t";
 		mBitSize = 64;
 	}
-	else if (aType == "float-32")
+	else if (aName == "float-32")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "float";
 		mBitSize = 132;
 	}
-	else if (aType == "float-64")
+	else if (aName == "float-64")
 	{
 		setFlag(Abstract, false);
 		mCodeType = "double";
 		mBitSize = 164;
 	}
-	else if (aType == "fraction")
+	else if (aName == "fraction")
 	{
 		setFlag(Abstract, false);
 		setFlag(Fraction, true);
 		mCodeType = "Fraction";
 		mBitSize = 264;
 	}
-	else if (aType == "imaginary")
+	else if (aName == "imaginary")
 	{
 		setFlag(Abstract, false);
 		setFlag(Imaginary, true);
@@ -91,7 +91,7 @@ void Type::setType(const std::string& aType)
 		mCodeType = "";
 		mBitSize = 265;
 	}
-	else if (aType == "complex")
+	else if (aName == "complex")
 	{
 		setFlag(Abstract, false);
 		setFlag(Complex, true);
@@ -100,7 +100,7 @@ void Type::setType(const std::string& aType)
 		mCodeType = "Complex";
 		mBitSize = 267;
 	}
-	else if (aType == "boolean")
+	else if (aName == "boolean")
 	{
 		setFlag(Abstract, false);
 		setFlag(Boolean, true);
@@ -109,7 +109,7 @@ void Type::setType(const std::string& aType)
 		mCodeType = "bool";
 		mBitSize = 232;
 	}
-	else if (aType == "char")
+	else if (aName == "char")
 	{
 		setFlag(Abstract, false);
 		setFlag(Char, true);
@@ -117,7 +117,7 @@ void Type::setType(const std::string& aType)
 		mCodeType = "uint32_t";
 		mBitSize = 332;
 	}
-	else if (aType == "text")
+	else if (aName == "text")
 	{
 		setFlag(Abstract, false);
 		setFlag(Text, true);
@@ -127,43 +127,43 @@ void Type::setType(const std::string& aType)
 		mCodeType = "std::string";
 		mBitSize = 1000;
 	}
-	else if (aType == "record")
+	else if (aName == "record")
 	{
 		setFlag(Record, true);
 		setFlag(NeedsRef, true);
 		mCodeType = "struct";
 		mBitSize = 2000;
 	}
-	else if (aType == "object")
+	else if (aName == "object")
 	{
 		setFlag(Object, true);
 		setFlag(NeedsRef, true);
 		mCodeType = "";
 		mBitSize = 2500;
 	}
-	else if (aType == "container")
+	else if (aName == "container")
 	{
 		setFlag(IsContainer, true);
 		setFlag(NeedsRef, true);
 		setFlag(Template, true);
 		mBitSize = 3000;
 	}
-	else if (aType == "sequence-container")
+	else if (aName == "sequence-container")
 	{
 	}
-	else if (aType == "list")
+	else if (aName == "list")
 	{
 		setFlag(Abstract, false);
 		setFlag(List, true);
 		mCodeType = "std::list";
 	}
-	else if (aType == "output")
+	else if (aName == "output")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::ostream";
 	}
-	else if (aType == "file-output")
+	else if (aName == "file-output")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
@@ -349,4 +349,9 @@ TypePtr Types::get(const std::string& aName)
 void Types::add(const TypePtr& aType, const std::string& aName)
 {
 	mTypes.addData(aType, aName);
+}
+
+bool Types::contains(const TypePtr& aType)
+{
+	return mTypes.contains(aType);
 }

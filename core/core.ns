@@ -110,10 +110,10 @@ code define 65 \u increase ($val is number (out)):
 ///////////////////////////////////////////////
 
 code define 200 ($owner is any (owner)) 's ($prop is any (prop)) is (last):
-  $owner.$prop
+  $owner __ACCESS__ $prop
 
 code define 200 ($prop is any (prop)) of ($owner is any (owner)) is (same):
-  $owner.$prop
+  $owner __ACCESS__ $prop
 
 code define 65 stream-out ($val is number):
   $val

@@ -275,6 +275,14 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 					nodeCode = identifier->codeName();
 					nodeType = identifier->type();
 					result.flags.push_back(ExprNode::Output);
+					if (identifier->is(Identifier::Const))
+					{
+						result.flags.push_back(ExprNode::ConstExpr);
+					}
+					if (identifier->is(Identifier::Property))
+					{
+						result.flags.push_back(ExprNode::Property);
+					}
 				}
 			}
 			else
@@ -311,6 +319,11 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 													node.is(ExprNode::Literal))
 													? nodeCode 
 													: "(" + nodeCode + ")";
+
+			if (node.is(ExprNode::Property))
+			{
+				code += ".get()";
+			}
 
 			if (arg != mObjectArg)
 			{
@@ -382,6 +395,10 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	{
 		result.code = Core::replaceAll(result.code, "__RETURN__", result.type->codeType());
 	}
+	if (owner)
+	{
+		result.code = Core::replaceAll(result.code, "__ACCESS__", owner->is(Type::Object) ? "->" : ".");
+	}
 
 	return result;
 }
@@ -439,9 +456,9 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 		{
 			if (arg->is(Arg::Owner))
 			{
-				if (!nodeType->is(Type::Record))
+				if (!nodeType->is(Type::Record) && !nodeType->is(Type::Object))
 				{
-					error << "Not a record: " << nodeType->name();
+					error << "Not a object or record: " << nodeType->name();
 					result.matches = false;
 				}
 				else
@@ -449,7 +466,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					owner = dynamic_cast<Record*>(nodeType.get());
 					if (owner == nullptr)
 					{
-						error << "Not a record: " << nodeType->name();
+						error << "Not a object/record: " << nodeType->name();
 						result.matches = false;
 					}
 				}
@@ -523,7 +540,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					if (owner == nullptr)
 					{
-						error <<  "No record specified for property: " << nodeIter->text();
+						error <<  "No object/record specified for property: " << nodeIter->text();
 						result.matches = false;
 					}
 					else if (!owner->identifiers().get(nodeIter->text()))

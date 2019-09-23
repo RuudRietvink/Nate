@@ -15,16 +15,17 @@ public:
 	const std::string& name() const;
 	
 	// IIdentifiersHolder
-	Identifiers& identifiers() { return mIdentifiers; }
+	Identifiers& identifiers() override { return mIdentifiers; }
+	std::string typeScopeName() const override { return ""; }
 	
 	// ITypesHolder
-	Types& types() { return mTypes; }
+	Types& types() override { return mTypes; }
 
 	// IDefinesHolder
-	Defines& defines() { return mDefines; }
+	Defines& defines() override { return mDefines; }
 
 	// IRecordHolder
-	Records& records() { return mRecords; }
+	Records& records() override { return mRecords; }
 
 private:					
 	std::string					     mName;	

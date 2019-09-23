@@ -3,8 +3,8 @@
 
 #include "NateFunctions.h"
 
-Record::Record(const std::string& aName)
-	: Type("record"),
+Record::Record(const std::string& aName, const TypePtr& aBaseType)
+	: Type("record", aBaseType),
 	  mName(aName)
 {
 	setCodeType(toCodeName(aName));

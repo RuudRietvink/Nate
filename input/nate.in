@@ -37,6 +37,9 @@ define test:
   var hello := new Hello
   output hello "World"
   output hello
+  output hello's name
+  output address of hello
+  output hello's data's count
 
   scope:
     var out is file-output
@@ -418,16 +421,13 @@ define go to the (inout store is shop) and buy some more (inout bottles is int):
   
 define bottles song:
   var store is shop
-  var bottles is int-32
+  var bottles is int-32 := 15
   name of store := "Gall&Gall"
-
-  go to the store and buy some bottles
-  
-  loop:
+    
+  loop while bottles in store or on wall:
     loop while bottles of beer on the wall:
       take one of the bottles down and pass it around
     go to the store and buy some more bottles
-  while bottles in store or on wall:
   
 program:
   test
