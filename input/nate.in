@@ -37,9 +37,14 @@ define test:
   var hello := new Hello
   output hello "World"
   output hello
+  hello's name := "name"
+  hello's address := hello's name
+  hello's name, hello's address := "name/address"
   output hello's name
   output address of hello
   output hello's data's count
+  increase hello's data's count
+  increase hello's age
 
   scope:
     var out is file-output
@@ -428,7 +433,7 @@ define bottles song:
     loop while bottles of beer on the wall:
       take one of the bottles down and pass it around
     go to the store and buy some more bottles
-  
+ 
 program:
   test
   //bottles song

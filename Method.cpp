@@ -99,7 +99,7 @@ void Method::endDecl()
 {
 	mObjectArg = args().cend();
 	mOwnerArg = args().cend();
-	mPropArg = args().cend();
+	mMemberArg = args().cend();
 	mTemplateArg = args().cend();
 	mTypenameArg = args().cend();
 
@@ -118,9 +118,9 @@ void Method::endDecl()
 				mOwnerArg = arg;
 			}
 
-			if (arg->is(Arg::Prop))
+			if (arg->is(Arg::Member))
 			{
-				mPropArg = arg;
+				mMemberArg = arg;
 			}
 
 			if (arg->is(Arg::Template))
@@ -136,14 +136,24 @@ void Method::endDecl()
 	}
 }
 
+ExprNodesCIter Method::getOwnerNode(const ExprNodesCIter& aNodeIter) const
+{
+	auto ownerIter = aNodeIter;
+	if (mOwnerArg != args().cend())
+	{
+		auto dist = std::distance(args().cbegin(), mOwnerArg);
+		std::advance(ownerIter, dist);
+	}
+
+	return ownerIter;
+}
+
 Record* Method::getOwner(const ExprNodesCIter& aNodeIter) const
 {
 	Record* owner = nullptr;
 	if (mOwnerArg != args().cend())
 	{
-		auto ownerIter = aNodeIter;
-		auto dist = std::distance(args().cbegin(), mOwnerArg);
-		std::advance(ownerIter, dist);
+		auto ownerIter = getOwnerNode(aNodeIter);
 		owner = dynamic_cast<Record*>(ownerIter->type().get());
 	}
 
@@ -176,13 +186,13 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 	ExprNodesCIter nodeIter = aBegin;
 	for (const auto& arg : mArgs)
 	{
-		if (arg.is(Arg::Prop))
+		if (arg.is(Arg::Member))
 		{
 			Record* owner = getOwner(aBegin);
 			if (owner == nullptr || !owner->identifiers().get(nodeIter->text()))
 			{
 				if (aDebug) if (owner == nullptr) std::cerr << "No owner" << std::endl;
-				if (aDebug) std::cerr << "prop is not member of owner: " << nodeIter->text() << std::endl;
+				if (aDebug) std::cerr << "Field is not member of owner: " << nodeIter->text() << std::endl;
 				return false;
 			}
 		}
@@ -219,6 +229,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 	TypePtr highestType;
 	TypePtr lastType;
 	bool isConst = is(ConstExpr);
+	ExprNodesCIter ownerNode = getOwnerNode(aBegin);
 	Record* owner = getOwner(aBegin);
 	TypePtr templateType = getTemplateType(aBegin);
 	std::string nodeCode;
@@ -233,7 +244,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 		{
 			TypePtr nodeType = nodeIter->type();
 
-			if (arg.is(Arg::Prop) && owner != nullptr)
+			if (arg.is(Arg::Member) && owner != nullptr)
 			{
 				auto identifier = owner->identifiers().get(nodeIter->text());
 				if (identifier)
@@ -267,12 +278,20 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			const TypePtr& argType = arg->identifier()->type();
 			TypePtr nodeType = nodeIter->type();
 
-			if (arg->is(Arg::Prop) && owner != nullptr)
+			if (arg->is(Arg::Member) && owner != nullptr)
 			{
 				auto identifier = owner->identifiers().get(nodeIter->text());
 				if (identifier)
 				{
-					nodeCode = identifier->codeName();
+					if (ownerNode->is(ExprNode::Property))
+					{
+						nodeCode = "get()." + identifier->codeName();
+					}
+					else
+					{
+						nodeCode = identifier->codeName();
+					}
+
 					nodeType = identifier->type();
 					result.flags.push_back(ExprNode::Output);
 					if (identifier->is(Identifier::Const))
@@ -296,7 +315,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				node.castToType(templateType->typenameType());
 				nodeCode = node.code();
 			}
-			else if (!arg->is(Arg::Prop))
+			else if (!arg->is(Arg::Member))
 			{
 				if (arg->is(Arg::Same))
 				{
@@ -310,20 +329,15 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				{
 					node.castToType(argType);
 				}
-
+				
 				nodeCode = node.code();
 			}
 			
-			std::string code = (arg->is(Arg::Prop) || 
+			std::string code = (arg->is(Arg::Member) || 
 													arg->is(Arg::Out) ||
 													node.is(ExprNode::Literal))
 													? nodeCode 
 													: "(" + nodeCode + ")";
-
-			if (node.is(ExprNode::Property))
-			{
-				code += ".get()";
-			}
 
 			if (arg != mObjectArg)
 			{
@@ -357,6 +371,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 		}
 
 		result.origText.append(nodeIter->text());
+		result.origText.append(" ");
 
 		++nodeIter;
 	}
@@ -477,7 +492,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				templateType = nodeIter->type();
 				if (!templateType->typenameType())
 				{
-					error <<  "Not a generic: " << templateType->name();
+					error << "Not a generic: " << templateType->name();
 					result.matches = false;
 				}
 			}
@@ -510,42 +525,47 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					firstType = nodeType;
 				}
-
-				if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))
+				
+				if (!isCodeMethod() && arg->is(Arg::Out) && nodeIter->is(ExprNode::Property))
 				{				
-					error <<  "Not a comparible: " << nodeIter->text() << " for " << arg->identifier()->name();
+					error << "Property may not be output: " << nodeIter->text();
+					result.matches = false;
+				}
+				else if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))
+				{				
+					error << "Not a comparible: " << nodeIter->text() << " for " << arg->identifier()->name();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::Same) && 
 								 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) 
 														== Type::CompareResult::No)
 				{
-					error <<  "1 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									  " must be of type " << firstType->name();
+					error << "1 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+									 " must be of type " << firstType->name();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::CompHigh) && 
 								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
 														== Type::CompareResult::No)
 				{
-					error <<  "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									  " must be compatible with type " << highestType->name();
+					error << "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+									 " must be compatible with type " << highestType->name();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::Owner))
 				{
 					// above code
 				}
-				else if (arg->is(Arg::Prop))
+				else if (arg->is(Arg::Member))
 				{
 					if (owner == nullptr)
 					{
-						error <<  "No object/record specified for property: " << nodeIter->text();
+						error << "No object/record specified for member: " << nodeIter->text();
 						result.matches = false;
 					}
 					else if (!owner->identifiers().get(nodeIter->text()))
 					{
-						error <<  "Not a property of '" << owner->name() << "': " << nodeIter->text();
+						error << "Not a member of '" << owner->name() << "': " << nodeIter->text();
 						result.matches = false;
 					}
 				}
@@ -557,14 +577,14 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					if (!templateType)
 					{
-						error <<  "No generic supplied for : " << nodeType->name();
+						error << "No generic supplied for : " << nodeType->name();
 						result.matches = false;
 					}
 					else if ((comp = templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch)) 
 															== Type::CompareResult::No)
 					{
-						error <<  "3 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									    " must be of type " << templateType->typenameType()->name();
+						error << "3 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+									   " must be of type " << templateType->typenameType()->name();
 						result.matches = false;
 					}
 				}
@@ -574,9 +594,10 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				{
 					if (args().size() > 1)
 					{
-						error <<  "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-											" must be of type " << argType->name();
+						error << "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+										" must be of type " << argType->name();
 					}
+
 					result.matches = false;
 				}
 

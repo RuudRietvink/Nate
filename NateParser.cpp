@@ -782,7 +782,6 @@ TypePtr NateParser::getType(const std::string& aName, ITypesHolder* aTypesHolder
 void NateParser::addType(TypePtr aType, const std::string& aName)
 {
 	aType->setTypeScopeName(typeScopeName());
-	if (!aName.empty()) std::cerr << aName << " " << typeScopeName() << " " << aType->typeScopeName() << std::endl;
 	curTypesHolder()->types().add(aType, aName);
 }
 
@@ -957,8 +956,11 @@ void NateParser::checkIfBetterMatch(const Method& aMethod,
 									<< std::endl;
 			}
 
-			aMatch.matchedMethod = &aMethod;
-			aMatch.matchResult = matchResult;
+			if (aMatch.matchedMethod == nullptr || !matchResult.error.empty())
+			{
+				aMatch.matchedMethod = &aMethod;
+				aMatch.matchResult = matchResult;
+			}
 		}
 	}
 }
@@ -1471,11 +1473,15 @@ void NateParser::codeEndImplObject()
 		const auto& method = propMethod.second;
 		auto scopeName = id->type()->typeScopeName();
 		std::string propType = (id->type()->is(Type::NeedsRef))
-											     ? "const " + scopeName + id->type()->codeType() + "&"
+											     ? scopeName + id->type()->codeType() + "&"
 			                     : id->type()->codeType();
 		if (method == "get")
 		{
 			*mOut << in() << "PROP_GET(" << name << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		}
+		else if (method == "set")
+		{
+			*mOut << in() << "PROP_SET(" << name << ", " << propType << ", " << id->codeName() << ")" << std::endl;
 		}
 	}
 
@@ -1531,12 +1537,28 @@ void NateParser::declareProperties(bool aReadonly,
 		id->setFlag(Identifier::Property);
 		addIdentifier(id);
 
-		std::string propType = (id->type()->is(Type::NeedsRef))
-											     ? "const " + id->type()->codeType() + "&"
-			                     : id->type()->codeType();
-		std::string declType = id->type()->codeType();
-
-		*mOut << in() << "PROP_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		TypePtr idType = id->type();
+		std::string propType = (idType->is(Type::NeedsRef))
+											     ? idType->codeType() + "&"
+			                     : idType->codeType();
+		std::string declType = idType->codeType();
+		
+		if (idType->is(Type::Number))
+		{
+			*mOut << in() << "PROP_NUMBER_(" << propType << ", " << id->codeName() << ")" << std::endl;
+		}
+		else if (propType == declType)
+		{
+			*mOut << in() << "PROP_(" << propType << ", " << id->codeName() << ")" << std::endl;
+		}
+		else if (idType->is(Type::Record))
+		{
+			*mOut << in() << "PROP_RECORD_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		}
+		else
+		{
+			*mOut << in() << "PROP_REF_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+		}
 		curObject()->propertyMethods().insert(std::make_pair(id, "get"));
 		curObject()->propertyMethods().insert(std::make_pair(id, "set"));
 	}

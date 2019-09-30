@@ -22,10 +22,10 @@ public:
 		{}
 	};
 
-	PROP_(std::string, const std::string&, name)
-	PROP_(std::string, const std::string&, address)
-	PROP_(int32_t, int32_t, age)
-	PROP_(Data, const Data&, data)
+	PROP_REF_(std::string, std::string&, name)
+	PROP_REF_(std::string, std::string&, address)
+	PROP_NUMBER_(int32_t, age)
+	PROP_RECORD_(Data, Data&, data)
 	static std::shared_ptr<Hello> new_Hello_();
 	virtual std::string _E_Hello__E_text_(const std::string& world) const;
 	static std::string hi__E_Hello_(const std::shared_ptr<Hello>& other);

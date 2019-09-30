@@ -45,9 +45,9 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	{
 		setFlag(Owner, true);
 	}
-	else if (aFlag == "prop")
+	else if (aFlag == "member")
 	{
-		setFlag(Prop, true);
+		setFlag(Member, true);
 	}
 	else if (aFlag == "template")
 	{
@@ -87,7 +87,7 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	if (aValue.is(Arg::Out)) aStream << ",Out";
 	if (aValue.is(Arg::InOut)) aStream << ",InOut";
 	if (aValue.is(Arg::Owner)) aStream << ",Owner";
-	if (aValue.is(Arg::Prop)) aStream << ",Prop";
+	if (aValue.is(Arg::Member)) aStream << ",Member";
 	if (aValue.is(Arg::Exact)) aStream << ",Exact";
 	if (aValue.is(Arg::Typename)) aStream << ",Typename";
 	if (aValue.is(Arg::Template)) aStream << ",Template";

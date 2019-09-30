@@ -16,6 +16,7 @@ public:
 	std::string toCodeWord(const std::string& aWord) const override;
 	  
 private:
+	bool isCodeMethod() const override { return true; }
 };
 std::ostream& operator<<(std::ostream& aStream, const Code& aValue);
 

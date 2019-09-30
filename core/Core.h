@@ -16,19 +16,67 @@
 extern std::shared_ptr<std::ostream> output;
 extern std::shared_ptr<std::ostream> error;
 
-#define PROP_(DECL_TYPE, TYPE, NAME) \
+#define PROP_REF_(DECL_TYPE, TYPE, NAME) \
 	struct T_ ## NAME \
 	{ \
-		TYPE get() const; \
-		TYPE set(TYPE value); \
-		operator TYPE () const { return get(); } \
-		TYPE operator = (TYPE value) { return set(value); } \
+		const TYPE get(int __a = 0) const; \
+		TYPE get() { return const_cast<TYPE>(const_cast<T_ ## NAME*>(this)->get(1)); } \
+		void set(const TYPE value); \
+		operator const TYPE () const { return get(); } \
+		const TYPE operator = (const TYPE value) { set(value); return value; } \
+		friend std::ostream& operator<<(std::ostream& aStream, const T_ ## NAME& aValue) { aStream << aValue.get(); return aStream; } \
   private: \
     DECL_TYPE _value; \
 	} NAME;
 
+#define PROP_RECORD_(DECL_TYPE, TYPE, NAME) \
+	struct T_ ## NAME \
+	{ \
+		const TYPE get(int __a = 0) const; \
+		TYPE get() { return const_cast<TYPE>(const_cast<T_ ## NAME*>(this)->get(1)); } \
+		void set(const TYPE value); \
+		operator const TYPE () const { return get(); } \
+		const TYPE operator = (const TYPE value) { set(value); return value; } \
+  private: \
+    DECL_TYPE _value; \
+	} NAME;
+
+#define PROP_(TYPE, NAME) \
+	struct T_ ## NAME \
+	{ \
+		const TYPE get(int __a = 0) const; \
+		TYPE get() { return const_cast<T_ ## NAME*>(this)->get(1); } \
+		void set(const TYPE value); \
+		operator const TYPE () const { return get(); } \
+		const TYPE operator = (const TYPE value) { set(value); return value; } \
+		friend std::ostream& operator<<(std::ostream& aStream, const T_ ## NAME& aValue) { aStream << aValue.get(); return aStream; } \
+  private: \
+    TYPE _value; \
+	} NAME;
+
+#define PROP_NUMBER_(TYPE, NAME) \
+	struct T_ ## NAME \
+	{ \
+		const TYPE get(int __a = 0) const; \
+		TYPE get() { return const_cast<T_ ## NAME*>(this)->get(1); } \
+		void set(const TYPE value); \
+		operator const TYPE () const { return get(); } \
+		const TYPE operator = (const TYPE value) { set(value); return value; } \
+		TYPE operator ++ () { set(_value + 1); return get(); } \
+		TYPE operator -- () { set(_value - 1); return get(); } \
+		TYPE operator ++ (int) { TYPE temp = get(); set(_value + 1); return temp; } \
+		TYPE operator -- (int) { TYPE temp = get(); set(_value - 1); return temp; } \
+		T_ ## NAME& operator += (TYPE aValue) { set(_value + aValue); return *this; } \
+		T_ ## NAME& operator -= (TYPE aValue) { set(_value - aValue); return *this; } \
+		friend std::ostream& operator<<(std::ostream& aStream, const T_ ## NAME& aValue) { aStream << aValue.get(); return aStream; } \
+  private: \
+    TYPE _value; \
+	} NAME;
+
 #define PROP_GET(OBJECT, TYPE, NAME) \
-	TYPE OBJECT ## :: ## T_ ## NAME ::get() const { return _value; }
+	const TYPE OBJECT ## :: ## T_ ## NAME ::get(int) const { return _value; }
+#define PROP_SET(OBJECT, TYPE, NAME) \
+	void OBJECT ## :: ## T_ ## NAME ::set(const TYPE value) { _value = value; }
 //////////////////////////
 
 namespace Core

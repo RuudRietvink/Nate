@@ -56,10 +56,12 @@ public:
 	Arg&                curArg();
 	const std::string&	pattern() const;
 	const std::string&  signature() const;
+	ExprNodesCIter      getOwnerNode(const ExprNodesCIter& aNodeIter) const;
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
 	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
 	bool						    isStatic() const;
 	bool						    isObjectMethod() const;
+	virtual bool		    isCodeMethod() const { return false; }
 		
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
@@ -90,7 +92,7 @@ private:
 	const Object*        mObject = nullptr;
 	ArgConstIterator		 mObjectArg;
 	ArgConstIterator		 mOwnerArg;
-	ArgConstIterator		 mPropArg;
+	ArgConstIterator		 mMemberArg;
 	ArgConstIterator		 mTemplateArg;
 	ArgConstIterator		 mTypenameArg;
 };

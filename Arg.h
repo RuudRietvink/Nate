@@ -25,7 +25,7 @@ public:
 	static const size_t Out				= 5;
 	static const size_t InOut			= 6;
 	static const size_t Owner			= 7;
-	static const size_t Prop			= 8;
+	static const size_t Member  	= 8;
 	static const size_t Template	= 9;
 	static const size_t Typename	= 10;
 
