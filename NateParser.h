@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "NateFunctions.h"
+#include "NateParser.tab.h"
 #include "Code.h"
 #include "Define.h"
 #include "Identifier.h"
@@ -28,6 +29,8 @@ class ExprNode;
 class NateParser
 {
 public:
+	static const bool InitializeVariables = true;
+
 	struct ParseData
 	{
 		bool outputEnd = false;
@@ -41,6 +44,8 @@ public:
 		bool inObject = false;
 		bool objectMe = false;
 		std::stack<RecordPtr> curRecord;
+		bool assignExpr = false;
+		IdentifierPtr propId;
 	};
 
 	enum class FileType
@@ -103,6 +108,8 @@ public:
 	void declareProperties(bool aReadonly,
 											   const std::vector<std::string>& aNames,
 												 const TypePtr& aType);
+	void defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
+	void endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 
 	void addCode();
 	void endCode();
@@ -111,57 +118,59 @@ public:
 	void addDefine(bool aInObject);
 	void declareDefine(bool aIsDecl = false);
 	void endDefine();
-	Define& curDefine();
+	Define* curDefine();
 
 	Method& curMethod();
 	void addArgWord(const std::string& aWord);
 
-	void codeStartProgram();
-	void codeEndProgram();
+	void codeStartProgram(const yy::parser::location_type& aLocation);
+	void codeEndProgram(const yy::parser::location_type& aLocation);
 	void codeStartScope();
 	void codeEndScope();
 	void codeCodeInclude();
 	void codeDeclareLocalIdentifier(bool aExtern,
 																	const IdentifierPtr& aIdentifier,
-																	bool initializeVariables = true);
-	void codeDeclareLocalIdentifiers(bool aConst,
+																	bool initializeVariables,
+																	const yy::parser::location_type& aLocation = yy::parser::location_type(yy::position(), yy::position()));
+	void codeDeclareLocalIdentifiers(bool aIsConst,
 																	 const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
 																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeVariables = true);
-	void codeStartRecord(const RecordPtr& aRecord);
-	void codeDeclareRecordIdentifiers(bool aConst,
+																	 bool initializeVariables);
+	void codeStartRecord(const RecordPtr& aRecord,
+											 const yy::parser::location_type& aLocation);
+	void codeDeclareRecordIdentifiers(bool aIsConst,
 																	  const std::vector<std::string>& aNames,
 																  	const TypePtr& aType,
 																	  const std::vector<Expr>& aInitValues);
-	void codeEndRecord();
+	void codeEndRecord(const yy::parser::location_type& aLocation);
 	void codeStartDeclObject();
 	void codeEndDeclObject();
 	void codeStartImplObject();
 	void codeEndImplObject();
-	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue);
+	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-	void codeOutputStart(const std::string& aStream);
+	void codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
 	void codeOutput(const std::string& aString);
 	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
-	void codeWriteStart(const Expr& aValue);
-	void codeInputStart(const std::string& aStream);
+	void codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
 	void codeInputSpace();
 	void codeInputNoSpace();
 	void codeInput(const Expr& aValue);
 	void codeInputEnd(bool aAddEnd = true);
-	void codeIf(const Expr& aValue);
+	void codeIf(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeElseIf();
-	void codeElse();
+	void codeElse(const yy::parser::location_type& aLocation);
 	void codeEndIf();
-	void codeIfIs(const Expr& aValue, const std::string& idName);
-	void codeIs(const Expr& aValue, const Expr& aIfExpr);
-	void codeElseIs();
+	void codeIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);
+	void codeIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
+	void codeElseIs(const yy::parser::location_type& aLocation);
 	void codeBeginIs();
-	void codeEndIs();
-	void codeEndIfIs();
-  void codeInitLoop();
+	void codeEndIs(const yy::parser::location_type& aLocation);
+	void codeEndIfIs(const yy::parser::location_type& aLocation);
+  void codeInitLoop(const yy::parser::location_type& aLocation);
   void codeStartLoop();
   void codeStartForStepLoop(const std::string& aId, 
 														const TypePtr& aType, 
@@ -172,11 +181,11 @@ public:
   void codeStartForRangeLoop(const std::string& aId, 
 														 const Expr& aRange);
   void codeEndLoop();
-  void codeLoopWhile(const Expr& aExpr);
-  void codeReturn(const Expr& aValue);
-  void codeExpression(const Expr& aExpr);
+  void codeLoopWhile(const Expr& aExpr, const yy::parser::location_type& aLocation);
+  void codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
+  void codeExpression(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, bool aDebug = false);
-	void printLineNr();
+	void printLineNr(const yy::parser::location_type& aLocation);
 
 private:
 	void checkIdentifierName(const std::string& aName);
@@ -230,6 +239,7 @@ private:
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
+	Define*                     mCurDefine = nullptr;
 	std::ostream*               mSavedOut = nullptr;
 	std::list<IIdentifiersHolderPtr> mIdentifiersHolders;
 	std::list<IRecordsHolderPtr>mRecordsHolders;

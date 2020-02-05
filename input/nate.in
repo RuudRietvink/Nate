@@ -5,7 +5,7 @@ import Text
 import List
 import File-Output
 
-include "nate.define"
+//include "nate.define"
 import Hello
 
 // √⌊⌋⌈⌉|⏐
@@ -17,8 +17,21 @@ import Hello
 // ‾―   ₑ 
 
 //          3ₑπ𝑖²ᵉ   
-// z :=   ――――――――― + 3      ̲3x̲a̲
-//         √4x²^3‾           √̅4̅x
+// z :=   ――――――――― + 3   
+//         √(4x²^3)  
+
+//          3ₑπ𝑖²ᵉ   
+// z :=   ――――――――― + 3   
+//         √4x²^3‾  
+
+//          3ₑπ𝑖²ᵉ   
+// z :=   ――=====―― + 3   
+//         √⅞x²^3 
+
+//          3ₑπ𝑖²ᵉ   
+// z :=   ――――――――― + 3  
+//          _____
+//         √4x²^3
 
 define test:
   
@@ -26,7 +39,7 @@ define test:
   
           /* comment 
       line */
-  include "nate.import"
+  //include "nate.import"
   /*** comment /*
   */
     /* 
@@ -34,17 +47,18 @@ define test:
   */ */
     // // comment  
   
+  var temp is text
   var hello := new Hello
   output hello "World"
   output hello
   hello's name := "name"
   hello's address := hello's name
-  hello's name, hello's address := "name/address"
+  hello's name, temp, hello's address := "name/address"
   output hello's name
   output address of hello
   output hello's data's count
   increase hello's data's count
-  increase hello's age
+  /*
 
   scope:
     var out is file-output
@@ -53,8 +67,8 @@ define test:
     open out for write to file "d:\\uit"
     out2 := out
     output
-    if out is opened:
-      output "Inside:", out is ok, out is opened
+    if out is opened:								//~	else:
+      output "Inside:", out is ok, out is opened	//~	  error "out not opened"
       write to out2: "Hello, planet",
       write: 𝑒^π𝑖@"[8.1]",
       write to output: "Hi",
@@ -433,7 +447,8 @@ define bottles song:
     loop while bottles of beer on the wall:
       take one of the bottles down and pass it around
     go to the store and buy some more bottles
- 
+ */
 program:
+  output "duh"
   test
   //bottles song

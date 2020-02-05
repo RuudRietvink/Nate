@@ -388,6 +388,8 @@ include\h*\".*\"  s(); includeFile();
 \bvar\b			  return yy::parser::make_VAR(location());
 \bproperty\b  |
 \bprop\b      return yy::parser::make_PROP(location());
+\bget\b       return yy::parser::make_GET(location());
+\bset\b       return yy::parser::make_SET(location());
 \bconstant\b  |
 \bconst\b		  return yy::parser::make_CONST(location());
 \bdeclare\b	  return yy::parser::make_DECLARE(location());

@@ -18,12 +18,17 @@ Identifier::Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHo
 {
 }
 
+bool Identifier::isNameMe(const std::string& aName)
+{
+	return aName == "me";
+}
+
 const std::string&		Identifier::name()      const { return mName; }
 const std::string&		Identifier::codeName()  const { return mCodeName; }
 const Expr&						Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
 std::weak_ptr<IIdentifiersHolder>	Identifier::identifiersHolder() const { return mIdentifiersHolder; }
-bool					 		    Identifier::isObjectMe()const { return mName == "me"; }
+bool					 		    Identifier::isObjectMe()const { return isNameMe(mName); }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 {

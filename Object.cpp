@@ -21,6 +21,34 @@ std::stringstream& Object::getNormalOut()    { return mNormalOut; }
 ObjectPtr          Object::getBase()         { return mBase; }
 void Object::setBase(const ObjectPtr& aBase) { mBase = aBase; }
 
+Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aPropType) const
+{
+	PropState result = PropState::Unknown;
+
+	auto iter = mPropertyMethods.find(anId);
+	if (iter != mPropertyMethods.cend())
+	{
+		result = iter->second.states[(int)aPropType];
+	}
+
+	return result;
+}
+
+void Object::setPropState(const IdentifierPtr& anId, PropType aPropType, PropState aPropState)
+{
+	mPropertyMethods[anId].states[(int)aPropType] = aPropState;
+}
+
+bool Object::isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const
+{
+	return getPropState(anId, aPropType) != PropState::Unknown;
+}
+
+bool Object::isPropDefined(const IdentifierPtr& anId, PropType aPropType) const
+{
+	return getPropState(anId, aPropType) == PropState::Defined;
+}
+
 std::ostream& operator<<(std::ostream& aStream, const Object& aValue)
 {
 	aStream << "Object(" 

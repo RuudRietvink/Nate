@@ -5,6 +5,11 @@ implement object Hello:
     construct me
     return me
     
+  define get ($me is Hello) age is int-32:
+    var hi := 34
+    output "Test", 
+    return me's age
+    
   define greetings is text:
     return "Hello"
     

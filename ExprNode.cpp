@@ -116,6 +116,7 @@ std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 	if (aValue.is(ExprNode::ConstExpr)) aStream << ",ConstExpr";
 	if (aValue.is(ExprNode::Default)) aStream << ",Default";
 	if (aValue.is(ExprNode::Property)) aStream << ",Property";
+	if (aValue.is(ExprNode::Identifier)) aStream << ",Identifier";
 	aStream << ")";
 	return aStream;
 }

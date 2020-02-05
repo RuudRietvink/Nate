@@ -7,25 +7,28 @@ class Hello: public BaseObject
 private:
   class __impl;
   __impl* _impl;
+  friend class __impl;
 public:
   Hello();
   virtual ~Hello();
-#line 5 ".\\Hello.nd"
+#line 4 ".\\Hello.nd"
 	struct Data
 	{
-#line 5
+#line 1
 	std::string greet;
+#line 1
 	int32_t count;
 	Data()
 		: greet()
 		, count()
 		{}
+#line 8
 	};
 
-	PROP_REF_(std::string, std::string&, name)
-	PROP_REF_(std::string, std::string&, address)
-	PROP_NUMBER_(int32_t, age)
-	PROP_RECORD_(Data, Data&, data)
+	PROP_(std::string, std::string&, name)
+	PROP_(std::string, std::string&, address)
+	PROP_NUMBER_(int32_t, int32_t, age)
+	PROP_(Data, Data&, data)
 	static std::shared_ptr<Hello> new_Hello_();
 	virtual std::string _E_Hello__E_text_(const std::string& world) const;
 	static std::string hi__E_Hello_(const std::shared_ptr<Hello>& other);

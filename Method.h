@@ -13,6 +13,7 @@
 class Identifier;
 class Record;
 class Object;
+class Define;
 
 class Method : public WithFlags
 {
@@ -38,7 +39,7 @@ public:
 
 	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual EvaluateResult evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual EvaluateResult evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;

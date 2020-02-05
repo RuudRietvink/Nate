@@ -5,6 +5,7 @@ class BaseObject
 private:
   class __impl;
   __impl* _impl;
+  friend class __impl;
 public:
   BaseObject();
   virtual ~BaseObject();

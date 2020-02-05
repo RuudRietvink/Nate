@@ -55,6 +55,8 @@
 %token SCOPE "scope"
 %token VAR "var"
 %token PROP "property"
+%token GET "get"
+%token SET "set"
 %token CONST "const"
 %token DECLARE "declare"
 %token IMPLEMENT "implement"
@@ -163,11 +165,11 @@ end:
 
 program-statement:
 	  PROGRAM col 
-		  { nate.codeStartProgram(); }
+		  { nate.codeStartProgram(@col); }
 	  begin 
 		  statement-list
 	  end
-		  { nate.codeEndProgram(); }
+		  { nate.codeEndProgram(@end); }
   ;
   
 statement-list:
@@ -220,8 +222,8 @@ declare-object-statement:
 	  end
 		  { 
         nate.data.inObject = false;
-			  nate.endObject();
         nate.codeEndDeclObject();
+			  nate.endObject();
 		  }
   ;
   
@@ -232,7 +234,7 @@ declare-object-content-statement-list:
 
 declare-object-content-statement:
 	  record-statement
-	| property-statement
+	| property-declare-statement
   | define-decl
 			{ 
 			  lexer.popState();
@@ -294,6 +296,7 @@ implement-object-content-statement-list:
 
 implement-object-content-statement:
 	  record-statement
+	| property-define-statement
   | define-statement
   | EOS
   ;
@@ -324,13 +327,61 @@ define-statement:
 		  }
   ;
   
-property-statement:
+property-declare-statement:
 	  PROP 
 		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
 		  { lexer.popState(); }
 	  is-type
 		  { nate.declareProperties(false, $[id-list], $[is-type]); }
+  ;
+  
+property-define-statement:
+	  PROP id COL
+      { nate.data.propId = nate.getIdentifier($id, nate.curIdentifiersHolder().get()); }
+	  begin
+      property-get-set-list
+    end
+  ;
+
+property-get-set-list:
+    property-get-set-code
+  | property-get-set-list property-get-set-code
+  ;
+  
+property-get-set-code:
+    property-get-code
+  | property-set-code
+  ;
+
+property-get-code:
+    GET COL
+		  { 
+			  lexer.pushState(Lexer::DEFINE);
+			  nate.defineProp(nate.data.propId, Object::PropType::Get);
+		  }
+	  begin
+		  statement-list
+	  end
+		  { 
+			  lexer.popState(); 
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Get);
+		  }
+  ;
+  
+property-set-code:
+    SET COL
+		  { 
+			  lexer.pushState(Lexer::DEFINE);
+			  nate.defineProp(nate.data.propId, Object::PropType::Set);
+		  }
+	  begin
+		  statement-list
+	  end
+		  { 
+			  lexer.popState(); 
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Set);
+		  }
   ;
 
 code-statement:
@@ -544,7 +595,10 @@ var-statement:
 	  id-list 
 		  { lexer.popState(); }
 	  optional-is-type var-init-assign
-		  { nate.codeDeclareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign]); }
+		  { 
+        nate.codeDeclareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign],
+                                         NateParser::InitializeVariables);
+      }
   ;
 
 var:
@@ -640,12 +694,12 @@ record-statement:
         }
         RecordPtr record = std::make_shared<Record>($id);
         nate.curRecordsHolder()->records().add(record, $id);
-        nate.codeStartRecord(record);
+        nate.codeStartRecord(record, @col);
       }
     begin
       record-var-list
     end
-      { nate.codeEndRecord(); }
+      { nate.codeEndRecord(@end); }
   ;
 
 record-var-list:
@@ -665,7 +719,7 @@ record-var:
 
 assign-statement:
 	  expr-list ASSIGN expr
-		  { nate.codeAssign($[expr-list], $expr); }
+		  { nate.codeAssign($[expr-list], $expr, @expr); }
   ;
 
 expr-list:
@@ -681,7 +735,7 @@ expr-list:
 output-statement:
 	  OUTPUT 
 		  { 
-        nate.codeOutputStart("std::cout");
+        nate.codeOutputStart("std::cout", @OUTPUT);
       }
 	  output-list
 		  { 
@@ -692,7 +746,7 @@ output-statement:
 error-statement:
 	  ERROR 
 		  { 
-        nate.codeOutputStart("std::cerr");
+        nate.codeOutputStart("std::cerr", @ERROR);
       }
 	  output-list
 		  { 
@@ -703,7 +757,7 @@ error-statement:
 write-statement:
 	  WRITE write-sink COL
       {
-        nate.codeWriteStart($[write-sink]);
+        nate.codeWriteStart($[write-sink], @WRITE);
         if (!$[write-sink].isEmpty())
         {
           nate.data.prevWriteSink = $[write-sink].code();
@@ -768,7 +822,7 @@ output-sep:
 input-statement:
 	  INPUT 
 		  { 
-        nate.codeInputStart("std::cin");
+        nate.codeInputStart("std::cin", @INPUT);
       }
 	  input-list
 		  { 
@@ -825,7 +879,7 @@ if-rest:
 
 if-then:
 	  begin 
-		  { nate.codeIf(nate.data.ifExpr.top()); }
+		  { nate.codeIf(nate.data.ifExpr.top(), @begin); }
 		  statement-list
 		  { nate.codeEndIf(); }
 	  end
@@ -838,7 +892,7 @@ else:
 	  	{ nate.codeElseIf(); }
 		  if-statement
   | ELSE col 
-		  { nate.codeElse(); }
+		  { nate.codeElse(@ELSE); }
     begin
 		statement-list
 		  { nate.codeEndIf(); }
@@ -847,10 +901,10 @@ else:
 
 if-is:
     IS 
-	  	{ nate.codeIfIs(nate.data.ifExpr.top(), nate.data.ifId.top()); }
+	  	{ nate.codeIfIs(nate.data.ifExpr.top(), nate.data.ifId.top(), @IS); }
     is-rest
     is-else
-	  	{ nate.codeEndIfIs(); }
+	  	{ nate.codeEndIfIs(@[is-else]); }
   ;
   
 is-rest:
@@ -869,7 +923,7 @@ is-block:
   
 is-part:
     expr col
-	  	{ nate.codeIs($expr, nate.data.ifExpr.top()); }
+	  	{ nate.codeIs($expr, nate.data.ifExpr.top(), @expr); }
     is-part-block
   ;
 
@@ -877,27 +931,27 @@ is-part-block:
     %empty
   | begin 
       { nate.codeBeginIs(); }
-    statement-list 
-      { nate.codeEndIs(); }
+      statement-list 
     end
+      { nate.codeEndIs(@end); }
   ;
   
 is-else:
     %empty
   | ELSE col 
-	  	{ nate.codeElseIs(); }
+	  	{ nate.codeElseIs(@ELSE); }
     begin 
       { nate.codeBeginIs(); }
-    statement-list 
-      { nate.codeEndIs(); }
+      statement-list 
     end
+      { nate.codeEndIs(@end); }
   ;
 
 loop-statement:
 	  LOOP 
 		  { 
         lexer.pushState(Lexer::LOOP);
-        nate.codeInitLoop();
+        nate.codeInitLoop(@LOOP);
       }
 	  for-part
 	  opt-while 
@@ -931,13 +985,13 @@ while-loop-statement:
 	  WHILE expr col
 		  { 
 		    nate.codeStartLoop();
-			  nate.codeLoopWhile($expr);
+			  nate.codeLoopWhile($expr, @WHILE);
 		  }
   ;
   
 while-statement:
 	  WHILE expr col
-		  { nate.codeLoopWhile($expr); }
+		  { nate.codeLoopWhile($expr, @WHILE); }
   ;
 
 opt-while:
@@ -1005,13 +1059,13 @@ for-range:
 
 return-statement:
     RETURN expr
-      { nate.codeReturn($2); }
+      { nate.codeReturn($2, @RETURN); }
   ;
   
 expr-statement:
     expr
       { 
-        nate.codeExpression($expr);
+        nate.codeExpression($expr, @expr);
         if ($expr.type() && !$expr.type()->empty())
         {
           nate.warning("Ignoring result of expression");
@@ -1130,6 +1184,7 @@ expr-non-word:
         lexer.noSpace();
         $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
         $$.node().setFlag(ExprNode::Property, identifier->is(Identifier::Property));
+        $$.node().setFlag(ExprNode::Identifier);
 		  } 
   | OPENPAR 
       { 

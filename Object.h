@@ -36,16 +36,40 @@ public:
 
 	ObjectPtr getBase();
 	void setBase(const ObjectPtr& aBase);
-	std::multimap<IdentifierPtr, std::string>& propertyMethods() { return mPropertyMethods; }
+	
+	enum class PropType
+	{
+		Get = 0,
+		Set = 1
+	};
+
+	enum class PropState
+	{
+		Unknown,
+		Declared,
+		Defined
+	};
+
+	struct PropData
+	{
+		PropState states[2];
+	};
+	
+	std::map<IdentifierPtr, PropData>& propertyMethods() { return mPropertyMethods; }
+	
+	PropState getPropState(const IdentifierPtr& anId, PropType aPropType) const;
+	void     setPropState(const IdentifierPtr& anId, PropType aPropType, PropState aPropState);
+	bool     isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;
+	bool     isPropDefined(const IdentifierPtr& anId, PropType aPropType) const;
 
 private:		
-	Types                    mTypes;			
-	Records                  mRecords;						
-	Defines                  mDefines;
-	ObjectPtr                mBase;
-	std::stringstream        mImplOut;			
-	std::stringstream        mNormalOut;	
-	std::multimap<IdentifierPtr, std::string> mPropertyMethods;
+	Types															mTypes;			
+	Records														mRecords;						
+	Defines														mDefines;
+	ObjectPtr													mBase;
+	std::stringstream									mImplOut;			
+	std::stringstream									mNormalOut;	
+	std::map<IdentifierPtr, PropData>	mPropertyMethods;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);

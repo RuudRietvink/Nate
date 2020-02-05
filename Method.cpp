@@ -222,7 +222,7 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 }
 
 Method::EvaluateResult
-Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
 	EvaluateResult result;
 	TypePtr firstType;
@@ -283,9 +283,9 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				auto identifier = owner->identifiers().get(nodeIter->text());
 				if (identifier)
 				{
-					if (ownerNode->is(ExprNode::Property))
+					if (identifier->is(Identifier::Property))
 					{
-						nodeCode = "get()." + identifier->codeName();
+						nodeCode = identifier->codeName() + "_get()";
 					}
 					else
 					{
@@ -335,18 +335,31 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 			
 			std::string code = (arg->is(Arg::Member) || 
 													arg->is(Arg::Out) ||
-													node.is(ExprNode::Literal))
+													node.is(ExprNode::Literal) ||
+													node.is(ExprNode::Property)||
+													node.is(ExprNode::Identifier))
 													? nodeCode 
 													: "(" + nodeCode + ")";
-
-			if (arg != mObjectArg)
-			{
-				result.code = Core::replaceAll(result.code, "${" + arg->identifier()->name() + "}", code);
 			
+			if (arg != mObjectArg) 
+			{
+				if (aCurDefine && aCurDefine->isObjectMethod() && Identifier::isNameMe(nodeCode))
+				{
+					if (aCurDefine->is(Method::Undeclared))
+					{
+						code = "me";
+					}
+					else
+					{
+						code = "this";
+					}
+				}
+
+				result.code = Core::replaceAll(result.code, "${" + arg->identifier()->name() + "}", code);
 			}
 			else
 			{				
-				if (nodeCode == "me")
+				if (Identifier::isNameMe(nodeCode))
 				{
 					if (is(Method::Undeclared))
 					{
@@ -369,7 +382,7 @@ Method::evaluate(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool 
 				isConst = false;
 			}
 		}
-
+		
 		result.origText.append(nodeIter->text());
 		result.origText.append(" ");
 
