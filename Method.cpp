@@ -293,7 +293,13 @@ Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNod
 					}
 
 					nodeType = identifier->type();
+					
 					result.flags.push_back(ExprNode::Output);
+					if (ownerNode->is(ExprNode::Property) && !identifier->is(Identifier::Property))
+					{
+						result.flags.push_back(ExprNode::ConstExpr);
+					}
+
 					if (identifier->is(Identifier::Const))
 					{
 						result.flags.push_back(ExprNode::ConstExpr);
@@ -542,6 +548,11 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				if (!isCodeMethod() && arg->is(Arg::Out) && nodeIter->is(ExprNode::Property))
 				{				
 					error << "Property may not be output: " << nodeIter->text();
+					result.matches = false;
+				}
+				else if (arg->is(Arg::Out) && !nodeIter->is(ExprNode::Output))
+				{				
+					error << "Argument must be output: " << nodeIter->text();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))

@@ -57,9 +57,9 @@ define test:
   output hello's name
   output address of hello
   output hello's data's count
-  increase hello's data's count
-  /*
-
+  //increase hello's data's count
+  //hello's data's count := 2
+ 
   scope:
     var out is file-output
     var out2 is output := out
@@ -447,8 +447,8 @@ define bottles song:
     loop while bottles of beer on the wall:
       take one of the bottles down and pass it around
     go to the store and buy some more bottles
- */
+
 program:
   output "duh"
   test
-  //bottles song
+  bottles song
