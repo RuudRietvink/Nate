@@ -345,12 +345,14 @@ include\h*\".*\"  s(); includeFile();
 
 <ARGS>{
 \bis\b			  return yy::parser::make_IS(location());
-\binout\b	    return yy::parser::make_INOUT(location());
+\bas\b			  return yy::parser::make_AS(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 "("					  return yy::parser::make_OPENPAR(location());
 ")"					  return yy::parser::make_CLOSEPAR(location());
 ","					  return yy::parser::make_COMMA(location());
+"${"          return yy::parser::make_ARGSTART(location());
+"}"           return yy::parser::make_ARGEND(location());
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 [\\]{word}		return yy::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
@@ -378,6 +380,7 @@ include\h*\".*\"  s(); includeFile();
 [$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
 ":="		      return yy::parser::make_ASSIGN(location());
 ","			      return yy::parser::make_COMMA(location());
+":"				    return yy::parser::make_COL(location());
 }
 
 \bprogram\b		return yy::parser::make_PROGRAM(location());

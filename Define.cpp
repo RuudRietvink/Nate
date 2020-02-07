@@ -13,26 +13,12 @@ Define::Define()
 	setPriority(65);
 }
 
-std::string Define::createCodeDecl(const std::string& aObjectName)
+std::string Define::createCodeDeclArgs(const std::vector<Arg>& aArgs)
 {
 	std::stringstream buf;
 	bool first = true;
 	
-	if (is(None))
-	{
-		buf << "void ";
-	}
-	else
-	{
-		buf << type()->codeType() << " ";
-	}
-
-	if (!aObjectName.empty())
-	{
-		buf << aObjectName << "::";
-	}
-
-	buf << pattern() << "(";
+	buf << "(";
 
 	for (auto const& arg : args())
 	{
@@ -63,6 +49,29 @@ std::string Define::createCodeDecl(const std::string& aObjectName)
 
 	buf << ")";
 
+	return buf.str();
+}
+
+std::string Define::createCodeDecl(const std::string& aObjectName)
+{
+	std::stringstream buf;
+	
+	if (is(None))
+	{
+		buf << "void ";
+	}
+	else
+	{
+		buf << type()->codeType() << " ";
+	}
+
+	if (!aObjectName.empty())
+	{
+		buf << aObjectName << "::";
+	}
+
+	buf << pattern() << createCodeDeclArgs(args());
+	
 	if (is(ConstMethod))
 	{
 		buf << " const";
@@ -117,10 +126,11 @@ void Defines::add(const Define& aDefine)
 	mDefines.push_back(aDefine);
 }
 
-Define* Defines::getLike(const Define& aDefine)
+Define* Defines::getLike(const Define* aDefine)
 {
 	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
 													 [&aDefine](const Define& item)
-													 { return aDefine.pattern() == item.pattern(); });
+													 { return aDefine != &item &&
+													   aDefine->pattern() == item.pattern(); });
 	return (iter != mDefines.end()) ? &(*iter) : nullptr;
 }

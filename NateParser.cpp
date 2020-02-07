@@ -398,8 +398,12 @@ void NateParser::addObject(const ObjectPtr& aObject)
 
 	addType(aObject, aObject->name());
 	mObjects.push_back(aObject);
-	//setCurObject(aObject);
-	mCurObject = aObject;
+	startObject(aObject);
+}
+
+void NateParser::startObject(const ObjectPtr& aObject)
+{
+	setCurObject(aObject);
 	pushIdentifiersHolder(aObject);
 	pushRecordsHolder(aObject);
 	pushTypesHolder(aObject);
@@ -468,6 +472,11 @@ void NateParser::addDefine(bool aInObject)
 	}
 }
 
+void NateParser::deleteCurDefine()
+{
+	curDefinesHolder()->defines().get().pop_back();
+}
+
 void NateParser::declareDefine(bool aIsDecl)
 {
 	curDefine()->endDecl();
@@ -477,7 +486,7 @@ void NateParser::declareDefine(bool aIsDecl)
 	{
 		if (!aIsDecl)
 		{
-			Define* defineDecl = curObject()->defines().getLike(*curDefine());
+			Define* defineDecl = curObject()->defines().getLike(curDefine());
 			if (defineDecl != nullptr)
 			{
 				if (defineDecl->is(Method::Defined))
@@ -539,6 +548,77 @@ void NateParser::endDefine()
 
 Define* NateParser::curDefine() { return mCurDefine; }
 
+void NateParser::declareProperties(bool aReadonly,
+																	 const std::vector<std::string>& aNames,
+																	 const TypePtr& aType)
+{
+	for (auto const& name : aNames)
+	{
+		checkIdentifierName(name);
+		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, aType);
+		id->setFlag(Identifier::Const, aReadonly);
+		id->setFlag(Identifier::Property);
+		addIdentifier(id);
+
+		TypePtr idType = id->type();
+		std::string propType = (idType->is(Type::NeedsRef))
+											     ? idType->codeType() + "&"
+			                     : idType->codeType();
+		std::string declType = idType->codeType();
+				
+		*mOut << in(-1) << "private:" << std::endl;
+		*mOut << in() << declType << " " << id->codeName() << ";" << std::endl;
+		*mOut << in(-1) << "public:" << std::endl;
+
+		*mOut << in() << codePropHeader(false, id, Object::PropType::Get) << ";" << std::endl;
+		*mOut << in() << codePropHeader(false, id, Object::PropType::Set) << ";" << std::endl;
+
+		if (idType->is(Type::Number))
+		{
+			//TYPE NAME ## _preInc(const TYPE value) { return NAME ## _set( NAME ## _get() + value); }
+			//TYPE NAME ## _preDec(const TYPE value) { return NAME ## _set( NAME ## _get() - value); }
+			//TYPE NAME ## _postInc(const TYPE value) { TYPE temp = NAME ## _get(); NAME ## _set(temp + value); return temp; }
+			//TYPE NAME ## _postDec(const TYPE value) { TYPE temp = NAME ## _get(); NAME ## _set(temp - value); return temp; }
+		}
+
+		curObject()->setPropState(id, Object::PropType::Get, Object::PropState::Declared);
+		curObject()->setPropState(id, Object::PropType::Set, Object::PropState::Declared);
+	}
+}
+
+void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
+{
+	const std::string method = aPropType == Object::PropType::Get ? "get" : "set";
+
+	if (!curObject()->isPropDeclared(aIdentifier, aPropType))
+	{
+	  error("Undeclared " + method + " method for property: " + aIdentifier->name());
+	}
+
+	if (curObject()->isPropDefined(aIdentifier, aPropType))
+	{
+	  error("Redefined " + method + " method forproperty: " + aIdentifier->name());
+	}
+
+	curObject()->setPropState(aIdentifier, aPropType, Object::PropState::Defined);
+	
+	addDefine(true);
+	mDefineDecl = false;
+	mOut = &curObject()->getNormalOut();
+
+	if (aPropType == Object::PropType::Get)
+	{
+		*mOut << in(-1) << codePropHeader(true, aIdentifier, Object::PropType::Get) << "\n" 
+			    << in(-1) << "{" << std::endl;
+	}
+}
+
+void NateParser::endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
+{
+	endDefine();
+	deleteCurDefine();
+}
+
 void NateParser::addArgWord(const std::string& aWord)
 {
 	if (aWord == "\\u")
@@ -567,6 +647,31 @@ void NateParser::addArgWord(const std::string& aWord)
 		curMethod().addArgWord(aWord);
 		mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 	}
+}
+
+void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const std::string& inOut)
+{ 
+	auto id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, aType);
+	addIdentifier(id);
+	curMethod().addArgId(id);
+  if (!inOut.empty())
+  {
+    curMethod().curArg().setArgFlag(inOut);
+  }
+
+  if (id->isObjectMe())
+  {
+    if (!data.inObject)
+    {
+      error("The id 'me' is reserved for objects");
+    }
+    else if (data.objectMe)
+    {
+      error("The id 'me' may only occur once in a define");
+    }
+
+    data.objectMe = true;
+  }
 }
 
 void NateParser::error(const std::string& anError)
@@ -792,6 +897,11 @@ TypePtr NateParser::determineType(const std::string& aName)
 	return !type ? std::make_shared<Type>(aName) : type;
 }
 
+bool NateParser::isType(const std::string& aName)
+{
+	return !!getType(aName);
+}
+
 TypePtr NateParser::makeType(const std::string& aValue)
 {
 	TypePtr result = std::make_shared<Type>("");
@@ -999,7 +1109,7 @@ void NateParser::checkRightToLeftMethod(const Method& aMethod,
 void NateParser::checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch, bool aDebug)
 {
 	auto size = aMethod.args().size();
-	if (size <= aExpr.nodes().size())
+	if (size <= aExpr.nodes().size() && size > 0)
 	{
 		if (aMethod.is(Code::RightLeft))
 		{
@@ -1247,6 +1357,11 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 		error("Unknown type: " + aIdentifier->type()->name());
 		return;
 	}
+	
+	//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
+	//{
+	//	error("Expected constant expression.");
+	//}
 
 	printLineNr(aLocation);
 	if (aExtern)
@@ -1256,14 +1371,7 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 
 	if (aIdentifier->is(Identifier::Const))
 	{
-		if (aIdentifier->type()->is(Type::Scalar))
-		{
-			*mOut << in() << "constexpr ";		
-		}
-		else
-		{
-			*mOut << in() << "const ";		
-		}
+		*mOut << in() << "const ";		
 	}
 
 	*mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
@@ -1273,10 +1381,6 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 		*mOut << " = " << aIdentifier->initValue().code();
 	}
 
-	if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
-	{
-		error("Expected constant expression.");
-	}
 
 	*mOut << ";" << std::endl;
 }
@@ -1470,27 +1574,49 @@ void NateParser::codeStartImplObject()
 	}
 }
 
+std::string NateParser::codePropHeader(bool aAddObjectName,
+																			 const IdentifierPtr& aId, 
+																			 Object::PropType aPropType)
+{
+	std::stringstream buf;
+	
+	auto scopeName = aId->type()->typeScopeName();
+	std::string propType = (aId->type()->is(Type::NeedsRef))
+											    ? scopeName + aId->type()->codeType() + "&"
+			                    : aId->type()->codeType();
+	std::string objectPrefix = aAddObjectName
+													   ? toCodeName(curObject()->name()) + "::"
+														 : "";
+	if (aPropType == Object::PropType::Get)
+	{
+		buf << "const " <<  propType << " " << objectPrefix << aId->codeName() << "_get() const";
+	}
+	else
+	{
+		buf << "const " <<  propType << " " << objectPrefix << aId->codeName() << "_set(const " << propType << " value)";
+	}
+
+	return buf.str();
+}
+
 void NateParser::codeEndImplObject()
 {
-	auto name = toCodeName(curObject()->name());
-
 	mOut = &curObject()->getNormalOut();
+
 	for (const auto& propMethod : curObject()->propertyMethods())
 	{
 		const auto& id = propMethod.first;
-		auto scopeName = id->type()->typeScopeName();
-		std::string propType = (id->type()->is(Type::NeedsRef))
-											     ? scopeName + id->type()->codeType() + "&"
-			                     : id->type()->codeType();
 
 		if (curObject()->getPropState(id, Object::PropType::Get) == Object::PropState::Declared)
 		{
-			*mOut << in() << "PROP_GET(" << name << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+			*mOut << in() << codePropHeader(true, id, Object::PropType::Get) 
+				    << " { return " << id->codeName() << "; }" << std::endl;
 		}
 
 		if (curObject()->getPropState(id, Object::PropType::Set) == Object::PropState::Declared)
 		{
-			*mOut << in() << "PROP_SET(" << name << ", " << propType << ", " << id->codeName() << ")" << std::endl;
+			*mOut << in() << codePropHeader(true, id, Object::PropType::Set) 
+				    << " { return " << id->codeName() << " = value; }" << std::endl;
 		}
 	}
 
@@ -1532,50 +1658,6 @@ std::string NateParser::typeScopeName() const
 	}
 
 	return result;
-}
-
-void NateParser::declareProperties(bool aReadonly,
-																	 const std::vector<std::string>& aNames,
-																	 const TypePtr& aType)
-{
-	for (auto const& name : aNames)
-	{
-		checkIdentifierName(name);
-		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, aType);
-		id->setFlag(Identifier::Const, aReadonly);
-		id->setFlag(Identifier::Property);
-		addIdentifier(id);
-
-		TypePtr idType = id->type();
-		std::string propType = (idType->is(Type::NeedsRef))
-											     ? idType->codeType() + "&"
-			                     : idType->codeType();
-		std::string declType = idType->codeType();
-				
-		if (idType->is(Type::Number))
-		{
-			*mOut << in() << "PROP_NUMBER_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
-		}
-		else
-		{
-			*mOut << in() << "PROP_(" << declType << ", " << propType << ", " << id->codeName() << ")" << std::endl;
-		}
-
-		curObject()->setPropState(id, Object::PropType::Get, Object::PropState::Declared);
-		curObject()->setPropState(id, Object::PropType::Set, Object::PropState::Declared);
-	}
-}
-
-void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
-{
-	if (!curObject()->isPropDeclared(aIdentifier, aPropType))
-	{
-	  error("Undeclared property: " + aIdentifier->name());
-	}
-}
-
-void NateParser::endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
-{
 }
 
 void NateParser::codeAssign(const std::vector<Expr>& aExpressions,

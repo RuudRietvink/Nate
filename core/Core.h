@@ -16,24 +16,6 @@
 extern std::shared_ptr<std::ostream> output;
 extern std::shared_ptr<std::ostream> error;
 
-#define PROP_(DECL_TYPE, TYPE, NAME) \
-	private: \
-		DECL_TYPE NAME; \
-  public: \
-	  const TYPE NAME ## _get() const; \
-    TYPE NAME ## _set(const TYPE value);
-
-#define PROP_NUMBER_(DECL_TYPE, TYPE, NAME) \
-	PROP_(DECL_TYPE, TYPE, NAME) \
-    TYPE NAME ## _preInc(const TYPE value) { return NAME ## _set( NAME ## _get() + value); } \
-    TYPE NAME ## _preDec(const TYPE value) { return NAME ## _set( NAME ## _get() - value); } \
-    TYPE NAME ## _postInc(const TYPE value) { TYPE temp = NAME ## _get(); NAME ## _set(temp + value); return temp; } \
-    TYPE NAME ## _postDec(const TYPE value) { TYPE temp = NAME ## _get(); NAME ## _set(temp - value); return temp; } \
-
-#define PROP_GET(OBJECT, TYPE, NAME) \
-	const TYPE OBJECT ## :: ## NAME ## _get() const { return NAME; }
-#define PROP_SET(OBJECT, TYPE, NAME) \
-	TYPE OBJECT ## :: ## NAME ## _set(const TYPE value) { return NAME = value; }
 //////////////////////////
 
 namespace Core

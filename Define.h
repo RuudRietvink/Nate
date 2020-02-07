@@ -13,7 +13,7 @@ class Defines
 public:
 	virtual std::list<Define>& get();
 	virtual void add(const Define& aDefine);
-	virtual Define* getLike(const Define& aDefine);
+	virtual Define* getLike(const Define* aDefine);
 
 private:			
 	std::list<Define> mDefines;			
@@ -33,6 +33,7 @@ public:
 	virtual ~Define() = default;
   
 	void createCodeCall();
+	std::string createCodeDeclArgs(const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const std::string& aObjectName = "");
 
 private:

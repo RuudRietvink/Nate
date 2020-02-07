@@ -33,79 +33,79 @@ const tau is float-64 := 6.283185307179586
   
 constant e is float-64 := 2.718281828459045
 
-code define 110 ($val-1 is number) \u ^ ($val-2 is number) is number (highest,right):
+code define 110 ${val-1 is number} \u ^ ${val-2 is number} is number as highest, right:
 	std::pow($val-1, $val-2)
   
-code define 110 \u \l sqrt ($val is integer) is float-64:
+code define 110 \u \l sqrt ${val is integer} is float-64:
 	std::sqrt($val)
     
-code define 110 \u \l sqrt ($val is real) is (same):
+code define 110 \u \l sqrt ${val is real} as same:
 	std::sqrt($val)
     
-code define 110 \u \l round ($val is real) is (same):
+code define 110 \u \l round ${val is real} as same:
 	std::round($val)
   
-code define 110 \u \l floor ($val is real) is (same):
+code define 110 \u \l floor ${val is real} as same:
 	std::floor($val)
   
-code define 110 \u \l floor_l ($val is real) floor_r is (same):
+code define 110 \u \l floor_l ${val is real} floor_r as same:
 	std::floor($val)
   
-code define 110 \u \l ceil ($val is real) is (same):
+code define 110 \u \l ceil ${val is real} as same:
 	std::ceil($val)
   
-code define 110 \u \l ceil_l ($val is real) ceil_r is (same):
+code define 110 \u \l ceil_l ${val is real} ceil_r as same:
 	std::ceil($val)
   
-code define 110 \u \l abs ($val is real) is (same):
+code define 110 \u \l abs ${val is real} as same:
 	std::abs($val)
   
-code define 110 \u \l abs_l ($val is real) abs_r is (same):
+code define 110 \u \l abs_l ${val is real} abs_r as same:
 	std::abs($val)
   
-code define 110 \u \l sin ($val is real) is (same):
+code define 110 \u \l sin ${val is real} as same:
 	std::sin($val)
   
-code define 110 \u \l cos ($val is real) is (same):
+code define 110 \u \l cos ${val is real} as same:
 	std::cos($val)
   
-code define 110 \u \l tan ($val is real) is (same):
+code define 110 \u \l tan ${val is real} as same:
 	std::tan($val)
   
-code define 110 \u \l sinh ($val is real) is (same):
+code define 110 \u \l sinh ${val is real} as same:
 	std::sinh($val)
   
-code define 110 \u \l cosh ($val is real) is (same):
+code define 110 \u \l cosh ${val is real} as same:
 	std::cosh($val)
   
-code define 110 \u tanh ($val is real) is (same):
+code define 110 \u tanh ${val is real} as same:
 	std::tanh($val)
   
-code define 110 \u asin ($val is real) is (same):
+code define 110 \u asin ${val is real} as same:
 	std::asin($val)
   
-code define 110 \u \l acos ($val is real) is (same):
+code define 110 \u \l acos ${val is real} as same:
 	std::acos($val)
   
-code define 110 \u \l atan ($val is real) is (same):
+code define 110 \u \l atan ${val is real} as same:
 	std::atan($val)
   
-code define 110 \u \l log ($val is real) is (same):
+code define 110 \u \l log ${val is real} as same:
 	std::log($val)
   
-code define 110 \u \l log10 ($val is real) is (same):
+code define 110 \u \l log10 ${val is real} as same:
 	std::log10($val)
 
-code define 110 \u \l log2 ($val is real) is (same):
+code define 110 \u \l log2 ${val is real} as same:
 	std::log2($val)
   
-code define 100 ($val-1 is number) \u monomial ($val-2 is number) is number (highest,const):
+code define 100 ${val-1 is number} \u monomial ${val-2 is number} is number as highest, const:
 	$val-1 * $val-2
 	
-code define 85 ($val-1 is number) \u max ($val-2 is number (same)) is number (same,right):
+code define 85 ${val-1 is number} \u max ${val-2 is number as same} is number as same,right:
 	std::max($val-1, $val-2)
   
-code define 85 ($val-1 is number) \u min ($val-2 is number (same)) is number (same,right):
+code define 85 ${val-1 is number} \u min ${val-2 is number as same} is number as same,right:
 	std::min($val-1, $val-2)
 
 import Math

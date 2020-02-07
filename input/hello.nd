@@ -11,8 +11,8 @@ declare object Hello:
 
   define new Hello is Hello
 
-  define ($me is Hello) ($world is text) is text
+  define ${me is Hello} ${world is text} is text
 
-  define hi ($other is Hello) is text
+  define hi ${other is Hello} is text
   
-  define stream-out ($me is Hello) is text
+  define stream-out ${me is Hello} is text

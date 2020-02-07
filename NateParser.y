@@ -70,6 +70,7 @@
 %token INPUT "input"
 %token WRITE "write"
 %token IS "is"
+%token AS "as"
 %token OF "of"
 %token IN "in"
 %token LOOP "loop"
@@ -79,7 +80,6 @@
 %token TO "to"
 %token STEP "step"
 %token RETURN "return"
-%token INOUT "inout"
 %token RECORD "record"
 %token COL ":"
 %token ASSIGN ":="
@@ -88,6 +88,8 @@
 %token CONCAT "&"
 %token OPENPAR "("
 %token CLOSEPAR ")"
+%token ARGSTART "${"
+%token ARGEND "}"
 
 %type <std::string>              id;
 %type <std::string>              arg-id;
@@ -96,7 +98,6 @@
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
 %type <std::string>              type-extra;
-%type <std::string>              inout;
 %type <bool>                     var;
 %type <std::vector<Expr>>        var-init-assign;
 %type <std::vector<Expr>>        var-init-list;
@@ -274,7 +275,7 @@ implement-object-statement:
         }
         else
         {
-          nate.setCurObject(objectDecl);
+          nate.startObject(objectDecl);
           nate.codeStartImplObject();
         }
 		  }
@@ -310,6 +311,24 @@ define-decl:
 		  }
 	  arg-list call-return
   ;
+  
+arg-list:
+    arg
+  | arg-list arg
+  ;
+  
+arg:
+    WORD
+		  { nate.addArgWord($WORD); }
+  | ARGSTART arg-id[id] IS type 
+		  { nate.addArgId($id, $type, ""); }
+    opt-arg-flags ARGEND
+  ;
+  
+opt-arg-flags:
+    %empty
+  | AS arg-flag-list
+  ;
 
 define-statement:
 	  define-decl COL
@@ -327,63 +346,6 @@ define-statement:
 		  }
   ;
   
-property-declare-statement:
-	  PROP 
-		  { lexer.pushState(Lexer::VAR_DECL); }
-	  id-list 
-		  { lexer.popState(); }
-	  is-type
-		  { nate.declareProperties(false, $[id-list], $[is-type]); }
-  ;
-  
-property-define-statement:
-	  PROP id COL
-      { nate.data.propId = nate.getIdentifier($id, nate.curIdentifiersHolder().get()); }
-	  begin
-      property-get-set-list
-    end
-  ;
-
-property-get-set-list:
-    property-get-set-code
-  | property-get-set-list property-get-set-code
-  ;
-  
-property-get-set-code:
-    property-get-code
-  | property-set-code
-  ;
-
-property-get-code:
-    GET COL
-		  { 
-			  lexer.pushState(Lexer::DEFINE);
-			  nate.defineProp(nate.data.propId, Object::PropType::Get);
-		  }
-	  begin
-		  statement-list
-	  end
-		  { 
-			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Get);
-		  }
-  ;
-  
-property-set-code:
-    SET COL
-		  { 
-			  lexer.pushState(Lexer::DEFINE);
-			  nate.defineProp(nate.data.propId, Object::PropType::Set);
-		  }
-	  begin
-		  statement-list
-	  end
-		  { 
-			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Set);
-		  }
-  ;
-
 code-statement:
     code-define
   | code-include
@@ -429,14 +391,14 @@ code-define:
   ;
 
 code-list:
-    arg-list
+    code-arg-list
   | code-list COMMA opt-eos
       {
 			  nate.endCode();
 			  nate.addCode();
         nate.data.curParsedCodes.push_back(&nate.curCode());
       }
-    arg-list
+    code-arg-list
   ;
   
 code-start:
@@ -459,77 +421,31 @@ code-stat:
 		  { nate.curCode().addCodeStatId($id); }
   ;
   
-arg-list:
+code-arg-list:
+    code-arg
+  | code-arg-list code-arg
+  ;
+
+code-arg:
     arg
-  | arg-list arg
+  | code-id-with-arg-flags
   ;
-
-arg:
-    WORD
-		  { nate.addArgWord($WORD); }
-  | OPENPAR inout arg-id[id] IS type 
-		  { 
-			  auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, $type);
-			  nate.addIdentifier(id);
-		    nate.curMethod().addArgId(id);
-        if (!$inout.empty())
-        {
-          nate.curMethod().curArg().setArgFlag($inout);
-        }
-
-        if (id->isObjectMe())
-        {
-          if (!nate.data.inObject)
-          {
-            nate.error("The id 'me' is reserved for objects");
-          }
-          else if (nate.data.objectMe)
-          {
-            nate.error("The id 'me' may only occur once in a define");
-          }
-
-          nate.data.objectMe = true;
-        }
-		  }
-    opt-arg-flags CLOSEPAR
-  | id-with-arg-flags
-  ;
-
-id-with-arg-flags:
-    OPENPAR inout arg-id[id] IS
+  
+code-id-with-arg-flags:
+    ARGSTART arg-id[id] AS
 		{ 
 			auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, std::make_shared<Type>(""));
 			nate.addIdentifier(id);
 		  nate.curMethod().addArgId(id);
-      if (!$inout.empty())
-      {
-        nate.curMethod().curArg().setArgFlag($inout);
-      }
 		}
-		arg-flags CLOSEPAR
+		arg-flag-list ARGEND
   ;
  
 arg-id:
     id
   | WORD
   ;
-
-inout:
-  %empty
-    { $$ = ""; }
-  | INOUT
-    { $$ = "inout"; }
-  ;
        
-arg-flags:
-    OPENPAR arg-flag-list CLOSEPAR
-  ;
-
-opt-arg-flags:
-    %empty
-  | arg-flags
-  ;
-
 arg-flag-list:
 	  arg-flag
   | arg-flag-list COMMA arg-flag
@@ -548,27 +464,23 @@ arg-flag:
 call-return:
   %empty
 		  { nate.curMethod().setReturnFlag("none"); }
-	| IS type-flags
+	| type-flags
   ;
   
 type-flags:
-    type opt-call-return-flags
+    IS type opt-call-return-flags
 		  { 
 			  nate.curMethod().setType($type);
 		  }
-  | call-return-flags
+    opt-call-return-flags
+  | AS call-return-flag-list
   ;
 
 opt-call-return-flags:
     %empty
-  | call-return-flags
+  | AS call-return-flag-list
   ;
 
-call-return-flags:
-    OPENPAR 
-		call-return-flag-list 
-	  CLOSEPAR
-  ;
 
 call-return-flag-list:
 	  call-return-flag
@@ -578,6 +490,68 @@ call-return-flag-list:
 call-return-flag:
 	  WORD
 		  { nate.curMethod().setReturnFlag($WORD); }
+  ;
+  
+property-declare-statement:
+	  PROP 
+		  { lexer.pushState(Lexer::VAR_DECL); }
+	  id-list 
+		  { lexer.popState(); }
+	  is-type
+		  { nate.declareProperties(false, $[id-list], $[is-type]); }
+  ;
+  
+property-define-statement:
+	  PROP 
+		  { lexer.pushState(Lexer::VAR_DECL); }
+    id COL
+      { 
+		    lexer.popState(); 
+        nate.data.propId = nate.getIdentifier($id, nate.curIdentifiersHolder().get());
+      }
+	  begin
+      property-get-set-list
+    end
+  ;
+
+property-get-set-list:
+    property-get-set-code
+  | property-get-set-list property-get-set-code
+  ;
+  
+property-get-set-code:
+    property-get-code
+  | property-set-code
+  ;
+
+property-get-code:
+    GET COL
+		  { 
+			  lexer.pushState(Lexer::DEFINE);
+			  nate.defineProp(nate.data.propId, Object::PropType::Get);
+		  }
+	  begin
+		  statement-list
+	  end
+		  { 
+			  lexer.popState(); 
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Get);
+		  }
+  ;
+  
+property-set-code:
+    SET COL
+		  { 
+			  lexer.pushState(Lexer::DEFINE);
+			  nate.defineProp(nate.data.propId, Object::PropType::Set);
+		  }
+	  begin
+		  statement-list
+	  end
+		  { 
+			  lexer.popState(); 
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Set);
+		  }
   ;
 
 scope-statement:

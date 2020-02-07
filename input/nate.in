@@ -403,39 +403,39 @@ record shop:
   var beer-inventory is int := 255
   var name is text := "shop"
 
-define (bottles is int) in (store is shop) or on wall is boolean:
+define ${bottles is int} in ${store is shop} or on wall is boolean:
   return store's beer-inventory + bottles > 0  
     
-define count (bottles is int) is text:
+define count ${bottles is int} is text:
   return "no more" if bottles = 0 else bottles@"W:2,A:>"
     
-define describe (bottles is int) is text:
+define describe ${bottles is int} is text:
   return "bottle" if bottles = 1 else "bottles"
 
-define list (bottles is int) is text:
+define list ${bottles is int} is text:
   return count bottles + " " + describe bottles + " of beer"
     
-define (bottles is text) on the wall is text:
+define ${$bottles is text} on the wall is text:
   return bottles + " on the wall"
     
-define start sentence with (text is text) is text:
+define start sentence with ${text is text} is text:
   return uppercased first of text + rest of text
 
-define (bottles is int) of beer on the wall is boolean:
+define ${bottles is int} of beer on the wall is boolean:
   output start sentence with list bottles on the wall & ",", list bottles & "."
   return bottles > 0
 
-define take one of the (inout bottles is int-32) down and pass it around:
+define take one of the ${bottles is int-32 as inout} down and pass it around:
   decrease bottles
   output "Take one down and pass it around,", list bottles on the wall & "."
     
-define go to the (inout store is shop) and buy some (inout bottles is int):
+define go to the ${store is shop as inout} and buy some ${bottles is int as out}:
   bottles := store's beer-inventory min 99
   decrease store's beer-inventory with bottles
 
-define go to the (inout store is shop) and buy some more (inout bottles is int):
+define go to the ${store is shop as out} and buy some more ${bottles is int as out}:
   go to the store and buy some bottles
-  var some := "buy some" if bottles > 0 else "find no"
+  constant some := "buy some" if bottles > 0 else "find no"
   output "Go to the", store's name, "and", some, "more,", list bottles on the wall & "."
   
 define bottles song:

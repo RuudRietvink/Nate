@@ -1,11 +1,15 @@
 import Hello
 
 implement object Hello:
+  property name:
+    get:
+      return name
+
   define new Hello is Hello:
     construct me
     return me
     
-  define get ($me is Hello) age is int-32:
+  define get ${me is Hello} age is int-32:
     var hi := 34
     output "Test", 
     return me's age
@@ -13,15 +17,15 @@ implement object Hello:
   define greetings is text:
     return "Hello"
     
-  define (me is Hello) greetings is text:
+  define ${me is Hello} greetings is text:
     var other := new Hello
     return "Hello " + hi other
 
-  define (me is Hello) (world is text) is text:
+  define ${me is Hello} ${world is text} is text:
     return greetings + " " + $world
 
-  define hi ($other is Hello) is text:
+  define hi ${other is Hello} is text:
     return other " earth"
   
-  define stream-out ($me is Hello) is text:
+  define stream-out ${me is Hello} is text:
     return me greetings  + ", it's " + me " angry world"

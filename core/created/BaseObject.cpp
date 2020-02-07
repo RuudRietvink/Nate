@@ -13,9 +13,9 @@ BaseObject::BaseObject()
 
 BaseObject::~BaseObject() { delete _impl; }
 
-void BaseObject::initialize__E_O_BaseObject_()
-{
+	void BaseObject::initialize__E_O_BaseObject_()
+	{
 #line 1 "BaseObjects\\BaseObject.ns"
-	int32_t a = {};
-}
+		int32_t a = {};
+	}
 

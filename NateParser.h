@@ -91,6 +91,7 @@ public:
 	void addType(TypePtr aType, const std::string& aName = "");
 	ITypesHolderPtr getTypesHolder(const TypePtr& aType) const;
 	TypePtr getType(const std::string& aName, ITypesHolder* aTypesHolder = nullptr);
+	bool isType(const std::string& aName);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
 	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
@@ -102,6 +103,7 @@ public:
 	
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
+	void startObject(const ObjectPtr& aObject);
 	ObjectPtr curObject();
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
@@ -118,10 +120,12 @@ public:
 	void addDefine(bool aInObject);
 	void declareDefine(bool aIsDecl = false);
 	void endDefine();
+	void deleteCurDefine();
 	Define* curDefine();
 
 	Method& curMethod();
 	void addArgWord(const std::string& aWord);
+	void addArgId(const std::string& aId, const TypePtr& aType, const std::string& inOut);
 
 	void codeStartProgram(const yy::parser::location_type& aLocation);
 	void codeEndProgram(const yy::parser::location_type& aLocation);
@@ -148,6 +152,9 @@ public:
 	void codeEndDeclObject();
 	void codeStartImplObject();
 	void codeEndImplObject();
+	std::string codePropHeader(bool aAddObjectName,
+													 	const IdentifierPtr& aId, 
+													 	Object::PropType aPropType);
 	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
