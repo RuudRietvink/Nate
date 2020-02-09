@@ -3,8 +3,14 @@ import Hello
 implement object Hello:
   property name:
     get:
+      var hi := 3
       return name
-
+    set:
+      var hi := 5
+      var temp := name + value + address + hi;
+      name := temp
+      return name
+      
   define new Hello is Hello:
     construct me
     return me
@@ -12,7 +18,7 @@ implement object Hello:
   define get ${me is Hello} age is int-32:
     var hi := 34
     output "Test", 
-    return me's age
+    return me's age + age + hi;
     
   define greetings is text:
     return "Hello"

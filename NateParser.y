@@ -489,7 +489,7 @@ call-return-flag-list:
 
 call-return-flag:
 	  WORD
-		  { nate.curMethod().setReturnFlag($WORD); }
+		  { nate.optionalError(nate.curMethod().setReturnFlag($WORD)); }
   ;
   
 property-declare-statement:
@@ -507,11 +507,13 @@ property-define-statement:
     id COL
       { 
 		    lexer.popState(); 
-        nate.data.propId = nate.getIdentifier($id, nate.curIdentifiersHolder().get());
+        nate.data.propId = nate.getOrFakeIdentifier($id, nate.curIdentifiersHolder().get());
+
       }
 	  begin
       property-get-set-list
     end
+      { nate.data.propId = IdentifierPtr(); }
   ;
 
 property-get-set-list:
@@ -571,7 +573,7 @@ var-statement:
 	  optional-is-type var-init-assign
 		  { 
         nate.codeDeclareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign],
-                                         NateParser::InitializeVariables);
+                                         NateParser::InitializeVariables, @var);
       }
   ;
 
@@ -687,13 +689,13 @@ record-var:
 	  id-list 
 		  { lexer.popState(); }
 	  optional-is-type var-init-assign
-		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign]); }
+		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign], @var); }
     opt-eos
   ;
 
 assign-statement:
 	  expr-list ASSIGN expr
-		  { nate.codeAssign($[expr-list], $expr, @expr); }
+		  { nate.codeAssign($[expr-list], $expr, @ASSIGN); }
   ;
 
 expr-list:

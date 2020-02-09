@@ -597,7 +597,7 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 
 	if (curObject()->isPropDefined(aIdentifier, aPropType))
 	{
-	  error("Redefined " + method + " method forproperty: " + aIdentifier->name());
+	  error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
 	curObject()->setPropState(aIdentifier, aPropType, Object::PropState::Defined);
@@ -610,6 +610,14 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 	{
 		*mOut << in(-1) << codePropHeader(true, aIdentifier, Object::PropType::Get) << "\n" 
 			    << in(-1) << "{" << std::endl;
+	}
+	else
+	{
+		*mOut << in(-1) << codePropHeader(true, aIdentifier, Object::PropType::Set) << "\n" 
+			    << in(-1) << "{" << std::endl;
+
+		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
+		addIdentifier(value);
 	}
 }
 
@@ -680,6 +688,14 @@ void NateParser::error(const std::string& anError)
 	++mErrors;
 }
 
+void NateParser::optionalError(const std::string& anError)
+{
+	if (!anError.empty())
+	{
+		error(anError);
+	}
+}
+
 void NateParser::warning(const std::string& aWarning)
 {
 	std::cerr << "Warning: " << mLexer->fileLocation() << ": " << aWarning << std::endl;
@@ -693,7 +709,8 @@ void NateParser::printLineNr(const yy::parser::location_type& aLocation)
 
 	if (mLexer->has_matcher())
 	{	 
-		if (prevLine + 1 != aLocation.begin.line || prevFile != mLexer->filenames.back())
+		if (aLocation.begin.line != prevLine + 1 || 
+				mLexer->filenames.back() != prevFile)
 		{
 			*mOut << "#line " << aLocation.begin.line;
 			if (prevFile != mLexer->filenames.back())
@@ -1389,7 +1406,8 @@ void NateParser::codeDeclareLocalIdentifiers(bool aIsConst,
 																						 const std::vector<std::string>& aNames,
 																						 const TypePtr& aType,
 																					 	 const std::vector<Expr>& aInitValues,
-																						 bool initializeVariables)
+																						 bool initializeVariables,
+																						 const yy::parser::location_type& aLocation)
 {
 	//std::cout << Core::join(aNames, ", ") << ":" << aType << ":" << Core::join(aInitValues, ", ") << std::endl;
 
@@ -1442,7 +1460,7 @@ void NateParser::codeDeclareLocalIdentifiers(bool aIsConst,
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, type, initValue);
 		id->setFlag(Identifier::Const, aIsConst);
 
-		codeDeclareLocalIdentifier(false, id, initializeVariables);
+		codeDeclareLocalIdentifier(false, id, initializeVariables, aLocation);
 	}
 }
 
@@ -1478,9 +1496,10 @@ void NateParser::codeStartRecord(const RecordPtr& aRecord,
 void NateParser::codeDeclareRecordIdentifiers(bool aIsConst,
 																							const std::vector<std::string>& aNames,
 																							const TypePtr& aType,
-																							const std::vector<Expr>& aInitValues)
+																							const std::vector<Expr>& aInitValues,
+																							const yy::parser::location_type& aLocation)
 {
-	codeDeclareLocalIdentifiers(aIsConst, aNames, aType, aInitValues, !NateParser::InitializeVariables);
+	codeDeclareLocalIdentifiers(aIsConst, aNames, aType, aInitValues, !NateParser::InitializeVariables, aLocation);
 }
 
 void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)

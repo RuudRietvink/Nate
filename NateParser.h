@@ -85,6 +85,7 @@ public:
 	IDefinesHolderPtr& curDefinesHolder();
 
 	void error(const std::string& anError);
+	void optionalError(const std::string& anError);
 	void warning(const std::string& aWarning);
 	int errorCount() const { return mErrors; }
 	int warningCount() const { return mWarnings; }
@@ -140,13 +141,15 @@ public:
 																	 const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
 																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeVariables);
+																	 bool initializeVariables,
+																	 const yy::parser::location_type& aLocation);
 	void codeStartRecord(const RecordPtr& aRecord,
 											 const yy::parser::location_type& aLocation);
 	void codeDeclareRecordIdentifiers(bool aIsConst,
 																	  const std::vector<std::string>& aNames,
 																  	const TypePtr& aType,
-																	  const std::vector<Expr>& aInitValues);
+																	  const std::vector<Expr>& aInitValues,
+																	  const yy::parser::location_type& aLocation);
 	void codeEndRecord(const yy::parser::location_type& aLocation);
 	void codeStartDeclObject();
 	void codeEndDeclObject();

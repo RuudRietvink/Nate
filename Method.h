@@ -39,7 +39,7 @@ public:
 
 	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual EvaluateResult evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual EvaluateResult evaluate(const Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
@@ -66,7 +66,7 @@ public:
 		
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
-	void                setReturnFlag(const std::string& aFlag);
+	std::string         setReturnFlag(const std::string& aFlag);
 	void                setObject(const Object* aObject);
 	const std::string&  code() const;
 	std::string&        code();
@@ -84,6 +84,34 @@ public:
 	static const size_t Undeclared   =10;
   
 private:
+	void getTypes(
+					const ExprNodesCIter& aBegin,
+					Record* aOwner,
+					TypePtr& aFirstType,
+					TypePtr& aHighestType) const;
+	void handleOwnerMember(
+					const ExprNodesCIter& aNodeIter,
+					Record* aOwner,
+					const ExprNodesCIter& aOwnerNode,
+					Method::EvaluateResult& aResult,
+					std::string& aNodeCode,
+					TypePtr& aNodeType) const;
+	ExprNode createTypeCastNode(
+					const ExprNodesCIter& aNodeIter,
+					const Arg& aArg,
+					const TypePtr& aTemplateType,
+					const TypePtr& aFirstType,
+					const TypePtr& aHighestType,
+					std::string& aNodeCode) const;
+	void createArgCode(
+					const Arg& aArg,
+					const ExprNode& aNode,
+					const Define* aCurDefine,
+					const std::string& aNodeCode,
+					bool aIsObjectArg,
+					// ->
+					std::string& resultCode) const;
+
 	std::string          mCode;
 	TypePtr              mType;
 	ArgVector						 mArgs;

@@ -37,8 +37,10 @@ void                    Method::setObject(const Object* aObject) { mObject = aOb
 void Method::setType(const TypePtr& aType)        { mType = aType; }
 void Method::setPriority(int aValue)              { mPriority = aValue; }
 
-void Method::setReturnFlag(const std::string& aFlag)
+std::string Method::setReturnFlag(const std::string& aFlag)
 {
+	std::string errorResult;
+
 	if (aFlag == "highest")
 	{
 		setFlag(Highest);
@@ -65,8 +67,10 @@ void Method::setReturnFlag(const std::string& aFlag)
 	}
 	else
 	{
-		std::cerr << "Bad flag: " << aFlag << std::endl;
+		errorResult = "Bad flag: " + aFlag;
 	}
+
+	return errorResult;
 }
 
 bool Method::isObjectMethod() const
@@ -221,8 +225,184 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 	return true;
 }
 
+void Method::getTypes(
+					const ExprNodesCIter& aBegin,
+					Record* aOwner,
+					TypePtr& aFirstType,
+					TypePtr& aHighestType) const
+{
+	ExprNodesCIter nodeIter = aBegin;
+	for (auto const& arg : mArgs)
+	{
+		if (arg.isIdentifier())
+		{
+			TypePtr nodeType = nodeIter->type();
+
+			if (arg.is(Arg::Member) && aOwner != nullptr)
+			{
+				auto identifier = aOwner->identifiers().get(nodeIter->text());
+				if (identifier)
+				{
+					nodeType = identifier->type();
+				}
+			}
+
+			if (nodeType)
+			{
+				if (!aFirstType) 
+				{
+					aFirstType = nodeType;
+				}
+			
+				if (!aHighestType || nodeType->bitSize() > aHighestType->bitSize())
+				{
+					aHighestType = nodeType;
+				}
+			}
+		}
+
+		++nodeIter;
+	}
+}
+
+void Method::handleOwnerMember(
+					const ExprNodesCIter& aNodeIter,
+					Record* aOwner,
+					const ExprNodesCIter& aOwnerNode,
+					Method::EvaluateResult& aResult,
+					std::string& aNodeCode,
+					TypePtr& aNodeType) const
+{
+	auto identifier = aOwner->identifiers().get(aNodeIter->text());
+	if (identifier)
+	{
+		if (identifier->is(Identifier::Property))
+		{
+			aNodeCode = identifier->codeName() + "_get()";
+		}
+		else
+		{
+			aNodeCode = identifier->codeName();
+		}
+
+		aNodeType = identifier->type();
+					
+		aResult.flags.push_back(ExprNode::Output);
+		if (aOwnerNode->is(ExprNode::Property) && !identifier->is(Identifier::Property))
+		{
+			aResult.flags.push_back(ExprNode::ConstExpr);
+		}
+
+		if (identifier->is(Identifier::Const))
+		{
+			aResult.flags.push_back(ExprNode::ConstExpr);
+		}
+		if (identifier->is(Identifier::Property))
+		{
+			aResult.flags.push_back(ExprNode::Property);
+		}
+	}
+}
+
+ExprNode Method::createTypeCastNode(
+					const ExprNodesCIter& aNodeIter,
+					const Arg& aArg,
+					const TypePtr& aTemplateType,
+					const TypePtr& aFirstType,
+					const TypePtr& aHighestType,
+					std::string& aNodeCode) const
+{
+	ExprNode node = *aNodeIter;
+	if (aArg.is(Arg::Typename))
+	{
+		node.castToType(aTemplateType->typenameType());
+		aNodeCode = node.code();
+	}
+	else if (!aArg.is(Arg::Member))
+	{
+		if (aArg.is(Arg::Same))
+		{
+			node.castToType(aFirstType);
+		}
+		else if (aArg.is(Arg::CompHigh))
+		{
+			node.castToType(aHighestType);
+		}
+		else
+		{
+			node.castToType(aArg.identifier()->type());
+		}
+				
+		aNodeCode = node.code();
+	}
+
+	return node;
+}
+
+void Method::createArgCode(
+					const Arg& aArg,
+					const ExprNode& aNode,
+					const Define* aCurDefine,
+					const std::string& aNodeCode,
+					bool aIsObjectArg,
+					// ->
+					std::string& resultCode) const
+{;
+
+	std::string code = (aArg.is(Arg::Member) || 
+											aArg.is(Arg::Out) ||
+											aNode.is(ExprNode::Literal) ||
+											aNode.is(ExprNode::Property) ||
+											aNode.is(ExprNode::Identifier))
+											? aNodeCode 
+											: "(" + aNodeCode + ")";
+			
+	if (!aIsObjectArg) 
+	{
+		if (aCurDefine && aCurDefine->isObjectMethod())
+		{
+			if (Identifier::isNameMe(aNodeCode))
+			{
+				if (aCurDefine->is(Method::Undeclared))
+				{
+					code = "me";
+				}
+				else
+				{
+					code = "this";
+				}
+			}
+			else if (aCurDefine->is(Method::Undeclared) && aNode.is(ExprNode::Property) &&
+							 aNode.is(ExprNode::Identifier) && !aArg.is(Arg::Member))
+			{
+				code = "me->" + code;
+			}
+		}
+
+		resultCode = Core::replaceAll(resultCode, "${" + aArg.identifier()->name() + "}", code);
+	}
+	else
+	{				
+		if (Identifier::isNameMe(aNodeCode))
+		{
+			if (is(Method::Undeclared))
+			{
+				resultCode = "_impl->" + resultCode;
+			}
+			else
+			{
+				resultCode = "this->" + resultCode;
+			}
+		}
+		else
+		{
+			resultCode = code + "->" + resultCode;
+		}
+	}
+}
+
 Method::EvaluateResult
-Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+Method::evaluate(const Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
 	EvaluateResult result;
 	TypePtr firstType;
@@ -237,41 +417,12 @@ Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNod
 	result.code = code();
 	result.type = type();
 
+	getTypes(aBegin, owner, // ->
+					 firstType, highestType);
+
 	ExprNodesCIter nodeIter = aBegin;
-	for (auto const& arg : mArgs)
-	{
-		if (arg.isIdentifier())
-		{
-			TypePtr nodeType = nodeIter->type();
-
-			if (arg.is(Arg::Member) && owner != nullptr)
-			{
-				auto identifier = owner->identifiers().get(nodeIter->text());
-				if (identifier)
-				{
-					nodeType = identifier->type();
-				}
-			}
-
-			if (nodeType)
-			{
-				if (!firstType) 
-				{
-					firstType = nodeType;
-				}
-			
-				if (!highestType || nodeType->bitSize() > highestType->bitSize())
-				{
-					highestType = nodeType;
-				}
-			}
-		}
-
-		++nodeIter;
-	}
 		
-	nodeIter = aBegin;
-	for (auto arg = args().cbegin(); arg != args().cend(); ++arg)
+	for (auto arg = args().cbegin(); arg != args().cend(); ++arg, ++nodeIter)
 	{
 		if (arg->isIdentifier())
 		{
@@ -280,107 +431,19 @@ Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNod
 
 			if (arg->is(Arg::Member) && owner != nullptr)
 			{
-				auto identifier = owner->identifiers().get(nodeIter->text());
-				if (identifier)
-				{
-					if (identifier->is(Identifier::Property))
-					{
-						nodeCode = identifier->codeName() + "_get()";
-					}
-					else
-					{
-						nodeCode = identifier->codeName();
-					}
-
-					nodeType = identifier->type();
-					
-					result.flags.push_back(ExprNode::Output);
-					if (ownerNode->is(ExprNode::Property) && !identifier->is(Identifier::Property))
-					{
-						result.flags.push_back(ExprNode::ConstExpr);
-					}
-
-					if (identifier->is(Identifier::Const))
-					{
-						result.flags.push_back(ExprNode::ConstExpr);
-					}
-					if (identifier->is(Identifier::Property))
-					{
-						result.flags.push_back(ExprNode::Property);
-					}
-				}
+				handleOwnerMember(nodeIter, owner, ownerNode,	// ->
+					                result, nodeCode, nodeType);
 			}
 			else
 			{
 				nodeCode = nodeIter->code();
 			}
 
-			ExprNode node = *nodeIter;
-			if (arg->is(Arg::Typename))
-			{
-				node.castToType(templateType->typenameType());
-				nodeCode = node.code();
-			}
-			else if (!arg->is(Arg::Member))
-			{
-				if (arg->is(Arg::Same))
-				{
-					node.castToType(firstType);
-				}
-				else if (arg->is(Arg::CompHigh))
-				{
-					node.castToType(highestType);
-				}
-				else
-				{
-					node.castToType(argType);
-				}
-				
-				nodeCode = node.code();
-			}
-			
-			std::string code = (arg->is(Arg::Member) || 
-													arg->is(Arg::Out) ||
-													node.is(ExprNode::Literal) ||
-													node.is(ExprNode::Property)||
-													node.is(ExprNode::Identifier))
-													? nodeCode 
-													: "(" + nodeCode + ")";
-			
-			if (arg != mObjectArg) 
-			{
-				if (aCurDefine && aCurDefine->isObjectMethod() && Identifier::isNameMe(nodeCode))
-				{
-					if (aCurDefine->is(Method::Undeclared))
-					{
-						code = "me";
-					}
-					else
-					{
-						code = "this";
-					}
-				}
-
-				result.code = Core::replaceAll(result.code, "${" + arg->identifier()->name() + "}", code);
-			}
-			else
-			{				
-				if (Identifier::isNameMe(nodeCode))
-				{
-					if (is(Method::Undeclared))
-					{
-						result.code = "_impl->" + result.code;
-					}
-					else
-					{
-						result.code = "this->" + result.code;
-					}
-				}
-				else
-				{
-					result.code = code + "->" + result.code;
-				}
-			}
+			ExprNode node = createTypeCastNode(
+													nodeIter, *arg, templateType, firstType, highestType,	// ->
+													nodeCode);
+			createArgCode(*arg, node, aCurDefine, nodeCode, (arg == mObjectArg), //-->
+										result.code);
 
 			lastType = nodeType;
 			if (!node.is(ExprNode::ConstExpr))
@@ -391,8 +454,6 @@ Method::evaluate(Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNod
 		
 		result.origText.append(nodeIter->text());
 		result.origText.append(" ");
-
-		++nodeIter;
 	}
 
 	if (is(Same))

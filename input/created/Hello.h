@@ -14,9 +14,8 @@ public:
 #line 4 ".\\Hello.nd"
 	struct Data
 	{
-#line 1
 	std::string greet;
-#line 1
+#line 6
 	int32_t count;
 	Data()
 		: greet()
