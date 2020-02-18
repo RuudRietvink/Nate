@@ -40,12 +40,14 @@ public:
 		std::stack<Expr> ifExpr;
 		std::stack<std::string> ifId;
 		std::string forId;
-		std::list<Code*> curParsedCodes;
+		std::list<CodePtr> curParsedCodes;
 		bool inObject = false;
+		bool inObjectImpl = false;
 		bool objectMe = false;
 		std::stack<RecordPtr> curRecord;
 		bool assignExpr = false;
 		IdentifierPtr propId;
+		WithFlags* flagsHolder = nullptr;
 	};
 
 	enum class FileType
@@ -72,11 +74,11 @@ public:
 	bool isLeftMonomial(const std::string& aWord) const;
 	void addWantsUnary(const std::string& aWord);
 	bool wantsUnary(const std::string& aWord) const;
+	
+	yy::Lexer* getLexer();
 
-	void pushScope(const std::string& aName);
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
-	void pushDefineScope(const std::string& aName);
 	void pushDefineScope(const ScopePtr& aScope);
 	void popDefineScope();
 	IIdentifiersHolderPtr& curIdentifiersHolder();
@@ -108,26 +110,44 @@ public:
 	ObjectPtr curObject();
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
-	void declareProperties(bool aReadonly,
-											   const std::vector<std::string>& aNames,
-												 const TypePtr& aType);
+	void declareProperties(const std::vector<std::string>& aNames,
+												 const TypePtr& aType,
+												 const std::vector<std::string>& flags);
 	void defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 	void endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 
 	void addCode();
 	void endCode();
-	Code& curCode();
+	CodePtr curCode();
+	CodePtr getCode(const CodePtr& aCode);
 
 	void addDefine(bool aInObject);
 	void declareDefine(bool aIsDecl = false);
 	void endDefine();
 	void deleteCurDefine();
-	Define* curDefine();
+	DefinePtr curDefine();
 
-	Method& curMethod();
+	MethodPtr curMethod();
 	void addArgWord(const std::string& aWord);
 	void addArgId(const std::string& aId, const TypePtr& aType, const std::string& inOut);
 
+	void declareLocalIdentifiers(
+					bool aIsConst,
+					const std::vector<std::string>& aNames,
+					const TypePtr& aType,
+					const std::vector<Expr>& aInitValues,
+					bool initializeVariables,
+					const yy::parser::location_type& aLocation);
+	void codeStartRecord(const RecordPtr& aRecord,
+											 const yy::parser::location_type& aLocation);
+	void declareRecordIdentifiers(
+					bool aIsConst,
+					const std::vector<std::string>& aNames,
+					const TypePtr& aType,
+					const std::vector<Expr>& aInitValues,
+					const yy::parser::location_type& aLocation);
+	
+	std::string codeExpr(const Expr& aValue);
 	void codeStartProgram(const yy::parser::location_type& aLocation);
 	void codeEndProgram(const yy::parser::location_type& aLocation);
 	void codeStartScope();
@@ -137,19 +157,6 @@ public:
 																	const IdentifierPtr& aIdentifier,
 																	bool initializeVariables,
 																	const yy::parser::location_type& aLocation = yy::parser::location_type(yy::position(), yy::position()));
-	void codeDeclareLocalIdentifiers(bool aIsConst,
-																	 const std::vector<std::string>& aNames,
-																	 const TypePtr& aType,
-																	 const std::vector<Expr>& aInitValues,
-																	 bool initializeVariables,
-																	 const yy::parser::location_type& aLocation);
-	void codeStartRecord(const RecordPtr& aRecord,
-											 const yy::parser::location_type& aLocation);
-	void codeDeclareRecordIdentifiers(bool aIsConst,
-																	  const std::vector<std::string>& aNames,
-																  	const TypePtr& aType,
-																	  const std::vector<Expr>& aInitValues,
-																	  const yy::parser::location_type& aLocation);
 	void codeEndRecord(const yy::parser::location_type& aLocation);
 	void codeStartDeclObject();
 	void codeEndDeclObject();
@@ -213,30 +220,30 @@ private:
 
 	struct Match
 	{
-		const Method*				methodFound = nullptr;
+		MethodPtr	      		methodFound;
 		ExprNodesCIter			nodeStartIter;
 		ExprNodesCIter			nodeEndIter;
-		const Method*				matchedMethod = nullptr;
+		MethodPtr	      		matchedMethod;
 		Method::MatchResult matchResult;
 	};
 
 	std::string handleCompileCommand(const std::string& aCommand, const std::string& aData);
 	void handleCompileCommands(Expr& aExpr);
-	void checkIfBetterMatch(const Method& aMethod,
+	void checkIfBetterMatch(const MethodPtr& aMethod,
 													const ExprNodesCIter& aStartIter,
 													const ExprNodesCIter& aEndIter,
 													Match& aMatch,
 													bool aLeftToRight,
 													bool aDebug);
-  void checkLeftToRightMethod(const Method& aMethod,
+  void checkLeftToRightMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
 															bool aDebug = false);
-  void checkRightToLeftMethod(const Method& aMethod,
+  void checkRightToLeftMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
 															bool aDebug = false);
-	void checkIfMethod(const Method& aMethod, const Expr& aExpr, Match& aMatch,
+	void checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Match& aMatch,
 										 bool aDebug = false);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
@@ -249,14 +256,14 @@ private:
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
-	Define*                     mCurDefine = nullptr;
+	DefinePtr                   mCurDefine;
 	std::ostream*               mSavedOut = nullptr;
 	std::list<IIdentifiersHolderPtr> mIdentifiersHolders;
 	std::list<IRecordsHolderPtr>mRecordsHolders;
 	std::list<ITypesHolderPtr>  mTypesHolders;
 	std::list<IDefinesHolderPtr>mDefinesHolders;
 	std::list<ScopePtr>         mScopes;
-	std::list<Code>             mCodes;
+	std::list<CodePtr>          mCodes;
 	bool												mDefineDecl = false;
 	std::list<int>              mLoopWhileCounts;
 	std::set<std::string>       mWantsUnary;

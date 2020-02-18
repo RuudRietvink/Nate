@@ -9,8 +9,8 @@ code:
 code define 150 \u uppercased ${val is text} is text:
   Core::upperCased($val)
   
-code define 150 \u uppercased ${val is text} is text:
-  Core::upperCased($val)
+code define 150 \u lowercased ${val is text} is text:
+  Core::lowerCased($val)
 
 code define 150 first \u of ${val is text} is text:
   Core::firstOf($val)

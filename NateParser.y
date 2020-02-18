@@ -29,9 +29,9 @@
   {
     for (auto code : aNate.data.curParsedCodes)
     {
-      if (&aNate.curCode() != code)
+      if (aNate.curCode() != code)
       {
-        code->copyFrom(aNate.curCode());
+        code->copyFrom(*aNate.curCode());
       }
     }
 
@@ -90,11 +90,15 @@
 %token CLOSEPAR ")"
 %token ARGSTART "${"
 %token ARGEND "}"
+%token BADTOKEN
 
 %type <std::string>              id;
 %type <std::string>              arg-id;
 %type <std::vector<std::string>> id-list;
 %type <TypePtr>                  optional-is-type;
+%type <std::vector<std::string>> opt-flag-list;
+%type <std::vector<std::string>> flag-list;
+%type <std::string>              flag;
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
 %type <std::string>              type-extra;
@@ -299,6 +303,7 @@ implement-object-content-statement:
 	  record-statement
 	| property-define-statement
   | define-statement
+  | impl-var-statement
   | EOS
   ;
 
@@ -309,7 +314,9 @@ define-decl:
 			  lexer.pushState(Lexer::ARGS);
         nate.data.objectMe = false;
 		  }
-	  arg-list call-return
+	  arg-list 
+      { nate.data.flagsHolder = nate.curMethod().get(); }
+    call-return
   ;
   
 arg-list:
@@ -321,15 +328,14 @@ arg:
     WORD
 		  { nate.addArgWord($WORD); }
   | ARGSTART arg-id[id] IS type 
-		  { nate.addArgId($id, $type, ""); }
-    opt-arg-flags ARGEND
+		  { 
+        nate.addArgId($id, $type, "");
+        nate.data.flagsHolder = &nate.curMethod()->curArg();
+      }
+    opt-holder-flag-list
+    ARGEND
   ;
-  
-opt-arg-flags:
-    %empty
-  | AS arg-flag-list
-  ;
-
+    
 define-statement:
 	  define-decl COL
 		  { 
@@ -371,11 +377,13 @@ code-define:
 	  CODE DEFINE
 		  { 
 			  nate.addCode();
-        nate.data.curParsedCodes.push_back(&nate.curCode());
+        nate.data.curParsedCodes.push_back(nate.curCode());
 			  lexer.pushState(Lexer::ARGS);
 		  }
 	  code-start
-	  code-list call-return COL
+	  code-list 
+      { nate.data.flagsHolder = nate.curMethod().get(); }
+    call-return COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::CODE);
@@ -396,7 +404,7 @@ code-list:
       {
 			  nate.endCode();
 			  nate.addCode();
-        nate.data.curParsedCodes.push_back(&nate.curCode());
+        nate.data.curParsedCodes.push_back(nate.curCode());
       }
     code-arg-list
   ;
@@ -404,7 +412,7 @@ code-list:
 code-start:
     NUMBER 
 		  { 
-			  nate.curCode().setPriority(atoi($NUMBER.c_str())); 
+			  nate.curCode()->setPriority(atoi($NUMBER.c_str())); 
 		  }
   ;
 
@@ -416,9 +424,9 @@ code-stat-list:
 
 code-stat:
     WORD
-		  { nate.curCode().addCodeStatWord($WORD); }
+		  { nate.curCode()->addCodeStatWord($WORD); }
   | id
-		  { nate.curCode().addCodeStatId($id); }
+		  { nate.curCode()->addCodeStatId($id); }
   ;
   
 code-arg-list:
@@ -433,72 +441,43 @@ code-arg:
   
 code-id-with-arg-flags:
     ARGSTART arg-id[id] AS
-		{ 
-			auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, std::make_shared<Type>(""));
-			nate.addIdentifier(id);
-		  nate.curMethod().addArgId(id);
-		}
-		arg-flag-list ARGEND
+		  { 
+			  auto id = std::make_shared<Identifier>(nate.curIdentifiersHolder(), $id, std::make_shared<Type>(""));
+			  nate.addIdentifier(id);
+		    nate.curMethod()->addArgId(id);
+        nate.data.flagsHolder = &nate.curMethod()->curArg();
+		  }
+		holder-flag-list 
+    ARGEND
   ;
  
 arg-id:
     id
   | WORD
   ;
-       
-arg-flag-list:
-	  arg-flag
-  | arg-flag-list COMMA arg-flag
-  ;
-
-arg-flag:
-	  WORD
-		  { 
-        if (!nate.curMethod().curArg().setArgFlag($WORD))
-        {
-				  nate.error("Unknown argument type: " + $WORD);
-        }
-      }
-  ;
-  
+             
 call-return:
   %empty
-		  { nate.curMethod().setReturnFlag("none"); }
+		  { nate.curMethod()->setFlagString("none"); }
 	| type-flags
   ;
   
 type-flags:
-    IS type opt-call-return-flags
+    IS type 
 		  { 
-			  nate.curMethod().setType($type);
+			  nate.curMethod()->setType($type);
 		  }
-    opt-call-return-flags
-  | AS call-return-flag-list
-  ;
-
-opt-call-return-flags:
-    %empty
-  | AS call-return-flag-list
-  ;
-
-
-call-return-flag-list:
-	  call-return-flag
-  | call-return-flag-list COMMA call-return-flag
-  ;
-
-call-return-flag:
-	  WORD
-		  { nate.optionalError(nate.curMethod().setReturnFlag($WORD)); }
+    opt-holder-flag-list
+  | AS holder-flag-list
   ;
   
 property-declare-statement:
 	  PROP 
 		  { lexer.pushState(Lexer::VAR_DECL); }
 	  id-list 
-		  { lexer.popState(); }
-	  is-type
-		  { nate.declareProperties(false, $[id-list], $[is-type]); }
+      { lexer.popState(); }
+	  is-type opt-flag-list
+		  { nate.declareProperties($[id-list], $[is-type], $[opt-flag-list]); }
   ;
   
 property-define-statement:
@@ -555,6 +534,34 @@ property-set-code:
 			  nate.endDefineProp(nate.data.propId, Object::PropType::Set);
 		  }
   ;
+  
+opt-holder-flag-list:
+    opt-flag-list
+      { nate.data.flagsHolder->setFlagStrings($[opt-flag-list]); }
+  ;
+  
+holder-flag-list:
+    flag-list
+      { nate.data.flagsHolder->setFlagStrings($[flag-list]); }
+  ;
+
+opt-flag-list:
+    %empty
+      { $$ = {}; }
+  | AS flag-list
+      { $$ = $[flag-list]; }
+  ;
+
+flag-list:
+	  flag
+		  { $$.push_back($flag); }
+  | flag-list[list] COMMA flag
+		  { $$ = $list; $$.push_back($flag); }
+  ;
+
+flag:
+	  WORD
+  ;  
 
 scope-statement:
     SCOPE col
@@ -565,6 +572,12 @@ scope-statement:
       { nate.codeEndScope(); }
   ;
 
+impl-var-statement:
+      { nate.data.inObjectImpl = true; }
+    var-statement
+      { nate.data.inObjectImpl = false; }
+  ;
+
 var-statement:
 	  var 
 		  { lexer.pushState(Lexer::VAR_DECL); }
@@ -572,8 +585,8 @@ var-statement:
 		  { lexer.popState(); }
 	  optional-is-type var-init-assign
 		  { 
-        nate.codeDeclareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign],
-                                         NateParser::InitializeVariables, @var);
+        nate.declareLocalIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign],
+                                     NateParser::InitializeVariables, @var);
       }
   ;
 
@@ -588,8 +601,8 @@ var:
 id-list:
 	  id
 		  { $$.push_back($id); }
-  | id-list COMMA id
-		  { $$ = $1; $$.push_back($id); }
+  | id-list[list] COMMA id
+		  { $$ = $list; $$.push_back($id); }
   ;
 
 id:
@@ -689,7 +702,7 @@ record-var:
 	  id-list 
 		  { lexer.popState(); }
 	  optional-is-type var-init-assign
-		  { nate.codeDeclareRecordIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign], @var); }
+		  { nate.declareRecordIdentifiers($var, $[id-list], $[optional-is-type], $[var-init-assign], @var); }
     opt-eos
   ;
 
@@ -702,10 +715,7 @@ expr-list:
     expr
 		  { $$.push_back($expr); }
   | expr-list[list] COMMA expr
-		  { 
-        $$ = $list;
-        $$.push_back($expr);
-      }
+		  { $$ = $list; $$.push_back($expr); }
   ;
   
 output-statement:
@@ -1147,20 +1157,17 @@ expr-non-word:
         {
           //std::cerr << "monomial " << value << std::endl;
           $$ = Expr(ExprNode("monomial"));
-			    $$.addNode(ExprNode(value, nate.codeId(value), identifier->type()));
+			    $$.addNode(ExprNode(identifier));
         }
         else
         {
-			    $$ = Expr(ExprNode(value, nate.codeId(value), identifier->type()));
+			    $$ = Expr(ExprNode(identifier));
 			    $$.node().setFlag(ExprNode::Output, !identifier->is(Identifier::Const));
           //std::cerr << "spacebeen " << $$ << std::endl;
         }
 
         nate.data.prevWasValue = true;
         lexer.noSpace();
-        $$.node().setFlag(ExprNode::ConstExpr, identifier->is(Identifier::Const));
-        $$.node().setFlag(ExprNode::Property, identifier->is(Identifier::Property));
-        $$.node().setFlag(ExprNode::Identifier);
 		  } 
   | OPENPAR 
       { 
@@ -1232,5 +1239,5 @@ string:
 
 void yy::parser::error(const location& loc, const std::string& msg)
 {
-  std::cerr << loc << ": " << msg << std::endl;
+  std::cerr << loc << ": " << msg << " (" << nate.getLexer()->text() << ")" << std::endl;
 }

@@ -5,6 +5,9 @@
 #include <string>
 #include <ostream>
 
+class Code;
+typedef std::shared_ptr<Code> CodePtr;
+
 class Code : public Method
 {
 public:
@@ -14,6 +17,7 @@ public:
 	void addCodeStatWord(const std::string& aWord);
 	void addCodeStatId(const std::string& aId);
 	std::string toCodeWord(const std::string& aWord) const override;
+	bool equals(const Code& aCode) const;
 	  
 private:
 	bool isCodeMethod() const override { return true; }

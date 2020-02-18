@@ -9,17 +9,18 @@
 class Scope : public IIdentifiersHolder, public IRecordsHolder, public ITypesHolder, public IDefinesHolder
 {
 public:
-	Scope(const std::string& aName = "");
+	Scope(const std::string& aName, ScopeFlag aScopeFlag);
 	virtual ~Scope() = default;
 
 	const std::string& name() const;
 	
 	// IIdentifiersHolder
 	Identifiers& identifiers() override { return mIdentifiers; }
-	std::string typeScopeName() const override { return ""; }
+	ScopeFlag scopeFlag() const override { return mScopeFlag; }
 	
 	// ITypesHolder
 	Types& types() override { return mTypes; }
+	std::string typeScopeName() const override { return ""; }
 
 	// IDefinesHolder
 	Defines& defines() override { return mDefines; }
@@ -32,7 +33,8 @@ private:
 	Identifiers              mIdentifiers;		
 	Types                    mTypes;		
 	Records                  mRecords;							
-	Defines                  mDefines;						
+	Defines                  mDefines;
+	ScopeFlag						     mScopeFlag;
 };    
 
 typedef std::shared_ptr<Scope> ScopePtr;

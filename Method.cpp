@@ -1,5 +1,6 @@
 #include "Method.h"
 
+#include "Expr.h"
 #include "Identifier.h"
 #include "Object.h"
 #include "Record.h"
@@ -37,7 +38,7 @@ void                    Method::setObject(const Object* aObject) { mObject = aOb
 void Method::setType(const TypePtr& aType)        { mType = aType; }
 void Method::setPriority(int aValue)              { mPriority = aValue; }
 
-std::string Method::setReturnFlag(const std::string& aFlag)
+std::string Method::setFlagString(const std::string& aFlag)
 {
 	std::string errorResult;
 
@@ -64,6 +65,10 @@ std::string Method::setReturnFlag(const std::string& aFlag)
 	else if (aFlag == "const")
 	{
 		setFlag(ConstExpr);
+	}
+	else if (aFlag == "final")
+	{
+		setFlag(Final);
 	}
 	else
 	{
@@ -301,6 +306,10 @@ void Method::handleOwnerMember(
 		{
 			aResult.flags.push_back(ExprNode::Property);
 		}
+		if (identifier->is(Identifier::ObjectImpl))
+		{
+			aResult.flags.push_back(ExprNode::ObjectImpl);
+		}
 	}
 }
 
@@ -342,7 +351,7 @@ ExprNode Method::createTypeCastNode(
 void Method::createArgCode(
 					const Arg& aArg,
 					const ExprNode& aNode,
-					const Define* aCurDefine,
+					const DefinePtr& aCurDefine,
 					const std::string& aNodeCode,
 					bool aIsObjectArg,
 					// ->
@@ -377,6 +386,11 @@ void Method::createArgCode(
 			{
 				code = "me->" + code;
 			}
+			else if (!aCurDefine->is(Method::Undeclared) &&
+							 aNode.is(ExprNode::Identifier) && aNode.is(ExprNode::ObjectImpl))
+			{
+				code = "_impl->" + code;
+			}
 		}
 
 		resultCode = Core::replaceAll(resultCode, "${" + aArg.identifier()->name() + "}", code);
@@ -402,7 +416,7 @@ void Method::createArgCode(
 }
 
 Method::EvaluateResult
-Method::evaluate(const Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+Method::evaluate(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
 {
 	EvaluateResult result;
 	TypePtr firstType;

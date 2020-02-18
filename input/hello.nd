@@ -6,12 +6,12 @@ declare object Hello:
     var count is int
 
   property name,address is text
-  property age is int
+  property age is int as readonly, final
   property data is Data
 
   define new Hello is Hello
 
-  define ${me is Hello} ${world is text} is text
+  define ${me is Hello} ${world is text} is text as final
 
   define hi ${other is Hello} is text
   

@@ -1,5 +1,6 @@
 
 #include "ExprNode.h"
+#include "Identifier.h"
 
 #include <iostream>
 
@@ -13,6 +14,16 @@ ExprNode::ExprNode(const std::string& aWord)
 {
 	setFlag(Word, true);
 	setFlag(ConstExpr, true);
+}
+
+ExprNode::ExprNode(const IdentifierPtr& aId)
+	: ExprNode(aId->name(), aId->codeName(), aId->type())
+{
+	mId = aId;
+  setFlag(ExprNode::ConstExpr, mId->is(Identifier::Const));
+  setFlag(ExprNode::Property, mId->is(Identifier::Property));
+  setFlag(ExprNode::ObjectImpl, mId->is(Identifier::ObjectImpl));
+  setFlag(ExprNode::Identifier);
 }
 
 ExprNode::ExprNode(const std::string& aText, const TypePtr& aType)
@@ -106,6 +117,7 @@ const std::string& ExprNode::code()			const { return mCode; }
 std::string&       ExprNode::code()						{ return mCode; }
 TypePtr            ExprNode::type()			const { return mType; }
 bool               ExprNode::isEmpty()	const { return mText.empty(); }
+IdentifierPtr      ExprNode::id()	  		const { return mId; }
 
 std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 {
@@ -117,6 +129,7 @@ std::ostream& operator<<(std::ostream& aStream, const ExprNode& aValue)
 	if (aValue.is(ExprNode::Default)) aStream << ",Default";
 	if (aValue.is(ExprNode::Property)) aStream << ",Property";
 	if (aValue.is(ExprNode::Identifier)) aStream << ",Identifier";
+	if (aValue.is(ExprNode::ObjectImpl)) aStream << ",ObjectImpl";
 	aStream << ")";
 	return aStream;
 }

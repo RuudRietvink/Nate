@@ -11,12 +11,13 @@ alias "×" "*"
 // operators
 ///////////////////////////////////////////////
 	
+	
 code define 120 \u uminus ${val-1 is number} is number as same, const:
 	-$val-1
 	
 code define 120 \u uplus ${val-1 is number} is number as same, const:
 	$val-1
-	
+	  
 code define 120 \u not ${cond is boolean} is boolean as const:
 	!$cond
   

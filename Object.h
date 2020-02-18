@@ -21,6 +21,9 @@ public:
 	Object(const std::string& aName, const TypePtr& aBaseType = TypePtr());
 	virtual ~Object() = default;
 	
+	// IIdentifiersHolder
+	ScopeFlag scopeFlag() const override { return ScopeFlag::ObjectImpl; }
+
 	// ITypesHolder
 	Types& types() override { return mTypes; }
 	std::string typeScopeName() const override { return name(); }

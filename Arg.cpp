@@ -16,9 +16,9 @@ bool                  Arg::isIdentifier()    const { return mIsIdentifier; }
 const IdentifierPtr&  Arg::identifier()      const { return mIdentifier; }
 const std::string&    Arg::word()            const { return mWord; }
 
-bool Arg::setArgFlag(const std::string& aFlag)
+std::string Arg::setFlagString(const std::string& aFlag)
 {
-  bool ok = true;
+  std::string errorString;
 
 	if (aFlag == "cmp")
 	{
@@ -63,10 +63,10 @@ bool Arg::setArgFlag(const std::string& aFlag)
 	}
   else
   {
-    ok = false;
+    errorString = "Unknown argument type: " + aFlag;
   }
 
-  return ok;
+  return errorString;
 }
 
 std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)

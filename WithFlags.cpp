@@ -28,6 +28,18 @@ void WithFlags::setFlags(const Flags& aFlags)
 	}
 }
 	
+std::string WithFlags::setFlagStrings(const std::vector<std::string>& aFlags)
+{
+	std::string result;
+
+	for (auto& flag : aFlags)
+	{
+		result.append(setFlagString(flag));
+	}
+
+	return result;
+}
+
 void WithFlags::setFlags(const std::bitset<32>& aFlags)
 {
 	mFlags = aFlags;

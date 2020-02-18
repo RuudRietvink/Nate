@@ -36,6 +36,11 @@ Expr::Expr(const Expr& aExpr1, const Expr& aExpr2)
 	}
 }
 
+Expr::Expr(const Expr& aOther)
+{
+	addNodes(aOther.nodes().begin(), aOther.nodes().end());
+}
+
 void Expr::addNode(const ExprNode& aNode)
 {
 	mNodes.push_back(aNode);
@@ -76,6 +81,7 @@ const std::string& Expr::code()            const { return node().code(); }
 TypePtr            Expr::type()            const { return node().type(); }
 bool               Expr::is(size_t aFlags) const { return !nodes().empty() && node().is(aFlags); }
 bool               Expr::isEmpty()         const { return nodes().empty() || node().isEmpty(); }
+IdentifierPtr      Expr::id()              const { return node().id(); }
 
 const ExprNode&    Expr::node()            const { return mNodes.front(); }
 ExprNode&          Expr::node()                  { return mNodes.front(); }

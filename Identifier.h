@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Container.h"
-#include "Expr.h"
 #include "Type.h"
 #include "WithFlags.h"
 
@@ -14,17 +13,20 @@ class Scope;
 class Identifier;
 typedef std::shared_ptr<Identifier> IdentifierPtr;
 class IIdentifiersHolder;
+class Expr;
+typedef std::shared_ptr<Expr> ExprPtr;
 
 class Identifier : public WithFlags
 {
 public:
 	Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType);
-	Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const Expr& aInitValue);
+	Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue);
 	virtual ~Identifier() = default;
+	std::string setFlagString(const std::string& aFlag) override;
 
 	const std::string&								name()							const;
 	const std::string&								codeName()					const;
-	const Expr&												initValue()				  const;
+	ExprPtr				    								initValue()				  const;
 	TypePtr														type()							const;
 	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
 	bool															isObjectMe()				const;
@@ -32,11 +34,15 @@ public:
 	
 	static const size_t Const        = 0;
 	static const size_t Property     = 1;
+	static const size_t ReadOnly     = 2;
+	static const size_t Final        = 3;
+	static const size_t ObjectImpl   = 4;
+	static const size_t Local        = 5;
 
 private:
 	std::string												mName;
 	std::string												mCodeName;
-	Expr															mInitValue;
+	ExprPtr 													mInitValue;
 	TypePtr														mType;
 	std::weak_ptr<IIdentifiersHolder>	mIdentifiersHolder;
 };
@@ -60,5 +66,13 @@ class IIdentifiersHolder
 {
 public:
 	virtual Identifiers& identifiers() = 0;
+	enum ScopeFlag
+	{
+		Local = 1,
+		ObjectImpl = 2,
+		Member = 3,
+		Global = 4,
+	};
+	virtual ScopeFlag scopeFlag() const = 0;
 };
 typedef std::shared_ptr<IIdentifiersHolder> IIdentifiersHolderPtr;

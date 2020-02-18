@@ -7,10 +7,14 @@
 #include <vector>
 #include <ostream>
 
+class Identifier;
+typedef std::shared_ptr<Identifier> IdentifierPtr;
+
 class ExprNode : public WithFlags
 {
 public:
 	ExprNode();
+	ExprNode(const IdentifierPtr& aId);
 	ExprNode(const std::string& aWord);
 	ExprNode(const std::string& aText, const TypePtr& aType);
 	ExprNode(const std::string& aText, const std::string& aCode, const TypePtr& aType);
@@ -23,6 +27,7 @@ public:
 	std::string&       code();
 	TypePtr            type()			const;
 	bool               isEmpty()	const;
+	IdentifierPtr      id()       const;
 	
 	static const size_t Word      = 0;
 	static const size_t Output    = 1;
@@ -31,11 +36,13 @@ public:
 	static const size_t Default   = 4;
 	static const size_t Property  = 5;
 	static const size_t Identifier= 6;
+	static const size_t ObjectImpl= 7;
 
 private:
 	std::string       mText;
 	std::string       mCode;
 	TypePtr           mType;
+	IdentifierPtr     mId;
 };
 
 typedef std::vector<ExprNode> ExprNodes;

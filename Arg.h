@@ -16,7 +16,7 @@ public:
 	bool									isIdentifier() const;
 	const IdentifierPtr&	identifier() const;
 	const std::string&		word() const;
-	bool									setArgFlag(const std::string& aFlag);
+	std::string						setFlagString(const std::string& aFlag) override;
 	
 	static const size_t Exact   	= 1;
 	static const size_t CompHigh	= 2;

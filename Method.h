@@ -14,6 +14,10 @@ class Identifier;
 class Record;
 class Object;
 class Define;
+typedef std::shared_ptr<Define> DefinePtr;
+
+class Method;
+typedef std::shared_ptr<Method> MethodPtr;
 
 class Method : public WithFlags
 {
@@ -39,7 +43,7 @@ public:
 
 	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual EvaluateResult evaluate(const Define* aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual EvaluateResult evaluate(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;
@@ -66,7 +70,7 @@ public:
 		
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
-	std::string         setReturnFlag(const std::string& aFlag);
+	std::string         setFlagString(const std::string& aFlag) override;
 	void                setObject(const Object* aObject);
 	const std::string&  code() const;
 	std::string&        code();
@@ -82,6 +86,7 @@ public:
 	static const size_t ConstMethod  = 8;
 	static const size_t Defined      = 9;
 	static const size_t Undeclared   =10;
+	static const size_t Final        =11;
   
 private:
 	void getTypes(
@@ -106,7 +111,7 @@ private:
 	void createArgCode(
 					const Arg& aArg,
 					const ExprNode& aNode,
-					const Define* aCurDefine,
+					const DefinePtr& aCurDefine,
 					const std::string& aNodeCode,
 					bool aIsObjectArg,
 					// ->

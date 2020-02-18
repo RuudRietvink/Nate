@@ -1,14 +1,20 @@
 import Hello
 
 implement object Hello:
+  var myVar := "Hi There"
+  var myBool := false
+  var myData is Data
+
   property name:
     get:
       var hi := 3
-      return name
+      return name + myVar
     set:
       var hi := 5
       var temp := name + value + address + hi;
       name := temp
+      if myBool:
+        name := name + myData's greet
       return name
       
   define new Hello is Hello:
@@ -17,8 +23,9 @@ implement object Hello:
     
   define get ${me is Hello} age is int-32:
     var hi := 34
-    output "Test", 
-    return me's age + age + hi;
+    if myBool:
+      output "Test", myVar, myData's greet
+    return me's age + age + hi
     
   define greetings is text:
     return "Hello"

@@ -67,14 +67,15 @@ public:
 		{
       if (debug())
       {
-        std::cerr << "End parsing: " << filenames.back() << std::endl;
+        std::cerr << "End of file: " << filenames.back() << std::endl;
       }
 			fclose(in());                   // close current input in() (a FILE*)
 			pop_matcher();                  // delete current matcher, pop matcher
 			filenames.pop_back();
 			--depth;
 			result = false;                 // continue reading
-      if (debug() && !filenames.empty())
+      if (debug() && 
+          !filenames.empty())
       {
         std::cerr << "Continue parsing: " << filenames.back() << std::endl;
       }
@@ -371,6 +372,7 @@ include\h*\".*\"  s(); includeFile();
 
 <DECL_TYPE>{
 \bof\b		    return yy::parser::make_OF(location());
+\bas\b		    return yy::parser::make_AS(location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
 
@@ -381,6 +383,7 @@ include\h*\".*\"  s(); includeFile();
 ":="		      return yy::parser::make_ASSIGN(location());
 ","			      return yy::parser::make_COMMA(location());
 ":"				    return yy::parser::make_COL(location());
+. 				    return yy::parser::make_BADTOKEN(location());
 }
 
 \bprogram\b		return yy::parser::make_PROGRAM(location());

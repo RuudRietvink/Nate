@@ -24,6 +24,11 @@ std::string Code::toCodeWord(const std::string& aWord) const
 	return aWord;
 }
 
+bool Code::equals(const Code& aCode) const
+{
+	return pattern() == aCode.pattern();
+}
+
 std::ostream& operator<<(std::ostream& aStream, const Code& aValue)
 {
 	aStream << "Code(";

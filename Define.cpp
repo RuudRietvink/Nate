@@ -116,21 +116,21 @@ std::ostream& operator<<(std::ostream& aStream, const Define& aValue)
 	return aStream;
 }
 
-std::list<Define>& Defines::get()
+std::list<DefinePtr>& Defines::get()
 {
 	return mDefines;
 }
 
-void Defines::add(const Define& aDefine)
+void Defines::add(const DefinePtr& aDefine)
 {
 	mDefines.push_back(aDefine);
 }
 
-Define* Defines::getLike(const Define* aDefine)
+DefinePtr Defines::getLike(const DefinePtr& aDefine)
 {
 	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
-													 [&aDefine](const Define& item)
-													 { return aDefine != &item &&
-													   aDefine->pattern() == item.pattern(); });
-	return (iter != mDefines.end()) ? &(*iter) : nullptr;
+													 [&aDefine](const DefinePtr& item)
+													 { return aDefine != item &&
+													   aDefine->pattern() == item->pattern(); });
+	return (iter != mDefines.end()) ? *iter : DefinePtr();
 }
