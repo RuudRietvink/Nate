@@ -6,11 +6,14 @@
 #include "Record.h"
 #include "Type.h"
 
+class Scope;
+typedef std::shared_ptr<Scope> ScopePtr;
+
 class Scope : public IIdentifiersHolder, public IRecordsHolder, public ITypesHolder, public IDefinesHolder
 {
 public:
 	Scope(const std::string& aName, ScopeFlag aScopeFlag);
-	virtual ~Scope() = default;
+	DTOR_RULES_OF_X(Scope)
 
 	const std::string& name() const;
 	
@@ -36,5 +39,3 @@ private:
 	Defines                  mDefines;
 	ScopeFlag						     mScopeFlag;
 };    
-
-typedef std::shared_ptr<Scope> ScopePtr;

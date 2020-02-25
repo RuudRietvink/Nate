@@ -44,6 +44,7 @@ public:
 	virtual Hello::Data data_get() const;
 	virtual const Hello::Data& data_set(const Hello::Data& value);
 	static std::shared_ptr<Hello> new_Hello_();
+	virtual std::shared_ptr<Hello> _E_O_Hello_greeted_();
 	std::string _E_Hello__E_text_(const std::string& world) const;
 	static std::string hi__E_Hello_(const std::shared_ptr<Hello>& other);
 	virtual std::string stream_out__E_Hello_() const;

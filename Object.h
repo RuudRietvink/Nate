@@ -21,6 +21,8 @@ public:
 	Object(const std::string& aName, const TypePtr& aBaseType = TypePtr());
 	virtual ~Object() = default;
 	
+	bool isOfType(const std::string& aType) const override;
+
 	// IIdentifiersHolder
 	ScopeFlag scopeFlag() const override { return ScopeFlag::ObjectImpl; }
 
@@ -37,8 +39,9 @@ public:
 	std::stringstream& getImplOut();
 	std::stringstream& getNormalOut();
 
-	ObjectPtr getBase();
-	void setBase(const ObjectPtr& aBase);
+	const std::vector<ObjectPtr>& getBases();
+	void addBase(const ObjectPtr& aBase);
+	bool hasObjectBase() const;
 	
 	enum class PropType
 	{
@@ -65,11 +68,15 @@ public:
 	bool     isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;
 	bool     isPropDefined(const IdentifierPtr& anId, PropType aPropType) const;
 
+	bool isInterface() const;
+	void setIsInterface(bool aIsInterface);
+
 private:		
+	bool															mIsInterface = false;
 	Types															mTypes;			
 	Records														mRecords;						
 	Defines														mDefines;
-	ObjectPtr													mBase;
+	std::vector<ObjectPtr>						mBases;
 	std::stringstream									mImplOut;			
 	std::stringstream									mNormalOut;	
 	std::map<IdentifierPtr, PropData>	mPropertyMethods;

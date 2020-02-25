@@ -57,7 +57,7 @@ bool					 		    Identifier::isObjectMe()const { return isNameMe(mName); }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 {
-	aStream << "Identifier(" << aValue.name() << "," << aValue.codeName() << "," << *aValue.type() << "," << aValue.initValue();
+	aStream << "Identifier(" << aValue.name() << "," << aValue.codeName() << "," << *aValue.type() << "," << *aValue.initValue();
 	if (aValue.is(Identifier::Const)) aStream << ",Const";
 	if (aValue.is(Identifier::Property)) aStream << ",Property";
 	if (aValue.is(Identifier::ReadOnly)) aStream << ",ReadOnly";

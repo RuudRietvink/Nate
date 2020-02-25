@@ -207,3 +207,17 @@ namespace Core
 	std::ostream& operator<<(std::ostream& aStream, const Core::Format& aFormat);
 };
 
+#define COPY_ASSIGN_RULES_OF_X(Name) \
+	Name(const Name&) = default; \
+	Name(Name&&) = default; \
+	Name& operator=(const Name&) = default; \
+	Name& operator=(Name&&) = default;
+
+#define RULES_OF_X(Name) \
+	Name() = default; \
+	virtual ~Name() = default; \
+	COPY_ASSIGN_RULES_OF_X(Name)
+
+#define DTOR_RULES_OF_X(Name) \
+	~Name() override = default; \
+	COPY_ASSIGN_RULES_OF_X(Name)

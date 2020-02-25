@@ -266,9 +266,6 @@
     <ClInclude Include="core\Complex.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Role.h">
-      <Filter>Source Files\Structs</Filter>
-    </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>

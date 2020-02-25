@@ -215,7 +215,7 @@ declare-object-statement:
         if (nate.baseObjectName() != object->name())
         {
           nate.importBaseObject(object->name());
-          object->setBase(nate.getObject(nate.baseObjectName()));
+          object->addBase(nate.getObject(nate.baseObjectName()));
         }
 
         nate.addObject(object);
@@ -271,7 +271,7 @@ implement-object-statement:
           if (nate.baseObjectName() != object->name())
           {
             nate.importBaseObject(object->name());
-            object->setBase(nate.getObject(nate.baseObjectName()));
+            object->addBase(nate.getObject(nate.baseObjectName()));
           }
 
           nate.addObject(object);
@@ -1051,7 +1051,7 @@ return-statement:
 expr-statement:
     expr
       { 
-        nate.codeExpression($expr, @expr);
+        nate.codeExpressionStatement($expr, @expr);
         if ($expr.type() && !$expr.type()->empty())
         {
           nate.warning("Ignoring result of expression");

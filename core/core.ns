@@ -122,5 +122,5 @@ code define 65 stream-out ${val is number}:
 code define 65 stream-out ${val is boolean}:
   $val
   
-code define 60 construct me:
-  auto me = std::make_shared<__X__OBJECT_TYPE__.__>()
+code define 60 construct ${result is object as out}:
+  result = std::make_shared<__X__OBJECT_TYPE__.__>()

@@ -1,6 +1,6 @@
 #pragma once
 #include "C:\Users\ruud\source\repos\Nate\core\Core.h"
-class BaseObject
+class BaseObject: public std::enable_shared_from_this<BaseObject>
 {
 private:
   class __impl;

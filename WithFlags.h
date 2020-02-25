@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Core.h"
+
 #include <bitset>
 #include <vector>
 
@@ -19,6 +21,8 @@ public:
 protected:
 	void setFlags(const std::bitset<32>& aFlags);
 	const std::bitset<32>& getFlags() const;
+	
+	RULES_OF_X(WithFlags)
 
 private:
 	std::bitset<32> mFlags;

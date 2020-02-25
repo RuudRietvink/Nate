@@ -66,7 +66,7 @@ class IIdentifiersHolder
 {
 public:
 	virtual Identifiers& identifiers() = 0;
-	enum ScopeFlag
+	enum class ScopeFlag
 	{
 		Local = 1,
 		ObjectImpl = 2,

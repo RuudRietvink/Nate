@@ -18,8 +18,23 @@ Object::Object(const std::string& aName, const TypePtr& aBaseType)
 std::stringstream& Object::getImplOut()      { return mImplOut; }
 std::stringstream& Object::getNormalOut()    { return mNormalOut; }
 
-ObjectPtr          Object::getBase()         { return mBase; }
-void Object::setBase(const ObjectPtr& aBase) { mBase = aBase; }
+const std::vector<ObjectPtr>& Object::getBases() { return mBases; }
+void Object::addBase(const ObjectPtr& aBase) { mBases.push_back(aBase); }
+
+bool Object::isOfType(const std::string& aType) const
+{
+	return Type::isOfType(aType) ||
+		     std::any_of(mBases.begin(), mBases.end(), 
+	                   [&](const ObjectPtr& aBase) 
+										 { return aBase->name() == aType || aBase->isOfType(aType); } );
+}
+
+bool Object::hasObjectBase() const
+{
+	return std::any_of(mBases.begin(), mBases.end(), 
+	                   [&](const ObjectPtr& aBase) 
+										 { return aBase->isInterface(); } );
+}
 
 Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aPropType) const
 {
@@ -49,11 +64,22 @@ bool Object::isPropDefined(const IdentifierPtr& anId, PropType aPropType) const
 	return getPropState(anId, aPropType) == PropState::Defined;
 }
 
+bool Object::isInterface() const
+{
+	return mIsInterface;
+}
+
+void Object::setIsInterface(bool aIsInterface)
+{
+	mIsInterface = aIsInterface;
+}
+
 std::ostream& operator<<(std::ostream& aStream, const Object& aValue)
 {
 	aStream << "Object(" 
 		    << static_cast<Type>(aValue) << ",";
 	
+	if (aValue.isInterface()) aStream << ",isinterface";
 	aStream << ")";
 	return aStream;
 }

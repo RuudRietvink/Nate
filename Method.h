@@ -41,9 +41,9 @@ public:
 		Flags flags;
 	};
 
-	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
-	virtual EvaluateResult evaluate(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug = false) const;
+	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
+	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
+	virtual EvaluateResult createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
 	virtual std::string toCodeWord(const std::string& aWord) const;

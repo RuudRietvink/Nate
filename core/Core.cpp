@@ -90,7 +90,7 @@ namespace Core
 	{
 		FILE *fp;
 		bool result = fopen_s(&fp, aFileName.c_str(), "r") == 0;
-		if (result)
+		if (result && fp)
 		{
 			fclose(fp);
 		}

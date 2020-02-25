@@ -11,6 +11,8 @@ declare object Hello:
 
   define new Hello is Hello
 
+  define ${me is Hello as out} greeted is Hello
+
   define ${me is Hello} ${world is text} is text as final
 
   define hi ${other is Hello} is text

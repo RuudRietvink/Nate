@@ -6,8 +6,7 @@
 #include <cctype>
 #include <tuple>
 
-bool gDebug = true && false
-;
+int gDebug = 0;
 
 NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 											 FileType aFileType)
@@ -1016,7 +1015,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 																		const ExprNodesCIter& aEndIter,
 																		Match& aMatch,
 																		bool aLeftToRight,
-																		bool aDebug)
+																		int aDebug)
 {
 	if (aMethod->matches(aStartIter, aEndIter, aDebug) &&
 			(!aMatch.methodFound || 
@@ -1040,7 +1039,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 					std::cerr << "Better match 1: " << " "
 										<< aMethod->code() 
 										<< matchResult.castCount << " "
-										<< (!aMatch.methodFound  ? "None" : aMatch.methodFound->code()) << " "
+										<< (aMatch.methodFound  ? aMatch.methodFound->code() : "None") << " "
 										<< aMatch.matchResult.castCount << " "
 										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
 										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
@@ -1063,7 +1062,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 					std::cerr << "Better match 2: " << " "
 										<< aMethod->code() 
 										<< matchResult.castCount << " "
-										<< (aMatch.methodFound ? "None" : aMatch.methodFound->code()) << " "
+										<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
 										<< aMatch.matchResult.castCount << " "
 										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
 										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
@@ -1082,7 +1081,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 					std::cerr << "No match1: " << " "
 										<< aMethod->code() << " "
 										<< matchResult.castCount << " "
-										<< (aMatch.methodFound ? "None" : aMatch.methodFound->code()) << " "
+										<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
 										<< aMatch.matchResult.castCount << " "
 										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
 										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
@@ -1100,7 +1099,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 				std::cerr << "No match2: " << " "
 					        << aMethod->code() << " "
 					        << matchResult.castCount << " "
-									<< (aMatch.methodFound ? "None" : aMatch.methodFound->code()) << " "
+									<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
 					        << aMatch.matchResult.castCount << " "
 									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
 									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
@@ -1119,7 +1118,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 void NateParser::checkLeftToRightMethod(const MethodPtr& aMethod,
 																			  const Expr& aExpr,
 																			  Match& aMatch, 
-																				bool aDebug)
+																				int aDebug)
 {
 	auto size = aMethod->args().size();
 
@@ -1134,7 +1133,7 @@ void NateParser::checkLeftToRightMethod(const MethodPtr& aMethod,
 void NateParser::checkRightToLeftMethod(const MethodPtr& aMethod,
 																			  const Expr& aExpr,
 																			  Match& aMatch, 
-																				bool aDebug)
+																				int aDebug)
 {
 	auto size = aMethod->args().size();
 
@@ -1146,7 +1145,7 @@ void NateParser::checkRightToLeftMethod(const MethodPtr& aMethod,
 	}
 }
 
-void NateParser::checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Match& aMatch, bool aDebug)
+void NateParser::checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Match& aMatch, int aDebug)
 {
 	auto size = aMethod->args().size();
 	if (size <= aExpr.nodes().size() && size > 0)
@@ -1162,10 +1161,24 @@ void NateParser::checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Matc
 	}
 }
 
-Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
+void NateParser::checkIfObjectDefine(const ObjectPtr& aObject, const Expr& aExpr, int aDebug,
+															     	 Match& aMatch)
+{
+	for (auto const& define : aObject->defines().get())
+	{
+		checkIfMethod(define, aExpr, aMatch, aDebug);
+
+		for (auto const& base : aObject->getBases())
+		{
+			checkIfObjectDefine(base, aExpr, aDebug, aMatch);
+		}
+	}
+}
+
+Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 {
 	Expr result = aExpr;
-	aDebug = gDebug || aDebug;
+	aDebug = std::max(gDebug, aDebug);
 	if (aDebug) std::cerr << "+++++ " << aExpr.text() << " " << aExpr << std::endl;
 
 	Match match;
@@ -1176,10 +1189,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 	{
 		for (auto& object : mObjects)
 		{		
-			for (auto const& define : object->defines().get())
-			{
-				checkIfMethod(define, aExpr, match, aDebug);
-			}
+			checkIfObjectDefine(object, aExpr, aDebug, match);
 		}
 
 		for (auto const& code : mCodes)
@@ -1198,7 +1208,7 @@ Expr NateParser::evaluate(const Expr& aExpr, bool aDebug)
 		if (match.methodFound)
 		{
 			Method::EvaluateResult evalResult = 
-				match.methodFound->evaluate(curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
+				match.methodFound->createCode(curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
 			if (!evalResult.error.empty())
 			{
 				error(evalResult.error);
@@ -1347,14 +1357,21 @@ std::string NateParser::codeExpr(const Expr& aValue)
 		IdentifierPtr id = aValue.id();
 		if (id)
 		{
-			IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
-			if (holder)
+			if (id->isObjectMe())
 			{
-				if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
+				result = "std::dynamic_pointer_cast<" + toCodeName(id->type()->name()) + ">(shared_from_this())";
+			}
+			else
+			{
+				IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
+				if (holder)
 				{
-					if (curDefine() && !curDefine()->is(Define::Undeclared))
+					if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
 					{
-						result = "_impl->" + result;
+						if (curDefine() && !curDefine()->is(Define::Undeclared))
+						{
+							result = "_impl->" + result;
+						}
 					}
 				}
 			}
@@ -1594,14 +1611,29 @@ void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)
 	*mOut << in() << "};\n" << std::endl;
 }
 
+void NateParser::codeObjectBases(const ObjectPtr& aObject)
+{
+	*mOut << "class " << toCodeName(aObject->name());
+
+	if (aObject->getBases().empty())
+	{
+		*mOut << ": public std::enable_shared_from_this<" << toCodeName(aObject->name()) << ">";
+	}
+	else
+	{
+		bool first = true;
+		for (auto const& base : aObject->getBases())
+		{
+			*mOut << (first ? ": public " : ", ") << toCodeName(base->name());
+			first = false;
+		}
+	}
+}
+
 void NateParser::codeStartDeclObject()
 {	
-	auto name = toCodeName(curObject()->name());
-	*mOut << "class " << name;
-	if (curObject()->getBase())
-	{
-		*mOut << ": public " << toCodeName(curObject()->getBase()->name());
-	}
+	codeObjectBases(curObject());
+
 	*mOut << std::endl;
 	*mOut << "{" << std::endl;
 	*mOut << "private:" << std::endl;
@@ -1609,6 +1641,7 @@ void NateParser::codeStartDeclObject()
 	*mOut << "  __impl* _impl;"  << std::endl;
 	*mOut << "  friend class __impl;"  << std::endl;
 	*mOut << "public:" << std::endl;
+	auto name = toCodeName(curObject()->name());
 	*mOut << "  " << name << "();" << std::endl;
 	*mOut << "  virtual ~" << name << "();" << std::endl;
 }
@@ -1620,23 +1653,19 @@ void NateParser::codeEndDeclObject()
 
 void NateParser::codeStartImplObject()
 {	
-	auto name = toCodeName(curObject()->name());
 	mSavedOut = mOut;
+	mOut = &curObject()->getImplOut();
 
 	if (curObject()->is(Type::ObjectImpl))
 	{
-		mOut = &curObject()->getNormalOut();
-		*mOut << "class " << name;
-		if (curObject()->getBase())
-		{
-			*mOut << ": public " << toCodeName(curObject()->getBase()->name());
-		}
+		codeObjectBases(curObject());
+		*mOut << std::endl;
 		*mOut << "{" << std::endl;
 		*mOut << "public:" << std::endl;
 	}
 	else
 	{
-		mOut = &curObject()->getImplOut();
+		auto name = toCodeName(curObject()->name());
 		*mOut << "class " << name << "::__impl" << std::endl;
 		*mOut << "{" << std::endl;
 		*mOut << "private:" << std::endl;
@@ -1715,6 +1744,7 @@ void NateParser::codeEndImplObject()
 			}
 		}
 		
+		*mOut << curObject()->getImplOut().str();
 		*mOut << curObject()->getNormalOut().str();
 		*mOut << "};\n" << std::endl;
 	}
@@ -2253,7 +2283,7 @@ void NateParser::codeLoopWhile(const Expr& aExpr, const yy::parser::location_typ
 	 *mOut << in() << "return " << codeExpr(aValue) << ";" << std::endl;
  }
 
- void NateParser::codeExpression(const Expr& aValue, const yy::parser::location_type& aLocation)
+ void NateParser::codeExpressionStatement(const Expr& aValue, const yy::parser::location_type& aLocation)
  {
 	 printLineNr(aLocation);
 	 *mOut << in() << codeExpr(aValue) << ";" << std::endl;

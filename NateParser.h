@@ -200,8 +200,8 @@ public:
   void codeEndLoop();
   void codeLoopWhile(const Expr& aExpr, const yy::parser::location_type& aLocation);
   void codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
-  void codeExpression(const Expr& aExpr, const yy::parser::location_type& aLocation);
-  Expr evaluate(const Expr& aExpr, bool aDebug = false);
+  void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
+  Expr evaluate(const Expr& aExpr, int aDebug = 0);
 	void printLineNr(const yy::parser::location_type& aLocation);
 
 private:
@@ -217,6 +217,8 @@ private:
 	void popTypesHolder();
 	void pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder);
 	void popDefinesHolder();
+	
+	void codeObjectBases(const ObjectPtr& aObject);
 
 	struct Match
 	{
@@ -234,17 +236,19 @@ private:
 													const ExprNodesCIter& aEndIter,
 													Match& aMatch,
 													bool aLeftToRight,
-													bool aDebug);
+													int aDebug);
   void checkLeftToRightMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
-															bool aDebug = false);
+															int aDebug = 0);
   void checkRightToLeftMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
-															bool aDebug = false);
+															int aDebug = 0);
 	void checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Match& aMatch,
-										 bool aDebug = false);
+										 int aDebug = 0);
+	void checkIfObjectDefine(const ObjectPtr& aObject, const Expr& aExpr, int aDebug,
+								 					 Match& aMatch);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
 	void codeOutputNew();

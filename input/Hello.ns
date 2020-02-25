@@ -1,5 +1,17 @@
 import Hello
 
+implement object Local:
+  var localVar := 3
+  
+  define new Local is Local:
+    var result is Local
+    construct result
+    initialize result
+    return result
+    
+  define ${me is Local} ${world is text} is text:
+    return "Local " + world + localVar
+
 implement object Hello:
   var myVar := "Hi There"
   var myBool := false
@@ -18,13 +30,15 @@ implement object Hello:
       return name
       
   define new Hello is Hello:
-    construct me
-    return me
+    var result is Hello
+    construct result
+    initialize result
+    return result
     
   define get ${me is Hello} age is int-32:
     var hi := 34
     if myBool:
-      output "Test", myVar, myData's greet
+      output "Test", myVar, myData's greet, new Local " world"
     return me's age + age + hi
     
   define greetings is text:
@@ -40,5 +54,10 @@ implement object Hello:
   define hi ${other is Hello} is text:
     return other " earth"
   
+  define ${me is Hello as out} greeted is Hello:
+    myData's greet := me greetings
+    var other := me
+    return me
+
   define stream-out ${me is Hello} is text:
     return me greetings  + ", it's " + me " angry world"

@@ -15,14 +15,14 @@ class Type : public WithFlags
 public:
 	Type();
 	Type(const std::string& aName, const TypePtr& aBaseType = TypePtr());
-	virtual ~Type() = default;
+	DTOR_RULES_OF_X(Type)
 	
 	virtual bool is(size_t aFlags) const override;
 	bool isBiggerThan(const TypePtr& aType) const;
 	bool empty() const;
 	void setType(const std::string& aType);
 	virtual std::ostream& print(std::ostream& aStream) const;
-	bool isOfType(const std::string& aType) const;
+	virtual bool isOfType(const std::string& aType) const;
 
 	virtual const std::string& name() const;
 	
@@ -68,7 +68,7 @@ public:
 	static const size_t Template   =19;
 	static const size_t Object     =20;
 	static const size_t ObjectImpl =21;
-
+	
 private:
 	void setBaseType(const TypePtr& aType);
 
@@ -85,12 +85,14 @@ std::ostream& operator<<(std::ostream& aStream, const Type& aValue);
 class Types
 {
 public:
+	RULES_OF_X(Types)
+
 	virtual TypePtr get(const std::string& aName);
 	virtual void add(const TypePtr& aType, const std::string& aName = "");
 	virtual bool contains(const TypePtr& aType);
 
 private:			
-	Container<TypePtr>       mTypes;			
+	Container<TypePtr>       mTypes;	
 };
 
 class ITypesHolder
@@ -98,5 +100,9 @@ class ITypesHolder
 public:
 	virtual Types& types() = 0;
 	virtual std::string typeScopeName() const = 0;
+
+protected:
+	RULES_OF_X(ITypesHolder)
 };
+
 typedef std::shared_ptr<ITypesHolder> ITypesHolderPtr;

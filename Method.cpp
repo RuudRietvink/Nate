@@ -183,9 +183,9 @@ TypePtr Method::getTemplateType(const ExprNodesCIter& aNodeIter) const
 	return templateType;
 }
 
-bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
 {
-	if (aDebug)
+	if (aDebug >= 2)
 	{
 		auto exp = Expr();
 		exp.addNodes(aBegin, aEnd);
@@ -200,8 +200,8 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 			Record* owner = getOwner(aBegin);
 			if (owner == nullptr || !owner->identifiers().get(nodeIter->text()))
 			{
-				if (aDebug) if (owner == nullptr) std::cerr << "No owner" << std::endl;
-				if (aDebug) std::cerr << "Field is not member of owner: " << nodeIter->text() << std::endl;
+				if (aDebug >= 3) if (owner == nullptr) std::cerr << "No owner" << std::endl;
+				if (aDebug >= 3) std::cerr << "Field is not member of owner: " << nodeIter->text() << std::endl;
 				return false;
 			}
 		}
@@ -211,21 +211,26 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, b
 			{
 				if (nodeIter->is(ExprNode::Word))
 				{
-					if (aDebug) std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
+					if (aDebug >= 3) std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
 					return false;
 				}
 			}
 			else if (arg.word() != nodeIter->text())
 			{
-				if (aDebug) std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
+				if (aDebug >= 3) std::cerr << "not word " << arg.word() << " " << nodeIter->text() << std::endl;
 				return false;
 			}
 		}
 
 		++nodeIter;
 	}
-
-	if (aDebug) std::cerr << "matches " << std::endl;
+	
+	if (aDebug)
+	{
+		auto exp = Expr();
+		exp.addNodes(aBegin, aEnd);
+	  std::cerr << pattern() << " matches " << exp.text() << std::endl;
+	}
 
 	return true;
 }
@@ -403,6 +408,10 @@ void Method::createArgCode(
 			{
 				resultCode = "_impl->" + resultCode;
 			}
+			else if (aCurDefine->isStatic())
+			{
+				resultCode = "me->" + resultCode;
+			}
 			else
 			{
 				resultCode = "this->" + resultCode;
@@ -416,7 +425,7 @@ void Method::createArgCode(
 }
 
 Method::EvaluateResult
-Method::evaluate(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
 {
 	EvaluateResult result;
 	TypePtr firstType;
@@ -490,7 +499,7 @@ Method::evaluate(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, cons
 	
 	if (isStatic())
 	{
-		if (is(Method::Undeclared))
+		if (is(Method::Undeclared) && object() == aCurDefine->object())
 		{
 			result.code = "__impl::" + result.code;
 		}
@@ -547,7 +556,7 @@ const std::string& Method::pattern() const
 }
 
 Method::MatchResult 
-Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, bool aDebug) const
+Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
 {
 	MatchResult result;
 	TypePtr firstType;

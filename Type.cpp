@@ -214,6 +214,7 @@ bool Type::isBiggerThan(const TypePtr& aType) const
 
 	return result;
 }
+
 Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMatch) const
 {
 	CompareResult result = CompareResult::No;
