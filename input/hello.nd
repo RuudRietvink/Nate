@@ -1,6 +1,27 @@
 import Text
 
-declare object Hello:
+role Greetable:
+  record Greet:
+    var greeting is text
+    var count is int
+
+  property greet is Greet
+  
+  define ls ${me is Greetable} ${world is text} is text
+
+declare object Hi:
+  record Datum:
+    var fun is text
+    var count is int
+
+  property age is int as readonly
+  property datum is Datum
+
+  define new Hi is Hi
+
+  define ${me is Hi} ${world is text} is text
+
+declare object Hello is Hi, as Greetable:
   record Data:
     var greet is text
     var count is int
@@ -11,9 +32,9 @@ declare object Hello:
 
   define new Hello is Hello
 
-  define ${me is Hello as out} greeted is Hello
+  define ${me as out} greeted is Hello
 
-  define ${me is Hello} ${world is text} is text as final
+  define ${me} ${world is text} is text as final
 
   define hi ${other is Hello} is text
   

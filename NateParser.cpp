@@ -164,15 +164,11 @@ std::string NateParser::baseObjectName() const
 	return "BaseObject";
 }
 
-void NateParser::importBaseObject(const std::string& aInObjectName)
+void NateParser::importBaseObject(const std::string& aBaseName)
 {
-	auto baseName = baseObjectName();
-	if (aInObjectName != baseName)
+	if (!getObject(aBaseName))
 	{
-		if (mImports.find(baseName) == mImports.cend())
-		{
-			importObjectDefinition(mLibrary, baseName);
-		}
+		import(aBaseName);
 	}
 }
 
@@ -412,6 +408,59 @@ void NateParser::startObject(const ObjectPtr& aObject)
 	pushDefinesHolder(aObject);
 }
 
+void NateParser::checkObject(const ObjectPtr& aObject)
+{
+	int baseCount = std::count_if(aObject->getBases().begin(), aObject->getBases().end(),
+														    [&](const ObjectPtr& aBase)
+	                              { return !aBase->isRole(); });
+	if (baseCount > 1)
+	{
+		error("Multiple inheritance is not allowed");
+	}
+	else if (baseCount == 0 && !aObject->isRole())
+	{
+    if (aObject->name() != baseObjectName())
+    {
+      importBaseObject(baseObjectName());
+      aObject->addBase(getObject(baseObjectName()));
+    }
+	}
+}
+
+void NateParser::addUndeclaredProperties(const ObjectPtr& aObject)
+{
+	for (const auto& base : aObject->getBases())
+	{
+		if (base->isRole())
+		{
+			for (const auto& propMethod : base->propertyMethods())
+			{
+				auto const& propId = propMethod.first;
+				if (curObject()->getPropState(propId, Object::PropType::Get) == Object::PropState::Unknown)
+				{
+					checkIdentifierName(propId->name());
+					IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
+					id->setFlags(propId->getFlags());
+					addIdentifier(id);
+					codeDeclareProperty(id);
+				}
+			}
+		}
+	}
+}
+
+void NateParser::endDeclObject()
+{
+	if (!curObject()->isRole())
+	{
+		addUndeclaredProperties(curObject());
+	}
+
+  data.inObject = false;
+  codeEndDeclObject();
+	endObject();
+}
+
 void NateParser::endObject()
 {
 	popIdentifiersHolder();
@@ -419,6 +468,41 @@ void NateParser::endObject()
 	popTypesHolder();
 	popDefinesHolder();
 	setCurObject(ObjectPtr());
+}
+
+void NateParser::endImplementObject()
+{
+	if (curObject()->is(Type::ObjectImpl))
+	{
+		for (const auto& define : curObject()->defines().get())
+		{
+			if (!define->is(Method::Undeclared) && !define->is(Method::Defined))
+			{
+				error("Undefined method: " + define->signature());
+			}
+		}
+	}
+
+	for (auto const& base : curObject()->getBases())
+	{
+		if (base->isRole())
+		{
+			for (auto const& define : base->defines().get())
+			{
+				if (!define->is(Method::Defined))
+				{
+					auto const& like = curObject()->defines().getLike(define);
+					if (!like || !like->is(Method::Defined))
+					{
+						error("Undefined method: " + define->signature());
+						//std::cerr << *define << std::endl;
+					}
+				}
+			}
+		}
+	}
+
+	endObject();
 }
 
 ObjectPtr NateParser::getObject(const std::string& aId)
@@ -522,8 +606,10 @@ void NateParser::declareDefine(bool aIsDecl)
 		{
 			const char* virtualKey = curDefine()->is(Method::Final)
 															 ? "" : "virtual ";
+			const char* abstract = curObject()->isRole()
+															 ? " = 0" : "";
 			*mOut << in(-1) << (curDefine()->isStatic() ? "static " : virtualKey) << 
-											   curDefine()->createCodeDecl() << ";" << std::endl;
+											   curDefine()->createCodeDecl() << abstract << ";" << std::endl;
 		}
 
 		if (curDefine()->isStatic())
@@ -532,7 +618,15 @@ void NateParser::declareDefine(bool aIsDecl)
 			{
 				error("Not allowed keyword for object method: final");
 			}
+			else if (curObject()->isRole())
+			{
+				error("Role method requires 'me' object");
+			}
 			addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "me", curObject()));
+		}
+		else if (curDefine()->is(Method::Final) && curObject()->isRole())
+		{
+			error("Not allowed keyword for role method: final");
 		}
 	}
 	else
@@ -581,29 +675,7 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 		addIdentifier(id);
 
 		optionalError(id->setFlagStrings(flags));
-
-		TypePtr idType = id->type();
-		std::string propType = (idType->is(Type::NeedsRef))
-											     ? idType->codeType() + "&"
-			                     : idType->codeType();
-		std::string declType = idType->codeType();
-				
-		*mOut << in(-1) << "private:" << std::endl;
-		*mOut << in() << declType << " " << id->codeName() << " = {};" << std::endl;
-		
-		const char* permisKey = "public";
-		*mOut << in(-1) << permisKey << ":" << std::endl;
-
-		const char* virtualKey = id->is(Identifier::Final)
-			                       ? "" : "virtual ";
-		*mOut << in() << virtualKey << codePropHeader(false, id, Object::PropType::Get) << ";" << std::endl;
-		curObject()->setPropState(id, Object::PropType::Get, Object::PropState::Declared);
-
-		if (!id->is(Identifier::ReadOnly))
-		{
-			*mOut << in() << virtualKey << codePropHeader(false, id, Object::PropType::Set) << ";" << std::endl;
-			curObject()->setPropState(id, Object::PropType::Set, Object::PropState::Declared);
-		}
+		codeDeclareProperty(id);
 	}
 }
 
@@ -681,7 +753,21 @@ void NateParser::addArgWord(const std::string& aWord)
 
 void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const std::string& inOut)
 { 
-	auto id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, aType);
+	TypePtr type = aType;
+
+	if (type->empty())
+	{
+    if (!Identifier::isNameMe(aId))
+		{
+			error("Expected a type");
+		}
+		else
+		{
+			type = curObject();
+		}
+	}
+
+	auto id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 	addIdentifier(id);
 	curMethod()->addArgId(id);
   if (!inOut.empty())
@@ -699,6 +785,10 @@ void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const st
     {
       error("The id 'me' may only occur once in a define");
     }
+		else if (curObject()->name() != type->name())
+		{
+      error("The id 'me' must be of type: " + curObject()->name());
+		}
 
     data.objectMe = true;
   }
@@ -722,30 +812,6 @@ void NateParser::warning(const std::string& aWarning)
 {
 	std::cerr << "Warning: " << mLexer->fileLocation() << ": " << aWarning << std::endl;
 	++mWarnings;
-}
-
-void NateParser::printLineNr(const yy::parser::location_type& aLocation)
-{
-	static int prevLine = 0;
-	static std::string prevFile;
-
-	if (mLexer->has_matcher())
-	{	 
-		if (aLocation.begin.line != prevLine + 1 || 
-				mLexer->filenames.back() != prevFile)
-		{
-			*mOut << "#line " << aLocation.begin.line;
-			if (prevFile != mLexer->filenames.back())
-			{
-			  *mOut << " \"" << mLexer->filenames.back() << "\"";
-			}
-			
-			*mOut << std::endl;
-
-			prevLine = aLocation.begin.line;
-			prevFile = mLexer->filenames.back();
-		}
-	}
 }
 
 void NateParser::unput(const std::string::const_iterator& aStart,
@@ -1349,131 +1415,6 @@ void NateParser::handleCompileCommands(Expr& aExpr)
 	}
 }
 
-std::string NateParser::codeExpr(const Expr& aValue)
-{
-	std::string result = aValue.code();
-	if (aValue.is(ExprNode::Identifier) && !aValue.is(ExprNode::Property))
-	{
-		IdentifierPtr id = aValue.id();
-		if (id)
-		{
-			if (id->isObjectMe())
-			{
-				result = "std::dynamic_pointer_cast<" + toCodeName(id->type()->name()) + ">(shared_from_this())";
-			}
-			else
-			{
-				IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
-				if (holder)
-				{
-					if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
-					{
-						if (curDefine() && !curDefine()->is(Define::Undeclared))
-						{
-							result = "_impl->" + result;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return result;
-}
-
-void NateParser::codeStartProgram(const yy::parser::location_type& aLocation)
-{
-	*mOut << in() << "#define NOMINMAX" << std::endl;
-	*mOut << in() << "#include <windows.h>" << std::endl;
-
-	printLineNr(aLocation);
-
-	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("main", IIdentifiersHolder::ScopeFlag::Local));
-	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
-	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << std::endl;
-	*mOut << in() << "SetConsoleOutputCP(65001);" << std::endl;
-	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
-    
-}
-
-void NateParser::codeEndProgram(const yy::parser::location_type& aLocation)
-{
-	popScope();
-	printLineNr(aLocation);
-	*mOut << in() << "}\n" << std::endl;
-}
-
-void NateParser::codeStartScope()
-{
-	*mOut << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("scope", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeEndScope()
-{
-	popScope();
-	*mOut << in() << "}\n" << std::endl;
-}
-
-void NateParser::codeCodeInclude()
-{
-	*mOut << in() << mCodes.back()->code() << std::endl;
-	mCodes.pop_back();
-}
-
-void NateParser::codeDeclareLocalIdentifier(bool aExtern,
-																						const IdentifierPtr& aIdentifier,
-																						bool initializeVariables,
-																						const yy::parser::location_type& aLocation)
-{
-	addIdentifier(aIdentifier);
-	if (aIdentifier->type()->is(Type::Abstract))
-	{
-		error("Abstract type: " + aIdentifier->type()->name());
-		return;
-	}
-
-	if (aIdentifier->type()->is(Type::Unknown))
-	{
-		error("Unknown type: " + aIdentifier->type()->name());
-		return;
-	}
-	
-	//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
-	//{
-	//	error("Expected constant expression.");
-	//}
-
-	std::ostream* savedOut = mOut;
-	if (data.inObjectImpl)
-	{
-		mOut = &curObject()->getImplOut();
-	}
-
-	printLineNr(aLocation);
-	if (aExtern)
-	{
-	  *mOut << in() << "extern ";	
-	}
-
-	if (aIdentifier->is(Identifier::Const))
-	{
-		*mOut << in() << "const ";		
-	}
-
-	*mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
-
-	if (initializeVariables)
-	{
-		*mOut << " = " << codeExpr(*aIdentifier->initValue());
-	}
-	
-	*mOut << ";" << std::endl;
-
-	mOut = savedOut;
-}
-
 void NateParser::declareLocalIdentifiers(
 				bool aIsConst,
 				const std::vector<std::string>& aNames,
@@ -1556,16 +1497,6 @@ void NateParser::checkIdentifierName(const std::string& aName)
 		}
 	}
 }
- 
-void NateParser::codeStartRecord(const RecordPtr& aRecord,
-																 const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	*mOut << in() << "struct " << aRecord->codeType() << "\n" << in() << "{" << std::endl;
-  data.curRecord.push(aRecord);
-	addType(aRecord, aRecord->name());
-	pushIdentifiersHolder(aRecord);
-}
 
 void NateParser::declareRecordIdentifiers(
 				bool aIsConst,
@@ -1576,715 +1507,3 @@ void NateParser::declareRecordIdentifiers(
 {
 	declareLocalIdentifiers(aIsConst, aNames, aType, aInitValues, !NateParser::InitializeVariables, aLocation);
 }
-
-void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)
-{
-	RecordPtr record = data.curRecord.top();
-
-	*mOut << in() << record->codeType() << "()" << std::endl;
-	bool first = true;
-
-	for (auto& id : record->identifiers().get())
-	{
-		if (first)
-		{
-			*mOut << in(1) << ": ";
-			first = false;
-		}
-		else
-		{
-			*mOut << in(1) << ", ";
-		}
-
-		*mOut << id->codeName() << "(";
-
-		if (!id->initValue()->is(ExprNode::Default))
-		{
-			*mOut << codeExpr(*id->initValue());
-		}
-		*mOut << ")" << std::endl;
-	}
-
-	*mOut << in(1) << "{}" << std::endl;
-	popIdentifiersHolder();
-	printLineNr(aLocation);
-	*mOut << in() << "};\n" << std::endl;
-}
-
-void NateParser::codeObjectBases(const ObjectPtr& aObject)
-{
-	*mOut << "class " << toCodeName(aObject->name());
-
-	if (aObject->getBases().empty())
-	{
-		*mOut << ": public std::enable_shared_from_this<" << toCodeName(aObject->name()) << ">";
-	}
-	else
-	{
-		bool first = true;
-		for (auto const& base : aObject->getBases())
-		{
-			*mOut << (first ? ": public " : ", ") << toCodeName(base->name());
-			first = false;
-		}
-	}
-}
-
-void NateParser::codeStartDeclObject()
-{	
-	codeObjectBases(curObject());
-
-	*mOut << std::endl;
-	*mOut << "{" << std::endl;
-	*mOut << "private:" << std::endl;
-	*mOut << "  class __impl;"  << std::endl;
-	*mOut << "  __impl* _impl;"  << std::endl;
-	*mOut << "  friend class __impl;"  << std::endl;
-	*mOut << "public:" << std::endl;
-	auto name = toCodeName(curObject()->name());
-	*mOut << "  " << name << "();" << std::endl;
-	*mOut << "  virtual ~" << name << "();" << std::endl;
-}
-
-void NateParser::codeEndDeclObject()
-{
-	*mOut << "};\n" << std::endl;
-}
-
-void NateParser::codeStartImplObject()
-{	
-	mSavedOut = mOut;
-	mOut = &curObject()->getImplOut();
-
-	if (curObject()->is(Type::ObjectImpl))
-	{
-		codeObjectBases(curObject());
-		*mOut << std::endl;
-		*mOut << "{" << std::endl;
-		*mOut << "public:" << std::endl;
-	}
-	else
-	{
-		auto name = toCodeName(curObject()->name());
-		*mOut << "class " << name << "::__impl" << std::endl;
-		*mOut << "{" << std::endl;
-		*mOut << "private:" << std::endl;
-		*mOut << "  " << name << "* me;" << std::endl;
-		*mOut << "public:" << std::endl;
-		*mOut << "  __impl(" << name << "* aMe) : me(aMe) {}" << std::endl;
-
-		mOut = &curObject()->getNormalOut();
-		*mOut << name << "::" << name << "()" << std::endl;
-		*mOut << "  : _impl(new __impl(this)) {}\n" << std::endl;
-		*mOut << name << "::~" << name << "() { delete _impl; }\n" << std::endl;
-	}
-}
-
-std::string NateParser::codePropHeader(bool aAddObjectName,
-																			 const IdentifierPtr& aId, 
-																			 Object::PropType aPropType)
-{
-	std::stringstream buf;
-	
-	auto scopeName = aId->type()->typeScopeName();
-	std::string propType = (aId->type()->is(Type::NeedsRef))
-											    ? scopeName + aId->type()->codeType()
-			                    : aId->type()->codeType();
-	std::string refType = (aId->type()->is(Type::NeedsRef))
-											    ? "&"
-			                    : "";
-	std::string objectPrefix = aAddObjectName
-													   ? toCodeName(curObject()->name()) + "::"
-														 : "";
-
-	if (aPropType == Object::PropType::Get)
-	{
-	  buf << propType << " " << objectPrefix << aId->codeName();
-		buf << "_get() const";
-	}
-	else
-	{
-	  buf << "const " <<  propType << refType << " " << objectPrefix << aId->codeName();
-		buf << "_set(const " << propType << refType << " value)";
-	}
-
-	return buf.str();
-}
-
-void NateParser::codeEndImplObject()
-{
-	mOut = &curObject()->getNormalOut();
-
-	for (const auto& propMethod : curObject()->propertyMethods())
-	{
-		const auto& id = propMethod.first;
-
-		if (curObject()->getPropState(id, Object::PropType::Get) == Object::PropState::Declared)
-		{
-			*mOut << in() << codePropHeader(true, id, Object::PropType::Get) 
-				    << " { return " << id->codeName() << "; }" << std::endl;
-		}
-
-		if (curObject()->getPropState(id, Object::PropType::Set) == Object::PropState::Declared)
-		{
-			*mOut << in() << codePropHeader(true, id, Object::PropType::Set) 
-				    << " { return " << id->codeName() << " = value; }" << std::endl;
-		}
-	}
-
-	mOut = mSavedOut;
-
-	if (curObject()->is(Type::ObjectImpl))
-	{
-		for (const auto& define : curObject()->defines().get())
-		{
-			if (!define->is(Method::Undeclared) && !define->is(Method::Defined))
-			{
-				error("Undefined method: " + define->signature());
-			}
-		}
-		
-		*mOut << curObject()->getImplOut().str();
-		*mOut << curObject()->getNormalOut().str();
-		*mOut << "};\n" << std::endl;
-	}
-	else
-	{
-		*mOut << curObject()->getImplOut().str();
-		*mOut << "};\n" << std::endl;
-		*mOut << curObject()->getNormalOut().str();
-	}
-}
-
-std::string NateParser::typeScopeName() const
-{
-	std::string result;
-
-	for (auto const& holder : mTypesHolders)
-	{
-		auto name = holder->typeScopeName();
-		if (!name.empty())
-		{
-			result += toCodeName(name);
-			result += "::";
-		}
-	}
-
-	return result;
-}
-
-void NateParser::codeAssign(const std::vector<Expr>& aExpressions,
-														Expr& aValue,
-														const yy::parser::location_type& aLocation)
-{
-	std::string endPars;
-
-	printLineNr(aLocation);
-	for (auto const& expr : aExpressions)
-	{
-		if (expr.is(ExprNode::ConstExpr))
-		{
-			error("Cannot assign to a constant or readonly");
-		}
-		else if (!expr.is(ExprNode::Output))
-		{
-			error("Cannot assign to a non-variable");
-		}
-
-		const TypePtr& exprType = expr.type();
-		bool ok = aValue.node().castToType(exprType);
-		if (!ok)
-		{
-			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
-		}
-				
-		std::string code = codeExpr(expr);
-		size_t size = code.size();
-		if (size > 6 && code.substr(size - 6, 6) == "_get()")
-		{
-			code[size - 5] = 's';
-			code[size - 1] = '\0';
-			endPars += ")";
-			*mOut << in() << code;
-		}
-		else
-		{
-			*mOut << in() << code << " = ";
-		}
-	}
-
-	*mOut << codeExpr(aValue) << endPars << ";" << std::endl;
-}
-
-std::string NateParser::codeId(const std::string& aName, Scope* aScope)
-{
-	return getOrFakeIdentifier(aName, aScope)->codeName();
-}
-
-void NateParser::codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation)
-{
-	if (aValue.isEmpty())
-	{
-		if (!mLastWriteStream.empty())
-		{
-			mStream = mLastWriteStream;
-		}
-		else
-		{
-			error("Need to specify where to write to");
-		}
-	}
-	else if (aValue.type()->isOfType("output"))
-	{
-		mStream = "*" + codeExpr(aValue);
-		mLastWriteStream = mStream;
-	}
-	else
-	{
-		error("Cannot write to type: " + aValue.type()->name());
-	}
-
-	printLineNr(aLocation);
-	mFirstOutput = true;
-	mCachedOutput.clear();
-}
-
-void NateParser::codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
-{
-	mStream = aStream;
-	printLineNr(aLocation);
-	mFirstOutput = true;
-	mCachedOutput.clear();
-}
-
-void NateParser::codeOutputNew()
-{
-	if (mFirstOutput)
-	{
-		*mOut << in() << mStream;
-		mFirstOutput = false;
-	}
-}
-
-void NateParser::codeOutput(const std::string& aString)
-{
-	if ((!mCachedOutput.empty()) && aString[0] != '"')
-	{
-		codeOutputNew();
-		*mOut << " << \"" << mCachedOutput << "\"";
-		mCachedOutput.clear();
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << ";";
-			mFirstOutput = true;
-		}
-		else
-		{
-			*mOut << ";";
-		}
-	}
-	else if (!mCachedOutput.empty())
-	{
-		mCachedOutput += unquote(aString);
-	}
-	else if (aString[0] == '"')
-	{
-		mCachedOutput = unquote(aString);
-	}
-	else
-	{
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << ";";
-			mFirstOutput = true;
-		}
-	}
-}
-
-void NateParser::codeOutput(const Expr& aValue)
-{
-	if (aValue.type() && aValue.type()->is(Type::Boolean))
-	{
-		codeOutput("std::boolalpha ");
-	}
-	
-	if (aValue.is(ExprNode::Literal))
-	{
-		codeOutput(codeExpr(aValue));
-	}
-	else
-	{
-		if (aValue.type() && aValue.type()->name() == "int-8")
-		{
-			codeOutput("static_cast<int>(" + codeExpr(aValue) + ")");
-		}
-		else
-		{
-			Expr outExpr(Expr("stream-out"), aValue);
-			Expr resExpr = evaluate(outExpr);
-			if (!resExpr.isEmpty())
-			{
-				codeOutput("(" + codeExpr(resExpr) + ")");
-			}
-			else
-			{
-				codeOutput("(" + codeExpr(aValue) + ")");
-			}
-		}
-	}
-}
-
-void NateParser::codeOutputEnd(bool aAddEnd)
-{
-	if (aAddEnd)
-	{
-		codeOutputNew();
-		codeOutput("std::endl");
-	}
-	else
-	{
-		codeOutput("");
-	}
-
-	*mOut << std::endl;
-}
-
-void NateParser::codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
-{
-	mStream = aStream;
-	printLineNr(aLocation);
-	*mOut << in() << aStream;
-}
-
-void NateParser::codeInputSpace()
-{
-}
-
-void NateParser::codeInputNoSpace()
-{
-}
-
-void NateParser::codeInput(const Expr& aValue)
-{
-	if (aValue.is(ExprNode::Output) && !aValue.is(ExprNode::ConstExpr))
-	{
-		if (aValue.type() && aValue.type()->is(Type::Boolean))
-		{
-			*mOut << ">> std::boolalpha ";
-		}
-	
-		*mOut << ">> " << codeExpr(aValue);
-	}
-	else
-	{
-		error("Expected non-constant variable for input");
-	}
-}
-
-void NateParser::codeInputEnd(bool aAddEnd)
-{
-	*mOut << ";";
-	if (aAddEnd)
-	{
-		*mOut << mStream << ".ignore(std::numeric_limits<std::streamsize>::max(), '\\n');";
-	}
-	*mOut << std::endl;
-}
-
-void NateParser::NateParser::codeIf(const Expr& aValue, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	if (!aValue.type()->is(Type::Boolean))
-	{
-		error("Expected boolean expression for IF statement");
-	}
-
-	*mOut << in() << "if (" << codeExpr(aValue) << ")\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeElseIf()
-{
-	*mOut << in() << "else " << std::endl;
-}
-
-void NateParser::codeElse(const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	*mOut << in() << "else\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeEndIf()
-{
-	popScope();
-	*mOut << in() << "}" << std::endl;
-}
-
-void NateParser::codeIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	IfIs info;
-	info.idName = idName;
-	info.isSwitch = aValue.type()->is(Type::Scalar);
-	info.out = std::make_shared<std::ostringstream>();
-	info.savedOut = mOut;
-	mIfIs.push(info);
-	
-	*mOut << in() << "auto const " << idName << " = " << codeExpr(aValue) << ";" << std::endl;
-}
-
-void NateParser::codeIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation)
-{
-	auto ifIs = mIfIs.top();
-	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
-				aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
-	{
-		error("Expected expression with same type as in IF");
-	}
-
-	auto prevCase = ifIs.nextCase;
-	ifIs.nextCase = (ifIs.isSwitch && aValue.is(ExprNode::ConstExpr) && ifIs.isFirstTest);
-
-	if (ifIs.isFirstTest && prevCase && !ifIs.nextCase)
-	{
-		error("Non-constant expression needs to be first in multi-IS");
-	}
-
-	if (ifIs.nextCase)
-	{
-		mOut = ifIs.out.get();
-		printLineNr(aLocation);
-		*mOut << in() << "case " << codeExpr(aValue) << ":" << std::endl;
-	}
-	else
-	{
-		bool firstExpr = ifIs.isFirstTest;
-		
-		if (!ifIs.isFirst && firstExpr)
-		{
-			printLineNr(aLocation);
-			*mOut << in() << "else ";
-		}
-
-		if (firstExpr)
-		{
-			if (ifIs.isFirst)
-			{
-				printLineNr(aLocation);
-			}
-
-			*mOut << in() << "if (";
-		}
-		else
-		{
-			*mOut << std::endl;			
-			printLineNr(aLocation);
-			*mOut << in(2) << " || ";
-		}
-		
-		if (ifIs.isFirst || firstExpr)
-		{
-			ifIs.isFirst = false;
-			ifIs.isFirstTest = false;
-		}
-
-		*mOut << "(" << mIfIs.top().idName << " == " << codeExpr(aValue) << ")";
-	}
-
-	mIfIs.pop();
-	mIfIs.push(ifIs);
-}
-
-void NateParser::codeElseIs(const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	auto ifIs = mIfIs.top();
-	if (!ifIs.isFirst)
-	{
-		*mOut << in() << "else" << std::endl;
-	}
-
-	ifIs.nextCase = ifIs.isSwitch && !ifIs.out->str().empty();
-	if (ifIs.nextCase)
-	{
-		*mOut << in() << "switch (" << ifIs.idName << ")\n" << in() << "{" << std::endl;
-		*mOut << in() << ifIs.out->str();
-		*mOut << in() << "default:" << std::endl;
-		mOut = ifIs.savedOut;
-	}
-	else
-	{
-		ifIs.nextElse = true;
-	}
-
-	mIfIs.pop();
-	mIfIs.push(ifIs);
-}
-
-void NateParser::codeBeginIs()
-{
-	auto ifIs = mIfIs.top();
-
-	if (!ifIs.nextCase && !ifIs.nextElse)
-	{
-		*mOut << ")" << std::endl;
-	}
-	
-	*mOut << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("is", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeEndIs(const yy::parser::location_type& aLocation)
-{
-	auto ifIs = mIfIs.top();
-	printLineNr(aLocation);
-
-	if (ifIs.nextCase)
-	{
-		*mOut << in() << "break;" << std::endl;
-	}
-
-	popScope();
-	*mOut << in() << "}" << std::endl;
-
-	if (ifIs.nextCase)
-	{
-		mOut = ifIs.savedOut;
-	}
-	
-	mIfIs.pop();
-	ifIs.isFirstTest = true;
-	ifIs.nextCase = false;
-	mIfIs.push(ifIs);
-}
-
-void NateParser::codeEndIfIs(const yy::parser::location_type& aLocation)
-{
-	auto ifIs = mIfIs.top();
-	printLineNr(aLocation);
-	if (mIfIs.top().isSwitch && !ifIs.out->str().empty())
-	{
-		*mOut << in() << "}" << std::endl;
-	}
-
-	mIfIs.pop();
-}
-
-void NateParser::codeInitLoop(const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	mLoopWhileCounts.push_back(0);
-	pushScope(std::make_shared<Scope>("while", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeStartLoop()
-{
-	*mOut << in(-1) << "while (true)\n" << in(-1) << "{" << std::endl;
-}
-
-void NateParser::codeStartForStepLoop(const std::string& aId,
-																			const TypePtr& aType,   
-																			bool aDownTo,
-																			const Expr& aStart,
-																			const Expr& aEnd,
-																			const Expr& aStep)
-{
-	TypePtr type = aType->empty()
-							   ? aStart.type()
-							   : aType;
-
-	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
-	addIdentifier(id);
-
-	*mOut << in(-1) << "for (" << id->type()->codeType() << " " 
-			 << id->codeName() << "= " << codeExpr(aStart) << ";" 
-			 << id->name() << (aDownTo ? " >= " : "<=") << codeExpr(aEnd) << ";"
-			 << id->name() << (aDownTo ? " -= " : "+=") << codeExpr(aStep) << ")\n" << in(-1) << "{" << std::endl;
-}
-
-void NateParser::codeStartForRangeLoop(const std::string& aId, 
-																			 const Expr& aRange)
-{
-	TypePtr rangeType = aRange.type();
-	if (rangeType->isOfType("container"))
-	{
-		TypePtr type = rangeType->typenameType();
-		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
-		addIdentifier(id);
-
-		auto range = uniqueName();
-		auto iter = uniqueName();
-		auto next = uniqueName();
-
-		std::string ref = aRange.is(ExprNode::Output) ? "&" : "";
-		std::string increment;
-
-		if (rangeType->isOfType("text"))
-		{
-			increment = iter + "=" + next;
-			*mOut << in(-1) << "const std::string" << ref << " " << range << " = " << codeExpr(aRange) << ";" << std::endl; 
-			*mOut << in(-1) << "auto " << next << " = " << range << ".cbegin();" << std::endl;
-		}
-		else
-		{
-			increment = "++" + iter;
-			*mOut << in(-1) << "auto const" << ref << " " << range << " = " << codeExpr(aRange) << ";" << std::endl; 
-		}
-
-		*mOut << in(-1) << "for (auto " << iter << " = " << range << ".cbegin(); "
-				 << iter << " != " << range << ".cend(); "
-			   << increment << ")\n" << in(-1) << "{" << std::endl;
-		if (rangeType->isOfType("text"))
-		{
-			*mOut << in() << "uint32_t " << id->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << std::endl;
-		}
-		else
-		{
-			*mOut << in() << "auto const& " << id->codeName() << " = *" << iter << ";" << std::endl;
-		}
-	}
-	else
-	{
-		error("Range must be a container, got: " + rangeType->name());
-	}
-}
-
-void NateParser::codeEndLoop()
-{
-	mLoopWhileCounts.pop_back();
-	popScope();
-	*mOut << in() << "}" << std::endl;
-}
-
-void NateParser::codeLoopWhile(const Expr& aExpr, const yy::parser::location_type& aLocation)
-{
-	if (mLoopWhileCounts.back() > 0)
-	{
-		error("Only one while allowed in a loop.");
-	}
-
-	++mLoopWhileCounts.back();
-
-	if (!aExpr.type()->is(Type::Boolean))
-	{
-		error("Expected boolean condition in while.");
-	}
-		
-	printLineNr(aLocation);
-	*mOut << in() << "if (!(" << codeExpr(aExpr) << ")) break;" << std::endl;
-}
-
- void NateParser::codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
- {
-	 printLineNr(aLocation);
-	 *mOut << in() << "return " << codeExpr(aValue) << ";" << std::endl;
- }
-
- void NateParser::codeExpressionStatement(const Expr& aValue, const yy::parser::location_type& aLocation)
- {
-	 printLineNr(aLocation);
-	 *mOut << in() << codeExpr(aValue) << ";" << std::endl;
- }

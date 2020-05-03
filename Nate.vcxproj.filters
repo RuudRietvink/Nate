@@ -130,6 +130,9 @@
     <ClCompile Include="core\Created\BaseObject.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="NateParserCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="NateLexer.l">

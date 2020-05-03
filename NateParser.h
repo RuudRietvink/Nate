@@ -106,8 +106,12 @@ public:
 	
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
+	void addUndeclaredProperties(const ObjectPtr& aObject);
+	void endDeclObject();
+	void endImplementObject();
 	void startObject(const ObjectPtr& aObject);
 	ObjectPtr curObject();
+	void checkObject(const ObjectPtr& aObject);
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
 	void declareProperties(const std::vector<std::string>& aNames,
@@ -162,6 +166,9 @@ public:
 	void codeEndDeclObject();
 	void codeStartImplObject();
 	void codeEndImplObject();
+	void codeDeclareProperty(const IdentifierPtr& aId);
+	void codeDefaultPropertyImpl(const IdentifierPtr& propId);
+
 	std::string codePropHeader(bool aAddObjectName,
 													 	const IdentifierPtr& aId, 
 													 	Object::PropType aPropType);

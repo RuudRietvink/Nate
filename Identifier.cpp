@@ -43,9 +43,14 @@ std::string Identifier::setFlagString(const std::string& aFlag)
 	return errorResult;
 }
 
+std::string Identifier::nameMe()
+{
+	return "me";
+}
+
 bool Identifier::isNameMe(const std::string& aName)
 {
-	return aName == "me";
+	return aName == nameMe();
 }
 
 const std::string&		Identifier::name()      const { return mName; }

@@ -195,7 +195,7 @@ bool Type::is(size_t aFlags) const
 
 bool Type::isOfType(const std::string& aType) const
 {
-	return mName == aType || 
+	return name() == aType || 
 				 (mBaseType && mBaseType->isOfType(aType));
 }
 

@@ -68,11 +68,11 @@ public:
 	bool     isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;
 	bool     isPropDefined(const IdentifierPtr& anId, PropType aPropType) const;
 
-	bool isInterface() const;
-	void setIsInterface(bool aIsInterface);
+	bool isRole() const;
+	void setIsRole(bool aIsRole);
 
 private:		
-	bool															mIsInterface = false;
+	bool															mIsRole = false;
 	Types															mTypes;			
 	Records														mRecords;						
 	Defines														mDefines;

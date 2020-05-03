@@ -1,31 +1,24 @@
 #include "WithFlags.h"
 
-bool WithFlags::is(size_t aFlags) const
+bool WithFlags::is(size_t aFlag) const
 { 
-	return mFlags[aFlags];
+	auto iter = mFlags.find(aFlag);
+	return iter != mFlags.cend() ? iter->second : false;
 }
 
 void WithFlags::setFlag(size_t aFlag)
 { 
-	mFlags.set(aFlag, true);
+	mFlags[aFlag] = true;
 }
 
 void WithFlags::clearFlag(size_t aFlag)
 { 
-	mFlags.set(aFlag, false);
+	mFlags[aFlag] = false;
 }
 
 void WithFlags::setFlag(size_t aFlag, bool aEnable)
 { 
-	mFlags.set(aFlag, aEnable);
-}
-
-void WithFlags::setFlags(const Flags& aFlags)
-{
-	for (auto flag : aFlags)
-	{
-		setFlag(flag);
-	}
+	mFlags[aFlag] = aEnable;
 }
 	
 std::string WithFlags::setFlagStrings(const std::vector<std::string>& aFlags)
@@ -40,12 +33,12 @@ std::string WithFlags::setFlagStrings(const std::vector<std::string>& aFlags)
 	return result;
 }
 
-void WithFlags::setFlags(const std::bitset<32>& aFlags)
+void WithFlags::setFlags(const Flags& aFlags)
 {
 	mFlags = aFlags;
 }
 
-const std::bitset<32>& WithFlags::getFlags() const
+const Flags& WithFlags::getFlags() const
 {
 	return mFlags;
 }

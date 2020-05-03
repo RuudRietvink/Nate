@@ -31,6 +31,7 @@ public:
 	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
 	bool															isObjectMe()				const;
 	static bool					   						isNameMe(const std::string& aName);
+	static std::string     						nameMe();
 	
 	static const size_t Const        = 0;
 	static const size_t Property     = 1;

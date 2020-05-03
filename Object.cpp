@@ -33,7 +33,7 @@ bool Object::hasObjectBase() const
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
-										 { return aBase->isInterface(); } );
+										 { return aBase->isRole(); } );
 }
 
 Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aPropType) const
@@ -64,14 +64,14 @@ bool Object::isPropDefined(const IdentifierPtr& anId, PropType aPropType) const
 	return getPropState(anId, aPropType) == PropState::Defined;
 }
 
-bool Object::isInterface() const
+bool Object::isRole() const
 {
-	return mIsInterface;
+	return mIsRole;
 }
 
-void Object::setIsInterface(bool aIsInterface)
+void Object::setIsRole(bool aIsRole)
 {
-	mIsInterface = aIsInterface;
+	mIsRole = aIsRole;
 }
 
 std::ostream& operator<<(std::ostream& aStream, const Object& aValue)
@@ -79,7 +79,7 @@ std::ostream& operator<<(std::ostream& aStream, const Object& aValue)
 	aStream << "Object(" 
 		    << static_cast<Type>(aValue) << ",";
 	
-	if (aValue.isInterface()) aStream << ",isinterface";
+	if (aValue.isRole()) aStream << ",isRole";
 	aStream << ")";
 	return aStream;
 }

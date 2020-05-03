@@ -297,23 +297,23 @@ void Method::handleOwnerMember(
 
 		aNodeType = identifier->type();
 					
-		aResult.flags.push_back(ExprNode::Output);
+		aResult.flags[ExprNode::Output] = true;
 		if (aOwnerNode->is(ExprNode::Property) && !identifier->is(Identifier::Property))
 		{
-			aResult.flags.push_back(ExprNode::ConstExpr);
+			aResult.flags[ExprNode::ConstExpr] = true;
 		}
 
 		if (identifier->is(Identifier::Const))
 		{
-			aResult.flags.push_back(ExprNode::ConstExpr);
+			aResult.flags[ExprNode::ConstExpr] = true;
 		}
 		if (identifier->is(Identifier::Property))
 		{
-			aResult.flags.push_back(ExprNode::Property);
+			aResult.flags[ExprNode::Property] = true;
 		}
 		if (identifier->is(Identifier::ObjectImpl))
 		{
-			aResult.flags.push_back(ExprNode::ObjectImpl);
+			aResult.flags[ExprNode::ObjectImpl] = true;
 		}
 	}
 }
@@ -494,7 +494,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 
 	if (isConst)
 	{
-	  result.flags.push_back(ExprNode::ConstExpr);
+	  result.flags[ExprNode::ConstExpr] = true;
 	}
 	
 	if (isStatic())
@@ -536,12 +536,19 @@ const std::string& Method::pattern() const
 		{
 			if (arg.isIdentifier())
 			{
-				buf << "_E_";
+				buf << "E_";
 				if (arg.is(Arg::Out))
 				{
 					buf << "O_";
 				}
-				buf << toCodeName(arg.identifier()->type()->name()) << "_";
+				if (arg.identifier()->isObjectMe())
+				{
+					buf << Identifier::nameMe() << "__";
+				}
+				else
+				{
+					buf << toCodeName(arg.identifier()->type()->name()) << "_";
+				}
 			}
 			else
 			{

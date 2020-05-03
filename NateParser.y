@@ -60,6 +60,7 @@
 %token CONST "const"
 %token DECLARE "declare"
 %token IMPLEMENT "implement"
+%token ROLE "role"
 %token OBJECT "object"
 %token CODE "code"
 %token DEFINE "define"
@@ -135,6 +136,7 @@ prog-statement:
   | define-statement
   | record-statement
   | var-statement
+  | role-statement
   | declare-object-statement
   | implement-object-statement
   | EOS
@@ -198,6 +200,36 @@ statement:
   | EOS
   ;
   
+role-statement:
+	  ROLE 
+		  { 
+        nate.data.inObject = true;
+        lexer.pushState(Lexer::VAR_DECL);
+      }
+	  id 
+		  { 
+        auto object = std::make_shared<Object>($id, nate.getType("object"));
+        object->setCodeType(toCodeName($id));
+        object->setFlag(Type::Abstract, true);
+        object->setFlag(Type::Unknown, false);
+        object->setIsRole(true);
+        nate.addObject(object);
+      }
+    opt-as-roles
+      {
+        lexer.popState();
+        nate.checkObject(nate.curObject());
+        nate.codeStartDeclObject();
+		  }
+    col
+	  begin
+		  declare-object-content-statement-list
+	  end
+		  { 
+        nate.endDeclObject();
+		  }
+  ;
+
 declare-object-statement:
 	  DECLARE OBJECT 
 		  { 
@@ -206,19 +238,16 @@ declare-object-statement:
       }
 	  id 
 		  { 
-        lexer.popState();
         auto object = std::make_shared<Object>($id, nate.getType("object"));
         object->setCodeType(toCodeName($id));
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
-
-        if (nate.baseObjectName() != object->name())
-        {
-          nate.importBaseObject(object->name());
-          object->addBase(nate.getObject(nate.baseObjectName()));
-        }
-
         nate.addObject(object);
+      }
+    base-classes
+      {
+        lexer.popState();
+        nate.checkObject(nate.curObject());
         nate.codeStartDeclObject();
 		  }
     col
@@ -226,12 +255,51 @@ declare-object-statement:
 		  declare-object-content-statement-list
 	  end
 		  { 
-        nate.data.inObject = false;
-        nate.codeEndDeclObject();
-			  nate.endObject();
+        nate.endDeclObject();
 		  }
   ;
   
+base-classes:
+    %empty
+  | IS base-class opt-comma-as-roles
+  | as-roles
+  ;
+  
+opt-comma-as-roles:
+    %empty
+  | COMMA as-roles
+  ;
+
+opt-as-roles:
+    %empty
+  | as-roles
+  ;
+
+as-roles:
+    AS role-list
+  ;
+
+role-list:
+    role
+  | role-list COMMA role
+  ;
+
+base-class:
+    id
+      {
+        nate.importBaseObject($id);
+        nate.curObject()->addBase(nate.getObject($id));
+      }
+  ;
+  
+role:
+    id
+      {
+        nate.importBaseObject($id);
+        nate.curObject()->addBase(nate.getObject($id));
+      }
+  ;
+
 declare-object-content-statement-list:
     declare-object-content-statement
   | declare-object-content-statement-list declare-object-content-statement
@@ -267,14 +335,9 @@ implement-object-statement:
           object->setFlag(Type::Abstract, false);
           object->setFlag(Type::Unknown, false);
           object->setFlag(Type::ObjectImpl);
-
-          if (nate.baseObjectName() != object->name())
-          {
-            nate.importBaseObject(object->name());
-            object->addBase(nate.getObject(nate.baseObjectName()));
-          }
-
+          
           nate.addObject(object);
+          nate.checkObject(object);
           nate.codeStartImplObject();
         }
         else
@@ -290,7 +353,7 @@ implement-object-statement:
 		  { 
         nate.data.inObject = false;
         nate.codeEndImplObject();
-			  nate.endObject();
+			  nate.endImplementObject();
 		  }
   ;
   
@@ -327,9 +390,9 @@ arg-list:
 arg:
     WORD
 		  { nate.addArgWord($WORD); }
-  | ARGSTART arg-id[id] IS type 
+  | ARGSTART arg-id[id] optional-is-type 
 		  { 
-        nate.addArgId($id, $type, "");
+        nate.addArgId($id, $[optional-is-type], "");
         nate.data.flagsHolder = &nate.curMethod()->curArg();
       }
     opt-holder-flag-list
@@ -1239,5 +1302,11 @@ string:
 
 void yy::parser::error(const location& loc, const std::string& msg)
 {
-  std::cerr << loc << ": " << msg << " (" << nate.getLexer()->text() << ")" << std::endl;
+  std::cerr << nate.getLexer()->filenames.back() << " " << loc << ": " << msg;
+  if (nate.getLexer()->has_matcher())
+  {
+    std::cerr << " (" << nate.getLexer()->text() << ")";
+  }
+  
+  std::cerr << std::endl;
 }

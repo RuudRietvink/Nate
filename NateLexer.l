@@ -314,6 +314,7 @@ include\h*\".*\"  s(); includeFile();
 ","					  return yy::parser::make_COMMA(location());
 "&"					  return yy::parser::make_CONCAT(location());
 ";"				    return yy::parser::make_EOS(location());
+"}"           return yy::parser::make_ARGEND(location());
 {number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
 {fraction}	  return yy::parser::make_FRACTION(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
@@ -378,6 +379,7 @@ include\h*\".*\"  s(); includeFile();
 
 <VAR_DECL>{
 \bis\b		    return yy::parser::make_IS(location());
+\bas\b		    return yy::parser::make_AS(location());
 \bin\b 	      return yy::parser::make_IN(location());
 [$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
 ":="		      return yy::parser::make_ASSIGN(location());
@@ -400,6 +402,7 @@ include\h*\".*\"  s(); includeFile();
 \bconst\b		  return yy::parser::make_CONST(location());
 \bdeclare\b	  return yy::parser::make_DECLARE(location());
 \bimplement\b	return yy::parser::make_IMPLEMENT(location());
+\brole\b	    return yy::parser::make_ROLE(location());
 \bobject\b	  return yy::parser::make_OBJECT(location());
 \bcode\b		  return yy::parser::make_CODE(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());

@@ -11,6 +11,24 @@ implement object Local:
     
   define ${me is Local} ${world is text} is text:
     return "Local " + world + localVar
+    
+implement object Hi:
+  property age:
+    get:
+      return age
+      
+  define new Hi2 is Hi:
+    var result is Hi
+    construct result
+    initialize result
+    return result
+    
+  define yo is text:
+    return "Hi"
+
+  define ${me is Hi} ${world is text} is text:
+    return yo + " " + age + " " + $world
+
 
 implement object Hello:
   var myVar := "Hi There"
@@ -23,12 +41,16 @@ implement object Hello:
       return name + myVar
     set:
       var hi := 5
-      var temp := name + value + address + hi;
+      var temp := name + value + address + hi
       name := temp
       if myBool:
         name := name + myData's greet
       return name
-      
+  
+  property greet:
+    set:
+      greet := value
+
   define new Hello is Hello:
     var result is Hello
     construct result
