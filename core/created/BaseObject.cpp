@@ -1,5 +1,6 @@
 #include "C:\Users\ruud\source\repos\Nate\core\Core.h"
 #include "C:\Users\ruud\source\repos\Nate\core\created\BaseObject.h"
+#line 3 "BaseObjects\\BaseObject.ns"
 
 class BaseObject::__impl
 {

@@ -4,6 +4,7 @@
 #include "Record.h"
 #include "Define.h"
 #include "Type.h"
+#include "NateParser.tab.h"
 
 #include <list>
 #include <ostream>
@@ -41,7 +42,7 @@ public:
 
 	const std::vector<ObjectPtr>& getBases();
 	void addBase(const ObjectPtr& aBase);
-	bool hasObjectBase() const;
+	DefinePtr basesGetLike(const DefinePtr& aDefine);
 	
 	enum class PropType
 	{
@@ -49,24 +50,34 @@ public:
 		Set = 1
 	};
 
-	enum class PropState
+	struct PropState
 	{
-		Unknown,
-		Declared,
-		Defined
+		enum class State
+		{
+			Unknown,
+			Declared,
+			Defined
+		};
+
+		State state;
+		bool  overriden;
 	};
 
 	struct PropData
 	{
 		PropState states[2];
+		std::string filename;
+		yy::parser::location_type location;
 	};
 	
 	std::map<IdentifierPtr, PropData>& propertyMethods() { return mPropertyMethods; }
 	
+	void     addProp(const IdentifierPtr& anId, const yy::parser::location_type& aLocation, const std::string& filename);
 	PropState getPropState(const IdentifierPtr& anId, PropType aPropType) const;
 	void     setPropState(const IdentifierPtr& anId, PropType aPropType, PropState aPropState);
 	bool     isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;
 	bool     isPropDefined(const IdentifierPtr& anId, PropType aPropType) const;
+	bool     basesIsPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;
 
 	bool isRole() const;
 	void setIsRole(bool aIsRole);

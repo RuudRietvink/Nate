@@ -8,29 +8,27 @@
 
 extern int gDebug;
 
-
-
-
 void NateParser::printLineNr(const yy::parser::location_type& aLocation)
 {
 	static int prevLine = 0;
 	static std::string prevFile;
+	std::string curFile = aLocation.begin.filename != nullptr ? *aLocation.begin.filename : mLexer->currentFile();
 
 	if (mLexer->has_matcher())
 	{	 
 		if (aLocation.begin.line != prevLine + 1 || 
-				mLexer->filenames.back() != prevFile)
+				curFile != prevFile)
 		{
 			*mOut << "#line " << aLocation.begin.line;
-			if (prevFile != mLexer->filenames.back())
+			if (prevFile != curFile)
 			{
-			  *mOut << " \"" << mLexer->filenames.back() << "\"";
+			  *mOut << " \"" << curFile << "\"";
 			}
 			
 			*mOut << std::endl;
 
 			prevLine = aLocation.begin.line;
-			prevFile = mLexer->filenames.back();
+			prevFile = curFile;
 		}
 	}
 }
@@ -206,7 +204,7 @@ void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)
 
 void NateParser::codeObjectBases(const ObjectPtr& aObject)
 {
-	*mOut << "\n" << "class " << toCodeName(aObject->name());
+	*mOut << "class " << toCodeName(aObject->name());
 
 	if (aObject->getBases().empty() && !aObject->isRole())
 	{
@@ -217,14 +215,17 @@ void NateParser::codeObjectBases(const ObjectPtr& aObject)
 		bool first = true;
 		for (auto const& base : aObject->getBases())
 		{
-			*mOut << (first ? ": public " : ", public ") << toCodeName(base->name());
+			*mOut << (first ? ": public " : ", public ") << 
+						   (base->isRole() ? "virtual " : "") <<
+				       toCodeName(base->name());
 			first = false;
 		}
 	}
 }
 
-void NateParser::codeStartDeclObject()
+void NateParser::codeStartDeclObject(const yy::parser::location_type& aLocation)
 {	
+	printLineNr(aLocation);
 	codeObjectBases(curObject());
 
 	*mOut << std::endl;
@@ -235,7 +236,7 @@ void NateParser::codeStartDeclObject()
 	
 	if (curObject()->isRole())
 	{
-		*mOut << "  virtual ~" << name << "() {}" << std::endl;
+		*mOut << "  virtual ~" << name << "() = default;" << std::endl;
 	}
 	else
 	{
@@ -245,6 +246,7 @@ void NateParser::codeStartDeclObject()
 		*mOut << "  class __impl;"  << std::endl;
 		*mOut << "  __impl* _impl;"  << std::endl;
 		*mOut << "  friend class __impl;"  << std::endl;
+	  *mOut << "public:" << std::endl;
 	}
 }
 
@@ -253,10 +255,12 @@ void NateParser::codeEndDeclObject()
 	*mOut << "};\n" << std::endl;
 }
 
-void NateParser::codeStartImplObject()
+void NateParser::codeStartImplObject(const yy::parser::location_type& aLocation)
 {	
 	mSavedOut = mOut;
 	mOut = &curObject()->getImplOut();
+	
+	printLineNr(aLocation);
 
 	if (curObject()->is(Type::ObjectImpl))
 	{
@@ -282,7 +286,20 @@ void NateParser::codeStartImplObject()
 	}
 }
 
-void NateParser::codeDeclareProperty(const IdentifierPtr& aId)
+void NateParser::codeObjectMethodHeaderDecl(const ObjectPtr& aObject, const DefinePtr& aDefine)
+{
+		const char* startKeys = aDefine->is(Method::Final) || aDefine->is(Method::Overriden)
+															? "" : "virtual ";
+		const char* endKeys = aDefine->is(Method::Overriden)
+															? " override" : "";
+		const char* abstract = aObject->isRole()
+															? " = 0" : "";
+		*mOut << in(-1) << (aDefine->isStatic() ? "static " : startKeys) << 
+											  aDefine->createCodeDecl() << endKeys << abstract << ";" << std::endl;
+}
+
+void NateParser::codeDeclareProperty(const IdentifierPtr& aId,
+																		 const yy::parser::location_type& aLocation)
 {
 	TypePtr idType = aId->type();
 	std::string propType = (idType->is(Type::NeedsRef))
@@ -293,23 +310,33 @@ void NateParser::codeDeclareProperty(const IdentifierPtr& aId)
 	if (!curObject()->isRole())
 	{
 		*mOut << in(-1) << "private:" << std::endl;
+		printLineNr(aLocation);
 		*mOut << in() << declType << " " << aId->codeName() << " = {};" << std::endl;
 	}
 		
 	const char* permisKey = "public";
 	*mOut << in(-1) << permisKey << ":" << std::endl;
 
-	const char* virtualKey = aId->is(Identifier::Final)
-			                      ? "" : "virtual ";
+	bool overriden = curObject()->basesIsPropDeclared(aId, Object::PropType::Get);
+
+	const char* startKeys = aId->is(Identifier::Final) || overriden
+			                    ? "" : "virtual ";
 	const char* abstractKey = curObject()->isRole()
 			                      ? " = 0" : "";
-	*mOut << in() << virtualKey << codePropHeader(false, aId, Object::PropType::Get) << abstractKey << ";" << std::endl;
-	curObject()->setPropState(aId, Object::PropType::Get, Object::PropState::Declared);
+	const char* endKeys = overriden
+			                  ? " override" : "";
+	printLineNr(aLocation);
+	*mOut << in() << startKeys << codePropHeader(false, aId, Object::PropType::Get) << endKeys << abstractKey << ";" << std::endl;
 
 	if (!aId->is(Identifier::ReadOnly))
 	{
-		*mOut << in() << virtualKey << codePropHeader(false, aId, Object::PropType::Set) << abstractKey << ";" << std::endl;
-		curObject()->setPropState(aId, Object::PropType::Set, Object::PropState::Declared);
+		printLineNr(aLocation);
+		overriden = curObject()->basesIsPropDeclared(aId, Object::PropType::Set);
+	  startKeys = aId->is(Identifier::Final) || overriden
+			          ? "" : "virtual ";
+		endKeys = overriden
+			        ? " override" : "";
+		*mOut << in() << startKeys << codePropHeader(false, aId, Object::PropType::Set) << endKeys << abstractKey << ";" << std::endl;
 	}
 }
 
@@ -346,13 +373,13 @@ std::string NateParser::codePropHeader(bool aAddObjectName,
 
 void NateParser::codeDefaultPropertyImpl(const IdentifierPtr& propId)
 {
-		if (curObject()->getPropState(propId, Object::PropType::Get) == Object::PropState::Declared)
+		if (curObject()->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Declared)
 		{
 			*mOut << in() << codePropHeader(true, propId, Object::PropType::Get) 
 				    << " { return " << propId->codeName() << "; }" << std::endl;
 		}
 
-		if (curObject()->getPropState(propId, Object::PropType::Set) == Object::PropState::Declared)
+		if (curObject()->getPropState(propId, Object::PropType::Set).state == Object::PropState::State::Declared)
 		{
 			*mOut << in() << codePropHeader(true, propId, Object::PropType::Set) 
 				    << " { return " << propId->codeName() << " = value; }" << std::endl;
@@ -423,7 +450,6 @@ void NateParser::codeAssign(const std::vector<Expr>& aExpressions,
 		bool ok = aValue.node().castToType(exprType);
 		if (!ok)
 		{
-			std::cerr << aValue.node() << "\n" << *exprType << std::endl;
 			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
 		}
 				

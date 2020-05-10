@@ -755,6 +755,7 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::ConstMethod)) aStream << ",ConstMethod";
 	if (aValue.is(Method::Defined)) aStream << ",Defined";
 	if (aValue.is(Method::Undeclared)) aStream << ",Undeclared";
+	if (aValue.is(Method::Overriden)) aStream << ",Overriden";	
 
 	aStream << ")";
 	return aStream;

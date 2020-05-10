@@ -14,25 +14,26 @@ import Hello
 // ₀₁₂₃₄₅₆₇₈₉
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
 // πτ𝑖⋅÷⁄×⇑⇓
-// ‾―   ₑ 
+// ‾―─‗ ₑ 
 
 //          3ₑπ𝑖²ᵉ   
-// z :=   ――――――――― + 3   
+// z := - ――――――――― + 3   
 //         √(4x²^3)  
 
-//          3ₑπ𝑖²ᵉ   
-// z :=   ――――――――― + 3   
-//         √4x²^3‾  
-
-//          3ₑπ𝑖²ᵉ   
-// z :=   ――=====―― + 3   
-//         √⅞x²^3 
+//        ____________
+//       ╱  ₃ₑπ𝑖²ᵉ       3
+// z := √ ―――――――――――― + ―  
+//        ⎛ √4x²^3⌝/4 ⎞   4
+//        ⎜ ――――――――――⎟
+//        ⎝    5÷a    ⎠
 
 //          3ₑπ𝑖²ᵉ   
 // z :=   ――――――――― + 3  
 //          _____
 //         √4x²^3
 
+// "C:\Users\Ruud\Reflex\bin\win64\Reflex.exe" --header-file C:\Users\ruud\source\repos\Nate\NateLexer.l
+// "c:\Users\Ruud\Bison\win_bison.exe" --output="%(Filename).tab.cpp" --defines="%(Filename).tab.h"  
 define test:
   
       // comment comment
@@ -451,4 +452,4 @@ define bottles song:
 program:
   output "duh"
   test
-  bottles song
+  //bottles song

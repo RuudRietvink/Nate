@@ -17,6 +17,11 @@ implement object Hi:
     get:
       return age
       
+  property greet:
+    set:
+      greet := value
+      return greet
+
   define new Hi2 is Hi:
     var result is Hi
     construct result
@@ -28,7 +33,9 @@ implement object Hi:
 
   define ${me is Hi} ${world is text} is text:
     return yo + " " + age + " " + $world
-
+    
+  define ls ${me} ${world is text} is text:
+    return "ls " + yo
 
 implement object Hello:
   var myVar := "Hi There"
@@ -50,6 +57,7 @@ implement object Hello:
   property greet:
     set:
       greet := value
+      return greet
 
   define new Hello is Hello:
     var result is Hello
@@ -83,3 +91,7 @@ implement object Hello:
 
   define stream-out ${me is Hello} is text:
     return me greetings  + ", it's " + me " angry world"
+    
+  define ls ${me is Hello} ${world is text} is text:
+    return "ls " + me greetings
+   

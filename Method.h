@@ -87,6 +87,7 @@ public:
 	static const size_t Defined      = 9;
 	static const size_t Undeclared   =10;
 	static const size_t Final        =11;
+	static const size_t Overriden    =12;
   
 private:
 	void getTypes(

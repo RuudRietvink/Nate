@@ -18,13 +18,29 @@ public:
   int stateExprValue = EXPR;
   bool spaceBeen = false;
 		
+  std::string currentFile()
+  {
+    return filenames.back();
+  }
+  
+  void pushFile(const std::string& aFile)
+  {
+    std::string escFile = Core::replaceAll(aFile, "\\", "\\\\");
+		filenames.push_back(escFile);
+  }
+
+  void popFile()
+  {
+		filenames.pop_back();
+  }
+
   std::string fileLocation()
   {
     std::stringstream ss;
-    ss << filenames.back() << ": " << location();
+    ss << currentFile() << ": " << location();
     return ss.str();
   }
-
+  
 	void includeFile(const std::string& aFile)
 	{
     if (debug())
@@ -47,7 +63,7 @@ public:
 			else
 			{
 				++depth;
-				filenames.push_back(Core::replaceAll(aFile, "\\", "\\\\"));
+				pushFile(aFile);
 				push_matcher(new_matcher(fd));  // push current matcher, use new matcher
 			}
 		}
@@ -67,17 +83,17 @@ public:
 		{
       if (debug())
       {
-        std::cerr << "End of file: " << filenames.back() << std::endl;
+        std::cerr << "End of file: " << currentFile() << std::endl;
       }
 			fclose(in());                   // close current input in() (a FILE*)
 			pop_matcher();                  // delete current matcher, pop matcher
-			filenames.pop_back();
+			popFile();
 			--depth;
 			result = false;                 // continue reading
       if (debug() && 
           !filenames.empty())
       {
-        std::cerr << "Continue parsing: " << filenames.back() << std::endl;
+        std::cerr << "Continue parsing: " << currentFile() << std::endl;
       }
 		}
 
@@ -200,7 +216,7 @@ public:
 %option bison-cc-namespace=yy
 %option bison-cc-parser=parser
 %option bison-locations
-%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token in \") + filenames.back())"
+%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token in \") + currentFile())"
 %option namespace=yy
 %option lexer=Lexer
 %option unicode

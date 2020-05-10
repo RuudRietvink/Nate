@@ -18,7 +18,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\core")
 {
 	mLexer->nate = this;
-	mLexer->filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
+	mLexer->pushFile(aFilename);
 	  
 	initOutput();
 	initTypesAndObjects();
@@ -120,7 +120,7 @@ void NateParser::parseFile(const std::string& aFilename)
 	std::ifstream stream(aFilename);
 	yy::Lexer lexer(stream);
 	lexer.nate = this;
-	lexer.filenames.push_back(Core::replaceAll(aFilename, "\\", "\\\\"));
+	lexer.pushFile(aFilename);
 	yy::parser parser(lexer, *this);
 	if (mLexer->debug())
 	{
@@ -410,9 +410,9 @@ void NateParser::startObject(const ObjectPtr& aObject)
 
 void NateParser::checkObject(const ObjectPtr& aObject)
 {
-	int baseCount = std::count_if(aObject->getBases().begin(), aObject->getBases().end(),
-														    [&](const ObjectPtr& aBase)
-	                              { return !aBase->isRole(); });
+	size_t baseCount = std::count_if(aObject->getBases().begin(), aObject->getBases().end(),
+													   	     [&](const ObjectPtr& aBase)
+	                                 { return !aBase->isRole(); });
 	if (baseCount > 1)
 	{
 		error("Multiple inheritance is not allowed");
@@ -433,16 +433,22 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject)
 	{
 		if (base->isRole())
 		{
-			for (const auto& propMethod : base->propertyMethods())
+			for (auto& propMethod : base->propertyMethods())
 			{
 				auto const& propId = propMethod.first;
-				if (curObject()->getPropState(propId, Object::PropType::Get) == Object::PropState::Unknown)
+				if (curObject()->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Unknown)
 				{
 					checkIdentifierName(propId->name());
 					IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
 					id->setFlags(propId->getFlags());
 					addIdentifier(id);
-					codeDeclareProperty(id);
+				  curObject()->addProp(id, propMethod.second.location, mLexer->currentFile());
+					yy::parser::location_type location = propMethod.second.location;
+					if (location.begin.filename == nullptr)
+					{
+						location.begin.filename = &propMethod.second.filename;
+					}
+					codeDeclareProperty(id, propMethod.second.location);
 				}
 			}
 		}
@@ -511,6 +517,24 @@ ObjectPtr NateParser::getObject(const std::string& aId)
 												 	 [&](ObjectPtr const& aObject)
 													 { return aObject->name() == aId; });
 	return iter != mObjects.cend() ? *iter : ObjectPtr();
+}
+
+void NateParser::addObjectBase(const ObjectPtr& aObject)
+{
+	if (aObject->isRole())
+	{
+		error("Base object must not be a role: " + aObject->name());
+	}
+	curObject()->addBase(aObject);
+}
+
+void NateParser::addObjectRole(const ObjectPtr& aObject)
+{
+	if (!aObject->isRole())
+	{
+		error("Base role must not be an object: " + aObject->name());
+	}
+	curObject()->addBase(aObject);
 }
 
 ObjectPtr NateParser::curObject()
@@ -604,12 +628,16 @@ void NateParser::declareDefine(bool aIsDecl)
 		}
 		else
 		{
-			const char* virtualKey = curDefine()->is(Method::Final)
-															 ? "" : "virtual ";
-			const char* abstract = curObject()->isRole()
-															 ? " = 0" : "";
-			*mOut << in(-1) << (curDefine()->isStatic() ? "static " : virtualKey) << 
-											   curDefine()->createCodeDecl() << abstract << ";" << std::endl;
+			DefinePtr defineDecl = curObject()->basesGetLike(curDefine());
+			if (defineDecl)
+			{
+				if (curObject()->isRole())
+				{
+					error("Redefinition of method of base role: " + defineDecl->signature());
+				}
+				curDefine()->setFlag(Method::Overriden);
+			}
+			codeObjectMethodHeaderDecl(curObject(), curDefine());
 		}
 
 		if (curDefine()->isStatic())
@@ -665,7 +693,8 @@ DefinePtr NateParser::curDefine() { return mCurDefine; }
 
 void NateParser::declareProperties(const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
-																	 const std::vector<std::string>& flags)
+																	 const std::vector<std::string>& flags,
+																   const yy::parser::location_type& aLocation)
 {
 	for (auto const& name : aNames)
 	{
@@ -675,7 +704,8 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 		addIdentifier(id);
 
 		optionalError(id->setFlagStrings(flags));
-		codeDeclareProperty(id);
+		curObject()->addProp(id, aLocation, mLexer->currentFile());
+		codeDeclareProperty(id, aLocation);
 	}
 }
 
@@ -693,8 +723,9 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 	  error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
-	curObject()->setPropState(aIdentifier, aPropType, Object::PropState::Defined);
-	curObject()->setPropState(aIdentifier, aPropType, Object::PropState::Defined);
+	Object::PropState propState = curObject()->getPropState(aIdentifier, aPropType);
+	propState.state = Object::PropState::State::Defined;
+	curObject()->setPropState(aIdentifier, aPropType, propState);
 	
 	addDefine(true);
 	mDefineDecl = false;

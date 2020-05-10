@@ -9,7 +9,7 @@ role Greetable:
   
   define ls ${me is Greetable} ${world is text} is text
 
-declare object Hi:
+declare object Hi as Greetable:
   record Datum:
     var fun is text
     var count is int
@@ -17,11 +17,12 @@ declare object Hi:
   property age is int as readonly
   property datum is Datum
 
-  define new Hi is Hi
+  define new Hi2 is Hi
 
   define ${me is Hi} ${world is text} is text
+  define ls ${me} ${world is text} is text
 
-declare object Hello is Hi, as Greetable:
+declare object Hello is Hi as Greetable:
   record Data:
     var greet is text
     var count is int
@@ -38,4 +39,6 @@ declare object Hello is Hi, as Greetable:
 
   define hi ${other is Hello} is text
   
-  define stream-out ${me is Hello} is text
+  define stream-out ${me} is text
+  
+  define ls ${me} ${world is text} is text

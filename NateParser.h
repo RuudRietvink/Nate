@@ -114,9 +114,12 @@ public:
 	void checkObject(const ObjectPtr& aObject);
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
+	void addObjectBase(const ObjectPtr& aObject);
+	void addObjectRole(const ObjectPtr& aObject);
 	void declareProperties(const std::vector<std::string>& aNames,
 												 const TypePtr& aType,
-												 const std::vector<std::string>& flags);
+												 const std::vector<std::string>& flags,
+												 const yy::parser::location_type& aLocation);
 	void defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 	void endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 
@@ -162,11 +165,12 @@ public:
 																	bool initializeVariables,
 																	const yy::parser::location_type& aLocation = yy::parser::location_type(yy::position(), yy::position()));
 	void codeEndRecord(const yy::parser::location_type& aLocation);
-	void codeStartDeclObject();
+	void codeStartDeclObject(const yy::parser::location_type& aLocation);
 	void codeEndDeclObject();
-	void codeStartImplObject();
+	void codeStartImplObject(const yy::parser::location_type& aLocation);
 	void codeEndImplObject();
-	void codeDeclareProperty(const IdentifierPtr& aId);
+	void codeObjectMethodHeaderDecl(const ObjectPtr& aObject, const DefinePtr& aDefine);
+	void codeDeclareProperty(const IdentifierPtr& aId, const yy::parser::location_type& aLocation);
 	void codeDefaultPropertyImpl(const IdentifierPtr& propId);
 
 	std::string codePropHeader(bool aAddObjectName,

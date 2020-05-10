@@ -135,9 +135,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="NateLexer.l">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="core\core.ns">
       <Filter>Source Files\Core</Filter>
     </None>
@@ -280,8 +277,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Bison Include="NateParser.y">
-      <Filter>Source Files</Filter>
-    </Bison>
+    <CustomBuild Include="NateLexer.l" />
+    <CustomBuild Include="NateParser.y" />
   </ItemGroup>
 </Project>
