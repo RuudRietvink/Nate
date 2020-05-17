@@ -17,7 +17,7 @@
   class NateParser;
   #include "Expr.h"
   #include "Type.h"
-  #include "core/Fraction.h"
+  #include "core/Rational.h"
 }
 %parse-param { yy::Lexer& lexer } { NateParser& nate }
 %code{
@@ -43,7 +43,7 @@
 %define api.token.prefix {TOK_}
 %token <std::string> IDENTIFIER "identifier"
 %token <std::string> NUMBER "number"
-%token <std::string> FRACTION "fraction"
+%token <std::string> RATIONAL "rational"
 %token <std::string> STRING "string"
 %token <std::string> BOOL "bool"
 %token <std::string> WORD "word"
@@ -1178,13 +1178,13 @@ expr-non-word:
         lexer.noSpace();
         nate.data.prevWasValue = true;
 		  }
-	| FRACTION
+	| RATIONAL
 		  { 
-        TypePtr type = nate.determineType("fraction");
-        Fraction temp($FRACTION);
+        TypePtr type = nate.determineType("rational");
+        Rational temp($RATIONAL);
         std::stringstream ss;
         ss << temp.whole() << "," << temp.numerator() << "," << temp.denominator();
-			  $$ = Expr(ExprNode($FRACTION, "Fraction(" + ss.str() + ")", type));
+			  $$ = Expr(ExprNode($RATIONAL, "Rational(" + ss.str() + ")", type));
 			  $$.node().setFlag(ExprNode::Literal, true);
 			  $$.node().setFlag(ExprNode::ConstExpr, true);
         lexer.noSpace();

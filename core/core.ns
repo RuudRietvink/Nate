@@ -123,4 +123,10 @@ code define 65 stream-out ${val is boolean}:
   $val
   
 code define 60 construct ${result is object as out}:
-  result = std::make_shared<__X__OBJECT_TYPE__.__>()
+  $result.reset(new decltype($result)::element_type())
+  
+code define 60 constructed ${result is object as out} as same:
+  ($result.reset(new decltype($result)::element_type()), $result)
+
+code define 60 constructed object as me:
+  std::make_shared<__X__OBJECT_TYPE__.__>()

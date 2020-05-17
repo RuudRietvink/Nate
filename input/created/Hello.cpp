@@ -9,7 +9,7 @@ public:
 		{
 #line 7
 			std::shared_ptr<Local> result = {};
-			result = std::make_shared<Local>();
+			result.reset(new decltype(result)::element_type());
 #line 9
 			result->initialize_E_O_me__();
 			return result;
@@ -33,7 +33,7 @@ public:
   __impl(Hi* aMe) : me(aMe) {}
 		static std::string yo_()
 		{
-#line 32
+#line 29
 			return "Hi";
 		}
 
@@ -60,29 +60,25 @@ Hi::~Hi() { delete _impl; }
 	std::shared_ptr<Hi> Hi::new_Hi2_()
 	{
 #line 26
-		std::shared_ptr<Hi> result = {};
-		result = std::make_shared<Hi>();
-#line 28
-		result->initialize_E_O_me__();
-		return result;
+		return std::make_shared<Hi>();
 	}
 
 	std::string Hi::E_me__E_text_(const std::string& world) const
 	{
-#line 35
+#line 32
 		return ((((__impl::yo_())+ " ")+ (std::to_string(age)))+ " ")+ world;
 	}
 
 	std::string Hi::ls_E_me__E_text_(const std::string& world) const
 	{
-#line 38
+#line 35
 		return "ls "+ (__impl::yo_());
 	}
 
+	Greetable::Greet Hi::greet_get() const { return greet; }
 	Hi::Datum Hi::datum_get() const { return datum; }
 	const Hi::Datum& Hi::datum_set(const Hi::Datum& value) { return datum = value; }
-	Greetable::Greet Hi::greet_get() const { return greet; }
-#line 40
+#line 37
 
 class Hello::__impl
 {
@@ -91,17 +87,17 @@ private:
 public:
   __impl(Hello* aMe) : me(aMe) {}
 		std::string myVar = "Hi There";
-#line 42
+#line 39
 		bool myBool = false;
 		Data myData = {};
 		int32_t get_E_me__age_() const
 		{
-#line 69
+#line 63
 			int32_t hi = 34;
-#line 71
+#line 65
 			if (myBool)
 			{
-#line 71
+#line 65
 				std::cout << "Test " << (myVar);				std::cout << " " << ((myData. greet));				std::cout << " " << (((Local::new_Local_())->E_me__E_text_(" world")));				std::cout << std::endl;
 			}
 			return (me-> age_get()+ me->age)+ hi;
@@ -109,13 +105,13 @@ public:
 
 		static std::string greetings_()
 		{
-#line 75
+#line 69
 			return "Hello";
 		}
 
 		std::string E_me__greetings_() const
 		{
-#line 78
+#line 72
 			std::shared_ptr<Hello> other = Hello::new_Hello_();
 			return "Hello "+ (Hello::hi_E_Hello_(other));
 		}
@@ -129,22 +125,22 @@ Hello::~Hello() { delete _impl; }
 
 	std::string Hello::name_get() const
 	{
-#line 47
+#line 44
 		int32_t hi = 3;
 		return name+ _impl->myVar;
 	}
 
 	const std::string& Hello::name_set(const std::string& value)
 	{
-#line 50
+#line 47
 		int32_t hi = 5;
 		std::string temp = ((name+ value)+ address)+ (std::to_string(hi));
-#line 52
+#line 49
 		name = temp;
-#line 54
+#line 51
 		if (_impl->myBool)
 		{
-#line 54
+#line 51
 			name = name+ (_impl->myData. greet);
 		}
 		return name;
@@ -152,57 +148,53 @@ Hello::~Hello() { delete _impl; }
 
 	const Greetable::Greet& Hello::greet_set(const Greetable::Greet& value)
 	{
-#line 59
+#line 56
 		greet = value;
 		return greet;
 	}
 
 	std::shared_ptr<Hello> Hello::new_Hello_()
 	{
-#line 63
-		std::shared_ptr<Hello> result = {};
-		result = std::make_shared<Hello>();
-#line 65
-		result->initialize_E_O_me__();
-		return result;
+#line 60
+		return std::make_shared<Hello>();
 	}
 
 	std::string Hello::E_me__E_text_(const std::string& world) const
 	{
-#line 82
+#line 76
 		return ((__impl::greetings_())+ " ")+ world;
 	}
 
 	std::string Hello::hi_E_Hello_(const std::shared_ptr<Hello>& other)
 	{
-#line 85
+#line 79
 		return other->E_me__E_text_(" earth");
 	}
 
 	std::shared_ptr<Hello> Hello::E_O_me__greeted_()
 	{
-#line 88
+#line 82
 		_impl->myData. greet = _impl->E_me__greetings_();
 		std::shared_ptr<Hello> other = std::dynamic_pointer_cast<Hello>(shared_from_this());
-#line 90
+#line 84
 		return std::dynamic_pointer_cast<Hello>(shared_from_this());
 	}
 
 	std::string Hello::stream_out_E_me__() const
 	{
-#line 93
+#line 87
 		return ((_impl->E_me__greetings_())+ ", it's ")+ (this->E_me__E_text_(" angry world"));
 	}
 
 	std::string Hello::ls_E_me__E_text_(const std::string& world) const
 	{
-#line 96
+#line 90
 		return "ls "+ (_impl->E_me__greetings_());
 	}
 
 	int32_t Hello::age_get() const { return age; }
 	Greetable::Greet Hello::greet_get() const { return greet; }
-	Hello::Data Hello::data_get() const { return data; }
-	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
 	std::string Hello::address_get() const { return address; }
 	const std::string& Hello::address_set(const std::string& value) { return address = value; }
+	Hello::Data Hello::data_get() const { return data; }
+	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }

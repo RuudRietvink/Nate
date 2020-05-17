@@ -23,10 +23,7 @@ implement object Hi:
       return greet
 
   define new Hi2 is Hi:
-    var result is Hi
-    construct result
-    initialize result
-    return result
+    return constructed object
     
   define yo is text:
     return "Hi"
@@ -60,10 +57,7 @@ implement object Hello:
       return greet
 
   define new Hello is Hello:
-    var result is Hello
-    construct result
-    initialize result
-    return result
+    return constructed object
     
   define get ${me is Hello} age is int-32:
     var hi := 34

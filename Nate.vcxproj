@@ -198,7 +198,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="core\Fraction.cpp" />
+    <ClCompile Include="core\Rational.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
     <ClCompile Include="ExprNode.cpp" />
@@ -229,7 +229,7 @@
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
     <None Include="core\File-Output.ns" />
-    <None Include="core\Fraction.ns" />
+    <None Include="core\Rational.ns" />
     <None Include="core\List.ns" />
     <None Include="core\Math.ns" />
     <None Include="core\BaseObject.nd" />
@@ -294,7 +294,7 @@
     <ClInclude Include="core\Complex.h" />
     <ClInclude Include="core\Core.h" />
     <ClInclude Include="core\Created\BaseObject.h" />
-    <ClInclude Include="core\Fraction.h" />
+    <ClInclude Include="core\Rational.h" />
     <ClInclude Include="core\View.h" />
     <ClInclude Include="core\UpperLower.h" />
     <ClInclude Include="Define.h" />

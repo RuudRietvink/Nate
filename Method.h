@@ -15,6 +15,7 @@ class Record;
 class Object;
 class Define;
 typedef std::shared_ptr<Define> DefinePtr;
+typedef std::shared_ptr<Object> ObjectPtr;
 
 class Method;
 typedef std::shared_ptr<Method> MethodPtr;
@@ -71,10 +72,10 @@ public:
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
 	std::string         setFlagString(const std::string& aFlag) override;
-	void                setObject(const Object* aObject);
+	void                setObject(const ObjectPtr& aObject);
 	const std::string&  code() const;
 	std::string&        code();
-	const Object*       object() const;
+	ObjectPtr           object() const;
 
 	static const size_t Highest      = 1;
 	static const size_t Num          = 2;
@@ -88,6 +89,7 @@ public:
 	static const size_t Undeclared   =10;
 	static const size_t Final        =11;
 	static const size_t Overriden    =12;
+	static const size_t Me           =13;
   
 private:
 	void getTypes(
@@ -124,7 +126,7 @@ private:
 	std::string          mSignature;
 	mutable std::string  mPattern;
 	int                  mPriority = 0;
-	const Object*        mObject = nullptr;
+	ObjectPtr            mObject;
 	ArgConstIterator		 mObjectArg;
 	ArgConstIterator		 mOwnerArg;
 	ArgConstIterator		 mMemberArg;

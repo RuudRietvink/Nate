@@ -17,23 +17,22 @@ std::string unquote(const std::string& aString)
 std::string toCodeName(const std::string& aName)
 {
 	std::stringstream buf;
-	utf8::iterator<std::string::const_iterator> iter(Core::cbegin(aName));
-	utf8::iterator<std::string::const_iterator> end(Core::cend(aName));
+	Core::Utf8 name(aName);
 
 	//std::cerr << aName << " ";
-	for (; iter != end; ++iter)
+	for (; name; ++name)
 	{
-		if (*iter == '-')
+		if (*name == '-')
 		{
 			buf << '_';
 		}
-		else if (*iter > 255)
+		else if (*name > 255)
 		{
-			buf << "__" << std::hex << *iter << "_";
+			buf << "__" << std::hex << *name << "_";
 		}
 		else
 		{
-			buf << static_cast<char>(*iter);
+			buf << static_cast<char>(*name);
 		}
 	}
 
@@ -67,45 +66,44 @@ std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 {
 	std::string number;
 	std::string word;
+	Core::Utf8 string(aString);
 	
-	utf8::iterator<std::string::const_iterator> iter(Core::cbegin(aString));
-	utf8::iterator<std::string::const_iterator> end(Core::cend(aString));
 	auto inserter = std::back_inserter(number);
 
-	while (iter != end && *iter < 255 && std::isdigit(*iter))
+	while (string && *string < 255 && std::isdigit(*string))
 	{
-		inserter = utf8::append(*iter++, inserter);
+		inserter = utf8::append(*string++, inserter);
 	}
 
-	if (iter != end && *iter == '.')
+	if (string && *string == '.')
 	{
-		inserter = utf8::append(*iter++, inserter);
+		inserter = utf8::append(*string++, inserter);
 
-		while (iter != end && *iter < 255 && std::isdigit(*iter))
+		while (string && *string < 255 && std::isdigit(*string))
 		{
-			inserter = utf8::append(*iter++, inserter);
+			inserter = utf8::append(*string++, inserter);
 		}
 
-		if (iter != end && *iter == 'E')
+		if (string && *string == 'E')
 		{
-			inserter = utf8::append(*iter++, inserter);
+			inserter = utf8::append(*string++, inserter);
 
-			if (iter != end && (*iter == '-' || *iter == '+'))
+			if (string && (*string == '-' || *string == '+'))
 			{
-				inserter = utf8::append(*iter++, inserter);
+				inserter = utf8::append(*string++, inserter);
 			}
 
-			while (iter != end && *iter < 255 && std::isdigit(*iter))
+			while (string && *string < 255 && std::isdigit(*string))
 			{
-				inserter = utf8::append(*iter++, inserter);
+				inserter = utf8::append(*string++, inserter);
 			}
 		}
 	}
 	
 	inserter = std::back_inserter(word);
-	while (iter != end)
+	while (string)
 	{
-		inserter = utf8::append(*iter++, inserter);
+		inserter = utf8::append(*string++, inserter);
 	}
 
 	return std::make_tuple(number, word);

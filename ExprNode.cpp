@@ -44,17 +44,17 @@ bool ExprNode::castToType(const TypePtr& aToType)
 
 	if (type()->is(Type::Number) && aToType->is(Type::Number))
 	{
-		if (type()->is(Type::Fraction) && aToType->is(Type::Real))
+		if (type()->is(Type::Rational) && aToType->is(Type::Real))
 		{
 			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ".toDouble())", aToType);
 		}
-		else if (type()->is(Type::Fraction) && aToType->is(Type::Integer))
+		else if (type()->is(Type::Rational) && aToType->is(Type::Integer))
 		{
 			*this = ExprNode(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ".toInt())", aToType);
 		}
-		else if (type()->is(Type::SingleNr) && aToType->is(Type::Fraction))
+		else if (type()->is(Type::SingleNr) && aToType->is(Type::Rational))
 		{
-			*this = ExprNode(text(), "Fraction(" + code() + ")", aToType);
+			*this = ExprNode(text(), "Rational(" + code() + ")", aToType);
 		}
 		else if (type()->is(Type::Imaginary) && aToType->is(Type::Complex))
 		{

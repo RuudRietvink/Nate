@@ -61,6 +61,7 @@ public:
 
 		State state;
 		bool  overriden;
+
 	};
 
 	struct PropData

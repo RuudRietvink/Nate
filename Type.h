@@ -61,7 +61,7 @@ public:
 	static const size_t Abstract   =12;
 	static const size_t Any        =13;
 	static const size_t Char       =14;
-	static const size_t Fraction   =15;
+	static const size_t Rational   =15;
 	static const size_t Imaginary  =16;
 	static const size_t Complex    =17;
 	static const size_t SingleNr   =18;

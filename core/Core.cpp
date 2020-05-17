@@ -44,6 +44,59 @@ namespace
 
 namespace Core
 {
+	Utf8::Utf8(const std::string::const_iterator& aBegin,
+				     const std::string::const_iterator& aEnd)
+		: mIter(aBegin),
+		  mBegin(mIter),
+		  mEnd(aEnd)
+	{}
+		
+	Utf8::Utf8(const std::string& aString)
+		: mIter(aString.cbegin()),
+		  mBegin(mIter),
+		  mEnd(aString.cend())
+	{}
+
+	uint32_t Utf8::operator*() const
+	{
+		return mIter != mEnd
+					 ? utf8::peek_next(mIter, mEnd)
+			     : 0;
+	}
+
+	Utf8::operator bool() const
+	{
+		return mIter != mEnd;
+	}
+
+	Utf8& Utf8::operator++()
+	{
+		utf8::next(mIter, mEnd);
+		return *this;
+	}
+	
+	Utf8 Utf8::operator++(int)
+	{
+		Utf8 copy = *this;
+		utf8::next(mIter, mEnd);
+		return copy;
+	}
+
+	std::string::const_iterator& Utf8::iter()
+	{
+		return mIter;
+	}
+	
+	const std::string::const_iterator& Utf8::begin()
+	{
+		return mBegin;
+	}
+	
+	const std::string::const_iterator& Utf8::end()
+	{
+		return mEnd;
+	}
+
 	std::string directorySeperator()
 	{
 		#ifdef _WIN32
@@ -158,11 +211,12 @@ namespace Core
 		}
 	}
 
-	std::string parseNumber(const std::string& aString)
+	std::string normalizeNumber(const std::string& aString)
 	{
 		std::string result = replaceAll(aString, "⏨", "E");
 		result = replaceAll(result, "*^", "E");
 		result = replaceAll(result, "ю", "E");
+		result = unSubscriptNumbers(result);
 		return result;
 	}
 
@@ -265,31 +319,19 @@ namespace Core
 		return result;
 	}
 
-	utf8::iterator<std::string::const_iterator> cbegin(const std::string& aString)
-	{
-		return utf8::iterator<std::string::const_iterator>(aString.cbegin(), aString.cbegin(), aString.cend());
-	}
 
-	utf8::iterator<std::string::const_iterator> cend(const std::string& aString)
+	int find(Utf8& aString, uint32_t aChar)
 	{
-		return utf8::iterator<std::string::const_iterator>(aString.cend(), aString.cbegin(), aString.cend());
-	}
-
-	utf8::iterator<std::string::const_iterator> find(const std::string& aString,
-																									 uint32_t aChar)
-	{
-		utf8::iterator<std::string::const_iterator> iter(cbegin(aString));
-		utf8::iterator<std::string::const_iterator> end(cend(aString));
-		
-		for (; iter != end; ++iter)
+		int pos = 0;
+		for (; aString; ++aString, ++pos)
 		{
-			if (*iter == aChar)
+			if (*aString == aChar)
 			{
-				return iter;
+				return pos;
 			}
 		}
 
-		return end;
+		return -1;
 	}
 
 	bool strtoi32(const char* aString, int32_t& aResult, int aBase)
@@ -329,26 +371,25 @@ namespace Core
 
 	int positionIn(const std::string& aString, uint32_t aChar)
 	{
-		int result = -1;
-
-		auto iter = find(aString, aChar);
-		if (iter != cend(aString))
-		{
-			result = static_cast<int>(std::distance(cbegin(aString), iter));
-		}
-
-		return result;
+		Utf8 string(aString);
+		return find(string, aChar);
 	}
 
-	bool numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
-									const utf8::iterator<std::string::const_iterator>& aEnd,
+	bool numberFrom(Utf8& aString,
 									int32_t& aNumber)
 	{
-		return numberFrom(aIter, aEnd, "0123456789", aNumber);
+		return numberFrom(aString, "0123456789", aNumber);
+	}
+	
+	bool numberFrom(const Utf8& aString,
+									const std::string& aDigits,
+									int32_t& aNumber)
+	{
+		Utf8 string = aString;
+		return numberFrom(string, aDigits, aNumber);
 	}
 
-	bool numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
-									const utf8::iterator<std::string::const_iterator>& aEnd,
+	bool numberFrom(Utf8& aString,
 									const std::string& aDigits,
 									int32_t& aNumber)
 	{
@@ -356,14 +397,14 @@ namespace Core
 		int pos = 0;
 		aNumber = 0;
 		std::string buf;
-
-		while (aIter != aEnd && pos >= 0)
+		
+		while (aString && pos >= 0)
 		{
-			pos = positionIn(aDigits, *aIter);
+			pos = positionIn(aDigits, *aString);
 			if (pos >= 0) 
 			{
 				buf.push_back('0' + pos);
-				++aIter;
+				++aString;
 			}
 		}
 
@@ -375,12 +416,12 @@ namespace Core
 		return ok;
 	}
 
-	bool numberFrom(const std::string& aString,
+	bool numberFrom(std::string& aString,
 									const std::string& aDigits,
 									int32_t& aNumber)
 	{
 		auto iter = cbegin(aString);
-		return numberFrom(iter, cend(aString), aDigits, aNumber);
+		return numberFrom(Utf8(aString), aDigits, aNumber);
 	}
 
 	namespace detail
@@ -415,19 +456,40 @@ namespace Core
 		static const std::string superScript = "⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ";
 		static const std::string normlScript = "-0123456789ABDEGHIJKLMNOPRTUVWabcdefghijklmnoprstuvwxyz";
 	
-		utf8::iterator<std::string::const_iterator> iter(cbegin(aString));
-		utf8::iterator<std::string::const_iterator> end(cend(aString));
+		Core::Utf8 string(aString);
 		
-		for (; iter != end; ++iter)
+		for (; string; ++string)
 		{
-			auto pos = positionIn(superScript, *iter);
+			auto pos = positionIn(superScript, *string);
 			if (pos >= 0)
 			{
 				result.push_back(normlScript[pos]);
 			}
 		}
 
-		//std::cerr << aString << " -> " << result << std::endl; 
+		return result;
+	}
+	
+	std::string unSubscriptNumbers(const std::string& aString)
+	{
+		std::string result;
+		static const std::string normlScript = "0123456789";
+	
+		Core::Utf8 string(aString);
+		
+		for (; string; ++string)
+		{
+			auto pos = positionIn(subDigits, *string);
+			if (pos >= 0)
+			{
+				result.push_back(normlScript[pos]);
+			}
+			else
+			{
+				result.push_back(*string);
+			}
+		}
+
 		return result;
 	}
 
@@ -472,35 +534,36 @@ namespace Core
 	using F = Format::Flags;
 	using Uci = utf8::iterator<std::string::const_iterator>;
 
-	static std::string getFlag(Uci& aIter, const Uci& aEnd)
+	static std::string getFlag(Utf8& aString)
 	{
 		std::string result;
-		while (aIter != aEnd && *aIter != ',')
+		while (aString && *aString != ',')
 		{
-			result += *aIter++;
+			result += *aString++;
 		}
 
 		return upperCased(result);
 	}
 
-	static void getFormatWidth(const std::string& aInput, Format& aFormat, Uci& aIter, const Uci& aEnd)
+	static void getFormatWidth(const std::string& aInput, Format& aFormat, 
+														 Utf8& aString)
 	{
 		int32_t temp;
-		bool ok = numberFrom(aIter, aEnd, temp);
+		bool ok = numberFrom(aString, temp);
 		if (ok)
 		{
 			aFormat.width = temp;
 		}
 					
-		if (aIter != aEnd)
+		if (aString)
 		{
-			if (*aIter == '.')
+			if (*aString == '.')
 			{
-				++aIter;
-				numberFrom(aIter, aEnd, temp);
+				++aString;
+				numberFrom(aString, temp);
 				aFormat.precision = temp;
 			}
-			else if (!ok && *aIter != ',')
+			else if (!ok && *aString != ',')
 			{
 				aFormat.setError("Missing output format width in " + aInput);
 			}
@@ -625,32 +688,31 @@ namespace Core
 
 	static Format getFormatWithHeaders(const std::string& aInput)
 	{
-		Uci iter(aInput.cbegin(), aInput.cbegin(), aInput.cend());
-		Uci end(aInput.cend(), aInput.cbegin(), aInput.cend());
+		Core::Utf8 input(aInput);
 	
 		Format result;
 
-		while (iter != end)
+		while (input)
 		{
 			std::string header;
-			while (iter != end && *iter != ',' && *iter != ':')
+			while (input && *input != ',' && *input != ':')
 			{
-				header += *iter++;
+				header += *input++;
 			}
 
 			header = upperCased(header);
-			if (iter != end && *iter == ':' && !header.empty())
+			if (input && *input == ':' && !header.empty())
 			{
-				++iter;
-				if (iter != end)
+				++input;
+				if (input)
 				{
 					if (header == "W" || header == "WIDTH")
 					{
-						getFormatWidth(aInput, result, iter, end);
+						getFormatWidth(aInput, result, input);
 					}
 					else if (header == "A" || header == "ALIGN")
 					{
-						std::string align = getFlag(iter, end);
+						std::string align = getFlag(input);
 
 						if (!tryGetAlign(aInput, result, align))
 						{
@@ -659,11 +721,11 @@ namespace Core
 					}
 					else if (header == "F" || header == "FILL")
 					{
-						result.fill = *iter++;
+						result.fill = *input++;
 					}
 					else if (header == "S" || header == "SIGN")
 					{
-						std::string sign = getFlag(iter, end);
+						std::string sign = getFlag(input);
 
 						if (!tryGetSign(aInput, result, sign))
 						{
@@ -672,7 +734,7 @@ namespace Core
 					}
 					else if (header == "B" || header == "BASE")
 					{
-						std::string base = getFlag(iter, end);
+						std::string base = getFlag(input);
 
 						if (!tryGetBase(aInput, result, base))
 						{
@@ -694,20 +756,20 @@ namespace Core
 				result.setError("Missing format colon in: "  + aInput);
 			}
 
-			if (iter != end)
+			if (input)
 			{
-				if (header.empty() && *iter == ':')
+				if (header.empty() && *input == ':')
 				{
 					result.setError("Missing output format header in: " + aInput);
-					++iter;
+					++input;
 				}
-				else if (*iter != ',')
+				else if (*input != ',')
 				{
 					result.setError("Missing output format seperator in: "  + aInput);
 				}
 				else
 				{
-					++iter;
+					++input;
 				}
 			}
 		}
@@ -717,61 +779,60 @@ namespace Core
 
 	static Format getFormatHeaderless(const std::string& aInput)
 	{
-		Uci iter(aInput.cbegin(), aInput.cbegin(), aInput.cend());
-		Uci end(aInput.cend(), aInput.cbegin(), aInput.cend());
+		Utf8 input(aInput);
 	
 		Format result;
 		int32_t commaCount = 0;
 
-		if (iter != end && *iter == '[')
+		if (input && *input == '[')
 		{
-			++iter;
+			++input;
 
-			while (iter != end && *iter != ']')
+			while (input && *input != ']')
 			{
 				if (commaCount == 0)
 				{
-					getFormatWidth(aInput, result, iter, end);
+					getFormatWidth(aInput, result, input);
 				}
 				else if (commaCount == 1)
 				{
-					if (*iter == '\\')
+					if (*input == '\\')
 					{
-						++iter;
-						if (iter != end)
+						++input;
+						if (input)
 						{
-							result.fill = *iter++;
+							result.fill = *input++;
 						}
 						else
 						{
 							result.setError("Missing fill character in [] part in "  + aInput);
 						}
 					}
-					else if (*iter != ']' && *iter != ',')
+					else if (*input != ']' && *input != ',')
 					{
-						result.fill = *iter++;
+						result.fill = *input++;
 					}
 				}
 
-				if (iter != end && *iter == ',')
+				if (input && *input == ',')
 				{
-					++iter;
+					++input;
 					++commaCount;
 					if (commaCount > 1)
 					{
 						result.setError("Too many commas in [] part in "  + aInput);
 					}
 				}
-				else if (iter != end && *iter != ']')
+				else if (input && *input != ']')
 				{
 					result.setError("Unexpected character in [] part in "  + aInput);
-					++iter;
+					++input;
 				}
 			}
 
-			if (iter != end && *iter == ']')
+			if (input && *input == ']')
 			{
-				++iter;
+				++input;
 			}
 			else
 			{
@@ -779,11 +840,11 @@ namespace Core
 			}
 		}
 
-		while (iter != end)
+		while (input)
 		{
-			if (*iter != ',' )
+			if (*input != ',' )
 			{
-				std::string flag = getFlag(iter, end);
+				std::string flag = getFlag(input);
 
 				if (!tryGetAlign(aInput, result, flag) &&
 						!tryGetSign(aInput, result, flag) &&
@@ -793,14 +854,14 @@ namespace Core
 				}
 			}
 
-			if (iter != end && *iter != ',')
+			if (input && *input != ',')
 			{
 				result.setError("Expected comma in: "  + aInput);
 			}
 
-			if (iter != end)
+			if (input)
 			{
-				++iter;
+				++input;
 			}
 		}
 

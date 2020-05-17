@@ -50,7 +50,7 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("boolean", getType("any")));
 	addType(getType("boolean"), "bool");
 		
-	addType(std::make_shared<Type>("fraction", getType("number")));
+	addType(std::make_shared<Type>("rational", getType("number")));
 	addType(std::make_shared<Type>("imaginary", getType("number")));
 	getType("imaginary")->setTypenameType(getType("float-64"));
 	addType(std::make_shared<Type>("complex", getType("number")));
@@ -586,7 +586,7 @@ void NateParser::addDefine(bool aInObject)
 	mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 	if (aInObject)
 	{
-		curDefine()->setObject(curObject().get());
+		curDefine()->setObject(curObject());
 	}
 }
 
@@ -1006,7 +1006,7 @@ TypePtr NateParser::getType(const std::string& aName, ITypesHolder* aTypesHolder
 	{
 		for (auto& typesHolder : mTypesHolders)
 		{
-			auto type = typesHolder->types().get(aName);
+			auto type = getType(aName, typesHolder.get());
 			if (type)
 			{
 				return type;

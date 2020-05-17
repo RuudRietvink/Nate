@@ -32,8 +32,8 @@ int                     Method::priority()  const { return mPriority; }
 const std::string&      Method::code()			const { return mCode; }
 std::string&            Method::code()						{ return mCode; }
 
-const Object*           Method::object()    const { return mObject; }
-void                    Method::setObject(const Object* aObject) { mObject = aObject; }
+ObjectPtr               Method::object()    const { return mObject; }
+void                    Method::setObject(const ObjectPtr& aObject) { mObject = aObject; }
 
 void Method::setType(const TypePtr& aType)        { mType = aType; }
 void Method::setPriority(int aValue)              { mPriority = aValue; }
@@ -49,6 +49,10 @@ std::string Method::setFlagString(const std::string& aFlag)
 	else if (aFlag == "same")
 	{
 		setFlag(Same);
+	}
+	else if (aFlag == "me")
+	{
+		setFlag(Me);
 	}
 	else if (aFlag == "last")
 	{
@@ -483,6 +487,11 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	{
 		result.type = firstType;
 	}
+	else if (is(Me))
+	{
+		result.type = aCurDefine->object();
+	  result.flags[ExprNode::Output] = true;
+	}
 	else if (is(Last))
 	{
 		result.type = lastType;
@@ -629,7 +638,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				const TypePtr& nodeType = nodeIter->type();
 				const TypePtr& argType = arg->identifier()->type();
 				bool needExactMatch = arg->is(Arg::Exact);
-				if (aDebug) std::cerr << "Arg: " << *arg << std::endl;
+				if (aDebug > 1) std::cerr << "Arg: " << *arg << std::endl;
 
 				if (!firstType)
 				{
@@ -756,6 +765,7 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::Defined)) aStream << ",Defined";
 	if (aValue.is(Method::Undeclared)) aStream << ",Undeclared";
 	if (aValue.is(Method::Overriden)) aStream << ",Overriden";	
+	if (aValue.is(Method::Me)) aStream << ",Me";	
 
 	aStream << ")";
 	return aStream;

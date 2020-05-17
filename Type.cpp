@@ -76,11 +76,11 @@ void Type::setType(const std::string& aName)
 		mCodeType = "double";
 		mBitSize = 164;
 	}
-	else if (aName == "fraction")
+	else if (aName == "rational")
 	{
 		setFlag(Abstract, false);
-		setFlag(Fraction, true);
-		mCodeType = "Fraction";
+		setFlag(Rational, true);
+		mCodeType = "Rational";
 		mBitSize = 264;
 	}
 	else if (aName == "imaginary")
@@ -319,7 +319,7 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::Text))  aStream << ",Text";
 	if (is(Type::Boolean)) aStream << ",Boolean";
 	if (is(Type::Char)) aStream << ",Char";
-	if (is(Type::Fraction)) aStream << ",Fraction";
+	if (is(Type::Rational)) aStream << ",Rational";
 	if (is(Type::Imaginary)) aStream << ",Imaginary";
 	if (is(Type::Complex)) aStream << ",Complex";
 	if (is(Type::Record)) aStream << ",Record";

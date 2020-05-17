@@ -1,4 +1,4 @@
-import Fraction
+import Rational
 import Complex
 import Math
 import Text
@@ -137,9 +137,10 @@ define test:
     output 2f, |f⏐f,
     output |4f|-f⏐⏐
   
-  output 𝑒^π𝑖
+  output 3𝑒^π𝑖
+  output ₃eπ𝑖²ᵉ
 
-  var frac,frac2 is fraction := 2½
+  var frac,frac2 is rational := 2½
   frac2 := log₂ 2½
   var od-1,od-2 is int-32 := 42½
   output frac, frac2, 2½cos -2½, abs(-2½), ⌊frac⌋
@@ -209,7 +210,7 @@ define test:
   id7 := (42+3.4)*id-1^2/5 - -id-4 - +13 + -id-4 + +14--2
 
   scope:
-    var f is fraction := 3½;
+    var f is rational := 3½;
     var g is float := f;
     output g, ⇑f, f, f⇑, f, ⇓f, f, f⇓, inc#f, f, f#dec, f
     output abs f, ceil f, floor f, round f

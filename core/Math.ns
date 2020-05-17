@@ -7,6 +7,7 @@ alias "√" "sqrt"
 alias "⋅" "*"
 alias "π" "pi"
 alias "𝑒" "e"
+alias "ₑ" "e"
 alias "τ" "tau"
 alias "⌊" "floor_l"
 alias "⌋" "floor_r"
@@ -17,6 +18,7 @@ alias "⏐" "abs_r"
 alias "log⏨" "log10"
 alias "log₁₀" "log10"
 alias "log₂" "log2"
+alias "ln" "log"
 
 ///////////////////////////////////////////////
 // Math
@@ -33,6 +35,9 @@ const tau is float-64 := 6.283185307179586
   
 constant e is float-64 := 2.718281828459045
 
+code define 150 ${val-1 is number} \u monomial ${val-2 is number} is number as highest, const:
+	$val-1 * $val-2
+	
 code define 110 ${val-1 is number} \u ^ ${val-2 is number} is number as highest, right:
 	std::pow($val-1, $val-2)
   
@@ -99,9 +104,6 @@ code define 110 \u \l log10 ${val is real} as same:
 code define 110 \u \l log2 ${val is real} as same:
 	std::log2($val)
   
-code define 100 ${val-1 is number} \u monomial ${val-2 is number} is number as highest, const:
-	$val-1 * $val-2
-	
 code define 85 ${val-1 is number} \u max ${val-2 is number as same} is number as same,right:
 	std::max($val-1, $val-2)
   

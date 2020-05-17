@@ -20,14 +20,39 @@ extern std::shared_ptr<std::ostream> error;
 
 namespace Core
 {
+	static const std::string superDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+	static const std::string subDigits = "₀₁₂₃₄₅₆₇₈₉";
+
+	class Utf8
+	{
+	public:
+		Utf8(const std::string::const_iterator& aBegin,
+				 const std::string::const_iterator& aEnd);
+		
+		Utf8(const std::string& aString);
+
+		uint32_t operator*() const;
+
+		operator bool() const;
+
+		Utf8& operator++();
+		Utf8 operator++(int);
+
+		std::string::const_iterator& iter();
+		const std::string::const_iterator& begin();
+		const std::string::const_iterator& end();
+
+	private:
+		std::string::const_iterator mIter;
+		const std::string::const_iterator mBegin;
+		const std::string::const_iterator mEnd;
+	};
+
 	std::wstring u16(const std::string& str);
-	utf8::iterator<std::string::const_iterator> cbegin(const std::string& aString);
-	utf8::iterator<std::string::const_iterator> cend(const std::string& aString);
-	utf8::iterator<std::string::const_iterator> find(const std::string& aString,
-																							     uint32_t aChar);
+	int find(Utf8& aString, uint32_t aChar);
 	
 	void parseBaseNumber(std::string& aString);
-	std::string parseNumber(const std::string& aString);
+	std::string normalizeNumber(const std::string& aString);
 	std::string upperCased(const std::string& aString);
 	std::string firstOf(const std::string& aString);
 	std::string restOf(const std::string& aString);
@@ -38,20 +63,22 @@ namespace Core
 	bool strtoi64(const char* aString, int64_t& aResult, int aBase = 10);
 	bool strtodbl(const char* aString, double& aResult);
 	int positionIn(const std::string& aString, uint32_t aChar);
-	bool numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
-									const utf8::iterator<std::string::const_iterator>& aEnd,
+	bool numberFrom(const Utf8& aString,
 									const std::string& aDigits,
 									int32_t& aNumber);
-	bool numberFrom(utf8::iterator<std::string::const_iterator>& aIter,
-									const utf8::iterator<std::string::const_iterator>& aEnd,
+	bool numberFrom(Utf8& aString,
+									const std::string& aDigits,
 									int32_t& aNumber);
-	bool numberFrom(const std::string& aString,
+	bool numberFrom(Utf8& aString,
+									int32_t& aNumber);
+	bool numberFrom(std::string& aString,
 									const std::string& aDigits,
 									int32_t& aNumber);
 	std::string toString(int32_t aNumber,
 								       const std::string& aDigits);
 
 	std::string unSuperscript(const std::string& aString);
+	std::string unSubscriptNumbers(const std::string& aString);
 	std::string toString(utf8::iterator<std::string::const_iterator> aIter);
 	std::string toString(const utf8::iterator<std::string::const_iterator>& aIter,
 											 const utf8::iterator<std::string::const_iterator>& aEnd);

@@ -236,18 +236,19 @@ public:
 %x SUPERSCRIPT_EXPR
 %x COMMENT
 
-subscript       [₀₁₂₃₄₅₆₇₈₉⏨]
-superscript     [⁰¹²³⁴⁵⁶⁷⁸⁹]
-superNumber     {superscript}+
+subscriptDigit  [₀₁₂₃₄₅₆₇₈₉]
+subscript       {subscriptDigit}|[⏨]
+superscriptDigit [⁰¹²³⁴⁵⁶⁷⁸⁹]
+superNumber     {superscriptDigit}+
 superMinus      [⁻]
 superPlus       [⁺]
 superOpen       [⁽]
 superClose      [⁾]
 superFirstWord  [ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ]
-superNextWord   {superFirstWord}|{superMinus}|{superscript}
-superLastWord   {superFirstWord}|{superscript}
+superNextWord   {superFirstWord}|{superMinus}|{superscriptDigit}
+superLastWord   {superFirstWord}|{superscriptDigit}
 superIdName     {superFirstWord}({superNextWord}*{superLastWord})?
-superscriptChar {superscript}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
+superscriptChar {superscriptDigit}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
 
 firstWord       [\p{Ll}\p{Lu}]
 wordSep         [-\p{Pc}]
@@ -258,12 +259,13 @@ idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
 numberBase      (0[fF])
 decimal         {numberBase}?[0-9]+(\.[0-9]+)?(([E]|[⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
+smallDecimal    {subscriptDigit}+
 binary          [0][bB][0-1]+
 oct             [0][oO][0-7]+
 hex             [0][xX][0-9a-fA-F]+
-number          {decimal}|{binary}|{oct}|{hex}
+number          {decimal}|{smallDecimal}|{binary}|{oct}|{hex}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
-fraction        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
 
 %%
@@ -331,8 +333,8 @@ include\h*\".*\"  s(); includeFile();
 "&"					  return yy::parser::make_CONCAT(location());
 ";"				    return yy::parser::make_EOS(location());
 "}"           return yy::parser::make_ARGEND(location());
-{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
-{fraction}	  return yy::parser::make_FRACTION(str(), location());
+{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{rational}	  return yy::parser::make_RATIONAL(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 <^DECL_TYPE>{word}	  		return makeIdOrWord(str(), str(), location());
@@ -375,7 +377,7 @@ include\h*\".*\"  s(); includeFile();
 {string}    	return yy::parser::make_STRING(str(), location());
 [\\]{word}		return yy::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
 {word}		    return yy::parser::make_WORD(str(), location());
-{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
+{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 \h*\k?        // ignore
 }
@@ -441,8 +443,8 @@ include\h*\".*\"  s(); includeFile();
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
 
-{number}			return yy::parser::make_NUMBER(Core::parseNumber(str()), location());
-{fraction}	  return yy::parser::make_FRACTION(str(), location());
+{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{rational}	  return yy::parser::make_RATIONAL(str(), location());
 {string}    	return yy::parser::make_STRING(str(), location());
 "true"|"false" return yy::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());
