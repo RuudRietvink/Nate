@@ -147,6 +147,7 @@ public:
       "CODE",
       "ARGS",
       "VAR_DECL",
+      "FOR_VAR_DECL",
       "DECL_TYPE",
       "FOR_EXPR",
       "SUPERSCRIPT_EXPR",
@@ -231,6 +232,7 @@ public:
 %x CODE
 %x ARGS
 %x VAR_DECL
+%x FOR_VAR_DECL
 %x DECL_TYPE
 %x FOR_EXPR
 %x SUPERSCRIPT_EXPR
@@ -395,10 +397,13 @@ include\h*\".*\"  s(); includeFile();
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
 
-<VAR_DECL>{
+<FOR_VAR_DECL>{
+\bin\b 	      return yy::parser::make_IN(location());
+}
+
+<VAR_DECL,FOR_VAR_DECL>{
 \bis\b		    return yy::parser::make_IS(location());
 \bas\b		    return yy::parser::make_AS(location());
-\bin\b 	      return yy::parser::make_IN(location());
 [$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
 ":="		      return yy::parser::make_ASSIGN(location());
 ","			      return yy::parser::make_COMMA(location());
@@ -428,6 +433,7 @@ include\h*\".*\"  s(); includeFile();
 \berror\b		  return yy::parser::make_ERROR(location());
 \binput\b		  return yy::parser::make_INPUT(location());
 \bwrite\b		  return yy::parser::make_WRITE(location());
+\bread\b		  return yy::parser::make_READ(location());
 \bif\b   		  return yy::parser::make_IF(location());
 \belse\b 		  return yy::parser::make_ELSE(location());
 \bis\b		    return yy::parser::make_IS(location());
@@ -435,6 +441,7 @@ include\h*\".*\"  s(); includeFile();
 \bfor\b 		  return yy::parser::make_FOR(location());
 \brecord\b    return yy::parser::make_RECORD(location());
 \bto\b		    return yy::parser::make_TO(location());
+\bfrom\b		  return yy::parser::make_FROM(location());
 \bdata\b		  return yy::parser::make_DATA(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());

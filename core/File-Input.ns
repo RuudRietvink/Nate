@@ -1,0 +1,18 @@
+
+///////////////////////////////////////////////
+// File-Input
+///////////////////////////////////////////////
+  
+import Input
+
+code:
+  #include <fstream>
+
+code define 65 open \u ${stream is file-input as out} for read from file \u ${file is text}:
+  $stream.reset(new std::ifstream($file, std::ios::in))
+  
+code define 65 \u ${stream is input} \is opened is boolean:
+  ($stream && $stream->is_open())
+
+code define 65 close \u ${stream is file-input as out}:
+  if ($stream) $stream->close()

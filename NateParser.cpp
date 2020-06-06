@@ -67,6 +67,9 @@ void NateParser::initTypesAndObjects()
 
 	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
+	addType(std::make_shared<Type>("input", getType("object")));
+	addType(std::make_shared<Type>("file-input", getType("input")));
+	addType(std::make_shared<Type>("data-input", getType("input")));
 
 	if (mFileType == FileType::Normal)
 	{

@@ -98,7 +98,7 @@ public:
 			if (myBool)
 			{
 #line 65
-				std::cout << "Test " << (myVar);				std::cout << " " << ((myData. greet));				std::cout << " " << (((Local::new_Local_())->E_me__E_text_(" world")));				std::cout << std::endl;
+				std::cout << "Test " << (myVar);std::cout << " " << ((myData. greet));std::cout << " " << (((Local::new_Local_())->E_me__E_text_(" world")));std::cout << std::endl;
 			}
 			return (me-> age_get()+ me->age)+ hi;
 		}
@@ -193,8 +193,8 @@ Hello::~Hello() { delete _impl; }
 	}
 
 	int32_t Hello::age_get() const { return age; }
+	Hello::Data Hello::data_get() const { return data; }
+	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
 	Greetable::Greet Hello::greet_get() const { return greet; }
 	std::string Hello::address_get() const { return address; }
 	const std::string& Hello::address_set(const std::string& value) { return address = value; }
-	Hello::Data Hello::data_get() const { return data; }
-	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }

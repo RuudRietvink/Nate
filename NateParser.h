@@ -34,7 +34,7 @@ public:
 	struct ParseData
 	{
 		std::string prevWriteSink;
-		bool inputEnd = true;
+		std::string prevReadSource;
 		bool prevWasValue = false;
 		std::stack<Expr> ifExpr;
 		std::stack<std::string> ifId;
@@ -182,6 +182,7 @@ public:
 	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
 	void codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
 	void codeInputSpace();
 	void codeInputNoSpace();
@@ -291,8 +292,10 @@ private:
 	std::string                 mCachedOutput;
 	bool                        mDataOutput = false;
 	bool                        mFirstOutput = true;
+	bool                        mStartOutput = true;
 	std::string                 mStream;
 	std::string                 mLastWriteStream;
+	std::string                 mLastReadStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;
 	FileType										mFileType = FileType::Normal;

@@ -503,12 +503,39 @@ void NateParser::codeWriteStart(const Expr& aValue, const yy::parser::location_t
 
 	printLineNr(aLocation);
 	mFirstOutput = true;
+	mStartOutput = true;
 	mCachedOutput.clear();
+}
+
+void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	if (aValue.isEmpty())
+	{
+		if (!mLastReadStream.empty())
+		{
+			mStream = mLastReadStream;
+		}
+		else
+		{
+			error("Need to specify where to read from");
+		}
+	}
+	else if (aValue.type()->isOfType("input"))
+	{
+		mStream = "*" + codeExpr(aValue);
+		mLastReadStream = mStream;
+	}
+	else
+	{
+		error("Cannot read from type: " + aValue.type()->name());
+	}
+
+	printLineNr(aLocation);
+	*mOut << in() << mStream;
 }
 
 void NateParser::codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation)
 {
-	mDataOutput = true;
 	printLineNr(aLocation);
 	mDataOutput = true;
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
@@ -538,10 +565,11 @@ void NateParser::codeDataOutputEnd(bool aAddEnd)
 
 void NateParser::codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
 {
-	mDataOutput = false;
-	mStream = aStream;
 	printLineNr(aLocation);
+	mStream = aStream;
 	mFirstOutput = true;
+	mStartOutput = true;
+	mDataOutput = false;
 	mCachedOutput.clear();
 }
 
@@ -549,7 +577,13 @@ void NateParser::codeOutputNew()
 {
 	if (mFirstOutput && !mDataOutput)
 	{
-		*mOut << in() << mStream;
+		if (mStartOutput)
+		{
+			*mOut << in();
+	     mStartOutput = false;
+		}
+
+		*mOut << mStream;
 		mFirstOutput = false;
 	}
 }
@@ -676,7 +710,7 @@ void NateParser::codeInputEnd(bool aAddEnd)
 	*mOut << ";";
 	if (aAddEnd)
 	{
-		*mOut << mStream << ".ignore(std::numeric_limits<std::streamsize>::max(), '\\n');";
+		*mOut << "(" << mStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');";
 	}
 	*mOut << std::endl;
 }

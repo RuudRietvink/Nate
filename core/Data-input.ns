@@ -1,0 +1,13 @@
+
+///////////////////////////////////////////////
+// Data-input
+///////////////////////////////////////////////
+  
+import Input
+
+code:
+  #include <sstream>
+
+code define 65 open \u ${stream is data-input as out} for read from data \u ${data is text}:
+  $stream.reset(new std::istringstream($data))
+  

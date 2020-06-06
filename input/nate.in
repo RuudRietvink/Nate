@@ -4,6 +4,7 @@ import Math
 import Text
 import List
 import File-Output
+import Data-input
 
 include "nate.define"
 import Hello
@@ -59,16 +60,31 @@ define test:
   output address of hello
   output hello's data's count
  
-  data data1:
-    1, 2, "sdsdds" & "aaa", hello & hello's data's count
-    3, 4,
-    "hi", 4 * 5
+  scope:
+    data data1:
+      1, 2, "sdsdds" & "aaa", hello & hello's data's count
+      3, 4,
+      "hi", 4 * 5
     
-  data data2:
-    1 & data1
+    data data2:
+      1 & data1
 
-  output data1
-  output data2
+    output data1
+    output data2
+        
+    var in is data-input
+    open in for read from data data1
+
+    var x, y is int-32
+    var s is text;
+    read from in: x, y, s
+    output x
+    output y
+    output "*" & s & "*"
+    read: x, y, s
+    output x
+    output y
+    output "*" & s & "*"
 
   scope:
     var out is file-output

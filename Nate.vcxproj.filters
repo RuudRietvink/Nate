@@ -186,6 +186,15 @@
     <None Include="core\Rational.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="core\File-Input.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Input.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Data-input.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">

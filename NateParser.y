@@ -71,6 +71,7 @@
 %token ERROR "error"
 %token INPUT "input"
 %token WRITE "write"
+%token READ "read"
 %token IS "is"
 %token AS "as"
 %token OF "of"
@@ -80,6 +81,7 @@
 %token FOR "for"
 %token DOWNTO "down-to"
 %token TO "to"
+%token FROM "from"
 %token STEP "step"
 %token RETURN "return"
 %token RECORD "record"
@@ -122,9 +124,13 @@
 %type <Expr>					           expr-word;
 %type <std::string>              string;
 %type <Expr>                     write-sink;
+%type <Expr>                     read-source;
 %type <bool>                     output-list;
 %type <bool>                     output-part-list;
 %type <bool>                     output-part-rest;
+%type <bool>                     input-list;
+%type <bool>                     input-part-list;
+%type <bool>                     input-part-rest;
 
 %%
 
@@ -199,6 +205,7 @@ statement:
   | input-statement
   | data-statement
   | write-statement
+  | read-statement
   | if-statement
   | loop-statement
   | return-statement
@@ -857,6 +864,32 @@ write-sink:
       }
   ;
     
+read-statement:
+	  READ read-source COL
+      {
+        nate.codeReadStart($[read-source], @READ);
+        if (!$[read-source].isEmpty())
+        {
+          nate.data.prevReadSource = $[read-source].code();
+        }
+      }
+	  input-list
+		  { 
+        nate.codeInputEnd($[input-list]);
+      }
+  ;
+  
+read-source:
+    %empty
+		  { 
+        $$ = Expr();
+      }
+  | FROM definitely-expr[expr]
+		  { 
+        $$ = $expr;
+      }
+  ;
+
 output-list:
 	  %empty
 		  { $$ = true; }
@@ -905,25 +938,29 @@ input-statement:
       }
 	  input-list
 		  { 
-        nate.codeInputEnd(nate.data.inputEnd);
-        nate.data.inputEnd = true;
+        nate.codeInputEnd($[input-list]);
       }
   ;
 
 input-list:
 	  %empty
+      { $$ = true; }
   | input-part-list
+      { $$ = $[input-part-list]; }
   ;
 
 input-part-list:
 	  input-part
+      { $$ = true; }
   | input-part input-sep input-part-rest
+      { $$ = $[input-part-rest]; }
   ;
 
 input-part-rest:
 	  %empty
-		  { nate.data.inputEnd = false; }
+		  { $$ = false; }
   | input-part-list
+		  { $$ = $[input-part-list]; }
   ;
 
 input-part:
@@ -1080,7 +1117,7 @@ opt-while:
  
 for-loop-statement:
 	  FOR VAR 
-		  { lexer.pushState(Lexer::VAR_DECL); }
+		  { lexer.pushState(Lexer::FOR_VAR_DECL); }
 	  id 
 		  { 
         nate.data.forId = $id;
