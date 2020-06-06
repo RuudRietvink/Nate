@@ -75,9 +75,9 @@ Hi::~Hi() { delete _impl; }
 		return "ls "+ (__impl::yo_());
 	}
 
-	Greetable::Greet Hi::greet_get() const { return greet; }
 	Hi::Datum Hi::datum_get() const { return datum; }
 	const Hi::Datum& Hi::datum_set(const Hi::Datum& value) { return datum = value; }
+	Greetable::Greet Hi::greet_get() const { return greet; }
 #line 37
 
 class Hello::__impl

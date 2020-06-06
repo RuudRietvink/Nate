@@ -83,6 +83,7 @@
 %token STEP "step"
 %token RETURN "return"
 %token RECORD "record"
+%token DATA "data"
 %token COL ":"
 %token ASSIGN ":="
 %token EOS "\n"
@@ -121,6 +122,9 @@
 %type <Expr>					           expr-word;
 %type <std::string>              string;
 %type <Expr>                     write-sink;
+%type <bool>                     output-list;
+%type <bool>                     output-part-list;
+%type <bool>                     output-part-rest;
 
 %%
 
@@ -137,6 +141,7 @@ prog-statement:
   | define-statement
   | record-statement
   | var-statement
+  | data-statement
   | role-statement
   | declare-object-statement
   | implement-object-statement
@@ -192,6 +197,7 @@ statement:
   | output-statement
   | error-statement
   | input-statement
+  | data-statement
   | write-statement
   | if-statement
   | loop-statement
@@ -777,6 +783,32 @@ expr-list:
 		  { $$ = $list; $$.push_back($expr); }
   ;
   
+data-statement:
+	  DATA 
+		  { lexer.pushState(Lexer::VAR_DECL); }
+    id 
+		  { lexer.popState(); }
+    col
+		  { 
+        nate.codeDataStart($id, @DATA);
+      }
+    begin
+      data-list
+    end
+      { nate.codeDataEnd($id, @begin); }
+  ;
+  
+data-list:
+    output-list 
+		  { 
+        nate.codeOutputEnd($[output-list]);
+      }
+  | data-list opt-eos output-list 
+		  { 
+        nate.codeOutputEnd($[output-list]);
+      }
+  ;
+
 output-statement:
 	  OUTPUT 
 		  { 
@@ -784,7 +816,7 @@ output-statement:
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(nate.data.outputEnd);
+        nate.codeOutputEnd($[output-list]);
       }
   ;
   
@@ -795,7 +827,7 @@ error-statement:
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(nate.data.outputEnd);
+        nate.codeOutputEnd($[output-list]);
       }
   ;
   
@@ -810,7 +842,7 @@ write-statement:
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd(nate.data.outputEnd);
+        nate.codeOutputEnd($[output-list]);
       }
   ;
   
@@ -827,21 +859,23 @@ write-sink:
     
 output-list:
 	  %empty
-		  { nate.data.outputEnd = true; }
+		  { $$ = true; }
   | output-part-list
+		  { $$ = $[output-part-list]; }
   ;
 
 output-part-list:
 	  output-part
-		  { nate.data.outputEnd = true; }
+		  { $$ = true; }
   | output-part output-sep output-part-rest
+		  { $$ = $[output-part-rest]; }
   ;
 
 output-part-rest:
 	  %empty
-		  { nate.data.outputEnd = false; }
+		  { $$ = false; }
   | output-part-list
-		  { nate.data.outputEnd = true; }
+		  { $$ = $[output-part-list]; }
   ;
 
 output-part:
@@ -853,7 +887,7 @@ output-part:
         }
         else
         {
-          nate.error("Cannot output typeless expression");
+          nate.error("Cannot have typeless expression");
         }
       }
   ;

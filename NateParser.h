@@ -33,7 +33,6 @@ public:
 
 	struct ParseData
 	{
-		bool outputEnd = false;
 		std::string prevWriteSink;
 		bool inputEnd = true;
 		bool prevWasValue = false;
@@ -188,6 +187,9 @@ public:
 	void codeInputNoSpace();
 	void codeInput(const Expr& aValue);
 	void codeInputEnd(bool aAddEnd = true);
+	void codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation);
+	void codeDataEnd(const std::string& aId, const yy::parser::location_type& aLocation);
+  void codeDataOutputEnd(bool aAddEnd);
 	void codeIf(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeElseIf();
 	void codeElse(const yy::parser::location_type& aLocation);
@@ -287,6 +289,7 @@ private:
 	int				                  mWarnings = 0;
 	std::ostream*               mOut = nullptr;
 	std::string                 mCachedOutput;
+	bool                        mDataOutput = false;
 	bool                        mFirstOutput = true;
 	std::string                 mStream;
 	std::string                 mLastWriteStream;

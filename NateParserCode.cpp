@@ -478,6 +478,8 @@ std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 
 void NateParser::codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
+	mDataOutput = false;
+
 	if (aValue.isEmpty())
 	{
 		if (!mLastWriteStream.empty())
@@ -504,8 +506,39 @@ void NateParser::codeWriteStart(const Expr& aValue, const yy::parser::location_t
 	mCachedOutput.clear();
 }
 
+void NateParser::codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation)
+{
+	mDataOutput = true;
+	printLineNr(aLocation);
+	mDataOutput = true;
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
+	*mOut << "std::ostringstream " << id->codeName() << "_temp;";
+	*mOut << id->codeName() << "_temp ";
+}
+
+void NateParser::codeDataEnd(const std::string& aId, const yy::parser::location_type& aLocation)
+{
+	printLineNr(aLocation);
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
+	addIdentifier(id);
+	*mOut << "; " << id->type()->codeType() << " " << id->codeName() << "= " << id->codeName() << "_temp" << ".str();" << std::endl;
+}
+
+void NateParser::codeDataOutputEnd(bool aAddEnd)
+{
+	if (aAddEnd)
+	{
+		codeOutput("std::endl");
+	}
+	else
+	{
+		codeOutput("");
+	}
+}
+
 void NateParser::codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
 {
+	mDataOutput = false;
 	mStream = aStream;
 	printLineNr(aLocation);
 	mFirstOutput = true;
@@ -514,7 +547,7 @@ void NateParser::codeOutputStart(const std::string& aStream, const yy::parser::l
 
 void NateParser::codeOutputNew()
 {
-	if (mFirstOutput)
+	if (mFirstOutput && !mDataOutput)
 	{
 		*mOut << in() << mStream;
 		mFirstOutput = false;
@@ -531,12 +564,12 @@ void NateParser::codeOutput(const std::string& aString)
 		if (!aString.empty())
 		{
 			codeOutputNew();
-			*mOut << " << " << aString << ";";
+			*mOut << " << " << aString << (mDataOutput ? "" : ";");
 			mFirstOutput = true;
 		}
 		else
 		{
-			*mOut << ";";
+			*mOut << (mDataOutput ? "" : ";");
 		}
 	}
 	else if (!mCachedOutput.empty())
@@ -552,7 +585,7 @@ void NateParser::codeOutput(const std::string& aString)
 		if (!aString.empty())
 		{
 			codeOutputNew();
-			*mOut << " << " << aString << ";";
+			*mOut << " << " << aString << (mDataOutput ? "" : ";");
 			mFirstOutput = true;
 		}
 	}

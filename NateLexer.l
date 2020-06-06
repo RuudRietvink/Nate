@@ -435,6 +435,7 @@ include\h*\".*\"  s(); includeFile();
 \bfor\b 		  return yy::parser::make_FOR(location());
 \brecord\b    return yy::parser::make_RECORD(location());
 \bto\b		    return yy::parser::make_TO(location());
+\bdata\b		  return yy::parser::make_DATA(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());
 ","				    return yy::parser::make_COMMA(location());
