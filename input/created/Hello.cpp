@@ -75,9 +75,9 @@ Hi::~Hi() { delete _impl; }
 		return "ls "+ (__impl::yo_());
 	}
 
-	Greetable::Greet Hi::greet_get() const { return greet; }
 	Hi::Datum Hi::datum_get() const { return datum; }
 	const Hi::Datum& Hi::datum_set(const Hi::Datum& value) { return datum = value; }
+	Greetable::Greet Hi::greet_get() const { return greet; }
 #line 37
 
 class Hello::__impl
@@ -194,7 +194,7 @@ Hello::~Hello() { delete _impl; }
 
 	Hello::Data Hello::data_get() const { return data; }
 	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
-	Greetable::Greet Hello::greet_get() const { return greet; }
-	int32_t Hello::age_get() const { return age; }
 	std::string Hello::address_get() const { return address; }
 	const std::string& Hello::address_set(const std::string& value) { return address = value; }
+	Greetable::Greet Hello::greet_get() const { return greet; }
+	int32_t Hello::age_get() const { return age; }
