@@ -8,7 +8,8 @@ import Output
 code:
   #include <fstream>
 
-code define 65 open \u ${stream is file-output as out} for write to file \u ${file is text}:
+code define 65 open \u ${stream is file-output as out} to write to file \u ${file is text},
+               open \u ${stream is file-output as out} for writing to file \u ${file is text}:
   $stream.reset(new std::ofstream($file, std::ios::out))
   
 code define 65 \u ${stream is output} \is opened is boolean:

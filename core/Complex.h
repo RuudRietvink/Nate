@@ -138,7 +138,7 @@ public:
 	Complex<TYPE> pow(TYPE aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower)); }
 	Complex<TYPE> pow(const Complex<TYPE>& aPower) const { return Complex<TYPE>(std::pow(mComplex, aPower.mComplex)); }
 	
-	std::string toString(std::stringstream& aStream) const
+	void toString(std::ostream& aStream) const
 	{
 		if (mComplex.real() != 0 || mComplex.imag() == 0)
 		{
@@ -177,14 +177,13 @@ public:
 				aStream << "-i";
 			}
 		}
-		
-		return aStream.str();
 	}
 	
 	std::string toString() const
 	{
 		std::stringstream ss;
-		return toString(ss);
+		toString(ss);
+		return ss.str();
 	}
 
 	std::string toString(const Core::Format& aFormat) const
@@ -193,9 +192,8 @@ public:
 		
 		std::stringstream ss;
 		Core::setTempFormat(ss, aFormat);
-		std::string result = toString(ss);
-
-		return result;
+		toString(ss);
+		return ss.str();
 	}
 	
 	
@@ -207,6 +205,41 @@ template<typename TYPE>
 std::ostream& operator<<(std::ostream& aStream, const Complex<TYPE>& aComplex)
 {
 	aStream << aComplex.toString();
+	return aStream;
+}
+
+template<typename TYPE>
+std::istream& operator>>(std::istream& aStream, Complex<TYPE>& aComplex)
+{
+	TYPE real;
+	aStream >> real;
+
+	if (aStream.good())
+	{
+		if (aStream.peek() == 'i')
+		{
+			aStream.get();
+			aComplex = Complex<TYPE>(0, real);
+		}
+		else if (aStream.peek() == '+' || aStream.peek() == '-')
+		{
+			TYPE imag;
+			aStream >> imag;
+			if (aStream.good())
+			{
+		  	if (aStream.peek() == 'i')
+		  	{
+					aStream.get();
+				  aComplex = Complex<TYPE>(real, imag);
+				}
+				else
+				{
+					aStream.setstate(std::ios::failbit);
+				}
+			}
+		}
+	}
+
 	return aStream;
 }
 

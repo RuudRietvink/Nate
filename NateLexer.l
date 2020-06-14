@@ -5,6 +5,7 @@
 #include "NateFunctions.h"
 #include "core/Core.h"
 #include "core/Complex.h"
+#include <optional>
 %}
 
 %class{
@@ -34,10 +35,10 @@ public:
 		filenames.pop_back();
   }
 
-  std::string fileLocation()
+  std::string fileLocation(const std::optional<yy::location>& aLocation = std::nullopt)
   {
     std::stringstream ss;
-    ss << currentFile() << ": " << location();
+    ss << currentFile() << ": " << aLocation.value_or(location());
     return ss.str();
   }
   
@@ -145,6 +146,7 @@ public:
       "LOOP",
       "DEFINE",
       "CODE",
+      "MATH",
       "ARGS",
       "VAR_DECL",
       "FOR_VAR_DECL",
@@ -230,6 +232,7 @@ public:
 %s LOOP
 %s DEFINE
 %x CODE
+%x MATH
 %x ARGS
 %x VAR_DECL
 %x FOR_VAR_DECL
@@ -265,7 +268,7 @@ smallDecimal    {subscriptDigit}+
 binary          [0][bB][0-1]+
 oct             [0][oO][0-7]+
 hex             [0][xX][0-9a-fA-F]+
-number          {decimal}|{smallDecimal}|{binary}|{oct}|{hex}
+number          {decimal}|{binary}|{oct}|{hex}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
 rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
@@ -279,7 +282,7 @@ string          ["][^"]*[""]
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^COMMENT,^CODE>\n  return yy::parser::make_EOS(location());
+<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^MATH>\n  return yy::parser::make_EOS(location());
 }
 
 // *** comments
@@ -391,6 +394,13 @@ include\h*\".*\"  s(); includeFile();
 \n            // ignore
 }
 
+<MATH>{
+[\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
+[^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
+[$]{idName}   return yy::parser::make_WORD(str(), location());
+\n            // ignore
+}
+
 <DECL_TYPE>{
 \bof\b		    return yy::parser::make_OF(location());
 \bas\b		    return yy::parser::make_AS(location());
@@ -428,6 +438,7 @@ include\h*\".*\"  s(); includeFile();
 \brole\b	    return yy::parser::make_ROLE(location());
 \bobject\b	  return yy::parser::make_OBJECT(location());
 \bcode\b		  return yy::parser::make_CODE(location());
+\bmath\b		  return yy::parser::make_MATH(location());
 \bdefine\b	  return yy::parser::make_DEFINE(location());
 \boutput\b		return yy::parser::make_OUTPUT(location());
 \berror\b		  return yy::parser::make_ERROR(location());

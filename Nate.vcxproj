@@ -215,6 +215,7 @@
     <ClCompile Include="NateFunctions.cpp" />
     <ClCompile Include="NateParser.cpp" />
     <ClCompile Include="NateParserCode.cpp" />
+    <ClCompile Include="NateParserMath.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Record.cpp" />
     <ClCompile Include="Scope.cpp" />

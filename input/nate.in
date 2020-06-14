@@ -4,6 +4,7 @@ import Math
 import Text
 import List
 import File-Output
+import File-Input
 import Data-input
 
 include "nate.define"
@@ -12,19 +13,20 @@ import Hello
 // √⌊⌋⌈⌉|⏐
 // ⏨ю
 // ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
-// ₀₁₂₃₄₅₆₇₈₉
+// ₀₁₂₃₄₅₆₇₈₉ ₊₋₍₎ₐₑₒₓ
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
 // πτ𝑖⋅÷⁄×⇑⇓
-// ‾―─‗ ₑ 
+// ‾―─‗  
 
 //          3ₑπ𝑖²ᵉ   
 // z := - ――――――――― + 3   
 //         √(4x²^3)  
 
-//        ____________
-//       ╱  ₃ₑπ𝑖²ᵉ       3
-// z := √ ―――――――――――― + ―  
-//        ⎛ √4x²^3⌝/4 ⎞   4
+//        ______________
+//       ╱  ₃ₑπ𝑖²ᵉ         3
+// z := √ ―――――――――――――― + ―  
+//           _______   x   4
+//        ⎛ √4x²^3/4  ⎞   
 //        ⎜ ――――――――――⎟
 //        ⎝    5÷a    ⎠
 
@@ -37,6 +39,20 @@ import Hello
 // "c:\Users\Ruud\Bison\win_bison.exe" --output="%(Filename).tab.cpp" --defines="%(Filename).tab.h"  
 define test:
   
+  scope:
+    var x,z,a is float
+    x, a := 3
+
+    math:
+      z:= ⎛             x    ⎞
+          ⎜⎛ √4x²^3/4  ⎞  * 3⎟
+          ⎜⎜ ――――――――――⎟     ⎟
+          ⎝⎝    5÷a    ⎠     ⎠
+              
+      * 4
+                  
+    output z
+
       // comment comment
   
           /* comment 
@@ -73,7 +89,7 @@ define test:
     output data2
         
     var in is data-input
-    open in for read from data data1
+    open in for reading from data data1
 
     var x, y is int-32
     var s is text;
@@ -90,13 +106,14 @@ define test:
     var out is file-output
     var out2 is output := out
     output "Before:", out is ok, out is opened
-    open out for write to file "d:\\uit"
+    open out for writing to file "d:\\uit"
     out2 := out
     output
     if out is opened:								//~	else:
       output "Inside:", out is ok, out is opened	//~	  error "out not opened"
-      write to out2: "Hello, planet",
+      write to out2: "Hello,planet",
       write: 𝑒^π𝑖@"[8.1]",
+      write: 𝑒^π𝑖,
       write to output: "Hi",
       output "Hi",
       write: "End"
@@ -105,6 +122,20 @@ define test:
       close out
     output "After:", out is ok, out is opened
     
+  scope:
+    var in is file-input
+    open in for reading from file "d:\\uit"
+    if in is opened:		
+      var s,hi is text
+      var c,d is complex
+      read from in: s,
+      read: c, d, hi
+      output "*" & s & "*"
+      output c
+      output d
+      output "*" & hi & "*"
+      close in
+
   scope:
     var f := 0f3.4E4 + -0F2
     var d := 3.4 + 2
@@ -163,7 +194,7 @@ define test:
     output |4f|-f⏐⏐
   
   output 3𝑒^π𝑖
-  output ₃eπ𝑖²ᵉ
+  output 3^eπ𝑖²ᵉ
 
   var frac,frac2 is rational := 2½
   frac2 := log₂ 2½

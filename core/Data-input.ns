@@ -8,6 +8,7 @@ import Input
 code:
   #include <sstream>
 
-code define 65 open \u ${stream is data-input as out} for read from data \u ${data is text}:
+code define 65 open \u ${stream is data-input as out} to read from data \u ${data is text},
+               open \u ${stream is data-input as out} for reading from data \u ${data is text}:
   $stream.reset(new std::istringstream($data))
   

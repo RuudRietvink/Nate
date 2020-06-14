@@ -64,6 +64,7 @@
 %token ROLE "role"
 %token OBJECT "object"
 %token CODE "code"
+%token MATH "math"
 %token DEFINE "define"
 %token IF "if"
 %token ELSE "else"
@@ -211,6 +212,7 @@ statement:
   | return-statement
   | record-statement
   | expr-statement
+  | math-statement
   | EOS
   ;
   
@@ -543,6 +545,33 @@ type-flags:
   | AS holder-flag-list
   ;
   
+math-statement:
+    MATH COL
+		  { 
+			  nate.startMath(@MATH);
+			  lexer.pushState(Lexer::MATH);
+		  }
+	  begin
+		  math-stat-list
+	  end
+		  { 
+			  lexer.popState();
+			  nate.endMath();
+		  }
+  ;
+  
+math-stat-list:
+    math-stat
+  | math-stat-list math-stat
+  ;
+
+math-stat:
+    %empty
+  | begin math-stat-list end
+  | WORD
+		  { nate.addMathStatWord($WORD, @WORD); }
+  ;
+
 property-declare-statement:
 	  PROP 
 		  { lexer.pushState(Lexer::VAR_DECL); }

@@ -580,6 +580,42 @@ CodePtr NateParser::getCode(const CodePtr& aCode)
 	return iter != mCodes.cend() ? *iter : CodePtr();
 }
 
+void NateParser::startMath(const yy::parser::location_type& aLocation)
+{
+	mMathStart = aLocation;
+	mMath = Math();
+	mMath.x = aLocation.begin.column;
+	mMath.y = aLocation.begin.line;
+}
+
+void NateParser::endMath()
+{
+	doMath(mMath);
+}
+
+void NateParser::addMathStatWord(const std::string& aWord,
+											           const yy::parser::location_type& aLocation)
+{
+	int y = aLocation.begin.line - mMathStart.begin.line;
+	int x = aLocation.begin.column - mMathStart.begin.column;
+	while (y >= mMath.matrix.size())
+	{
+		mMath.matrix.push_back(MathVector());
+	}
+
+	while (x >= mMath.matrix[y].size())
+	{
+		mMath.matrix[y].push_back(32);
+	}
+
+	std::string::const_iterator iter = aWord.begin();
+	while (iter != aWord.end())
+	{
+		uint32_t kar = utf8::next(iter, aWord.end());
+		mMath.matrix[y].push_back(kar);
+	}
+}
+
 void NateParser::addDefine(bool aInObject)
 {
 	curDefinesHolder()->defines().add(DefinePtr(new Define()));
@@ -828,13 +864,23 @@ void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const st
   }
 }
 
-void NateParser::error(const std::string& anError)
+void NateParser::error(const std::string& anError) const
 {
-	std::cerr << mLexer->fileLocation() << ": " << anError << std::endl;
+	error(mLexer->fileLocation(), anError);
+}
+
+void NateParser::error(const std::string& aLocationString, const std::string& anError) const
+{
+	std::cerr << aLocationString << ": " << anError << std::endl;
 	++mErrors;
 }
 
-void NateParser::optionalError(const std::string& anError)
+void NateParser::error(const yy::position& aPosition, const std::string& anError) const
+{
+	error(mLexer->fileLocation(yy::location(aPosition)), anError);
+}
+
+void NateParser::optionalError(const std::string& anError) const
 {
 	if (!anError.empty())
 	{
@@ -842,7 +888,7 @@ void NateParser::optionalError(const std::string& anError)
 	}
 }
 
-void NateParser::warning(const std::string& aWarning)
+void NateParser::warning(const std::string& aWarning) const
 {
 	std::cerr << "Warning: " << mLexer->fileLocation() << ": " << aWarning << std::endl;
 	++mWarnings;

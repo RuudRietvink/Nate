@@ -8,6 +8,8 @@
 #include <limits>
 #include <fstream>
 #include <memory>
+#include <variant>
+#include <optional>
 
 #include "NateFunctions.h"
 #include "NateParser.tab.h"
@@ -84,10 +86,12 @@ public:
 	IRecordsHolderPtr& curRecordsHolder();
 	ITypesHolderPtr& curTypesHolder();
 	IDefinesHolderPtr& curDefinesHolder();
-
-	void error(const std::string& anError);
-	void optionalError(const std::string& anError);
-	void warning(const std::string& aWarning);
+	
+	void error(const yy::position& aPosition, const std::string& anError) const;
+	void error(const std::string& aLocationString, const std::string& anError) const;
+	void error(const std::string& anError) const;
+	void optionalError(const std::string& anError) const;
+	void warning(const std::string& aWarning) const;
 	int errorCount() const { return mErrors; }
 	int warningCount() const { return mWarnings; }
 	void addType(TypePtr aType, const std::string& aName = "");
@@ -121,7 +125,11 @@ public:
 												 const yy::parser::location_type& aLocation);
 	void defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
 	void endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
-
+	
+	void startMath(const yy::parser::location_type& aLocation);
+	void endMath();
+	void addMathStatWord(const std::string& aWord,
+											 const yy::parser::location_type& aLocation);
 	void addCode();
 	void endCode();
 	CodePtr curCode();
@@ -269,6 +277,52 @@ private:
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
+	
+	struct Math;
+	struct Position;
+	typedef std::variant<uint32_t, Math> MathValue;
+	typedef std::vector<MathValue> MathVector;
+	typedef std::vector<MathVector> MathMatrix;
+	typedef std::optional<Position> OptPosition;
+
+	struct Position
+	{
+		size_t x = 0;
+		size_t y = 0;
+	};
+
+	struct Math
+	{
+		size_t x = 0;
+		size_t y = 0;
+		MathMatrix matrix;
+	};
+
+	yy::position mathPos(const Math& aMath, 
+											 const Position& aPosition) const;
+	void doMath(Math& aMath);
+	void fillUpMath(Math& aMath);
+	void printMath(Math& aMath) const;
+	void doMathEvaluation(Math& aMath);
+	void doMathParentheses(Math& aMath);
+	OptPosition findAny(const Math& aMath, 
+											uint32_t aSearchChar) const;
+	OptPosition findMatchingRight(const Math& aMath, 
+																const Position& aLeftPosition,
+																uint32_t aSearchChar) const;
+	OptPosition findMatchingDown(const Math& aMath, 
+														   const Position& aTopPosition,
+															 uint32_t aInbetweenChar,
+															 uint32_t aSearchChar) const;
+	void mathError(const Math& aMath, 
+								 const Position& aPosition,
+								 uint32_t aBadChar,
+							 	 uint32_t aInbetweenChar,
+								 uint32_t aSearchChar) const;
+	Math getSubMath(const Math& aMath, 
+									const Position& aLeftUpperPosition, 
+									const Position& aRightLowerPosition);
+	
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
@@ -286,8 +340,8 @@ private:
 	std::list<int>              mLoopWhileCounts;
 	std::set<std::string>       mWantsUnary;
 	std::set<std::string>       mLeftMonomial;
-	int				                  mErrors = 0;
-	int				                  mWarnings = 0;
+	mutable int	                mErrors = 0;
+	mutable int				          mWarnings = 0;
 	std::ostream*               mOut = nullptr;
 	std::string                 mCachedOutput;
 	bool                        mDataOutput = false;
@@ -301,6 +355,8 @@ private:
 	FileType										mFileType = FileType::Normal;
 	std::string                 mFileName;
 	std::string                 mLibrary;
+	Math                        mMath;
+	yy::parser::location_type   mMathStart;
 
 	struct IfIs
 	{
