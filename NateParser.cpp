@@ -1,4 +1,5 @@
 #include "NateParser.h"
+#include "NateParserMath.h"
 #include "core/Core.h"
 #include "lex.yy.h"
 #include <algorithm>
@@ -15,7 +16,8 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	mOut(&aOut),
 	mFileType(aFileType),
 	mFileName(aFilename),
-	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\core")
+	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\core"),
+	mMathParser(new NateParserMath(*this))
 {
 	mLexer->nate = this;
 	mLexer->pushFile(aFilename);
@@ -583,14 +585,14 @@ CodePtr NateParser::getCode(const CodePtr& aCode)
 void NateParser::startMath(const yy::parser::location_type& aLocation)
 {
 	mMathStart = aLocation;
-	mMath = Math();
+	mMath = NateParserMath::Math();
 	mMath.x = aLocation.begin.column;
 	mMath.y = aLocation.begin.line;
 }
 
 void NateParser::endMath()
 {
-	doMath(mMath);
+	mMathParser->doMath(mMath);
 }
 
 void NateParser::addMathStatWord(const std::string& aWord,
@@ -600,7 +602,7 @@ void NateParser::addMathStatWord(const std::string& aWord,
 	int x = aLocation.begin.column - mMathStart.begin.column;
 	while (y >= mMath.matrix.size())
 	{
-		mMath.matrix.push_back(MathVector());
+		mMath.matrix.push_back(NateParserMath::MathVector());
 	}
 
 	while (x >= mMath.matrix[y].size())

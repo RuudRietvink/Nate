@@ -12,6 +12,7 @@
 #include <optional>
 
 #include "NateFunctions.h"
+#include "ParserMath.h"
 #include "NateParser.tab.h"
 #include "Code.h"
 #include "Define.h"
@@ -277,90 +278,7 @@ private:
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
-	
-	struct Math;
-	struct Position;
-	struct MathValue;
-
-	typedef std::vector<MathValue> MathVector;
-	typedef std::vector<MathVector> MathMatrix;
-	typedef std::optional<Position> OptPosition;
-	
-	struct Math
-	{
-		size_t x = 0;
-		size_t y = 0;
-		MathMatrix matrix;
-	};
-
-	struct MathValue
-	{
-		MathValue(uint32_t aValue)
-			: value(aValue) {}
 		
-		MathValue(const Math& aMath1, const Math& aMath2, const std::string& aOper)
-			: value(0U), 
-			  oper(aOper), 
-			  embedded1(aMath1), 
-			  embedded2(aMath2) {}
-
-		uint32_t value;
-		std::string oper;
-		Math embedded1;
-		Math embedded2;
-	};
-
-	struct Position
-	{
-		int x = 0;
-		int y = 0;
-	};
-
-
-	yy::position mathPos(const Math& aMath, 
-											 const Position& aPosition) const;
-	void doMath(Math& aMath);
-	void fillUpMath(Math& aMath);
-	void printMath(const Math& aMath) const;
-	std::string mathString(const Math& aMath) const;
-	void doMathParsing(Math& aMath);
-	void embedSubMath(Math& aMath, 
-										const Math& aSubMath1, 
-										const Math& aSubMath2, 
-										const std::string& aOper,
-										const Position& aLeftUpperPosition,
-										const Position& aRightLowerPosition
-										);
-	void doMathParentheses(Math& aMath);
-	void doMathDivision(Math& aMath);
-	OptPosition findAny(const Math& aMath, 
-											uint32_t aSearchChar) const;
-	OptPosition findMatchingRight(const Math& aMath, 
-																const Position& aLeftPosition,
-																uint32_t aSearchChar) const;
-	OptPosition findRepeatingRight(const Math& aMath, 
-																 const Position& aLeftPosition,
-																 uint32_t aSearchChar) const;
-	OptPosition findMatchingDown(const Math& aMath, 
-														   const Position& aUpperPosition,
-															 uint32_t aInbetweenChar,
-															 uint32_t aSearchChar) const;
-	OptPosition findUntilUp(const Math& aMath, 
-													const Position& aLowerPosition,
-													uint32_t aSearchChar) const;
-	OptPosition findUntilDown(const Math& aMath, 
-												  	const Position& aUpperPosition,
-												  	uint32_t aSearchChar) const;
-
-	void mathError(const Math& aMath, 
-								 const Position& aPosition,
-								 uint32_t aBadChar,
-							 	 uint32_t aInbetweenChar,
-								 uint32_t aSearchChar) const;
-	Math getSubMath(const Math& aMath, 
-									const Position& aLeftUpperPosition, 
-									const Position& aRightLowerPosition);
-	
 
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
@@ -393,7 +311,8 @@ private:
 	FileType										mFileType = FileType::Normal;
 	std::string                 mFileName;
 	std::string                 mLibrary;
-	Math                        mMath;
+	std::unique_ptr<ParserMath> mMathParser;
+	ParserMath::Math            mMath;
 	yy::parser::location_type   mMathStart;
 
 	struct IfIs

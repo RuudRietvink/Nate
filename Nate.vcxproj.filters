@@ -136,6 +136,9 @@
     <ClCompile Include="NateParserMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParserMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -286,6 +289,12 @@
     </ClInclude>
     <ClInclude Include="core\Rational.h">
       <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="NateParserMath.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParserMath.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

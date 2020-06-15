@@ -217,6 +217,7 @@
     <ClCompile Include="NateParserCode.cpp" />
     <ClCompile Include="NateParserMath.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="ParserMath.cpp" />
     <ClCompile Include="Record.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -317,7 +318,9 @@
     <ClInclude Include="NateFunctions.h" />
     <ClInclude Include="NateParser.h" />
     <ClInclude Include="NateParser.tab.h" />
+    <ClInclude Include="NateParserMath.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="ParserMath.h" />
     <ClInclude Include="Record.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="Type.h" />
