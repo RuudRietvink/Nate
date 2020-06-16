@@ -57,6 +57,7 @@ protected:
 	virtual std::string operParens(const Math& aMath) const;
 	virtual std::string operDivide(const Math& aMathLeft, const Math& aMathRight) const;
 	virtual std::string operSquareRoot(const Math& aMath) const;
+	virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
 
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
@@ -69,13 +70,26 @@ protected:
 										const Math& aSubMath2, 
 										const std::string& aOper,
 										const Position& aLeftUpperPosition,
-										const Position& aRightLowerPosition
+										const Position& aRightLowerPosition,
+										const Position& aPlacePosition
+										);
+	void embedSubMath(Math& aMath, 
+										const Math& aSubMath, 
+										const std::string& aOper,
+										const Position& aLeftUpperPosition,
+										const Position& aRightLowerPosition,
+										const Position& aPlacePosition
 										);
 	void doMathParentheses(Math& aMath);
 	void doMathDivision(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
+	void doMathPower(Math& aMath);
 	OptPosition findAny(const Math& aMath, 
 											uint32_t aSearchChar) const;
+	OptPosition getSymbol(const Math& aMath, 
+												const Position& aLeftPosition) const;
+	OptPosition getRightToLeftSymbol(const Math& aMath, 
+												           const Position& aRightPosition) const;
 	OptPosition findMatchingRight(const Math& aMath, 
 																const Position& aLeftPosition,
 																uint32_t aSearchChar) const;
@@ -96,6 +110,10 @@ protected:
 	OptPosition findUntilDown(const Math& aMath, 
 												  	const Position& aUpperPosition,
 												  	uint32_t aSearchChar) const;
+	OptPosition findPower(const Math& aMath,
+												Position& aEndExponent,
+												Position& aStartBase,
+												Position& aEndBase) const;
 
 	void mathError(const Math& aMath, 
 								 const Position& aPosition,

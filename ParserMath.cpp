@@ -6,9 +6,12 @@
 #define NOMINMAX  
 #include <windows.h>
 #include <algorithm>
+#include <cctype>
 
 namespace {
 	const uint32_t SPACE                        = 0x20;  
+	const uint32_t SUBMATRIX                    = 0x0; 
+
 	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK  = 0x239B; // ⎛
 	const uint32_t LEFT_PARENTHESIS_EXTENSION   = 0x239C; // ⎜
 	const uint32_t LEFT_PARENTHESIS_LOWER_HOOK  = 0x239D; // ⎝
@@ -24,6 +27,7 @@ namespace {
 	const std::string OPER_PARENS               = "()";
 	const std::string OPER_DIVIDE               = "/";
 	const std::string OPER_SQUARE_ROOT          = "sqrt";
+	const std::string OPER_POWER                = "pow";
 }
 
 void ParserMath::doMath(Math& aMath)
@@ -69,7 +73,7 @@ void ParserMath::printMath(const Math& aMath) const
 	{
 		for (auto& col : row)
 		{
-			if (col.value != 0)
+			if (col.value != SUBMATRIX)
 			{
 				utf8::append(col.value, std::ostream_iterator<char>(std::cerr));
 			}
@@ -106,6 +110,14 @@ std::string ParserMath::operSquareRoot(const Math& aMath) const
 	return ss.str();
 }
 
+std::string ParserMath::operPower(const Math& aMathBase, const Math& aMathExp) const
+{
+	std::stringstream ss;
+	ss << "pow(" << mathString(aMathBase) << ", " 
+						   << mathString(aMathExp) << ")";
+	return ss.str();
+}
+
 std::string ParserMath::mathString(const Math& aMath) const
 {
 	std::stringstream ss;
@@ -114,7 +126,7 @@ std::string ParserMath::mathString(const Math& aMath) const
 	{
 		for (auto& col : row)
 		{
-			if (col.value == 0)
+			if (col.value == SUBMATRIX)
 			{
 				if (col.oper == OPER_LEFT_TO_RIGHT)
 				{
@@ -131,6 +143,10 @@ std::string ParserMath::mathString(const Math& aMath) const
 				else if (col.oper == OPER_SQUARE_ROOT)
 				{
 					ss << operSquareRoot(col.embedded1);
+				}
+				else if (col.oper == OPER_POWER)
+				{
+					ss << operPower(col.embedded1, col.embedded2);
 				}
 			}
 			else if (col.value != SPACE)
@@ -168,11 +184,23 @@ ParserMath::Math ParserMath::getSubMath(
 
 void ParserMath::embedSubMath(
 				Math& aMath, 
+				const Math& aSubMath, 
+				const std::string& aOper,
+				const Position& aLeftUpperPosition,
+				const Position& aRightLowerPosition,
+				const Position& aPlacePosition)
+{
+	embedSubMath(aMath, aSubMath, Math(), aOper, aLeftUpperPosition, aRightLowerPosition, aPlacePosition);
+}
+
+void ParserMath::embedSubMath(
+				Math& aMath, 
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
 				const std::string& aOper,
 				const Position& aLeftUpperPosition,
-				const Position& aRightLowerPosition)
+				const Position& aRightLowerPosition,
+			  const Position& aPlacePosition)
 {
 	for (int y = aLeftUpperPosition.y; y <= aRightLowerPosition.y; ++y)
 	{
@@ -194,7 +222,7 @@ void ParserMath::embedSubMath(
 		}
 	}
 
-	aMath.matrix[leftY.value_or(aLeftUpperPosition.y)][aLeftUpperPosition.x] = MathValue(aSubMath1, aSubMath2, aOper);
+	aMath.matrix[leftY.value_or(aPlacePosition.y)][aPlacePosition.x] = MathValue(aSubMath1, aSubMath2, aOper);
 }
 
 void ParserMath::doMathParsing(Math& aMath)
@@ -202,6 +230,7 @@ void ParserMath::doMathParsing(Math& aMath)
 	doMathParentheses(aMath);
 	doMathDivision(aMath);
 	doMathSquareRoot(aMath);
+	doMathPower(aMath);
 }
 
 void ParserMath::doMathParentheses(Math& aMath)
@@ -229,7 +258,8 @@ void ParserMath::doMathParentheses(Math& aMath)
 					printMath(sub);
 					doMathParsing(sub);
 
-					embedSubMath(aMath, sub, Math(), OPER_PARENS, *leftUpperParenthesis, *rightLowerParenthesis);
+					embedSubMath(aMath, sub, OPER_PARENS, *leftUpperParenthesis, *rightLowerParenthesis,
+											 *leftUpperParenthesis);
 					doMathParsing(aMath);
 				}
 				else
@@ -258,7 +288,7 @@ void ParserMath::doMathDivision(Math& aMath)
 
 		Math subNumerator;
 		Math subDenomenator;
-		OptPosition leftUpperPosition = findUntilUp(aMath, *leftHorizontalBar, ROOT_BAR);
+		OptPosition leftUpperPosition = findUntilUp(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
 		if (leftUpperPosition)
 		{
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
@@ -278,7 +308,8 @@ void ParserMath::doMathDivision(Math& aMath)
 			doMathParsing(subDenomenator);
 		}
 
-		embedSubMath(aMath, subNumerator, subDenomenator, OPER_DIVIDE, *leftUpperPosition, *rightLowerPosition);
+		embedSubMath(aMath, subNumerator, subDenomenator, OPER_DIVIDE, *leftUpperPosition, *rightLowerPosition,
+								 *leftHorizontalBar);
 		doMathParsing(aMath);
 	}
 }
@@ -298,19 +329,196 @@ void ParserMath::doMathSquareRoot(Math& aMath)
 			printMath(sub);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
-			embedSubMath(aMath, sub, Math(), OPER_SQUARE_ROOT, leftPos, rightPos);
+			embedSubMath(aMath, sub, OPER_SQUARE_ROOT, leftPos, rightPos, *squareRoot);
 			doMathParsing(aMath);
+		}
+		else
+		{
+			Position leftPos = Position{ squareRoot->x+1, squareRoot->y };
+			OptPosition symbol = getSymbol(aMath, leftPos);
+			if (symbol && 
+					(symbol->x > leftPos.x || aMath.matrix[symbol->y][symbol->x].value == SUBMATRIX))
+			{
+			  Math sub = getSubMath(aMath, leftPos, *symbol);
+				embedSubMath(aMath, sub, OPER_SQUARE_ROOT, *squareRoot, *symbol, *squareRoot);
+			}
+			else
+			{
+				error(*squareRoot, "need symbol following square root (perhaps use root bar(s)");
+			}
 		}
 	}
 }
 
-ParserMath::OptPosition ParserMath::findAny(const Math& aMath, uint32_t aSearchChar) const
+void ParserMath::doMathPower(Math& aMath)
 {
-	OptPosition result = std::nullopt;
+	OptPosition aStartExponent;
+	Position aEndExponent;
+	Position aStartBase;
+	Position aEndBase;
+  aStartExponent = findPower(aMath, aEndExponent, aStartBase, aEndBase);
 
-	for (int y = 0; result == std::nullopt && y < (int)aMath.matrix.size(); ++y)
+	if (aStartExponent)
 	{
-		for (int x = 0; result == std::nullopt && x < (int)aMath.matrix[y].size(); ++x)
+		Math exp = getSubMath(aMath, *aStartExponent, aEndExponent);
+		printMath(exp);
+		doMathParsing(exp);
+		Math base = getSubMath(aMath, aStartBase, aEndBase);
+		printMath(base);
+		doMathParsing(base);
+		Position leftPos{ aStartBase.x, aEndExponent.y };
+		Position rightPos{ aEndExponent.x, aStartBase.y };
+		embedSubMath(aMath, base, exp, OPER_POWER, leftPos, rightPos, aStartBase);
+		doMathParsing(aMath);
+	}
+}
+
+ParserMath::OptPosition ParserMath::getSymbol(
+				const Math& aMath, 
+				const Position& aLeftPosition) const
+{
+	OptPosition result;
+	int parens = 0;
+	int x = aLeftPosition.x;
+	int y = aLeftPosition.y;
+	int size = (int)aMath.matrix[y].size();
+
+	for (; x < size && parens >= 0 && !result; ++x)
+	{
+		if (aMath.matrix[y][x].value == '(')
+		{
+			++parens;
+		}
+		else if (aMath.matrix[y][x].value == ')')
+		{
+			--parens;
+		}
+		else if (parens == 0)
+		{
+			if (aMath.matrix[y][x].value == SPACE)
+			{
+				if (x > aLeftPosition.x)
+				{
+					result = Position{ x-1, y };
+				}
+				else
+				{
+					break;
+				}
+			}
+			else if (aMath.matrix[y][x].value == SUBMATRIX)
+			{
+				result = Position{ x, y };
+			}
+			else
+			{
+				result = Position{ x, y };
+			}
+		}
+	}
+
+	if (parens != 0)
+	{
+		error(Position{ x, y }, "unbalanced parentheses");
+	}
+
+	return result;
+}
+
+ParserMath::OptPosition ParserMath::getRightToLeftSymbol(
+				const Math& aMath, 
+				const Position& aRightPosition) const
+{
+	OptPosition result;
+	int parens = 0;
+	int x = aRightPosition.x;
+	int y = aRightPosition.y;
+
+	for (; x >= 0 && parens >= 0 && !result; --x)
+	{
+		if (aMath.matrix[y][x].value == ')')
+		{
+			++parens;
+		}
+		else if (aMath.matrix[y][x].value == '(')
+		{
+			--parens;
+		}
+		else if (parens == 0)
+		{
+			if (aMath.matrix[y][x].value == SPACE)
+			{
+				if (x < aRightPosition.x)
+				{
+					result = Position{ x+1, y };
+				}
+				else
+				{
+					break;
+				}
+			}
+			else if (aMath.matrix[y][x].value == SUBMATRIX)
+			{
+				result = Position{ x, y };
+			}
+			else
+			{
+				result = Position{ x, y };
+			}
+		}
+	}
+
+	if (parens != 0)
+	{
+		error(Position{ x, y }, "unbalanced parentheses");
+	}
+
+	return result;
+}
+
+ParserMath::OptPosition ParserMath::findPower(
+				const Math& aMath,
+				Position& aEndExponent,
+				Position& aStartBase,
+				Position& aEndBase) const
+{
+	OptPosition result;
+
+	for (int y = 0; !result && y < (int)aMath.matrix.size() - 1; ++y)
+	{
+		for (int x = 1; !result && x < (int)aMath.matrix[y].size(); ++x)
+		{
+			if (aMath.matrix[y][x].value != SPACE && aMath.matrix[y][x-1].value == SPACE &&
+					aMath.matrix[y+1][x].value == SPACE && aMath.matrix[y+1][x-1].value != SPACE)
+			{
+				Position startExponent = Position{ x, y };
+				aEndExponent = startExponent;				
+				for (;x < (int)aMath.matrix[y].size() - 1 && aMath.matrix[y+1][x+1].value == SPACE; ++x)
+					;
+				aEndExponent.x = x;
+				aEndBase = Position{ startExponent.x -1, y + 1 };
+				OptPosition start = getRightToLeftSymbol(aMath, aEndBase);
+				if (start)
+				{
+					result = startExponent;
+					aStartBase = *start;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+ParserMath::OptPosition ParserMath::findAny(
+				const Math& aMath, 
+				uint32_t aSearchChar) const
+{
+	OptPosition result;
+
+	for (int y = 0; !result && y < (int)aMath.matrix.size(); ++y)
+	{
+		for (int x = 0; !result && x < (int)aMath.matrix[y].size(); ++x)
 		{
 			if (aMath.matrix[y][x].value == aSearchChar)
 			{
@@ -327,7 +535,7 @@ ParserMath::OptPosition ParserMath::findMatchingRight(
 				const Position& aLeftPosition, 
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int y = aLeftPosition.y;
 
@@ -347,11 +555,11 @@ ParserMath::OptPosition ParserMath::findRepeatingRight(
 				const Position& aLeftLowerPosition, 
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int y = aLeftLowerPosition.y;
 
-	for (int x = aLeftLowerPosition.x; result == std::nullopt && x < (int)aMath.matrix[y].size(); ++x)
+	for (int x = aLeftLowerPosition.x; !result && x < (int)aMath.matrix[y].size(); ++x)
 	{
 		if (aMath.matrix[y][x].value != aSearchChar)
 		{
@@ -368,11 +576,11 @@ ParserMath::OptPosition ParserMath::findMatchingDown(
 				uint32_t aInbetweenChar,
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int x = aUpperPosition.x;
 
-	for (int y = aUpperPosition.y + 1; result == std::nullopt && y < (int)aMath.matrix.size(); ++y)
+	for (int y = aUpperPosition.y + 1; !result && y < (int)aMath.matrix.size(); ++y)
 	{
 		uint32_t kar = aMath.matrix[y][x].value;
 		if (aInbetweenChar != 0 && kar == aInbetweenChar)
@@ -399,12 +607,12 @@ ParserMath::OptPosition ParserMath::findDiagonalRightUp(
 				uint32_t aInbetweenChar,
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int x = aLeftLowerPosition.x + 1;
 
 	for (int y = aLeftLowerPosition.y - 1; 
-			     result == std::nullopt && y > 0 && x < (int)aMath.matrix[y].size(); --y, ++x)
+			     !result && y > 0 && x < (int)aMath.matrix[y].size(); --y, ++x)
 	{
 		uint32_t kar = aMath.matrix[y][x].value;
 		if (aInbetweenChar != 0 && kar == aInbetweenChar)
@@ -428,11 +636,11 @@ ParserMath::OptPosition ParserMath::findUntilUp(
 				const Position& aLowerPosition,
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int x = aLowerPosition.x;
 
-	for (int y = aLowerPosition.y - 1; result == std::nullopt && y >= 0; --y)
+	for (int y = aLowerPosition.y - 1; !result && y >= 0; --y)
 	{
 		uint32_t kar = aMath.matrix[y][x].value;
 		if (kar == aSearchChar)
@@ -469,11 +677,11 @@ ParserMath::OptPosition ParserMath::findUntilDown(
 				const Position& aUpperPosition,
 				uint32_t aSearchChar) const
 {
-	OptPosition result = std::nullopt;
+	OptPosition result;
 
 	int x = aUpperPosition.x;
 
-	for (int y = aUpperPosition.y + 1; result == std::nullopt && y < (int)aMath.matrix.size(); ++y)
+	for (int y = aUpperPosition.y + 1; !result && y < (int)aMath.matrix.size(); ++y)
 	{
 		uint32_t kar = aMath.matrix[y][x].value;
 		if (kar == aSearchChar)
