@@ -25,6 +25,8 @@ public:
 		size_t x = 0;
 		size_t y = 0;
 		MathMatrix matrix;
+		int height() const { return (int)matrix.size(); }
+		int width() const { return matrix.size() > 0 ? (int)matrix[0].size() : 0; }
 	};
 	
 	struct Position
@@ -90,9 +92,8 @@ protected:
 												const Position& aLeftPosition) const;
 	OptPosition getRightToLeftSymbol(const Math& aMath, 
 												           const Position& aRightPosition) const;
-	OptPosition findMatchingRight(const Math& aMath, 
-																const Position& aLeftPosition,
-																uint32_t aSearchChar) const;
+	OptPosition findMatchingBigParens(const Math& aMath, 
+																 const Position& aLeftPosition) const;
 	OptPosition findRepeatingRight(const Math& aMath, 
 																 const Position& aLeftPosition,
 																 uint32_t aSearchChar) const;
@@ -110,6 +111,11 @@ protected:
 	OptPosition findUntilDown(const Math& aMath, 
 												  	const Position& aUpperPosition,
 												  	uint32_t aSearchChar) const;
+	OptPosition findSomethingLeft(const Math& aMath, 
+												        const Position& aLeftUpperPosition,
+															  const Position& aLeftLowerPosition) const;
+	Position getEndExponent(const Math& aMath,
+													const Position& aStartExponent) const;
 	OptPosition findPower(const Math& aMath,
 												Position& aEndExponent,
 												Position& aStartBase,
