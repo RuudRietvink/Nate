@@ -13,7 +13,7 @@ public:
 
 	void doMath(Math& aMath);
 	
-	struct Position;
+	class Position;
 	struct MathValue;
 
 	typedef std::vector<MathValue> MathVector;
@@ -29,10 +29,41 @@ public:
 		int width() const { return matrix.size() > 0 ? (int)matrix[0].size() : 0; }
 	};
 	
-	struct Position
+	class Position
 	{
+	public:
 		int x = 0;
 		int y = 0;
+
+		Position left() const
+		{
+			return *this - Position{ 1, 0 };
+		}
+		
+		Position right() const
+		{
+			return *this + Position{ 1, 0 };
+		}
+		
+		Position up() const
+		{
+			return *this - Position{ 0, 1 };
+		}
+
+		Position down() const
+		{
+			return *this + Position{ 0, 1 };
+		}
+		
+		friend Position operator+(const Position& aLeft, const Position aRight)
+		{
+			return Position{ aLeft.x + aRight.x, aLeft.y + aRight.y };
+		}
+
+		friend Position operator-(const Position& aLeft, const Position aRight)
+		{
+			return Position{ aLeft.x - aRight.x, aLeft.y - aRight.y };
+		}
 	};
 
 	struct MathValue
@@ -60,11 +91,14 @@ protected:
 	virtual std::string operDivide(const Math& aMathLeft, const Math& aMathRight) const;
 	virtual std::string operSquareRoot(const Math& aMath) const;
 	virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
+	virtual std::string operExp(const Math& aMathExp) const;
+	virtual std::string operMultiply(const Math& aMathLeft, const Math& aMathRight) const;
 
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
 	void fillUpMath(Math& aMath);
 	void printMath(const Math& aMath) const;
+	void printDebugMath(const Math& aMath) const;
 	std::string mathString(const Math& aMath) const;
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
@@ -73,25 +107,33 @@ protected:
 										const std::string& aOper,
 										const Position& aLeftUpperPosition,
 										const Position& aRightLowerPosition,
-										const Position& aPlacePosition
-										);
+										const Position& aPlacePosition);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath, 
 										const std::string& aOper,
 										const Position& aLeftUpperPosition,
 										const Position& aRightLowerPosition,
-										const Position& aPlacePosition
-										);
+										const Position& aPlacePosition);
+	void clearMath(Math& aMath, 
+							   const Position& aLeftUpperPosition,
+								 const Position& aRightLowerPosition);
+
 	void doMathParentheses(Math& aMath);
 	void doMathDivision(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
+	void doMathMultiplication(Math& aMath);
+
 	OptPosition findAny(const Math& aMath, 
 											uint32_t aSearchChar) const;
+	OptPosition findAnyOf(const Math& aMath, 
+									  		const std::initializer_list<uint32_t>& aSearchChars) const;
 	OptPosition getSymbol(const Math& aMath, 
-												const Position& aLeftPosition) const;
+												const Position& aLeftPosition,
+												bool aAllowSpaces = false) const;
 	OptPosition getRightToLeftSymbol(const Math& aMath, 
-												           const Position& aRightPosition) const;
+												           const Position& aRightPosition,
+																	 bool aAllowSpaces = false) const;
 	OptPosition findMatchingBigParens(const Math& aMath, 
 																 const Position& aLeftPosition) const;
 	OptPosition findRepeatingRight(const Math& aMath, 
@@ -114,6 +156,9 @@ protected:
 	OptPosition findSomethingLeft(const Math& aMath, 
 												        const Position& aLeftUpperPosition,
 															  const Position& aLeftLowerPosition) const;
+	OptPosition findSomethingRight(const Math& aMath, 
+												        const Position& aRightUpperPosition,
+															  const Position& aRightLowerPosition) const;
 	Position getEndExponent(const Math& aMath,
 													const Position& aStartExponent) const;
 	OptPosition findPower(const Math& aMath,

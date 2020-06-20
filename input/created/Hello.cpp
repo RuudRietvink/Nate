@@ -192,9 +192,9 @@ Hello::~Hello() { delete _impl; }
 		return "ls "+ (_impl->E_me__greetings_());
 	}
 
-	int32_t Hello::age_get() const { return age; }
 	Hello::Data Hello::data_get() const { return data; }
 	const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
 	std::string Hello::address_get() const { return address; }
 	const std::string& Hello::address_set(const std::string& value) { return address = value; }
+	int32_t Hello::age_get() const { return age; }
 	Greetable::Greet Hello::greet_get() const { return greet; }
