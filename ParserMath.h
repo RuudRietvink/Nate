@@ -3,10 +3,15 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <tuple>
 
 class ParserMath
 {
 public:
+	static const uint32_t SPACE                        = 0x20;  
+	static const uint32_t SUBMATRIX                    = 0x1; 
+	static const uint32_t BADCHAR                      = 0x0; 
+
 	virtual ~ParserMath() {}
 
 	struct Math;
@@ -72,7 +77,7 @@ public:
 			: value(aValue) {}
 		
 		MathValue(const Math& aMath1, const Math& aMath2, const std::string& aOper)
-			: value(0U), 
+			: value(1U), 
 			  oper(aOper), 
 			  embedded1(aMath1), 
 			  embedded2(aMath2) {}
@@ -92,13 +97,17 @@ protected:
 	virtual std::string operSquareRoot(const Math& aMath) const;
 	virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
 	virtual std::string operExp(const Math& aMathExp) const;
-	virtual std::string operMultiply(const Math& aMathLeft, const Math& aMathRight) const;
+	virtual uint32_t operatorMultiply() const;
+	virtual uint32_t operatorDivide() const;
 
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
-	void fillUpMath(Math& aMath);
+	void fillUpMath(Math& aMath) const;
 	void printMath(const Math& aMath) const;
 	void printDebugMath(const Math& aMath) const;
+	void printDebugMath(const Math& aMath,
+										  const Position& aLeftPosition,
+										  const Position& aRightPosition) const;
 	std::string mathString(const Math& aMath) const;
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
@@ -119,10 +128,10 @@ protected:
 								 const Position& aRightLowerPosition);
 
 	void doMathParentheses(Math& aMath);
-	void doMathDivision(Math& aMath);
+	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
-	void doMathMultiplication(Math& aMath);
+	void doMathSimpleOperators(Math& aMath);
 
 	OptPosition findAny(const Math& aMath, 
 											uint32_t aSearchChar) const;
@@ -131,9 +140,9 @@ protected:
 	OptPosition getSymbol(const Math& aMath, 
 												const Position& aLeftPosition,
 												bool aAllowSpaces = false) const;
-	OptPosition getRightToLeftSymbol(const Math& aMath, 
-												           const Position& aRightPosition,
-																	 bool aAllowSpaces = false) const;
+	std::tuple<bool, OptPosition> getRightToLeftSymbol(const Math& aMath, 
+																										 const Position& aRightPosition,
+																										 bool aAllowSpaces = false) const;
 	OptPosition findMatchingBigParens(const Math& aMath, 
 																 const Position& aLeftPosition) const;
 	OptPosition findRepeatingRight(const Math& aMath, 
@@ -161,10 +170,16 @@ protected:
 															  const Position& aRightLowerPosition) const;
 	Position getEndExponent(const Math& aMath,
 													const Position& aStartExponent) const;
-	OptPosition findPower(const Math& aMath,
-												Position& aEndExponent,
-												Position& aStartBase,
-												Position& aEndBase) const;
+	std::tuple<bool, OptPosition> findPower(Math& aMath,
+																					Position& aEndExponent,
+																					Position& aStartBase,
+																					Position& aEndBase) const;
+	bool isSymbolSuffix(uint32_t aKar) const;
+	uint32_t getSuperscript(uint32_t aKar) const;
+	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;
+	void unsuperscript(Math& aMath,
+										 const Position& aLeftPosition,
+										 const Position& aRightPosition) const;
 
 	void mathError(const Math& aMath, 
 								 const Position& aPosition,
@@ -173,7 +188,7 @@ protected:
 								 uint32_t aSearchChar) const;
 	Math getSubMath(const Math& aMath, 
 									const Position& aLeftUpperPosition, 
-									const Position& aRightLowerPosition);
+									const Position& aRightLowerPosition) const;
 };
 
 

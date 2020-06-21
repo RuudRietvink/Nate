@@ -9,8 +9,6 @@
 #include <cctype>
 
 namespace {
-	const uint32_t SPACE                        = 0x20;  
-	const uint32_t SUBMATRIX                    = 0x0; 
 
 	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK  = 0x239B; // ⎛
 	const uint32_t LEFT_PARENTHESIS_EXTENSION   = 0x239C; // ⎜
@@ -23,8 +21,13 @@ namespace {
 	const uint32_t ROOT_DIAGONAL                = 0x2571; //  ╱
 	const uint32_t SQUARE_ROOT                  = 0x221A; // √
   const uint32_t E                            = 0x1D452;// 𝑒
-  const uint32_t MULTIPLY                     = 0x00D7; // ×
-  const uint32_t DOT                          = 0x22C5; // ⋅
+  const uint32_t MULTIPLY_X                   = 0x00D7; // ×
+  const uint32_t MULTIPLY_STAR                = 0x2217; // ∗
+  const uint32_t MULTIPLY_DOT                 = 0x22C5; // ⋅
+	const uint32_t DIVIDE_SLASH                 = 0x002F; // /
+	const uint32_t DIVIDE_SIGN                  = 0x00F7; // ÷
+	const uint32_t SUPER_OPEN                   = 0x207D; // ⁽
+	const uint32_t SUPER_CLOSE                  = 0x207E; // ⁾
 
 	const std::string OPER_LEFT_TO_RIGHT        = "left_to_right";
 	const std::string OPER_PARENS               = "()";
@@ -39,12 +42,13 @@ void ParserMath::doMath(Math& aMath)
 {
 	fillUpMath(aMath);
 	printMath(aMath);
+	doMathSimpleOperators(aMath);
 	doMathParsing(aMath);
 	printMath(aMath);
 	std::cerr << mathString(aMath) << std::endl;
 }
 
-void ParserMath::fillUpMath(Math& aMath)
+void ParserMath::fillUpMath(Math& aMath) const
 {
 	aMath.x--;
 	aMath.y--;
@@ -98,6 +102,14 @@ void ParserMath::printMath(const Math& aMath) const
 	std::cerr <<"--------------------------" << std::endl;
 }
 
+void ParserMath::printDebugMath(
+				const Math& aMath,
+				const Position& aLeftPosition,
+				const Position& aRightPosition) const
+{
+	printMath(getSubMath(aMath, aLeftPosition, aRightPosition));
+}
+
 std::string ParserMath::operParens(const Math& aMath) const
 {
 	std::stringstream ss;
@@ -128,19 +140,21 @@ std::string ParserMath::operPower(const Math& aMathBase, const Math& aMathExp) c
 	return ss.str();
 }
 
-std::string ParserMath::operMultiply(const Math& aMathLeft, const Math& aMathRight) const
-{
-	std::stringstream ss;
-	ss << "((" << mathString(aMathLeft) << ") * (" 
-						 << mathString(aMathRight) << "))";
-	return ss.str();
-}
-
 std::string ParserMath::operExp(const Math& aMathExp) const
 {
 	std::stringstream ss;
 	ss << "exp(" << mathString(aMathExp) << ")";
 	return ss.str();
+}
+
+uint32_t ParserMath::operatorMultiply() const
+{
+	return '*';
+}
+
+uint32_t ParserMath::operatorDivide() const
+{
+	return '/';
 }
 
 std::string ParserMath::mathString(const Math& aMath) const
@@ -177,10 +191,6 @@ std::string ParserMath::mathString(const Math& aMath) const
 				{
 					ss << operExp(col.embedded1);
 				}
-				else if (col.oper == OPER_MULTIPLY)
-				{
-					ss << operMultiply(col.embedded1, col.embedded2);
-				}
 			}
 			else if (col.value != SPACE)
 			{
@@ -195,7 +205,7 @@ std::string ParserMath::mathString(const Math& aMath) const
 ParserMath::Math ParserMath::getSubMath(
 				const Math& aMath, 
 			  const Position& aLeftUpperPosition, 
-			  const Position& aRightLowerPosition)
+			  const Position& aRightLowerPosition) const
 {
 	Math result;
 	result.x = aMath.x + aLeftUpperPosition.x;
@@ -257,10 +267,9 @@ void ParserMath::clearMath(
 void ParserMath::doMathParsing(Math& aMath)
 {
 	doMathParentheses(aMath);
-	doMathDivision(aMath);
+	doMathFractionBar(aMath);
 	doMathSquareRoot(aMath);
 	doMathPower(aMath);
-	doMathMultiplication(aMath);
 }
 
 void ParserMath::doMathParentheses(Math& aMath)
@@ -344,7 +353,7 @@ void ParserMath::doMathParentheses(Math& aMath)
 	}
 }
 
-void ParserMath::doMathDivision(Math& aMath)
+void ParserMath::doMathFractionBar(Math& aMath)
 {
 	OptPosition leftHorizontalBar = findAny(aMath, HORIZONTAL_BAR);
 	if (leftHorizontalBar)
@@ -420,11 +429,10 @@ void ParserMath::doMathSquareRoot(Math& aMath)
 
 void ParserMath::doMathPower(Math& aMath)
 {
-	OptPosition aStartExponent;
 	Position aEndExponent;
 	Position aStartBase;
 	Position aEndBase;
-  aStartExponent = findPower(aMath, aEndExponent, aStartBase, aEndBase);
+  auto [isSuperscript, aStartExponent] = findPower(aMath, aEndExponent, aStartBase, aEndBase);
 
 	if (aStartExponent)
 	{
@@ -437,47 +445,46 @@ void ParserMath::doMathPower(Math& aMath)
 		doMathParsing(base);
 		Position leftPos{ aStartBase.x, aEndExponent.y };
 		Position rightPos{ aEndExponent.x, aStartBase.y };
+		Position place = isSuperscript ? aStartBase.up() : aStartBase;
 
 		if (aStartBase.x == aEndBase.x && aStartBase.y == aEndBase.y &&
 				(aMath.matrix[aStartBase.y][aStartBase.x].value == E ||
 				 aMath.matrix[aStartBase.y][aStartBase.x].value == 'e'))
 		{
-			embedSubMath(aMath, exp, OPER_EXP, leftPos, rightPos, aStartBase);
+			embedSubMath(aMath, exp, OPER_EXP, leftPos, rightPos, place);
 		}
 		else
 		{
-			embedSubMath(aMath, base, exp, OPER_POWER, leftPos, rightPos, aStartBase);
+			embedSubMath(aMath, base, exp, OPER_POWER, leftPos, rightPos, place);
 		}
+
 		doMathParsing(aMath);
 	}
 }
 
-void ParserMath::doMathMultiplication(Math& aMath)
+void ParserMath::doMathSimpleOperators(Math& aMath)
 {
-	OptPosition multiplication = findAnyOf(aMath, { MULTIPLY, DOT });
-	if (multiplication)
+	for (int y = 0; y < aMath.height(); ++y)
 	{
-		OptPosition symbol = getSymbol(aMath, *multiplication, true);
-		if (symbol)
+		for (int x = 0; x < aMath.width(); ++x)
 		{
-			Math right = getSubMath(aMath, multiplication->right(), *symbol);
-			OptPosition leftSymbol = getRightToLeftSymbol(aMath, *multiplication, true);
-			if (leftSymbol)
+			uint32_t kar = aMath.matrix[y][x].value;
+			if (kar == MULTIPLY_DOT ||
+					kar == MULTIPLY_STAR ||
+					kar == MULTIPLY_X)
 			{
-				Math left = getSubMath(aMath, *leftSymbol, multiplication->left());
-				printDebugMath(left);
-				printDebugMath(right);
-				embedSubMath(aMath, left, right, OPER_MULTIPLY, *leftSymbol, *symbol, *leftSymbol);
-				doMathParsing(aMath);
+				kar = operatorMultiply();
 			}
-			else
+			else if (kar == DIVIDE_SIGN ||
+					     kar == DIVIDE_SLASH )
 			{
-				error(*multiplication, "need symbol preceding multiplication");
+				kar = operatorDivide();
 			}
-		}
-		else
-		{
-			error(*multiplication, "need symbol following multiplication");
+
+			if (kar != aMath.matrix[y][x].value)
+			{
+				aMath.matrix[y][x].value = kar;
+			}
 		}
 	}
 }
@@ -501,27 +508,51 @@ ParserMath::OptPosition ParserMath::getSymbol(
 
 	for (; x < size && parens >= 0 && !result; ++x)
 	{
-		if (aMath.matrix[y][x].value == '(')
+		uint32_t kar = aMath.matrix[y][x].value;
+		if (kar == '(')
 		{
 			++parens;
 		}
-		else if (aMath.matrix[y][x].value == ')')
+		else if (kar == ')')
 		{
 			--parens;
 		}
 		else if (parens == 0)
 		{
-			if (aMath.matrix[y][x].value == SPACE)
+			if (kar == SPACE)
 			{
 				result = Position{ x-1, y };
 			}
-			else if (aMath.matrix[y][x].value == SUBMATRIX)
+			else if (kar == SUBMATRIX)
 			{
 				result = Position{ x, y };
 			}
 			else
 			{
-				result = Position{ x, y };
+				if ((kar == '-' || kar == '+') && x < size -1 && aMath.matrix[y][x].value == SUBMATRIX)
+				{
+					result = Position{ x + 1, y };
+				}
+				else if (kar == '-' || kar == '+' || kar == '.' || isdigit(kar))
+				{
+					while (x < size && 
+								 (isdigit(aMath.matrix[y][x].value) || 
+									aMath.matrix[y][x].value == '.' || 
+									aMath.matrix[y][x].value == '-' || 
+									aMath.matrix[y][x].value == '+' || 
+									aMath.matrix[y][x].value == 'E' || 
+									aMath.matrix[y][x].value == 'e'))
+					{
+						++x;
+					}
+
+					--x;
+					result = Position{ x, y };
+				}
+				else
+				{
+					result = Position{ x, y };
+				}
 			}
 		}
 	}
@@ -534,13 +565,12 @@ ParserMath::OptPosition ParserMath::getSymbol(
 	return result;
 }
 
-ParserMath::OptPosition ParserMath::getRightToLeftSymbol(
+	std::tuple<bool, ParserMath::OptPosition> ParserMath::getRightToLeftSymbol(
 				const Math& aMath, 
 				const Position& aRightPosition,
 				bool aAllowSpaces) const
 {
 	OptPosition result;
-	int parens = 0;
 	int x = aRightPosition.x - 1;
 	int y = aRightPosition.y;
 	
@@ -550,24 +580,63 @@ ParserMath::OptPosition ParserMath::getRightToLeftSymbol(
 			;
 	}
 	
-	for (; x >= 0 && parens >= 0 && !result; --x)
+	bool isSuperScript = (x >= 0 && getSuperscript(aMath.matrix[y][x].value) != BADCHAR);
+	std::vector<uint32_t> prevParens;
+
+	for (; x >= 0 && !result; --x)
 	{
-		if (aMath.matrix[y][x].value == ')')
+		uint32_t kar = optSuperscript(isSuperScript, aMath.matrix[y][x].value);
+
+		if (kar == ')')
 		{
-			++parens;
+			prevParens.push_back(kar);
 		}
-		else if (aMath.matrix[y][x].value == '(')
+		else if (kar == '(')
 		{
-			--parens;
+			if (prevParens.empty())
+			{
+				error(Position{ x, y }, "unbalanced parentheses");
+				break;
+			}
+			if ((kar == '(') && prevParens.back() != ')')
+			{
+				error(Position{ x, y }, "unbalanced parentheses");
+				break;
+			}
+			prevParens.pop_back();
 		}
-		else if (parens == 0)
+		else if (prevParens.empty())
 		{
-			if (aMath.matrix[y][x].value == SPACE)
+			if (kar == SPACE || kar == BADCHAR)
 			{
 				result = Position{ x+1, y };
 			}
-			else if (aMath.matrix[y][x].value == SUBMATRIX)
+			else if (kar == SUBMATRIX)
 			{
+				result = Position{ x, y };
+			}
+			else if (kar == '.' || isdigit(kar))
+			{
+				--x;
+				while (x > 0 && (kar = optSuperscript(isSuperScript, aMath.matrix[y][x].value)) &&
+								(isdigit(kar) || 
+								 kar == '.' || 
+								 kar == '-' || 
+								 kar == '+' || 
+								 kar == 'E' || 
+								 kar == 'e'))
+				{
+					--x;					
+				}
+
+				++x;
+				kar = optSuperscript(isSuperScript, aMath.matrix[y][x].value);
+				if (kar == '-' || // skip unary operator
+						kar == '+')
+				{
+					++x;
+				}
+
 				result = Position{ x, y };
 			}
 			else
@@ -577,12 +646,18 @@ ParserMath::OptPosition ParserMath::getRightToLeftSymbol(
 		}
 	}
 
-	if (parens != 0)
+	if (!prevParens.empty())
 	{
 		error(Position{ x, y }, "unbalanced parentheses");
 	}
 	
-	return result;
+	return std::make_tuple(isSuperScript, result);
+}
+
+bool ParserMath::isSymbolSuffix(uint32_t aKar) const
+{
+	return ((aKar >= 0x2080U && aKar <= 0x2089U) || // subscripts
+					(aKar >= 0x2090U && aKar <= 0x209CU));
 }
 
 ParserMath::Position ParserMath::getEndExponent(
@@ -593,15 +668,49 @@ ParserMath::Position ParserMath::getEndExponent(
 	if (aMath.matrix[result.y][result.x].value != SUBMATRIX)
 	{
 		for (;result.x < aMath.width() - 1 && 
-					aMath.matrix[result.y+1][result.x+1].value == SPACE; ++result.x)
+					aMath.matrix[result.y+1][result.x].value == SPACE; ++result.x)
 			;
 	}
 
 	return result;
 }
 
-ParserMath::OptPosition ParserMath::findPower(
-				const Math& aMath,
+uint32_t ParserMath::optSuperscript(bool aCheckSuperScript, uint32_t aKar) const
+{
+	return aCheckSuperScript ? getSuperscript(aKar) : aKar;
+}
+
+uint32_t ParserMath::getSuperscript(uint32_t aKar) const
+{
+	static const std::string superScript = "⁽⁾⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ";
+	static const std::string normlScript = "()+-0123456789ABDEGHIJKLMNOPRTUVWabcdefghijklmnoprstuvwxyz";
+
+	auto iter = superScript.begin();
+	uint32_t cp;
+	for (size_t index = 0; iter != superScript.end() && (cp = utf8::next(iter, superScript.end())) != 0; ++index)
+	{
+		if (aKar == cp)
+		{
+			return normlScript[index];
+		}
+	}
+
+	return 0;
+}
+
+void ParserMath::unsuperscript(
+				Math& aMath,
+				const Position& aLeftPosition,
+				const Position& aRightPosition) const
+{
+	for (int x = aLeftPosition.x; x < aRightPosition.x; ++x)
+	{
+		aMath.matrix[aLeftPosition.y][x].value = getSuperscript(aMath.matrix[aLeftPosition.y][x].value);
+	}
+}
+
+std::tuple<bool, ParserMath::OptPosition> ParserMath::findPower(
+				Math& aMath,
 				Position& aEndExponent,
 				Position& aStartBase,
 				Position& aEndBase) const
@@ -617,17 +726,49 @@ ParserMath::OptPosition ParserMath::findPower(
 				aEndExponent = getEndExponent(aMath, startExponent);				
 				x = aEndExponent.x;
 				aEndBase = Position{ startExponent.x, y + 1 };
-				OptPosition start = getRightToLeftSymbol(aMath, aEndBase);
+				auto [isSuperscript, start] = getRightToLeftSymbol(aMath, aEndBase);
 				if (start)
 				{
 					aStartBase = *start;
-					return startExponent;
+					if (isSuperscript)
+					{
+						unsuperscript(aMath, aStartBase, aEndBase);
+					}
+
+					return std::make_tuple(isSuperscript, startExponent);
 				}
 			}
 		}
 	}
-
-	return std::nullopt;
+	
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		for (int x = 1; x < aMath.width(); ++x)
+		{
+			if (getSuperscript(aMath.matrix[y][x].value) != BADCHAR)
+			{
+				auto [isSuperscript, start] = getRightToLeftSymbol(aMath, Position{ x, y });
+				if (start)
+				{
+					aEndBase = Position{ x-1, y };
+					aStartBase = *start;
+					uint32_t subs;
+					Position startExponent = Position{ x, y };
+					while (x < aMath.width() && (subs = getSuperscript(aMath.matrix[y][x].value)) != BADCHAR)
+					{
+						aMath.matrix[y][x].value = subs;
+						++x;
+					}
+					
+					--x;
+					aEndExponent = Position{ x, y };
+					return std::make_tuple(false, startExponent);
+				}
+			}
+		}
+	}
+	
+	return std::make_tuple(false, std::nullopt);
 }
 
 ParserMath::OptPosition ParserMath::findAnyOf(
