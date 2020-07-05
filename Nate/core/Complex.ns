@@ -10,7 +10,7 @@ alias "𝑖" "i"
 ///////////////////////////////////////////////
 
 code:
-  #include "C:\Users\ruud\source\repos\Nate\core\Complex.h"
+  #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
 	#include <complex>
 
 const i is imaginary := 1

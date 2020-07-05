@@ -11,20 +11,21 @@
 #include <optional>
 #include <tuple>
 
-class MATHPARSER_API MathParser
+class MathParser
 {
 public:
 	static const uint32_t SPACE                        = 0x20;  
 	static const uint32_t SUBMATRIX                    = 0x1; 
 	static const uint32_t BADCHAR                      = 0x0; 
 
-	virtual ~MathParser() {}
+	virtual MATHPARSER_API ~MathParser() {}
 
 	struct Math;
 
-	void setTabSize(uint32_t aTabSize);
-	std::string doMath(std::istream& aStream, int line = 0);
-	std::string doMath(Math& aMath);
+	MATHPARSER_API void setTabSize(uint32_t aTabSize);
+	MATHPARSER_API void addVariable(const std::string& aVariable);
+	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
+	MATHPARSER_API std::string doMath(Math& aMath);
 	
 	class Position;
 	struct MathValue;
@@ -40,6 +41,8 @@ public:
 		MathMatrix matrix;
 		inline int height() const { return (int)matrix.size(); }
 		inline int width() const { return matrix.size() > 0 ? (int)matrix[0].size() : 0; }
+		uint32_t operator()(int y, int x) const { return matrix[y][x].value; }
+		uint32_t& operator()(int y, int x) { return matrix[y][x].value; }
 	};
 	
 	class Position
@@ -98,15 +101,18 @@ public:
 
 	
 protected:
-	virtual void error(const Position& aPosition, const std::string& aError) const;
+	MATHPARSER_API virtual void error(const Position& aPosition, const std::string& aError) const;
 
-	virtual std::string operParens(const Math& aMath) const;
-	virtual std::string operDivide(const Math& aMathLeft, const Math& aMathRight) const;
-	virtual std::string operSquareRoot(const Math& aMath) const;
-	virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
-	virtual std::string operExp(const Math& aMathExp) const;
-	virtual uint32_t operatorMultiply() const;
-	virtual uint32_t operatorDivide() const;
+	MATHPARSER_API virtual std::string operParens(const Math& aMath) const;
+	MATHPARSER_API virtual std::string operDivide(const Math& aMathLeft, const Math& aMathRight) const;
+	MATHPARSER_API virtual std::string operSquareRoot(const Math& aMath) const;
+	MATHPARSER_API virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
+	MATHPARSER_API virtual std::string operExp(const Math& aMathExp) const;
+	MATHPARSER_API virtual uint32_t operatorMultiply() const;
+	MATHPARSER_API virtual uint32_t operatorDivide() const;
+
+	virtual bool MATHPARSER_API isVariable(const std::string& aInput) const;
+	virtual bool MATHPARSER_API isNumber(const std::string& aInput) const;
 
 private:
 	Position mathPos(const Math& aMath, 
@@ -199,8 +205,19 @@ private:
 	Math getSubMath(const Math& aMath, 
 									const Position& aLeftUpperPosition, 
 									const Position& aRightLowerPosition) const;
+	
+	std::string popFront(const std::string& aInput) const;
+	std::string popBack(const std::string& aInput) const;
+	int parseVariable(const Math& aMath,
+									  int x,
+									  int y) const;
+	std::string getRightToLeftVariable(const std::string& aInput) const;
+	int parseNumber(const Math& aMath,
+									int x,
+									int y) const;
 
 	uint32_t mTabSize = 4;
+	std::vector<std::string> mVariables;
 };
 
 MATHPARSER_API extern MathParser mathParser;

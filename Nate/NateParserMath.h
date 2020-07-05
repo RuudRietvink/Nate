@@ -10,6 +10,7 @@ public:
 
 private:
 	void error(const Position& aPosition, const std::string& aError) const override;
+	bool isVariable(const std::string& aInput) const override;
 
 	NateParser& mNateParser;
 };

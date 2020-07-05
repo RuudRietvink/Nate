@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
 #include <string>
 #line 3 ".\\Hello.nd"
 class Greetable
@@ -26,7 +26,7 @@ public:
 	virtual std::string ls_E_me__E_text_(const std::string& world) const = 0;
 };
 
-#include "C:\Users\ruud\source\repos\Nate\input\created\BaseObject.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\BaseObject.h"
 #line 12 ".\\Hello.nd"
 class Hi: public virtual Greetable, public BaseObject
 {

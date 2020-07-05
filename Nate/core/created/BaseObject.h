@@ -1,6 +1,6 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\core\Core.h"
-#line 2 "C:\\Users\\ruud\\source\\repos\\Nate\\core\\BaseObject.nd"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#line 2 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\BaseObject.nd"
 class BaseObject: public std::enable_shared_from_this<BaseObject>
 {
 public:

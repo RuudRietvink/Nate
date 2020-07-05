@@ -1,5 +1,5 @@
-#include "C:\Users\ruud\source\repos\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\input\created\Hello.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\Hello.h"
 #line 3 "Hello.ns"
 class Local: public BaseObject
 {

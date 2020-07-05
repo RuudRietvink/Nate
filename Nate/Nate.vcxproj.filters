@@ -31,40 +31,40 @@
     <ClCompile Include="lex.yy.cpp">
       <Filter>Source Files\Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\matcher.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\matcher.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\block_scripts.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\unicode\block_scripts.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\convert.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\convert.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\debug.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\debug.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\error.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\error.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\input.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\input.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\language_scripts.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\unicode\language_scripts.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\unicode\letter_scripts.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\unicode\letter_scripts.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\pattern.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\pattern.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\posix.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\posix.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\unicode.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\unicode.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Users\Ruud\Reflex\lib\utf8.cpp">
+    <ClCompile Include="c:\Users\Ruud\Reflex\lib\utf8.cpp">
       <Filter>Source Files\Reflex</Filter>
     </ClCompile>
     <ClCompile Include="parser.cpp">
