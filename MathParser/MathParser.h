@@ -178,6 +178,10 @@ private:
 	OptPosition findUntilDown(const Math& aMath, 
 												  	const Position& aUpperPosition,
 												  	uint32_t aSearchChar) const;
+	
+	bool isVarStart(uint32_t kar) const;
+	bool isVarNext(uint32_t kar) const;
+	bool badSomething(uint32_t kar) const;
 	OptPosition findSomethingLeft(const Math& aMath, 
 												        const Position& aLeftUpperPosition,
 															  const Position& aLeftLowerPosition) const;
@@ -212,12 +216,25 @@ private:
 									  int x,
 									  int y) const;
 	std::string getRightToLeftVariable(const std::string& aInput) const;
+	
+	bool isPartOfNumber(uint32_t kar) const;
 	int parseNumber(const Math& aMath,
+									int x,
+									int y) const;
+	int parseRightToLeftNumber(
+									bool isSuperScript,
+									const Math& aMath,
+									int x,
+									int y) const;
+	int parseRightToLeftVariable(
+									bool isSuperScript,
+									const Math& aMath,
 									int x,
 									int y) const;
 
 	uint32_t mTabSize = 4;
 	std::vector<std::string> mVariables;
+	static std::locale m_localeUtf8;
 };
 
 MATHPARSER_API extern MathParser mathParser;

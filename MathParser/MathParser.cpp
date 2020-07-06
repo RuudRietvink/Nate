@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <algorithm>
 #include <cctype>
+#include <clocale>
 
 namespace {
 
@@ -36,6 +37,15 @@ namespace {
 	const std::string OPER_POWER                = "pow";
 	const std::string OPER_EXP                  = "exp";
 	const std::string OPER_MULTIPLY             = "*";
+
+	template< class charT >
+	bool isalpha( charT ch, const std::locale& loc ) {
+			return std::use_facet<std::ctype<charT>>(loc).is(std::ctype_base::alpha, ch);
+	}
+	template< class charT >
+	bool isdigit( charT ch, const std::locale& loc ) {
+			return std::use_facet<std::ctype<charT>>(loc).is(std::ctype_base::digit, ch);
+	}
 }
 
 ////////////////////////// public  /////////////////////////////////
@@ -155,6 +165,8 @@ bool MathParser::isNumber(const std::string& aInput) const
 
 ////////////////////////// private /////////////////////////////////
 
+std::locale MathParser::m_localeUtf8("en_US.UTF8");
+
 std::string MathParser::popBack(const std::string& aInput) const
 {
 	auto iter = aInput.end();
@@ -255,7 +267,6 @@ void MathParser::printMath(const Math& aMath) const
 
 		std::cerr << std::endl;
 	}
-	std::cerr <<"--------------------------" << std::endl;
 }
 
 void MathParser::printDebugMath(
@@ -410,28 +421,27 @@ void MathParser::doMathParentheses(Math& aMath)
 					Position rightPos = Position{ rightLowerParenthesis->x - 1, rightLowerParenthesis->y };
 					Math sub = getSubMath(aMath, leftPos, rightPos);
 					
+					Position place = *leftLowerParenthesis;
 					OptPosition anchor = findSomethingLeft(aMath, *leftUpperParenthesis, *leftLowerParenthesis);
 					if (!anchor)
 					{
 						anchor = findSomethingRight(aMath, *rightUpperParenthesis, *rightLowerParenthesis);
-						if (!anchor)
+						if (anchor)
 						{
-							anchor = leftLowerParenthesis;
-						}
-						else
-						{
-							anchor->x--;
+							place.y = anchor->y;
 						}
 					}
 					else
 					{
-						anchor->x++;
+						place.y = anchor->y;
+						place.x = anchor->x + 1;
 					}
 
 					if (rightUpperParenthesis->y > 0 && rightUpperParenthesis->x < aMath.width() &&
-							aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1) != SPACE)
+							aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1) != SPACE &&
+							aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1) != ROOT_BAR)
 					{
-						//std::cerr << "Parens Power" << aMath.y + anchor->y << "," << aMath.x + anchor->x << std::endl;
+						//std::cerr << "Parens Power" << aMath.y + place.y << "," << aMath.x + place.x << std::endl;
 						printDebugMath(sub);
 						Position startExponent = Position{ rightUpperParenthesis->x + 1, rightUpperParenthesis->y - 1 };
 						Position endExponent = getEndExponent(aMath, startExponent);
@@ -440,15 +450,14 @@ void MathParser::doMathParentheses(Math& aMath)
 						doMathParsing(sub);
 						doMathParsing(exp);
 						clearMath(aMath, startExponent, endExponent);
-						embedSubMath(aMath, sub, exp, OPER_POWER, *leftUpperParenthesis, *rightLowerParenthesis, *anchor);
+						embedSubMath(aMath, sub, exp, OPER_POWER, *leftUpperParenthesis, *rightLowerParenthesis, place);
 					}
 					else
 					{
 						//std::cerr << "Parentheses" << aMath.y + rightUpperParenthesis->y << "," << aMath.x + rightUpperParenthesis->x << std::endl;
 						printDebugMath(sub);
 						doMathParsing(sub);
-						embedSubMath(aMath, sub, OPER_PARENS, *leftUpperParenthesis, *rightLowerParenthesis,
-												 *anchor);
+						embedSubMath(aMath, sub, OPER_PARENS, *leftUpperParenthesis, *rightLowerParenthesis, place);
 					}
 					doMathParsing(aMath);
 				}
@@ -518,12 +527,13 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			OptPosition lastRootBar = findRepeatingRight(aMath, *rootBar, ROOT_BAR);
 			Position leftPos = Position{ squareRoot->x + 1, rootBar->y+1 };
 			Position diagonal = *squareRoot;
+
 			while (aMath(diagonal.y - 1, diagonal.x + 1) == ROOT_DIAGONAL)
 			{
 				aMath(diagonal.y - 1, diagonal.x + 1) = SPACE;
 				diagonal = diagonal.up().right();
 			}
-
+			
 			Position rightPos = Position{ lastRootBar->x, (int)aMath.height() - 1 };
 			Math sub = getSubMath(aMath, leftPos, rightPos);
 			printDebugMath(sub);
@@ -612,6 +622,16 @@ void MathParser::doMathSimpleOperators(Math& aMath)
 	}
 }
 
+bool MathParser::isPartOfNumber(uint32_t kar) const
+{
+	return isdigit(kar) || 
+				 kar == '.' || 
+				 kar == '-' || 
+			   kar == '+' || 
+				 kar == 'E' || 
+				 kar == 'e';
+}
+
 int MathParser::parseNumber(
 				const Math& aMath,
 				int x,
@@ -622,7 +642,7 @@ int MathParser::parseNumber(
 	auto backIns = std::back_inserter(number);
 
 	int size = aMath.width();
-	while (x < size && aMath(y, x) != SPACE)
+	while (x < size && isPartOfNumber(aMath(y, x)))
 	{
 		utf8::append(aMath(y, x), backIns);
 		++x;
@@ -636,25 +656,98 @@ int MathParser::parseNumber(
 	return x;
 }
 
+int MathParser::parseRightToLeftNumber(
+			  bool isSuperScript,
+				const Math& aMath,
+				int x,
+				int y) const
+{
+	if (isPartOfNumber(optSuperscript(isSuperScript, aMath(y, x))))
+	{
+		int start = x;
+		std::string number;
+
+		int size = aMath.width();
+		while (x >= 0 && isPartOfNumber(optSuperscript(isSuperScript, aMath(y, x))))
+		{
+			std::string part;
+			auto backIns = std::back_inserter(part);
+			utf8::append(optSuperscript(isSuperScript, aMath(y, x)), backIns);
+			number.insert(number.begin(), part.begin(), part.end());
+			--x;
+		}
+
+		for (;x < start && !isNumber(number); ++x)
+		{
+			number = popFront(number);
+		}
+	}
+
+	return x;
+}
+
+
+
+bool MathParser::isVarStart(uint32_t kar) const
+{
+	return isalpha(kar, m_localeUtf8);
+}
+
+bool MathParser::isVarNext(uint32_t kar) const
+{
+	return isVarStart(kar) || isdigit(kar) || isSymbolSuffix(kar) || kar == '_';
+}
+
 int MathParser::parseVariable(
 				const Math& aMath,
 				int x,
 				int y) const
 {
-	int start = x;
-	std::string variable;
-	auto backIns = std::back_inserter(variable);
-
-	int size = aMath.width();
-	while (x < size && aMath(y, x) != SPACE)
+	if (isVarStart(aMath(y, x)))
 	{
-		utf8::append(aMath(y, x), backIns);
-		++x;
+		int start = x;
+		std::string variable;
+		auto backIns = std::back_inserter(variable);
+
+		int size = aMath.width();
+		for (; x < size && isVarNext(aMath(y, x)); ++x)
+		{
+			utf8::append(aMath(y, x), backIns);
+		}
+
+		for (;x > start && !isVariable(variable); --x)
+		{
+			variable = popBack(variable);
+		}
 	}
 
-	for (;x > start && !isVariable(variable); --x)
+	return x;
+}
+
+int MathParser::parseRightToLeftVariable(
+				bool isSuperScript,
+				const Math& aMath,
+				int x,
+				int y) const
+{
+	if (isVarNext(optSuperscript(isSuperScript, aMath(y, x))))
 	{
-		variable = popBack(variable);
+		int start = x;
+		std::string variable;
+
+		int size = aMath.width();
+		for (; x >= 0 && isVarNext(optSuperscript(isSuperScript, aMath(y, x))); --x)
+		{
+			std::string part;
+			auto backIns = std::back_inserter(part);
+			utf8::append(optSuperscript(isSuperScript, aMath(y, x)), backIns);
+			variable.insert(variable.begin(), part.begin(), part.end());
+		}
+
+		for (;x < start && !isVariable(variable); ++x)
+		{
+			variable = popFront(variable);
+		}
 	}
 
 	return x;
@@ -720,7 +813,7 @@ MathParser::OptPosition MathParser::getSymbol(
 			else 
 			{
 				int nextX;
-				if ((kar == '-' || kar == '+') && x < size -1 && aMath(y, x) == SUBMATRIX)
+				if ((kar == '-' || kar == '+') && x < size -1 && aMath(y, x+1) == SUBMATRIX)
 				{
 					result = Position{ x + 1, y };
 				}
@@ -734,7 +827,10 @@ MathParser::OptPosition MathParser::getSymbol(
 				}
 				else
 				{
-					error(Position{ x, y }, "unknown token");
+					std::string desc("unknown token: ");
+					auto backIns = std::back_inserter(desc);
+					utf8::append(kar, backIns);
+					error(Position{ x, y }, desc);
 				}
 			}
 		}
@@ -807,33 +903,24 @@ MathParser::OptPosition MathParser::getSymbol(
 			{
 				result = Position{ x, y };
 			}
-			else if (kar == '.' || isdigit(kar))
+			else 
 			{
-				--x;
-				while (x > 0 && (kar = optSuperscript(isSuperScript, aMath(y, x))) &&
-								(isdigit(kar) || 
-								 kar == '.' || 
-								 kar == '-' || 
-								 kar == '+' || 
-								 kar == 'E' || 
-								 kar == 'e'))
+				int prevX;
+				if ((prevX = parseRightToLeftNumber(isSuperScript, aMath, x, y)) < x)
 				{
-					--x;					
+					result = Position{ prevX + 1, y };
 				}
-
-				++x;
-				kar = optSuperscript(isSuperScript, aMath(y, x));
-				if (kar == '-' || // skip unary operator
-						kar == '+')
+				else if ((prevX = parseRightToLeftVariable(isSuperScript, aMath, x, y)) < x)
 				{
-					++x;
+					result = Position{ prevX + 1, y };
 				}
-
-				result = Position{ x, y };
-			}
-			else
-			{
-				result = Position{ x, y };
+				else
+				{
+					std::string desc("unknown token: ");
+					auto backIns = std::back_inserter(desc);
+					utf8::append(kar, backIns);
+					error(Position{ x, y }, desc);
+				}
 			}
 		}
 	}
@@ -1087,6 +1174,11 @@ MathParser::OptPosition MathParser::findMatchingDown(
 	return std::nullopt;
 }
 	
+bool MathParser::badSomething(uint32_t kar) const
+{
+	return (kar == ROOT_DIAGONAL);
+}
+
 MathParser::OptPosition MathParser::findSomethingLeft(
 				const Math& aMath, 
 				const Position& aLeftUpperPosition,
@@ -1094,6 +1186,13 @@ MathParser::OptPosition MathParser::findSomethingLeft(
 {
 	for (int x = aLeftUpperPosition.x - 1; x > 0; --x)
 	{
+		for (int y = aLeftUpperPosition.y; y < aLeftLowerPosition.y; ++y)
+		{
+			if (badSomething(aMath(y, x)))
+			{
+				return std::nullopt;
+			}
+		}
 		for (int y = aLeftUpperPosition.y; y < aLeftLowerPosition.y; ++y)
 		{
 			if (aMath(y, x) != SPACE)
@@ -1113,6 +1212,13 @@ MathParser::OptPosition MathParser::findSomethingRight(
 {
 	for (int x = aRightUpperPosition.x + 1; x < aMath.width(); ++x)
 	{
+		for (int y = aRightUpperPosition.y; y < aRightLowerPosition.y; ++y)
+		{
+			if (badSomething(aMath(y, x)))
+			{
+				return std::nullopt;
+			}
+		}
 		for (int y = aRightUpperPosition.y; y < aRightLowerPosition.y; ++y)
 		{
 			if (aMath(y, x) != SPACE)
