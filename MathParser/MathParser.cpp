@@ -30,13 +30,15 @@ namespace {
 	const uint32_t SUPER_OPEN                   = 0x207D; // ⁽
 	const uint32_t SUPER_CLOSE                  = 0x207E; // ⁾
 
-	const std::string OPER_LEFT_TO_RIGHT        = "left_to_right";
 	const std::string OPER_PARENS               = "()";
 	const std::string OPER_DIVIDE               = "/";
 	const std::string OPER_SQUARE_ROOT          = "sqrt";
 	const std::string OPER_POWER                = "pow";
 	const std::string OPER_EXP                  = "exp";
 	const std::string OPER_MULTIPLY             = "*";
+	const std::string OPER_VARIABLE             = "var";
+	const std::string OPER_NUMBER               = "nbr";
+	const std::string OPER_MONOMIAL             = "mon";
 
 	template< class charT >
 	bool isalpha( charT ch, const std::locale& loc ) {
@@ -288,11 +290,7 @@ std::string MathParser::mathString(const Math& aMath) const
 		{
 			if (col.value == SUBMATRIX)
 			{
-				if (col.oper == OPER_LEFT_TO_RIGHT)
-				{
-					ss << mathString(col.embedded1) << mathString(col.embedded2);
-				}
-				else if (col.oper == OPER_PARENS)
+				if (col.oper == OPER_PARENS)
 				{
 					ss << operParens(col.embedded1);
 				}
@@ -312,8 +310,20 @@ std::string MathParser::mathString(const Math& aMath) const
 				{
 					ss << operExp(col.embedded1);
 				}
+				else if (col.oper == OPER_NUMBER)
+				{
+					ss << mathString(col.embedded1);
+				}
+				else if (col.oper == OPER_VARIABLE)
+				{
+					ss << mathString(col.embedded1);
+				}
+				else if (col.oper == OPER_MONOMIAL)
+				{
+					ss << "(" << mathString(col.embedded1) << (char)(operatorMultiply()) << mathString(col.embedded2) << ")";
+				}
 			}
-			else if (col.value != SPACE)
+			else if (!isBlank(col.value))
 			{
 				utf8::append(col.value, std::ostream_iterator<char>(ss));
 			}
@@ -367,7 +377,6 @@ void MathParser::embedSubMath(
 			  const Position& aPlacePosition)
 {
 	clearMath(aMath, aLeftUpperPosition, aRightLowerPosition);
-	
 	aMath.matrix[aPlacePosition.y][aPlacePosition.x] = MathValue(aSubMath1, aSubMath2, aOper);
 }
 
@@ -380,7 +389,7 @@ void MathParser::clearMath(
 	{
 		for (int x = aLeftUpperPosition.x; x <= aRightLowerPosition.x; ++x)
 		{
-			aMath(y, x) = SPACE;
+			aMath(y, x) = FILLER;
 		}
 	}
 }
@@ -397,6 +406,8 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathFractionBar(aMath);
 	doMathSquareRoot(aMath);
 	doMathPower(aMath);
+	doMathVariablesNumbers(aMath);
+	doMathMonomial(aMath);
 }
 
 void MathParser::doMathParentheses(Math& aMath)
@@ -438,7 +449,7 @@ void MathParser::doMathParentheses(Math& aMath)
 					}
 
 					if (rightUpperParenthesis->y > 0 && rightUpperParenthesis->x < aMath.width() &&
-							aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1) != SPACE &&
+							!isBlank(aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1)) &&
 							aMath(rightUpperParenthesis->y - 1, rightUpperParenthesis->x + 1) != ROOT_BAR)
 					{
 						//std::cerr << "Parens Power" << aMath.y + place.y << "," << aMath.x + place.x << std::endl;
@@ -592,6 +603,65 @@ void MathParser::doMathPower(Math& aMath)
 		}
 
 		doMathParsing(aMath);
+	}
+}
+
+void MathParser::doMathVariablesNumbers(Math& aMath)
+{
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		for (int x = 0; x < aMath.width(); ++x)
+		{
+			uint32_t kar = aMath(y, x);
+			if (isPartOfNumber(kar) && kar != '+' && kar != '-')
+			{
+				int endX = parseNumber(aMath, x, y) - 1;
+				if (endX >= x)
+				{
+					Position startPos{ x, y };
+					Position endPos{ endX, y };
+					Math nbr = getSubMath(aMath, startPos, endPos);
+					embedSubMath(aMath, nbr, OPER_NUMBER, startPos, endPos, startPos);
+				}
+			}
+			else if (isVarStart(kar))
+			{
+				int endX = parseVariable(aMath, x, y) - 1;
+				Position startPos{ x, y };
+				Position endPos{ endX, y };
+				Math var = getSubMath(aMath, startPos, endPos);
+			  embedSubMath(aMath, var, OPER_VARIABLE, startPos, endPos, startPos);
+			}
+		}
+	}
+}
+void MathParser::doMathMonomial(Math& aMath)
+{
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		int lastX = -1;
+		for (int x = 0; x < aMath.width() - 1; ++x)
+		{
+			if (aMath(y, x) == SUBMATRIX)
+			{
+				if (lastX != -1)
+				{
+					Position startPos{ lastX, y };
+					Position endPos{ x, y };
+					Math left = getSubMath(aMath, startPos, startPos);
+					Math right = getSubMath(aMath, endPos, endPos);
+					embedSubMath(aMath, left, right, OPER_MONOMIAL, startPos, endPos, startPos);
+				}
+				else
+				{
+					lastX = x;
+				}
+			}
+			else if (lastX != -1 && aMath(y, x) != FILLER)
+			{
+				lastX = -1;
+			}
+		}
 	}
 }
 
@@ -753,6 +823,11 @@ int MathParser::parseRightToLeftVariable(
 	return x;
 }
 
+bool MathParser::isBlank(uint32_t kar) const
+{
+	return kar == SPACE || kar == FILLER;
+}
+
 MathParser::OptPosition MathParser::getSymbol(
 				const Math& aMath, 
 				const Position& aLeftPosition,
@@ -766,7 +841,7 @@ MathParser::OptPosition MathParser::getSymbol(
 
 	if (aAllowSpaces)
 	{
-		for (; x < size && aMath(y, x) == SPACE; ++x)
+		for (; x < size && isBlank(aMath(y, x)); ++x)
 			;
 	}
 
@@ -802,7 +877,7 @@ MathParser::OptPosition MathParser::getSymbol(
 		}
 		else if (prevParens.empty())
 		{
-			if (kar == SPACE)
+			if (isBlank(kar))
 			{
 				result = Position{ x-1, y };
 			}
@@ -855,7 +930,7 @@ MathParser::OptPosition MathParser::getSymbol(
 	
 	if (aAllowSpaces)
 	{
-		for (; x >= 0 && aMath(y, x) == SPACE; --x)
+		for (; x >= 0 && isBlank(aMath(y, x)); --x)
 			;
 	}
 	
@@ -895,7 +970,7 @@ MathParser::OptPosition MathParser::getSymbol(
 		}
 		else if (prevParens.empty())
 		{
-			if (kar == SPACE || kar == BADCHAR)
+			if (isBlank(kar) || kar == BADCHAR)
 			{
 				result = Position{ x+1, y };
 			}
@@ -947,7 +1022,7 @@ MathParser::Position MathParser::getEndExponent(
 	if (aMath(result.y, result.x) != SUBMATRIX)
 	{
 		for (;result.x < aMath.width() - 1 && 
-					aMath(result.y+1, result.x) == SPACE; ++result.x)
+					isBlank(aMath(result.y+1, result.x)); ++result.x)
 			;
 		--result.x;
 	}
@@ -999,8 +1074,8 @@ std::tuple<bool, MathParser::OptPosition> MathParser::findPower(
 	{
 		for (int x = 1; x < aMath.width(); ++x)
 		{
-			if (aMath(y, x) != SPACE && aMath(y, x-1) == SPACE &&
-					aMath(y+1, x) == SPACE && aMath(y+1, x-1) != SPACE)
+			if (!isBlank(aMath(y, x)) && isBlank(aMath(y, x-1)) &&
+					isBlank(aMath(y+1, x)) && !isBlank(aMath(y+1, x-1)))
 			{
 				Position startExponent = Position{ x, y };
 				aEndExponent = getEndExponent(aMath, startExponent);				
@@ -1037,7 +1112,7 @@ std::tuple<bool, MathParser::OptPosition> MathParser::findPower(
 					int startX = x;
 					while (x < aMath.width())
 					{
-						if (x > startX && aMath(y, x) == SPACE)
+						if (x > startX && isBlank(aMath(y, x)))
 						{
 							++x;
 						}

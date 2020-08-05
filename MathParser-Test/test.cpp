@@ -48,11 +48,11 @@ TEST_F(TestMathParser, TestPower1)
 TEST_F(TestMathParser, TestPower2)
 {  
   ss << R"zzz(
-   2
- -x
+     2
+ -var
 )zzz";
 
-  EXPECT_STREQ("-pow(x, 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-pow(var, 2)", parser.doMath(ss).c_str());
   
 }
 
@@ -70,11 +70,11 @@ TEST_F(TestMathParser, TestPower3)
 TEST_F(TestMathParser, TestPower4)
 {  
   ss << R"zzz(
-  x - 3
+  var - 3
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, x-3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, var-3)", parser.doMath(ss).c_str());
   
 }
 
@@ -339,4 +339,58 @@ TEST_F(TestMathParser, TestParens6)
 )zzz";
 
   EXPECT_STREQ("1+(((1) / (x+z)))+1", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial)
+{  
+  ss << R"zzz(
+2z
+)zzz";
+
+  EXPECT_STREQ("(2*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial2)
+{  
+  ss << R"zzz(
+xz
+)zzz";
+
+  EXPECT_STREQ("(x*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial3)
+{  
+  ss << R"zzz(
+2xz
+)zzz";
+
+  EXPECT_STREQ("((2*x)*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial4)
+{  
+  ss << R"zzz(
+-2.3xz
+)zzz";
+
+  EXPECT_STREQ("-((2.3*x)*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial5)
+{  
+  ss << R"zzz(
++2.3varxz
+)zzz";
+
+  EXPECT_STREQ("+(((2.3*var)*x)*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial6)
+{  
+  ss << R"zzz(
+x³⁴z
+)zzz";
+
+  EXPECT_STREQ("(pow(x, 34)*z)", parser.doMath(ss).c_str());
 }

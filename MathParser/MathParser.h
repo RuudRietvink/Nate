@@ -15,6 +15,7 @@ class MathParser
 {
 public:
 	static const uint32_t SPACE                        = 0x20;  
+	static const uint32_t FILLER                       = 0x2;  
 	static const uint32_t SUBMATRIX                    = 0x1; 
 	static const uint32_t BADCHAR                      = 0x0; 
 
@@ -113,6 +114,8 @@ protected:
 
 	virtual bool MATHPARSER_API isVariable(const std::string& aInput) const;
 	virtual bool MATHPARSER_API isNumber(const std::string& aInput) const;
+	virtual bool MATHPARSER_API isVarStart(uint32_t kar) const;
+	virtual bool MATHPARSER_API isVarNext(uint32_t kar) const;
 
 private:
 	Position mathPos(const Math& aMath, 
@@ -147,6 +150,8 @@ private:
 	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
+	void doMathVariablesNumbers(Math& aMath);
+	void doMathMonomial(Math& aMath);
 	void doMathSimpleOperators(Math& aMath);
 
 	OptPosition findAny(const Math& aMath, 
@@ -179,8 +184,7 @@ private:
 												  	const Position& aUpperPosition,
 												  	uint32_t aSearchChar) const;
 	
-	bool isVarStart(uint32_t kar) const;
-	bool isVarNext(uint32_t kar) const;
+	bool isBlank(uint32_t kar) const;
 	bool badSomething(uint32_t kar) const;
 	OptPosition findSomethingLeft(const Math& aMath, 
 												        const Position& aLeftUpperPosition,
