@@ -89,7 +89,7 @@ public:
 			: value(aValue) {}
 		
 		MathValue(const Math& aMath1, const Math& aMath2, const std::string& aOper)
-			: value(1U), 
+			: value(SUBMATRIX), 
 			  oper(aOper), 
 			  embedded1(aMath1), 
 			  embedded2(aMath2) {}
@@ -109,6 +109,7 @@ protected:
 	MATHPARSER_API virtual std::string operSquareRoot(const Math& aMath) const;
 	MATHPARSER_API virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
 	MATHPARSER_API virtual std::string operExp(const Math& aMathExp) const;
+	MATHPARSER_API virtual std::string operMonomial(const Math& aMathLeft, const Math& aMathRight) const;
 	MATHPARSER_API virtual uint32_t operatorMultiply() const;
 	MATHPARSER_API virtual uint32_t operatorDivide() const;
 
@@ -116,6 +117,9 @@ protected:
 	virtual bool MATHPARSER_API isNumber(const std::string& aInput) const;
 	virtual bool MATHPARSER_API isVarStart(uint32_t kar) const;
 	virtual bool MATHPARSER_API isVarNext(uint32_t kar) const;
+
+	std::string mathString(const Math& aMath) const;
+	bool needsParens(const Math& aMath) const;
 
 private:
 	Position mathPos(const Math& aMath, 
@@ -126,7 +130,6 @@ private:
 	void printDebugMath(const Math& aMath,
 										  const Position& aLeftPosition,
 										  const Position& aRightPosition) const;
-	std::string mathString(const Math& aMath) const;
 	void doStartMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
@@ -185,6 +188,7 @@ private:
 												  	uint32_t aSearchChar) const;
 	
 	bool isBlank(uint32_t kar) const;
+	bool isEmpty(uint32_t kar) const;
 	bool badSomething(uint32_t kar) const;
 	OptPosition findSomethingLeft(const Math& aMath, 
 												        const Position& aLeftUpperPosition,

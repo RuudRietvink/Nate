@@ -15,6 +15,9 @@ class TestMathParser : public ::testing::Test
     parser.addVariable("x");
     parser.addVariable("var");
     parser.addVariable("z");
+    parser.addVariable("a");
+    parser.addVariable("b");
+    parser.addVariable("c");
     ss.clear();
   }
 
@@ -33,6 +36,42 @@ class TestMathParser : public ::testing::Test
   std::stringstream ss;
   MathParser parser;
 };
+
+TEST_F(TestMathParser, TestFormula)
+{  
+  ss << R"zzz(
+       _________
+      ╱ b² - 4ac 
+-b + ╱  ―――――――― 
+    √      2a    
+)zzz";
+
+  EXPECT_STREQ("-b+sqrt(((pow(b, 2)-((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula2)
+{  
+  ss << R"zzz(
+      _________
+     √ b² - 4ac 
+-b + ――――――――――
+         2a    
+)zzz";
+
+  EXPECT_STREQ("-b+((sqrt(pow(b, 2)-((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula3)
+{  
+  ss << R"zzz(
+      _________
+-b + √ b² - 4ac 
+―――――――――――――――
+        2a    
+)zzz";
+
+  EXPECT_STREQ("((-b+sqrt(pow(b, 2)-((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+}
 
 TEST_F(TestMathParser, TestPower1)
 {  
@@ -252,7 +291,7 @@ TEST_F(TestMathParser, TestSquareRoot10)
   ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt((((1) / (x+z)))*2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(((1 / (x+z)))*2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot11)
@@ -272,7 +311,18 @@ TEST_F(TestMathParser, TestSquareRoot12)
  ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt((((1) / (x+z))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(((1 / (x+z))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestDivide)
+{  
+  ss << R"zzz(
+ 1
+ ―
+ x
+)zzz";
+
+  EXPECT_STREQ("(1 / x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens1)
@@ -283,7 +333,7 @@ TEST_F(TestMathParser, TestParens1)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("(((1) / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x+z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens2)
@@ -294,7 +344,7 @@ TEST_F(TestMathParser, TestParens2)
     ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("1+(((1) / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1+((1 / (x+z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens3)
@@ -305,7 +355,7 @@ TEST_F(TestMathParser, TestParens3)
 1 + ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("1+(((1) / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1+((1 / (x+z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens4)
@@ -316,7 +366,7 @@ TEST_F(TestMathParser, TestParens4)
     ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("(((1) / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x+z)))+1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens5)
@@ -327,7 +377,7 @@ TEST_F(TestMathParser, TestParens5)
     ⎝ x+z ⎠+1
 )zzz";
 
-  EXPECT_STREQ("(((1) / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x+z)))+1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens6)
@@ -338,7 +388,7 @@ TEST_F(TestMathParser, TestParens6)
     ⎝ x+z ⎠+1
 )zzz";
 
-  EXPECT_STREQ("1+(((1) / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1+((1 / (x+z)))+1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial)

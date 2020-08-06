@@ -109,15 +109,24 @@ std::string MathParser::doMath(Math& aMath)
 std::string MathParser::operParens(const Math& aMath) const
 {
 	std::stringstream ss;
-	ss << "(" << mathString(aMath) << ")";
+
+	if (needsParens(aMath))
+	{
+		ss << "(" << mathString(aMath) << ")";
+	}
+	else
+	{
+		ss << mathString(aMath);
+	}
+
 	return ss.str();
 }
 
 std::string MathParser::operDivide(const Math& aMathLeft, const Math& aMathRight) const
 {
 	std::stringstream ss;
-	ss << "((" << mathString(aMathLeft) << ") / (" 
-						 << mathString(aMathRight) << "))";
+	ss << "(" << operParens(aMathLeft) << " / "
+						<< operParens(aMathRight) << ")";
 	return ss.str();
 }
 
@@ -140,6 +149,13 @@ std::string MathParser::operExp(const Math& aMathExp) const
 {
 	std::stringstream ss;
 	ss << "exp(" << mathString(aMathExp) << ")";
+	return ss.str();
+}
+
+std::string MathParser::operMonomial(const Math& aMathLeft, const Math& aMathRight) const
+{
+	std::stringstream ss;
+	ss << "(" << mathString(aMathLeft) << (char)(operatorMultiply()) << mathString(aMathRight) << ")";
 	return ss.str();
 }
 
@@ -279,6 +295,39 @@ void MathParser::printDebugMath(
 	printMath(getSubMath(aMath, aLeftPosition, aRightPosition));
 }
 
+bool MathParser::needsParens(const Math& aMath) const
+{
+	bool result = false;
+	bool first = true;
+
+	for (auto& row : aMath.matrix)
+	{
+		for (auto& col : row)
+		{
+			if (col.value == SUBMATRIX)
+			{
+				if (col.oper == OPER_PARENS && first)
+				{
+					// single (...)?
+				}
+				else if (col.oper != OPER_NUMBER && col.oper != OPER_VARIABLE)
+				{
+					result = true;
+					break;
+				}
+
+				first = false;
+			}
+			else if (!isEmpty(col.value))
+			{
+				result = true;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
 
 std::string MathParser::mathString(const Math& aMath) const
 {
@@ -320,10 +369,10 @@ std::string MathParser::mathString(const Math& aMath) const
 				}
 				else if (col.oper == OPER_MONOMIAL)
 				{
-					ss << "(" << mathString(col.embedded1) << (char)(operatorMultiply()) << mathString(col.embedded2) << ")";
+					ss << operMonomial(col.embedded1, col.embedded2);
 				}
 			}
-			else if (!isBlank(col.value))
+			else if (!isEmpty(col.value))
 			{
 				utf8::append(col.value, std::ostream_iterator<char>(ss));
 			}
@@ -403,8 +452,8 @@ void MathParser::doStartMathParsing(Math& aMath)
 void MathParser::doMathParsing(Math& aMath)
 {
 	doMathParentheses(aMath);
-	doMathFractionBar(aMath);
 	doMathSquareRoot(aMath);
+	doMathFractionBar(aMath);
 	doMathPower(aMath);
 	doMathVariablesNumbers(aMath);
 	doMathMonomial(aMath);
@@ -505,24 +554,32 @@ void MathParser::doMathFractionBar(Math& aMath)
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
 			subNumerator = getSubMath(aMath, *leftUpperPosition, rightPos);
 			printDebugMath(subNumerator);
-		}
 
-		OptPosition leftLowerPosition = findUntilDown(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
-		OptPosition rightLowerPosition = leftLowerPosition;
-		if (leftLowerPosition)
-		{
-			Position leftPos = Position{ leftHorizontalBar->x, leftHorizontalBar->y + 1};
-			rightLowerPosition->x = rightHorizontalBar->x;
-			subDenomenator = getSubMath(aMath, leftPos, *rightLowerPosition);
-			printDebugMath(subDenomenator);
-		}
+			OptPosition leftLowerPosition = findUntilDown(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
+			OptPosition rightLowerPosition = leftLowerPosition;
+			if (leftLowerPosition)
+			{
+				Position leftPos = Position{ leftHorizontalBar->x, leftHorizontalBar->y + 1};
+				rightLowerPosition->x = rightHorizontalBar->x;
+				subDenomenator = getSubMath(aMath, leftPos, *rightLowerPosition);
+				printDebugMath(subDenomenator);
 		
-		doMathParsing(subNumerator);
-		doMathParsing(subDenomenator);
+				doMathParsing(subNumerator);
+				doMathParsing(subDenomenator);
 
-		embedSubMath(aMath, subNumerator, subDenomenator, OPER_DIVIDE, *leftUpperPosition, *rightLowerPosition,
-								 *leftHorizontalBar);
-		doMathParsing(aMath);
+				embedSubMath(aMath, subNumerator, subDenomenator, OPER_DIVIDE, *leftUpperPosition, *rightLowerPosition,
+										 *leftHorizontalBar);
+				doMathParsing(aMath);
+			}
+			else
+			{
+					error(mathPos(aMath, *leftHorizontalBar), "expected some expression below division bar");
+			}
+		}
+		else
+		{
+				error(mathPos(aMath, *leftHorizontalBar), "expected some expression above division bar");
+		}
 	}
 }
 
@@ -531,7 +588,6 @@ void MathParser::doMathSquareRoot(Math& aMath)
 	OptPosition squareRoot = findAny(aMath, SQUARE_ROOT);
 	if (squareRoot)
 	{
-		//std::cerr << "Square root" << std::endl;
 		OptPosition rootBar = findDiagonalRightUp(aMath, *squareRoot, ROOT_DIAGONAL, ROOT_BAR);
 		if (rootBar)
 		{
@@ -545,7 +601,7 @@ void MathParser::doMathSquareRoot(Math& aMath)
 				diagonal = diagonal.up().right();
 			}
 			
-			Position rightPos = Position{ lastRootBar->x, (int)aMath.height() - 1 };
+			Position rightPos = Position{ lastRootBar->x, squareRoot->y };
 			Math sub = getSubMath(aMath, leftPos, rightPos);
 			printDebugMath(sub);
 			doMathParsing(sub);
@@ -826,6 +882,11 @@ int MathParser::parseRightToLeftVariable(
 bool MathParser::isBlank(uint32_t kar) const
 {
 	return kar == SPACE || kar == FILLER;
+}
+
+bool MathParser::isEmpty(uint32_t kar) const
+{
+	return isBlank(kar) || kar == BADCHAR;
 }
 
 MathParser::OptPosition MathParser::getSymbol(
@@ -1354,7 +1415,6 @@ MathParser::OptPosition MathParser::findUntilUp(
 			}
 			else
 			{
-				error(mathPos(aMath, aLowerPosition), "expected some expression above division bar");
 				break;
 			}
 		}
@@ -1368,7 +1428,6 @@ MathParser::OptPosition MathParser::findUntilUp(
 		}
 		else
 		{
-			error(mathPos(aMath, aLowerPosition), "expected some expression above division bar");
 		}
 	}
 
@@ -1395,7 +1454,6 @@ MathParser::OptPosition MathParser::findUntilDown(
 			}
 			else
 			{
-				error(mathPos(aMath, aUpperPosition), "expected some expression below division bar");
 				break;
 			}
 		}
@@ -1407,10 +1465,6 @@ MathParser::OptPosition MathParser::findUntilDown(
 		if (aUpperPosition.y < aMath.height() - 1)
 		{
 			result = Position{ x, aMath.height() - 1 };
-		}
-		else
-		{
-			error(mathPos(aMath, aUpperPosition), "expected some expression below division bar");
 		}
 	}
 
