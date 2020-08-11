@@ -2,6 +2,16 @@
 #include <sstream>
 #include <string>
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+using ::testing::_;
+
+class MockMathParser : public MathParser
+{
+public:
+      
+  MOCK_CONST_METHOD2(error, void(const Position&, const std::string&));
+};
 
 class TestMathParser : public ::testing::Test
 {
@@ -34,8 +44,22 @@ class TestMathParser : public ::testing::Test
   }
   
   std::stringstream ss;
-  MathParser parser;
+  MockMathParser parser;
 };
+
+TEST_F(TestMathParser, TestAddVariable)
+{
+  EXPECT_CALL(parser, error(_, "Reserved name: i"));
+  EXPECT_CALL(parser, error(_, "Reserved name: j"));
+  EXPECT_CALL(parser, error(_, "Reserved name: e"));
+
+  parser.addVariable("i");
+  parser.addVariable("j");
+  parser.addVariable("e");
+  parser.addVariable("E");
+  parser.addVariable("ij");
+  parser.addVariable("I");
+}
 
 TEST_F(TestMathParser, TestFormula)
 {  
@@ -71,6 +95,27 @@ TEST_F(TestMathParser, TestFormula3)
 )zzz";
 
   EXPECT_STREQ("((-b+sqrt(pow(b, 2)-((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula4)
+{  
+  ss << R"zzz(
+      z:=                                             (x/2.4)
+          ⎛              x - 3.3⎞              ⎛  1  ⎞
+          ⎜⎛  _         ⎞       ⎟              ⎜ ――― ⎟
+          ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
+          ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
+          ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
+       x ∗⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
+          ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
+          ⎜⎜        x   ⎟       ⎟
+          ⎜⎜            ⎟       ⎟
+          ⎜⎜ ―――――――――― ⎟       ⎟
+          ⎝⎝    42E5÷a  ⎠       ⎠
+)zzz";
+
+  EXPECT_STREQ("z:=pow((1 / (x+z)), (x/2.4))x*(pow((((sqrt(4)*pow(x, 2))-sqrt((3/4))) / (1.((3+((sqrt(x-2)) / x)) / (42E5/a)))), x-3.3)+exp(pow(32, z)))*"
+               "sqrt((sqrt(pow(x, 3)-4)))*pow(-0.E4, -42.5E+3+pow(x, pow(((z*pow(-5, ))), pow(3, pow(pow(5, 5), 4)))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPower1)
@@ -158,8 +203,18 @@ TEST_F(TestMathParser, TestPower8)
 )zzz";
 
   EXPECT_STREQ("pow(x, 2.5)+3", parser.doMath(ss).c_str());
+  }
 
-}
+TEST_F(TestMathParser, TestExponential)
+{  
+  ss << R"zzz(
+  x
+ e
+)zzz";
+
+  EXPECT_STREQ("exp(x)", parser.doMath(ss).c_str());
+  }
+
 TEST_F(TestMathParser, TestPowerSuper1)
 {
   ss << R"zzz(
@@ -187,6 +242,16 @@ x⁽ᶻ ⁻ ⁵⁾
 )zzz";
 
   EXPECT_STREQ("pow(x, (z-5))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestPowerSuper4)
+{
+  ss << R"zzz(
+  x
+⁵⁵
+)zzz";
+
+  EXPECT_STREQ("pow(55, x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot1)
@@ -389,6 +454,91 @@ TEST_F(TestMathParser, TestParens6)
 )zzz";
 
   EXPECT_STREQ("1+((1 / (x+z)))+1", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestParens7)
+{  
+  ss << R"zzz(
+         x
+  ⎛  1  ⎞
+  ⎜ ――― ⎟
+  ⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("pow(((1 / (x+z))), x)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestParens8)
+{  
+  ss << R"zzz(
+         x + 1
+  ⎛  1  ⎞
+  ⎜ ――― ⎟
+  ⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("pow(((1 / (x+z))), x+1)", parser.doMath(ss).c_str());
+}
+
+
+TEST_F(TestMathParser, TestParens9)
+{  
+  ss << R"zzz(
+         
+  ⎛  1  ⎞
+  ⎜ ――― ⎟
+  ⎝ x+z ⎠
+ x
+)zzz";
+
+  EXPECT_STREQ("pow(x, ((1 / (x+z))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestParens10)
+{  
+  ss << R"zzz(
+         
+       ⎛    ⎞
+       ⎜  2 ⎟
+       ⎝ x  ⎠
+⎛  z  ⎞
+⎜ ――― ⎟
+⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("pow(((z / (x+z))), (pow(x, 2)))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestParens11)
+{  
+  ss << R"zzz(
+             3
+       ⎛    ⎞
+       ⎜  2 ⎟
+       ⎝ x  ⎠
+⎛  z  ⎞
+⎜ ――― ⎟
+⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("pow(((z / (x+z))), pow((pow(x, 2)), 3))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestParens12)
+{  
+  ss << R"zzz(
+                2
+               e
+         ⎛    ⎞
+         ⎜  2 ⎟
+         ⎝ x  ⎠
+  ⎛  z  ⎞
+  ⎜ ――― ⎟
+  ⎝ x+z ⎠
+ 3
+)zzz";
+
+  EXPECT_STREQ("pow(3, pow(((z / (x+z))), pow((pow(x, 2)), exp(2))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial)

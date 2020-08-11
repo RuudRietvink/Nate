@@ -10,41 +10,27 @@
 #include <vector>
 #include <optional>
 #include <tuple>
+#include <map>
+#include <memory>
 
 class MathParser
 {
 public:
 	static const uint32_t SPACE                        = 0x20;  
-	static const uint32_t FILLER                       = 0x2;  
+	static const uint32_t SUBMATRIXREFERENCE           = 0x2;  
 	static const uint32_t SUBMATRIX                    = 0x1; 
 	static const uint32_t BADCHAR                      = 0x0; 
 
 	virtual MATHPARSER_API ~MathParser() {}
 
 	struct Math;
+	struct Symbol;
 
 	MATHPARSER_API void setTabSize(uint32_t aTabSize);
-	MATHPARSER_API void addVariable(const std::string& aVariable);
+	MATHPARSER_API void addVariable(const std::string& aName);
+	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aValue);
 	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
 	MATHPARSER_API std::string doMath(Math& aMath);
-	
-	class Position;
-	struct MathValue;
-
-	typedef std::vector<MathValue> MathVector;
-	typedef std::vector<MathVector> MathMatrix;
-	typedef std::optional<Position> OptPosition;
-	
-	struct Math
-	{
-		size_t x = 0;
-		size_t y = 0;
-		MathMatrix matrix;
-		inline int height() const { return (int)matrix.size(); }
-		inline int width() const { return matrix.size() > 0 ? (int)matrix[0].size() : 0; }
-		uint32_t operator()(int y, int x) const { return matrix[y][x].value; }
-		uint32_t& operator()(int y, int x) { return matrix[y][x].value; }
-	};
 	
 	class Position
 	{
@@ -82,38 +68,102 @@ public:
 			return Position{ aLeft.x - aRight.x, aLeft.y - aRight.y };
 		}
 	};
+	
+	struct Area
+	{
+		Position upperLeft;
+		Position lowerRight;
+	};
 
+	struct MathValue;
+	using MathValueSPtr = std::shared_ptr<MathValue>;
+
+	typedef std::vector<MathValue> MathVector;
+	typedef std::vector<MathVector> MathMatrix;
+	typedef std::optional<Position> OptPosition;
+	typedef std::optional<Area> OptArea;
+	
+	struct Math
+	{
+		size_t x = 0;
+		size_t y = 0;
+		MathMatrix matrix;
+		inline int height() const { return (int)matrix.size(); }
+		inline int width() const { return matrix.size() > 0 ? (int)matrix[0].size() : 0; }
+		uint32_t operator()(int y, int x) const { return matrix[y][x].value; }
+		uint32_t& operator()(int y, int x) { return matrix[y][x].value; }
+		bool isSubMatrix(int y, int x) const { return matrix[y][x].isSubMatrix(); }
+		bool hasSubMatrix(int y, int x) const { return matrix[y][x].hasSubMatrix(); }
+	};
+	
+	enum class Oper
+	{
+		Parentheses,
+		Division,
+		SquareRoot,
+		Power,
+		Exponential,
+		Multiplication,
+		Variable,
+		Number,
+		Monomial,
+	};
+	
 	struct MathValue
 	{
 		MathValue(uint32_t aValue)
-			: value(aValue) {}
+			: value(aValue),
+		    oper(Oper::Number){}
 		
-		MathValue(const Math& aMath1, const Math& aMath2, const std::string& aOper)
+		MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, Area aArea)
 			: value(SUBMATRIX), 
 			  oper(aOper), 
 			  embedded1(aMath1), 
-			  embedded2(aMath2) {}
-
+			  embedded2(aMath2),
+				area(aArea)
+		{
+			mathValue = std::make_shared<MathValue>(*this);
+		}
+		
+		MathValue(const MathValueSPtr& aMathValue)
+			: value(SUBMATRIXREFERENCE), 
+			  oper(aMathValue->oper),
+				mathValue(aMathValue)
+		{}
+		
+		bool isSubMatrix() const { return value == SUBMATRIX; }
+		bool hasSubMatrix() const { return isSubMatrix() || value == SUBMATRIXREFERENCE; }
 		uint32_t value;
-		std::string oper;
+		Oper oper;
 		Math embedded1;
 		Math embedded2;
+		Area area;
+		Position lowerRight;
+		MathValueSPtr mathValue;
+	};
+	
+	struct Symbol
+	{
+		enum class Type
+		{
+			Variable,
+			Constant,
+			Number
+		};
+
+		Type type;
+		std::string name;
+		std::string value;
 	};
 
-	
 protected:
 	MATHPARSER_API virtual void error(const Position& aPosition, const std::string& aError) const;
-
-	MATHPARSER_API virtual std::string operParens(const Math& aMath) const;
-	MATHPARSER_API virtual std::string operDivide(const Math& aMathLeft, const Math& aMathRight) const;
-	MATHPARSER_API virtual std::string operSquareRoot(const Math& aMath) const;
-	MATHPARSER_API virtual std::string operPower(const Math& aMathBase, const Math& aMathExp) const;
-	MATHPARSER_API virtual std::string operExp(const Math& aMathExp) const;
-	MATHPARSER_API virtual std::string operMonomial(const Math& aMathLeft, const Math& aMathRight) const;
+	
+	MATHPARSER_API virtual std::string code(Oper aOper, const Math& aMathLeft, const Math& aMathRight = Math()) const;
 	MATHPARSER_API virtual uint32_t operatorMultiply() const;
 	MATHPARSER_API virtual uint32_t operatorDivide() const;
 
-	virtual bool MATHPARSER_API isVariable(const std::string& aInput) const;
+	virtual bool MATHPARSER_API isSymbol(const std::string& aInput) const;
 	virtual bool MATHPARSER_API isNumber(const std::string& aInput) const;
 	virtual bool MATHPARSER_API isVarStart(uint32_t kar) const;
 	virtual bool MATHPARSER_API isVarNext(uint32_t kar) const;
@@ -128,26 +178,25 @@ private:
 	void printMath(const Math& aMath) const;
 	void printDebugMath(const Math& aMath) const;
 	void printDebugMath(const Math& aMath,
-										  const Position& aLeftPosition,
-										  const Position& aRightPosition) const;
+										  const Area& aArea) const;
 	void doStartMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath1, 
 										const Math& aSubMath2, 
-										const std::string& aOper,
-										const Position& aLeftUpperPosition,
-										const Position& aRightLowerPosition,
+										Oper aOper,
+										const Area& aArea,
 										const Position& aPlacePosition);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath, 
-										const std::string& aOper,
-										const Position& aLeftUpperPosition,
-										const Position& aRightLowerPosition,
+										Oper aOper,
+										const Area& aArea,
 										const Position& aPlacePosition);
-	void clearMath(Math& aMath, 
-							   const Position& aLeftUpperPosition,
-								 const Position& aRightLowerPosition);
+	void fillerMath(Math& aMath, 
+								 const Area& aArea,
+								 const MathValueSPtr& aClearValue);
+	void spaceMath(Math& aMath, 
+								 const Area& aArea);
 
 	void doMathParentheses(Math& aMath);
 	void doMathFractionBar(Math& aMath);
@@ -161,10 +210,10 @@ private:
 											uint32_t aSearchChar) const;
 	OptPosition findAnyOf(const Math& aMath, 
 									  		const std::initializer_list<uint32_t>& aSearchChars) const;
-	OptPosition getSymbol(const Math& aMath, 
-												const Position& aLeftPosition,
-												bool aAllowSpaces = false) const;
-	std::tuple<bool, OptPosition> getRightToLeftSymbol(const Math& aMath, 
+	OptArea getSymbol(const Math& aMath, 
+										const Position& aLeftPosition,
+										bool aAllowSpaces = false) const;
+	std::tuple<bool, OptArea> getRightToLeftSymbol(const Math& aMath, 
 																										 const Position& aRightPosition,
 																										 bool aAllowSpaces = false) const;
 	OptPosition findMatchingBigParens(const Math& aMath, 
@@ -196,12 +245,9 @@ private:
 	OptPosition findSomethingRight(const Math& aMath, 
 												        const Position& aRightUpperPosition,
 															  const Position& aRightLowerPosition) const;
-	Position getEndExponent(const Math& aMath,
-													const Position& aStartExponent) const;
-	std::tuple<bool, OptPosition> findPower(Math& aMath,
-																					Position& aEndExponent,
-																					Position& aStartBase,
-																					Position& aEndBase) const;
+	Area getEndExponent(const Math& aMath,
+										  const Position& aStartExponent) const;
+	std::tuple<bool, OptArea, Area> findPower(Math& aMath) const;
 	bool isSymbolSuffix(uint32_t aKar) const;
 	uint32_t getSuperscript(uint32_t aKar) const;
 	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;
@@ -215,8 +261,7 @@ private:
 							 	 uint32_t aInbetweenChar,
 								 uint32_t aSearchChar) const;
 	Math getSubMath(const Math& aMath, 
-									const Position& aLeftUpperPosition, 
-									const Position& aRightLowerPosition) const;
+									const Area& aArea) const;
 	
 	std::string popFront(const std::string& aInput) const;
 	std::string popBack(const std::string& aInput) const;
@@ -239,9 +284,10 @@ private:
 									const Math& aMath,
 									int x,
 									int y) const;
+	void addSymbol(const Symbol& aSymbol);
 
 	uint32_t mTabSize = 4;
-	std::vector<std::string> mVariables;
+	std::map<std::string, Symbol> mSymbols;
 	static std::locale m_localeUtf8;
 };
 

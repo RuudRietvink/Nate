@@ -12,7 +12,7 @@ void NateParserMath::error(const Position& aPosition, const std::string& aError)
   mNateParser.error(position, aError);
 }
 	
-bool NateParserMath::isVariable(const std::string& aInput) const
+bool NateParserMath::isSymbol(const std::string& aInput) const
 {
   return !!mNateParser.getIdentifier(aInput);
 }
