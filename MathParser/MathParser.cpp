@@ -129,10 +129,35 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 		}
 		break;
 	}
+	case Oper::Multiplication:
+	{
+		ss << mathString(aMathLeft) << " * " << mathString(aMathRight);
+		break;
+	}
 	case Oper::Division:
 	{
 		ss << "(" << code(Oper::Parentheses, aMathLeft) << " / "
 							<< code(Oper::Parentheses, aMathRight) << ")";
+		break;
+	}
+	case Oper::Addition:
+	{
+		ss << mathString(aMathLeft) << " + " << mathString(aMathRight);
+		break;
+	}
+	case Oper::Subtraction:
+	{
+		ss << mathString(aMathLeft) << " - " << mathString(aMathRight);
+		break;
+	}
+	case Oper::UnaryMinus:
+	{
+		ss << "-" << mathString(aMathLeft);
+		break;
+	}
+	case Oper::UnaryPlus:
+	{
+		ss << "+" << mathString(aMathLeft);
 		break;
 	}
 	case Oper::SquareRoot:
@@ -151,10 +176,6 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 		ss << "exp(" << mathString(aMathLeft) << ")";
 		break;
 	}
-	case Oper::Multiplication:
-	{
-		break;
-	}
 	case Oper::Variable:
 	{
 		ss << mathString(aMathLeft);
@@ -167,7 +188,7 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Monomial:
 	{
-		ss << "(" << mathString(aMathLeft) << (char)(operatorMultiply()) << mathString(aMathRight) << ")";
+		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
 		break;
 	}
 	}
@@ -274,27 +295,18 @@ void MathParser::fillUpMath(Math& aMath) const
 		}
 		
 		row.push_back(SPACE);
-		for (auto& col : row)
-		{
-			if (col.isSubMatrix())
-			{
-				++col.mathValue->area.upperLeft.x;
-				++col.mathValue->area.upperLeft.y;
-				++col.mathValue->area.lowerRight.y;
-				++col.mathValue->area.lowerRight.y;
-			}
-		}
 	}
 }
 	
-void MathParser::printDebugMath(const Math& aMath) const
+void MathParser::printDebugMath(const Math& aMath, const std::string& aText) const
 {
-	printMath(aMath);
+	//printMath(aMath, aText);
 }
 
-void MathParser::printMath(const Math& aMath) const
+void MathParser::printMath(const Math& aMath, const std::string& aText) const
 {
 	std::cerr <<"--------------------------" << std::endl;
+	std::cerr << aText << std::endl;
 	for (auto& row : aMath.matrix)
 	{
 		for (auto& col : row)
@@ -315,13 +327,6 @@ void MathParser::printMath(const Math& aMath) const
 
 		std::cerr << std::endl;
 	}
-}
-
-void MathParser::printDebugMath(
-				const Math& aMath,
-				const Area& aArea) const
-{
-	printMath(getSubMath(aMath, aArea));
 }
 
 bool MathParser::needsParens(const Math& aMath) const
@@ -410,10 +415,9 @@ void MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath, 
 				Oper aOper,
-				const Area& aArea,
-				const Position& aPlacePosition)
+				const Area& aArea)
 {
-	embedSubMath(aMath, aSubMath, Math(), aOper, aArea, aPlacePosition);
+	embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
 }
 
 void MathParser::embedSubMath(
@@ -421,12 +425,12 @@ void MathParser::embedSubMath(
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
 				Oper aOper,
-				const Area& aArea,
-			  const Position& aPlacePosition)
+				const Area& aArea)
 {
-	auto mathValue = MathValue(aSubMath1, aSubMath2, aOper, aArea);
+	Size size{ aArea.lowerRight.x + 1 - aArea.upperLeft.x, aArea.lowerRight.y + 1 - aArea.upperLeft.y };
+	auto mathValue = MathValue(aSubMath1, aSubMath2, aOper, size);
 	fillerMath(aMath, aArea, mathValue.mathValue);
-	aMath.matrix[aPlacePosition.y][aPlacePosition.x] = mathValue;
+	aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x] = mathValue;
 }
 
 void MathParser::fillerMath(
@@ -438,7 +442,7 @@ void MathParser::fillerMath(
 	{
 		for (int x = aArea.upperLeft.x; x <= aArea.lowerRight.x; ++x)
 		{
-			aMath.matrix[y][x] = MathValue(aClearValue);
+			aMath.matrix[y][x] = MathValue(aClearValue, Size{ aArea.upperLeft.x - x,  aArea.upperLeft.y - y });
 		}
 	}
 }
@@ -470,6 +474,12 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathPower(aMath);
 	doMathVariablesNumbers(aMath);
 	doMathMonomial(aMath);
+	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
+	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
+	doMathOperator(aMath, '*', Oper::Multiplication);
+	doMathOperator(aMath, '/', Oper::Division);
+	doMathOperator(aMath, '+', Oper::Addition);
+	doMathOperator(aMath, '-', Oper::Subtraction);
 }
 
 void MathParser::doMathParentheses(Math& aMath)
@@ -494,27 +504,11 @@ void MathParser::doMathParentheses(Math& aMath)
 					Position rightPos = Position{ rightLowerParenthesis->x - 1, rightLowerParenthesis->y };
 					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
 					
-					Position place = *leftLowerParenthesis;
-					OptPosition anchor = findSomethingLeft(aMath, *leftUpperParenthesis, *leftLowerParenthesis);
-					if (!anchor)
-					{
-						anchor = findSomethingRight(aMath, *rightUpperParenthesis, *rightLowerParenthesis);
-						if (anchor)
-						{
-							place.y = anchor->y;
-						}
-					}
-					else
-					{
-						place.y = anchor->y;
-						place.x = anchor->x + 1;
-					}
-
-					printDebugMath(sub);
+					printDebugMath(sub, __FUNCTION__);
 					doMathParsing(sub);
-					embedSubMath(aMath, sub, Oper::Parentheses, Area{ *leftUpperParenthesis, *rightLowerParenthesis }, place);
+					embedSubMath(aMath, sub, Oper::Parentheses, Area{ *leftUpperParenthesis, *rightLowerParenthesis });
 
-					printDebugMath(aMath);
+					printDebugMath(aMath, __FUNCTION__);
 					doMathParsing(aMath);
 				}
 				else
@@ -549,8 +543,9 @@ void MathParser::doMathFractionBar(Math& aMath)
 		{
 			leftUpperPosition->x = leftHorizontalBar->x;
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
-			subNumerator = getSubMath(aMath, Area{ *leftUpperPosition, rightPos });
-			printDebugMath(subNumerator);
+			Area areaNumerator = Area{ *leftUpperPosition, rightPos };
+			subNumerator = getSubMath(aMath, areaNumerator);
+			printDebugMath(subNumerator, __FUNCTION__);
 
 			OptPosition leftLowerPosition = findUntilDown(aMath, midHorizontalBar, HORIZONTAL_BAR);
 			if (leftLowerPosition)
@@ -558,16 +553,17 @@ void MathParser::doMathFractionBar(Math& aMath)
 			  leftLowerPosition->x = leftHorizontalBar->x;
 				Position leftPos = Position{ leftHorizontalBar->x, leftHorizontalBar->y + 1};
 				rightPos = Position{ rightHorizontalBar->x, leftLowerPosition->y };
-				subDenomenator = getSubMath(aMath, Area{ leftPos, rightPos });
-				printDebugMath(subDenomenator);
+				Area areaDenomenator = Area{ leftPos, rightPos };
+				subDenomenator = getSubMath(aMath, areaDenomenator);
+				printDebugMath(subDenomenator, __FUNCTION__);
 		
 				doMathParsing(subNumerator);
 				doMathParsing(subDenomenator);
 
-				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, Area{ *leftUpperPosition, rightPos },
-										 *leftHorizontalBar);
+				Area area = join(areaNumerator, areaDenomenator);
+				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, area);
 				
-				printDebugMath(aMath);
+				printDebugMath(aMath, __FUNCTION__);
 				doMathParsing(aMath);
 			}
 			else
@@ -602,12 +598,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			
 			Position rightPos = Position{ lastRootBar->x, squareRoot->y };
 			Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-			printDebugMath(sub);
+			printDebugMath(sub, __FUNCTION__);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
-			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos }, *squareRoot);
+			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos });
 			
-			printDebugMath(aMath);
+			printDebugMath(aMath, __FUNCTION__);
 			doMathParsing(aMath);
 		}
 		else
@@ -617,11 +613,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			if (symbol)
 			{
 				Math sub = getSubMath(aMath, *symbol);
-				printDebugMath(sub);
-				embedSubMath(aMath, sub, Oper::SquareRoot, *symbol, startSymbol);
+				printDebugMath(sub, __FUNCTION__);
+			  doMathParsing(sub);
+				embedSubMath(aMath, sub, Oper::SquareRoot, *symbol);
 				spaceMath(aMath, Area{ *squareRoot, *squareRoot });
 				
-				printDebugMath(aMath);
+				printDebugMath(aMath, __FUNCTION__);
 			  doMathParsing(aMath);
 			}
 			else
@@ -634,41 +631,44 @@ void MathParser::doMathSquareRoot(Math& aMath)
 
 void MathParser::doMathPower(Math& aMath)
 {
-  auto [isSuperscript, expArea, baseArea] = findPower(aMath);
+  auto [isSuperscriptBase, isSuperscriptExp, expArea, baseArea] = findPower(aMath);
 
 	if (expArea)
 	{
 		Math exp = getSubMath(aMath, *expArea);
-		printDebugMath(exp);
+		printDebugMath(exp, __FUNCTION__);
 		Math base = getSubMath(aMath, baseArea);
-		printDebugMath(base);
+		printDebugMath(base, __FUNCTION__);
 		doMathParsing(exp);
 		doMathParsing(base);
 		
+		if (isSuperscriptBase)
+		{
+			spaceMath(aMath, baseArea);
+			baseArea.lowerRight = expArea->lowerRight;
+			baseArea.upperLeft.y = expArea->upperLeft.y;
+		}
+		else if (isSuperscriptExp && baseArea.lowerRight.y == expArea->lowerRight.y)
+		{
+			baseArea.lowerRight = expArea->lowerRight;
+		}
+		else
+		{
+			spaceMath(aMath, *expArea);
+		}
 
 		if (baseArea.upperLeft.x == baseArea.lowerRight.x && baseArea.upperLeft.y == baseArea.lowerRight.y &&
 				(aMath(baseArea.upperLeft.y, baseArea.upperLeft.x) == E ||
 				 aMath(baseArea.upperLeft.y, baseArea.upperLeft.x) == 'e'))
 		{
-			embedSubMath(aMath, exp, Oper::Exponential, baseArea, baseArea.lowerRight);
-			spaceMath(aMath, *expArea);
+			embedSubMath(aMath, exp, Oper::Exponential, baseArea);
 		}
 		else
 		{
-			if (isSuperscript)
-			{
-			  spaceMath(aMath, baseArea);
-				expArea->upperLeft.x = baseArea.upperLeft.x;
-				embedSubMath(aMath, base, exp, Oper::Power, *expArea, Position{ expArea->upperLeft.x, expArea->lowerRight.y });
-			}
-			else
-			{
-			 	embedSubMath(aMath, base, exp, Oper::Power, baseArea, baseArea.lowerRight);
-			  spaceMath(aMath, *expArea);
-			}
+			embedSubMath(aMath, base, exp, Oper::Power, baseArea);
 		}
 		
-		printDebugMath(aMath);
+		printDebugMath(aMath, __FUNCTION__);
 		doMathParsing(aMath);
 	}
 }
@@ -688,7 +688,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 					Position startPos{ x, y };
 					Position endPos{ endX, y };
 					Math nbr = getSubMath(aMath, Area{ startPos, endPos });
-					embedSubMath(aMath, nbr, Oper::Number, Area{ startPos, endPos }, startPos);
+					embedSubMath(aMath, nbr, Oper::Number, Area{ startPos, endPos });
 				}
 			}
 			else if (isVarStart(kar))
@@ -697,41 +697,110 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 				Position startPos{ x, y };
 				Position endPos{ endX, y };
 				Math var = getSubMath(aMath, Area{ startPos, endPos });
-			  embedSubMath(aMath, var, Oper::Variable, Area{ startPos, endPos }, startPos);
+			  embedSubMath(aMath, var, Oper::Variable, Area{ startPos, endPos });
 			}
 		}
 	}
 }
+
 void MathParser::doMathMonomial(Math& aMath)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
-		int lastX = -1;
+	int lastX = -1;
+	MathValue* lastMathValue = nullptr;
+
 		for (int x = 0; x < aMath.width() - 1; ++x)
 		{
-			if (aMath.isSubMatrix(y, x))
+			if (aMath.hasSubMatrix(y, x))
 			{
-				if (lastX != -1)
+				if (lastMathValue == nullptr || aMath.matrix[y][x].mathValue != lastMathValue->mathValue)
 				{
-					Position startPos{ lastX, y };
-					Position endPos{ x, y };
-					Math left = getSubMath(aMath, Area{ startPos, startPos });
-					Math right = getSubMath(aMath, Area{ endPos, endPos });
-					embedSubMath(aMath, left, right, Oper::Monomial, Area{ startPos, endPos }, startPos);
-					printDebugMath(aMath);
+					if (lastX != -1)
+					{
+						Area leftArea = lastMathValue->getArea(lastX, y);
+						Area rightArea = aMath.matrix[y][x].getArea(x, y);
+						Math left = getSubMath(aMath, leftArea);
+						Math right = getSubMath(aMath, rightArea);
+						Area area = join(leftArea, rightArea);
+						embedSubMath(aMath, left, right, Oper::Monomial, area);
+						printDebugMath(aMath, __FUNCTION__);
+					}
+					else
+					{
+						lastMathValue = &aMath.matrix[y][x];
+						lastX = x;
+					}
 				}
-				else
-				{
-					lastX = x;
-				}
-			}
-			else if (aMath.hasSubMatrix(y, x))
-			{
-				// nothing
 			}
 			else if (lastX != -1)
 			{
 				lastX = -1;
+				lastMathValue = nullptr;
+			}
+		}
+	}
+}
+
+void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper)
+{
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		for (int x = 0; x < aMath.width(); ++x)
+		{
+			uint32_t kar = aMath(y, x);
+			if (kar == aOperChar)
+			{
+				auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
+				// no operand left?
+				if (!leftArea)
+				{
+					auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
+					if (rightArea)
+					{
+						Math right = getSubMath(aMath, *rightArea);
+						rightArea->upperLeft.x = x;
+						printDebugMath(right, __FUNCTION__);
+						doMathParsing(right);
+						embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
+						printDebugMath(aMath, __FUNCTION__);
+					}
+				}
+			}
+		}
+	}
+}
+
+void MathParser::doMathOperator(Math& aMath, int aOperChar, Oper aOper)
+{
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		for (int x = 0; x < aMath.width(); ++x)
+		{
+			uint32_t kar = aMath(y, x);
+			if (kar == aOperChar)
+			{
+				auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
+				if (leftArea)
+				{
+					auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
+					if (rightArea)
+					{
+						Math left = getSubMath(aMath, *leftArea);
+						Math right = getSubMath(aMath, *rightArea);
+						printDebugMath(left, __FUNCTION__);
+						doMathParsing(left);
+						printDebugMath(right, __FUNCTION__);
+						doMathParsing(right);
+						Area area = join(*leftArea, *rightArea);
+						embedSubMath(aMath, left, right, aOper, area);
+						printDebugMath(aMath, __FUNCTION__);
+					}
+				}
+				else
+				{
+					error(Position{ x, y }, "Unmatched operator");
+				}
 			}
 		}
 	}
@@ -795,6 +864,11 @@ int MathParser::parseNumber(
 		number = popBack(number);
 	}
 
+	if (number.empty())
+	{
+		x = -1;
+	}
+
 	return x;
 }
 
@@ -825,6 +899,21 @@ int MathParser::parseRightToLeftNumber(
 		{
 			number = popFront(number);
 		}
+
+		// skip leading sign
+		if (!number.empty() && (number.front() == '-' || number.front() == '+'))
+		{
+			++x;
+		}
+
+		if (number.empty())
+		{
+			x = -1;
+		}
+	}
+	else
+	{
+		x = -1;
 	}
 
 	return x;
@@ -863,6 +952,15 @@ int MathParser::parseVariable(
 		{
 			variable = popBack(variable);
 		}
+
+		if (variable.empty())
+		{
+			x = -1;
+		}
+	}
+	else
+	{
+		x = -1;
 	}
 
 	return x;
@@ -889,14 +987,28 @@ int MathParser::parseRightToLeftVariable(
 		}
 
 		++x;
-
 		for (;x <= start && !isSymbol(variable); ++x)
 		{
 			variable = popFront(variable);
 		}
+
+		if (variable.empty())
+		{
+			x = -1;
+		}
+	}
+	else
+	{
+		x = -1;
 	}
 
 	return x;
+}
+
+MathParser::Area MathParser::join(const Area& aLeftArea, const Area& aRightArea) const
+{
+  return Area{ Position{ std::min(aLeftArea.upperLeft.x, aRightArea.upperLeft.x), std::min(aLeftArea.upperLeft.y, aRightArea.upperLeft.y) },
+						   Position{ std::max(aLeftArea.lowerRight.x, aRightArea.lowerRight.x), std::max(aLeftArea.lowerRight.y, aRightArea.lowerRight.y) } };
 }
 
 bool MathParser::isBlank(uint32_t kar) const
@@ -966,17 +1078,12 @@ MathParser::OptArea MathParser::getSymbol(
 			}
 			else if (aMath.hasSubMatrix(y, x))
 			{
-				result = aMath.matrix[y][x].mathValue->area;
+				result = aMath.matrix[y][x].getArea(x, y);
 			}
 			else 
 			{
 				int nextX;
-				if ((kar == '-' || kar == '+') && x < size -1 && aMath.hasSubMatrix(y, x+1))
-				{
-					auto area = aMath.matrix[y][x+1].mathValue->area;
-					result = Area{ area.upperLeft.left(), area.lowerRight };
-				}
-				else if ((nextX = parseNumber(aMath, x, y)) > x)
+				if ((nextX = parseNumber(aMath, x, y)) > x)
 				{
 					result = Area{ start, Position{ nextX - 1, y } };
 				}
@@ -986,10 +1093,7 @@ MathParser::OptArea MathParser::getSymbol(
 				}
 				else
 				{
-					std::string desc("unknown token: ");
-					auto backIns = std::back_inserter(desc);
-					utf8::append(kar, backIns);
-					error(Position{ x, y }, desc);
+					break;
 				}
 			}
 		}
@@ -1056,29 +1160,26 @@ MathParser::OptArea MathParser::getSymbol(
 		{
 			if (isBlank(kar) || kar == BADCHAR)
 			{
-				result = Area{ Position{ x+1, y }, aRightPosition };
+				break;
 			}
 			else if (aMath.hasSubMatrix(y, x))
 			{
-				result = aMath.matrix[y][x].mathValue->area;
+				result = aMath.matrix[y][x].getArea(x, y);
 			}
 			else 
 			{
 				int startX;
-				if ((startX = parseRightToLeftNumber(isSuperScript, aMath, x, y)) <= x)
+				if ((startX = parseRightToLeftNumber(isSuperScript, aMath, x, y)) != -1)
 				{
 					result = Area{ Position{ startX, y }, aRightPosition };
 				}
-				else if ((startX = parseRightToLeftVariable(isSuperScript, aMath, x, y)) <= x)
+				else if ((startX = parseRightToLeftVariable(isSuperScript, aMath, x, y)) != -1)
 				{
 					result = Area{ Position{ startX, y }, aRightPosition };
 				}
 				else
 				{
-					std::string desc("unknown token: ");
-					auto backIns = std::back_inserter(desc);
-					utf8::append(kar, backIns);
-					error(Position{ x, y }, desc);
+					break;
 				}
 			}
 		}
@@ -1105,16 +1206,23 @@ MathParser::Area MathParser::getEndExponent(
 	Area result;
 	if (aMath.hasSubMatrix(aStartExponent.y, aStartExponent.x))
 	{
-		result = aMath.matrix[aStartExponent.y][aStartExponent.x].mathValue->area;
+		result = aMath.matrix[aStartExponent.y][aStartExponent.x].getArea(aStartExponent.x, aStartExponent.y);
 	}
 	else
 	{
 		int x = aStartExponent.x;
-		for (; x < aMath.width() - 1 && 
-					isBlank(aMath(aStartExponent.y+1, x)); ++x)
-			;
+		while (x < aMath.width() - 1 && 
+					 isBlank(aMath(aStartExponent.y+1, x)))
+		{
+			++x;
+		}
 
-		result = Area{ aStartExponent, Position{ x - 1, aStartExponent.y } };
+		while (isBlank(aMath(aStartExponent.y, x)) && x >= aStartExponent.x)
+		{
+			--x;
+		}
+
+		result = Area{ aStartExponent, Position{ x, aStartExponent.y } };
 	}
 
 	return result;
@@ -1154,7 +1262,7 @@ void MathParser::unsuperscript(
 	}
 }
 
-std::tuple<bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
+std::tuple<bool, bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
 				Math& aMath) const
 {
 	for (int y = 0; y < aMath.height() - 1; ++y)
@@ -1173,7 +1281,7 @@ std::tuple<bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
 						unsuperscript(aMath, baseArea->upperLeft, baseArea->lowerRight);
 					}
 
-					return std::make_tuple(isSuperscript, expArea, *baseArea);
+					return std::make_tuple(isSuperscript, false, expArea, *baseArea);
 				}
 			}
 		}
@@ -1185,12 +1293,13 @@ std::tuple<bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
 		{
 			if (getSuperscript(aMath(y, x)) != BADCHAR)
 			{
-				auto [isSuperscript, baseArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y });
+				auto [isSuperscriptBase, baseArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y });
 				if (baseArea)
 				{
 					uint32_t subs;
 					Position startExponent = Position{ x, y };
 					int startX = x;
+					int lastX = x;
 					while (x < aMath.width())
 					{
 						if (x > startX && isBlank(aMath(y, x)))
@@ -1200,6 +1309,7 @@ std::tuple<bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
 						else if ((subs = getSuperscript(aMath(y, x))) != BADCHAR)
 						{
 							aMath(y, x) = subs;
+							lastX = x;
 							++x;
 						}
 						else
@@ -1208,13 +1318,13 @@ std::tuple<bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
 						}
 					}
 					
-					return std::make_tuple(false, Area{ startExponent, Position{ x - 1, y } }, *baseArea);
+					return std::make_tuple(isSuperscriptBase, true, Area{ startExponent, Position{ lastX, y } }, *baseArea);
 				}
 			}
 		}
 	}
 	
-	return std::make_tuple(false, std::nullopt, Area{});
+	return std::make_tuple(false, false, std::nullopt, Area{});
 }
 
 MathParser::OptPosition MathParser::findAnyOf(
@@ -1338,7 +1448,7 @@ MathParser::OptPosition MathParser::findSomethingLeft(
 				const Position& aLeftUpperPosition,
 				const Position& aLeftLowerPosition) const
 {
-	for (int x = aLeftUpperPosition.x - 1; x > 0; --x)
+	for (int x = aLeftUpperPosition.x - 1; x > 0 && x > aLeftUpperPosition.x - 4; --x)
 	{
 		for (int y = aLeftUpperPosition.y; y < aLeftLowerPosition.y; ++y)
 		{
@@ -1364,7 +1474,7 @@ MathParser::OptPosition MathParser::findSomethingRight(
 				const Position& aRightUpperPosition,
 				const Position& aRightLowerPosition) const
 {
-	for (int x = aRightUpperPosition.x + 1; x < aMath.width(); ++x)
+	for (int x = aRightUpperPosition.x + 1; x < aMath.width() && x <= aRightUpperPosition.x + 4; ++x)
 	{
 		for (int y = aRightUpperPosition.y; y < aRightLowerPosition.y; ++y)
 		{

@@ -74,6 +74,12 @@ public:
 		Position upperLeft;
 		Position lowerRight;
 	};
+	
+	struct Size
+	{
+		int width;
+		int height;
+	};
 
 	struct MathValue;
 	using MathValueSPtr = std::shared_ptr<MathValue>;
@@ -104,9 +110,13 @@ public:
 		Power,
 		Exponential,
 		Multiplication,
+		Addition,
+		Subtraction,
 		Variable,
 		Number,
 		Monomial,
+		UnaryMinus,
+		UnaryPlus
 	};
 	
 	struct MathValue
@@ -115,29 +125,47 @@ public:
 			: value(aValue),
 		    oper(Oper::Number){}
 		
-		MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, Area aArea)
+		MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize)
 			: value(SUBMATRIX), 
 			  oper(aOper), 
 			  embedded1(aMath1), 
 			  embedded2(aMath2),
-				area(aArea)
+				size(aSize)
 		{
 			mathValue = std::make_shared<MathValue>(*this);
 		}
 		
-		MathValue(const MathValueSPtr& aMathValue)
+		MathValue(const MathValueSPtr& aMathValue, const Size& aSize)
 			: value(SUBMATRIXREFERENCE), 
 			  oper(aMathValue->oper),
-				mathValue(aMathValue)
+				mathValue(aMathValue),
+				size(aSize)
 		{}
 		
 		bool isSubMatrix() const { return value == SUBMATRIX; }
 		bool hasSubMatrix() const { return isSubMatrix() || value == SUBMATRIXREFERENCE; }
+		Area getArea(int x, int y) const
+		{
+			Area result;
+
+			if (value == SUBMATRIX)
+			{
+				result = Area{ Position{ x, y }, Position{ x + size.width - 1, y + size.height - 1 } };
+			}
+			else
+			{
+				result = Area{ Position{ x + size.width, y + size.height }, 
+					             Position{ x + mathValue->size.width + size.width - 1, y + mathValue->size.height + size.height - 1 }};
+			}
+
+			return result;
+		}
+
 		uint32_t value;
 		Oper oper;
 		Math embedded1;
 		Math embedded2;
-		Area area;
+		Size size;
 		Position lowerRight;
 		MathValueSPtr mathValue;
 	};
@@ -175,23 +203,19 @@ private:
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
 	void fillUpMath(Math& aMath) const;
-	void printMath(const Math& aMath) const;
-	void printDebugMath(const Math& aMath) const;
-	void printDebugMath(const Math& aMath,
-										  const Area& aArea) const;
+	void printMath(const Math& aMath, const std::string& aText = "") const;
+	void printDebugMath(const Math& aMath, const std::string& aText = "") const;
 	void doStartMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath1, 
 										const Math& aSubMath2, 
 										Oper aOper,
-										const Area& aArea,
-										const Position& aPlacePosition);
+										const Area& aArea);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath, 
 										Oper aOper,
-										const Area& aArea,
-										const Position& aPlacePosition);
+										const Area& aArea);
 	void fillerMath(Math& aMath, 
 								 const Area& aArea,
 								 const MathValueSPtr& aClearValue);
@@ -205,6 +229,8 @@ private:
 	void doMathVariablesNumbers(Math& aMath);
 	void doMathMonomial(Math& aMath);
 	void doMathSimpleOperators(Math& aMath);
+	void doMathOperator(Math& aMath, int aOperChar, Oper aOper);
+	void doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper);
 
 	OptPosition findAny(const Math& aMath, 
 											uint32_t aSearchChar) const;
@@ -247,7 +273,8 @@ private:
 															  const Position& aRightLowerPosition) const;
 	Area getEndExponent(const Math& aMath,
 										  const Position& aStartExponent) const;
-	std::tuple<bool, OptArea, Area> findPower(Math& aMath) const;
+	Area join(const Area& aLeftArea, const Area& aRightArea) const;
+	std::tuple<bool, bool, OptArea, Area> findPower(Math& aMath) const;
 	bool isSymbolSuffix(uint32_t aKar) const;
 	uint32_t getSuperscript(uint32_t aKar) const;
 	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;

@@ -61,61 +61,31 @@ TEST_F(TestMathParser, TestAddVariable)
   parser.addVariable("I");
 }
 
-TEST_F(TestMathParser, TestFormula)
+TEST_F(TestMathParser, TestSimple1)
 {  
   ss << R"zzz(
-       _________
-      ╱ b² - 4ac 
--b + ╱  ―――――――― 
-    √      2a    
+ - x+2*-var/+2.3
 )zzz";
 
-  EXPECT_STREQ("-b+sqrt(((pow(b, 2)-((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-x + ((2 * -var) / (+2.3))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula2)
+TEST_F(TestMathParser, TestSimple2)
 {  
   ss << R"zzz(
-      _________
-     √ b² - 4ac 
--b + ――――――――――
-         2a    
+ - (x- z)
 )zzz";
 
-  EXPECT_STREQ("-b+((sqrt(pow(b, 2)-((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(x - z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula3)
+TEST_F(TestMathParser, TestSimple3)
 {  
   ss << R"zzz(
-      _________
--b + √ b² - 4ac 
-―――――――――――――――
-        2a    
+(43.3E-5+4)
 )zzz";
 
-  EXPECT_STREQ("((-b+sqrt(pow(b, 2)-((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
-}
-
-TEST_F(TestMathParser, TestFormula4)
-{  
-  ss << R"zzz(
-      z:=                                             (x/2.4)
-          ⎛              x - 3.3⎞              ⎛  1  ⎞
-          ⎜⎛  _         ⎞       ⎟              ⎜ ――― ⎟
-          ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
-          ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
-          ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
-       x ∗⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
-          ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
-          ⎜⎜        x   ⎟       ⎟
-          ⎜⎜            ⎟       ⎟
-          ⎜⎜ ―――――――――― ⎟       ⎟
-          ⎝⎝    42E5÷a  ⎠       ⎠
-)zzz";
-
-  EXPECT_STREQ("z:=pow((1 / (x+z)), (x/2.4))x*(pow((((sqrt(4)*pow(x, 2))-sqrt((3/4))) / (1.((3+((sqrt(x-2)) / x)) / (42E5/a)))), x-3.3)+exp(pow(32, z)))*"
-               "sqrt((sqrt(pow(x, 3)-4)))*pow(-0.E4, -42.5E+3+pow(x, pow(((z*pow(-5, ))), pow(3, pow(pow(5, 5), 4)))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(43.3E-5 + 4)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPower1)
@@ -158,7 +128,7 @@ TEST_F(TestMathParser, TestPower4)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, var-3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, var - 3)", parser.doMath(ss).c_str());
   
 }
 
@@ -169,7 +139,7 @@ TEST_F(TestMathParser, TestPower5)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, -(x-3)*4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, -(x - 3) * 4)", parser.doMath(ss).c_str());
 
 }
 
@@ -180,7 +150,7 @@ TEST_F(TestMathParser, TestPower6)
  (x + 3)
 )zzz";
 
-  EXPECT_STREQ("pow((x+3), -(x-3)*4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow((x + 3), -(x - 3) * 4)", parser.doMath(ss).c_str());
   
 }
 
@@ -202,7 +172,7 @@ TEST_F(TestMathParser, TestPower8)
  x   + 3
 )zzz";
 
-  EXPECT_STREQ("pow(x, 2.5)+3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, 2.5) + 3", parser.doMath(ss).c_str());
   }
 
 TEST_F(TestMathParser, TestExponential)
@@ -231,7 +201,7 @@ TEST_F(TestMathParser, TestPowerSuper2)
 xᶻ⁻⁵
 )zzz";
 
-  EXPECT_STREQ("pow(x, z-5)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, z - 5)", parser.doMath(ss).c_str());
   
 }
 
@@ -241,7 +211,7 @@ TEST_F(TestMathParser, TestPowerSuper3)
 x⁽ᶻ ⁻ ⁵⁾
 )zzz";
 
-  EXPECT_STREQ("pow(x, (z-5))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, (z - 5))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper4)
@@ -252,6 +222,19 @@ TEST_F(TestMathParser, TestPowerSuper4)
 )zzz";
 
   EXPECT_STREQ("pow(55, x)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestPowerSuper5)
+{
+  ss << R"zzz(
+           e⁵
+          e
+     x - 2
+  z⁵⁵
+xz
+)zzz";
+
+  EXPECT_STREQ("(x*pow(z, pow(z, pow(55, x - pow(2, exp(pow(e, 5)))))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot1)
@@ -279,7 +262,7 @@ TEST_F(TestMathParser, TestSquareRoot3)
 √43.3E-5+4
 )zzz";
 
-  EXPECT_STREQ("sqrt(43.3E-5)+4", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(43.3E-5) + 4", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot4)
@@ -289,7 +272,7 @@ TEST_F(TestMathParser, TestSquareRoot4)
 √43.3E-5+4
 )zzz";
 
-  EXPECT_STREQ("sqrt(43.3E-5+4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(43.3E-5 + 4)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot5)
@@ -299,7 +282,7 @@ TEST_F(TestMathParser, TestSquareRoot5)
 √43 + 42.1
 )zzz";
 
-  EXPECT_STREQ("sqrt(43+42.1)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(43 + 42.1)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot6)
@@ -310,7 +293,7 @@ TEST_F(TestMathParser, TestSquareRoot6)
 √4   
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x-z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(pow(4, x - z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot7)
@@ -321,7 +304,7 @@ TEST_F(TestMathParser, TestSquareRoot7)
 √4    + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x-z))+3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(pow(4, x - z)) + 3", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot8)
@@ -332,7 +315,7 @@ TEST_F(TestMathParser, TestSquareRoot8)
 √ (4    ) + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt((pow(4, x-z))+3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt((pow(4, x - z)) + 3)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot9)
@@ -343,20 +326,20 @@ TEST_F(TestMathParser, TestSquareRoot9)
 √4   + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x-z)+3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(pow(4, x - z) + 3)", parser.doMath(ss).c_str());
 }
 
 
 TEST_F(TestMathParser, TestSquareRoot10)
 {  
   ss << R"zzz(
-  __________
- ╱⎛  1  ⎞
-√ ⎜ ――― ⎟*2
-  ⎝ x+z ⎠
+   __________
+  ╱⎛  1  ⎞
+ ╱ ⎜ ――― ⎟*2
+√  ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt(((1 / (x+z)))*2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(((1 / (x + z))) * 2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot11)
@@ -365,7 +348,7 @@ TEST_F(TestMathParser, TestSquareRoot11)
 √(43.3E-5+4)
 )zzz";
 
-  EXPECT_STREQ("sqrt((43.3E-5+4))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt((43.3E-5 + 4))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot12)
@@ -376,7 +359,7 @@ TEST_F(TestMathParser, TestSquareRoot12)
  ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt(((1 / (x+z))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("sqrt(((1 / (x + z))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestDivide)
@@ -398,7 +381,7 @@ TEST_F(TestMathParser, TestParens1)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("((1 / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens2)
@@ -409,7 +392,7 @@ TEST_F(TestMathParser, TestParens2)
     ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("1+((1 / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1 + ((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens3)
@@ -420,7 +403,7 @@ TEST_F(TestMathParser, TestParens3)
 1 + ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("1+((1 / (x+z)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1 + ((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens4)
@@ -431,7 +414,7 @@ TEST_F(TestMathParser, TestParens4)
     ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("((1 / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens5)
@@ -442,7 +425,7 @@ TEST_F(TestMathParser, TestParens5)
     ⎝ x+z ⎠+1
 )zzz";
 
-  EXPECT_STREQ("((1 / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens6)
@@ -453,7 +436,7 @@ TEST_F(TestMathParser, TestParens6)
     ⎝ x+z ⎠+1
 )zzz";
 
-  EXPECT_STREQ("1+((1 / (x+z)))+1", parser.doMath(ss).c_str());
+  EXPECT_STREQ("1 + ((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens7)
@@ -465,7 +448,7 @@ TEST_F(TestMathParser, TestParens7)
   ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((1 / (x+z))), x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(((1 / (x + z))), x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens8)
@@ -477,7 +460,7 @@ TEST_F(TestMathParser, TestParens8)
   ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((1 / (x+z))), x+1)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(((1 / (x + z))), x + 1)", parser.doMath(ss).c_str());
 }
 
 
@@ -491,7 +474,7 @@ TEST_F(TestMathParser, TestParens9)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, ((1 / (x+z))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(x, ((1 / (x + z))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens10)
@@ -506,7 +489,7 @@ TEST_F(TestMathParser, TestParens10)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((z / (x+z))), (pow(x, 2)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(((z / (x + z))), (pow(x, 2)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens11)
@@ -521,7 +504,7 @@ TEST_F(TestMathParser, TestParens11)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((z / (x+z))), pow((pow(x, 2)), 3))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(((z / (x + z))), pow((pow(x, 2)), 3))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens12)
@@ -538,7 +521,7 @@ TEST_F(TestMathParser, TestParens12)
  3
 )zzz";
 
-  EXPECT_STREQ("pow(3, pow(((z / (x+z))), pow((pow(x, 2)), exp(2))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("pow(3, pow(((z / (x + z))), pow((pow(x, 2)), exp(2))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial)
@@ -593,4 +576,92 @@ x³⁴z
 )zzz";
 
   EXPECT_STREQ("(pow(x, 34)*z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial7)
+{  
+  ss << R"zzz(
+ _
+√4x²
+)zzz";
+
+  EXPECT_STREQ("(sqrt(4)*pow(x, 2))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula)
+{  
+  ss << R"zzz(
+       _________
+      ╱ b² - 4ac 
+-b + ╱  ―――――――― 
+    √      2a    
+)zzz";
+
+  EXPECT_STREQ("-b + sqrt(((pow(b, 2) - ((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula2)
+{  
+  ss << R"zzz(
+      _________
+     √ b² - 4ac 
+-b + ――――――――――
+         2a    
+)zzz";
+
+  EXPECT_STREQ("-b + ((sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula3)
+{  
+  ss << R"zzz(
+      _________
+-b + √ b² - 4ac 
+―――――――――――――――
+        2a    
+)zzz";
+
+  EXPECT_STREQ("((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula4)
+{  
+  ss << R"zzz(
+          ⎛  _         ⎞
+          ⎜ √4x²-√(3/4)⎟ 
+          ⎜ ―――――――――――⎟
+          ⎜        ___ ⎟
+       x ∗⎜       √x-2 ⎟
+          ⎜ 1.3 + ―――― ⎟
+          ⎜        x   ⎟ 
+          ⎜            ⎟
+          ⎜ ―――――――――――⎟
+          ⎝    42E5÷a  ⎠
+)zzz";
+
+  EXPECT_STREQ("x * ((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / "
+               "(1.3 + ((sqrt(x - 2)) / x)))) / "
+               "((42E5 / a))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFormula5)
+{  
+  ss << R"zzz(
+      z:=                                             (x/2.4)
+          ⎛              x - 3.3⎞              ⎛  1  ⎞
+          ⎜⎛  _         ⎞       ⎟              ⎜ ――― ⎟
+          ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
+          ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
+          ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
+       x ∗⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
+          ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
+          ⎜⎜        x   ⎟       ⎟
+          ⎜⎜            ⎟       ⎟
+          ⎜⎜ ―――――――――――⎟       ⎟
+          ⎝⎝    42E5÷a  ⎠       ⎠
+)zzz";
+
+  EXPECT_STREQ("z:=x * (pow(((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / (1.3 + ((sqrt(x - 2)) / x)))) / ((42E5 / a)))), x - 3.3) + exp(pow(32, z))) * "
+               "pow(sqrt((sqrt(pow(x, 3) - 4))), pow(((1 / (x + z))), ((x / 2.4)))) * "
+               "-pow(0.E4, -42.5E+3 + pow(x, pow((z - 5), pow(3, pow(55, 4)))))", parser.doMath(ss).c_str());
 }
