@@ -23,8 +23,11 @@ class TestMathParser : public ::testing::Test
   TestMathParser()
   {
     parser.addVariable("x");
+    parser.addVariable("x₂");
+    parser.addVariable("H₂O");
     parser.addVariable("var");
     parser.addVariable("z");
+    parser.addVariable("z_π");
     parser.addVariable("a");
     parser.addVariable("b");
     parser.addVariable("c");
@@ -73,10 +76,10 @@ TEST_F(TestMathParser, TestSimple1)
 TEST_F(TestMathParser, TestSimple2)
 {  
   ss << R"zzz(
- - (x- z)
+ - (x₂- z)
 )zzz";
 
-  EXPECT_STREQ("-(x - z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(x₂ - z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple3)
@@ -86,6 +89,38 @@ TEST_F(TestMathParser, TestSimple3)
 )zzz";
 
   EXPECT_STREQ("(43.3E-5 + 4)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple4)
+{  
+  ss << R"zzz(
+  2
+(x )
+)zzz";
+
+  EXPECT_STREQ("(pow(x, 2))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple5)
+{  
+  ss << R"zzz(
+ 1
+(― +2)*3
+ x
+)zzz";
+
+  EXPECT_STREQ("((1 / x) + 2) * 3", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple6)
+{  
+  ss << R"zzz(
+ 1              2
+(― +(2/H₂O) + (x -z_π))*3
+ x
+)zzz";
+
+  EXPECT_STREQ("((1 / x) + ((2 / H₂O)) + (pow(x, 2) - z_π)) * 3", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPower1)

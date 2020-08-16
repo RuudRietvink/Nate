@@ -488,8 +488,8 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathMonomial(aMath);
 	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
 	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
-	doMathOperator(aMath, '*', Oper::Multiplication);
-	doMathOperator(aMath, '/', Oper::Division);
+	doMathOperator(aMath, operatorMultiply(), Oper::Multiplication);
+	doMathOperator(aMath, operatorDivide(), Oper::Division);
 	doMathOperator(aMath, '+', Oper::Addition);
 	doMathOperator(aMath, '-', Oper::Subtraction);
 }
@@ -965,23 +965,26 @@ void MathParser::doMathSimpleParentheses(Math& aMath)
 							prevParens.pop_back();
 						}
 					}
-					else if (y > 0)
+					else 
 					{
-						uint32_t upKar = aMath(y-1, x);
-						if (!isBlank(upKar) && !badSomethingVertical(upKar))
+						if (y > 0)
 						{
-							upY = y - 1;
+							uint32_t upKar = aMath(y-1, x);
+							if (!isBlank(upKar) && !badSomethingVertical(upKar))
+							{
+								upY = y - 1;
+							}
 						}
-					}
-					else if (y < aMath.height() - 1)
-					{
-						uint32_t downKar = aMath(y+1, x);
-						if (!isBlank(downKar) && !badSomethingVertical(downKar))
-						{
-							downY = y + 1;
-						}
-					}
 
+					  if (y < aMath.height() - 1)
+						{
+							uint32_t downKar = aMath(y+1, x);
+							if (!isBlank(downKar) && !badSomethingVertical(downKar))
+							{
+								downY = y + 1;
+							}
+						}
+					}
 
 					if (prevParens.empty())
 					{
