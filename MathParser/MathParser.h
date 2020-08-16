@@ -100,10 +100,20 @@ public:
 		uint32_t& operator()(int y, int x) { return matrix[y][x].value; }
 		bool isSubMatrix(int y, int x) const { return matrix[y][x].isSubMatrix(); }
 		bool hasSubMatrix(int y, int x) const { return matrix[y][x].hasSubMatrix(); }
+		bool isSuperscript(int y, int x) const { return matrix[y][x].isSuperscript(); }
+		const MathValue& mathValue(int y, int x) const { return matrix[y][x]; }
+		uint32_t operator()(const Position& aPosition) const { return matrix[aPosition.y][aPosition.x].value; }
+		uint32_t& operator()(const Position& aPosition) { return matrix[aPosition.y][aPosition.x].value; }
+		bool isSubMatrix(const Position& aPosition) const { return matrix[aPosition.y][aPosition.x].isSubMatrix(); }
+		bool hasSubMatrix(const Position& aPosition) const { return matrix[aPosition.y][aPosition.x].hasSubMatrix(); }
+		bool isSuperscript(const Position& aPosition) const { return matrix[aPosition.y][aPosition.x].isSuperscript(); }
+		const MathValue& mathValue(const Position& aPosition) const { return matrix[aPosition.y][aPosition.x]; }
 	};
 	
 	enum class Oper
 	{
+		Unknown,
+		Nested,
 		Parentheses,
 		Division,
 		SquareRoot,
@@ -112,7 +122,7 @@ public:
 		Multiplication,
 		Addition,
 		Subtraction,
-		Variable,
+		Symbol,
 		Number,
 		Monomial,
 		UnaryMinus,
@@ -144,6 +154,7 @@ public:
 		
 		bool isSubMatrix() const { return value == SUBMATRIX; }
 		bool hasSubMatrix() const { return isSubMatrix() || value == SUBMATRIXREFERENCE; }
+		bool isSuperscript() const { return mathValue->superscript; }
 		Area getArea(int x, int y) const
 		{
 			Area result;
@@ -161,12 +172,13 @@ public:
 			return result;
 		}
 
-		uint32_t value;
-		Oper oper;
+		uint32_t value = BADCHAR;
+		Oper oper = Oper::Unknown;
 		Math embedded1;
 		Math embedded2;
 		Size size;
 		Position lowerRight;
+		bool superscript = false;
 		MathValueSPtr mathValue;
 	};
 	
@@ -206,6 +218,7 @@ private:
 	void printMath(const Math& aMath, const std::string& aText = "") const;
 	void printDebugMath(const Math& aMath, const std::string& aText = "") const;
 	void doStartMathParsing(Math& aMath);
+	void doPrepareMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	void embedSubMath(Math& aMath, 
 										const Math& aSubMath1, 
@@ -221,14 +234,17 @@ private:
 								 const MathValueSPtr& aClearValue);
 	void spaceMath(Math& aMath, 
 								 const Area& aArea);
+	
+	void doMathSuperscript(Math& aMath);
+	void doMathSimpleParentheses(Math& aMath);
+	void doMathSimpleOperators(Math& aMath);
+	void doMathVariablesNumbers(Math& aMath);
 
+	void doMathMonomial(Math& aMath);
 	void doMathParentheses(Math& aMath);
 	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
-	void doMathVariablesNumbers(Math& aMath);
-	void doMathMonomial(Math& aMath);
-	void doMathSimpleOperators(Math& aMath);
 	void doMathOperator(Math& aMath, int aOperChar, Oper aOper);
 	void doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper);
 
@@ -265,6 +281,7 @@ private:
 	bool isBlank(uint32_t kar) const;
 	bool isEmpty(uint32_t kar) const;
 	bool badSomething(uint32_t kar) const;
+	bool badSomethingVertical(uint32_t kar) const;
 	OptPosition findSomethingLeft(const Math& aMath, 
 												        const Position& aLeftUpperPosition,
 															  const Position& aLeftLowerPosition) const;
@@ -274,13 +291,11 @@ private:
 	Area getEndExponent(const Math& aMath,
 										  const Position& aStartExponent) const;
 	Area join(const Area& aLeftArea, const Area& aRightArea) const;
+	Area totalArea(const Math& aMath, const Area& aArea) const;
 	std::tuple<bool, bool, OptArea, Area> findPower(Math& aMath) const;
 	bool isSymbolSuffix(uint32_t aKar) const;
 	uint32_t getSuperscript(uint32_t aKar) const;
 	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;
-	void unsuperscript(Math& aMath,
-										 const Position& aLeftPosition,
-										 const Position& aRightPosition) const;
 
 	void mathError(const Math& aMath, 
 								 const Position& aPosition,
@@ -289,26 +304,18 @@ private:
 								 uint32_t aSearchChar) const;
 	Math getSubMath(const Math& aMath, 
 									const Area& aArea) const;
+	Math createSubMath(const Math& aMath, 
+										 const Area& aArea, 
+									   const std::string& aText) const;
 	
 	std::string popFront(const std::string& aInput) const;
 	std::string popBack(const std::string& aInput) const;
-	int parseVariable(const Math& aMath,
-									  int x,
-									  int y) const;
-	std::string getRightToLeftVariable(const std::string& aInput) const;
+	std::tuple<int, Symbol> parseVariable(const Math& aMath,
+																  			int x,
+																  			int y) const;
 	
 	bool isPartOfNumber(uint32_t kar) const;
 	int parseNumber(const Math& aMath,
-									int x,
-									int y) const;
-	int parseRightToLeftNumber(
-									bool isSuperScript,
-									const Math& aMath,
-									int x,
-									int y) const;
-	int parseRightToLeftVariable(
-									bool isSuperScript,
-									const Math& aMath,
 									int x,
 									int y) const;
 	void addSymbol(const Symbol& aSymbol);

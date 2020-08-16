@@ -175,7 +175,7 @@ TEST_F(TestMathParser, TestPower8)
   EXPECT_STREQ("pow(x, 2.5) + 3", parser.doMath(ss).c_str());
   }
 
-TEST_F(TestMathParser, TestExponential)
+TEST_F(TestMathParser, TestExponential1)
 {  
   ss << R"zzz(
   x
@@ -183,7 +183,18 @@ TEST_F(TestMathParser, TestExponential)
 )zzz";
 
   EXPECT_STREQ("exp(x)", parser.doMath(ss).c_str());
-  }
+}
+
+TEST_F(TestMathParser, TestExponential2)
+{  
+  ss << R"zzz(
+  x
+ e
+𝑒
+)zzz";
+
+  EXPECT_STREQ("exp(exp(x))", parser.doMath(ss).c_str());
+}
 
 TEST_F(TestMathParser, TestPowerSuper1)
 {
@@ -646,7 +657,7 @@ TEST_F(TestMathParser, TestFormula4)
 
 TEST_F(TestMathParser, TestFormula5)
 {  
-  ss << R"zzz(
+  ss << R"zzz( 
       z:=                                             (x/2.4)
           ⎛              x - 3.3⎞              ⎛  1  ⎞
           ⎜⎛  _         ⎞       ⎟              ⎜ ――― ⎟
