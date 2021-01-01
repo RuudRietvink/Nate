@@ -185,11 +185,11 @@ end:
 
 program-statement:
 	  PROGRAM col 
-		  { nate.codeStartProgram(@col); }
+		  { nate.startProgram(@PROGRAM); }
 	  begin 
 		  statement-list
 	  end
-		  { nate.codeEndProgram(@end); }
+      { nate.endProgram(@end); }
   ;
   
 statement-list:
@@ -848,11 +848,11 @@ data-list:
 output-statement:
 	  OUTPUT 
 		  { 
-        nate.codeOutputStart("std::cout", @OUTPUT);
+        nate.addNested(ByteCode::StdOutput, @OUTPUT);
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd($[output-list]);
+        nate.up();
       }
   ;
   
@@ -945,7 +945,7 @@ output-part:
 		  { 
         if ($expr.type() && !$expr.type()->empty())
         {
-          nate.codeOutput($expr);
+          nate.addExpr($expr, @expr);
         }
         else
         {
@@ -956,8 +956,9 @@ output-part:
 
 output-sep:
 	  COMMA
-		  { nate.codeOutput("\" \""); }
+		  { nate.add(ByteCode::OutputSepComma, @COMMA); }
 	| CONCAT
+		  { nate.add(ByteCode::OutputSepConcat, @CONCAT); }
   ;
 
 input-statement:
@@ -1338,7 +1339,7 @@ expr-non-word:
 		  { 
         lexer.noSpace();
         nate.data.prevWasValue = true;
-        $$ = nate.evaluate(Expr($expr));
+        $$ = Expr::parenthesized($expr);
 
       }
   | IF

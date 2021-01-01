@@ -1,5 +1,6 @@
 #include "NateParser.h"
 #include "NateParserMath.h"
+#include "NateCode.h"
 #include "core/Core.h"
 #include "lex.yy.h"
 #include <algorithm>
@@ -27,6 +28,38 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 }
 
 NateParser::~NateParser() = default;
+
+TreeNode* NateParser::curNode()
+{ 
+	return mCurNode;
+}
+
+TreeNode* NateParser::addStat(ByteCode code, const yy::parser::location_type& aLocation) 
+{ 
+	mCurNode = new TreeNode(code, Location(aLocation, mLexer->currentFile()));
+	data.stats.push_back(std::shared_ptr<TreeNode>(mCurNode));
+	return mCurNode;
+}
+
+TreeNode* NateParser::addNested(ByteCode code, const yy::parser::location_type& aLocation)
+{ 
+	return mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
+}
+
+TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
+{ 
+	return mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
+}
+
+TreeNode* NateParser::addExpr(const Expr& expr, const yy::parser::location_type& aLocation) 
+{ 
+	return mCurNode->addExpr(expr, Location(aLocation, mLexer->currentFile()));
+}
+
+TreeNode* NateParser::up()
+{ 
+	return mCurNode = mCurNode->back;
+}
 
 yy::Lexer* NateParser::getLexer()
 {
@@ -92,7 +125,7 @@ void NateParser::initOutput()
 		*mOut << "#pragma once" << std::endl;
 	}
 
-	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\core\\Core.h\"" << std::endl;
+	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Core.h\"" << std::endl;
 }
 
 int NateParser::parse()
@@ -104,13 +137,15 @@ int NateParser::parse()
 
 	if (mFileType != FileType::ObjectDecl)
 	{
-		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\core\\core.ns" })
+		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\core.ns" })
 		{
 			parseFile(file);
 		}
 	}
 		
 	auto result = mParser->parse();
+	NateCode coder(*mOut, this);
+	coder.code(data.stats);
 
 	if (mLexer->debug())
 	{
@@ -136,6 +171,17 @@ void NateParser::parseFile(const std::string& aFilename)
 	{
 		std::cerr << "End parsing: " << aFilename << std::endl;
 	}
+}
+
+void NateParser::startProgram(const yy::parser::location_type& aLocation)
+{
+	pushScope(std::make_shared<Scope>("main", IIdentifiersHolder::ScopeFlag::Local));
+  addStat(ByteCode::Program, aLocation);
+}
+
+void NateParser::endProgram(const yy::parser::location_type& aLocation)
+{
+	popScope();
 }
 
 std::string NateParser::in(int aOffset) const
@@ -374,6 +420,7 @@ void NateParser::pushDefineScope(const ScopePtr& aScope)
 
 void NateParser::popDefineScope()
 {
+	mOldScopes.push_back(mScopes.front());	// save for later in evaluations
 	mScopes.pop_front();
 	popIdentifiersHolder();
 	popRecordsHolder();

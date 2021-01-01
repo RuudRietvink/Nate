@@ -220,6 +220,7 @@
     </ClCompile>
     <ClCompile Include="lex.yy.cpp" />
     <ClCompile Include="Nate.cpp" />
+    <ClCompile Include="NateCode.cpp" />
     <ClCompile Include="NateFunctions.cpp" />
     <ClCompile Include="NateParser.cpp" />
     <ClCompile Include="NateParserCode.cpp" />
@@ -322,6 +323,8 @@
     </ClInclude>
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="location.hpp" />
+    <ClInclude Include="NateCode.h" />
+    <ClInclude Include="NateData.h" />
     <ClInclude Include="NateFunctions.h" />
     <ClInclude Include="NateParser.h" />
     <ClInclude Include="NateParser.tab.h" />

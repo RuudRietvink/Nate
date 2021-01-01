@@ -41,6 +41,14 @@ Expr::Expr(const Expr& aOther)
 	addNodes(aOther.nodes().begin(), aOther.nodes().end());
 }
 
+Expr Expr::parenthesized(const Expr& aExpr)
+{
+	Expr result("(");
+	result.addNodes(aExpr.nodes().begin(), aExpr.nodes().end());
+	result.addNode(ExprNode(")"));
+	return result;
+}
+
 void Expr::addNode(const ExprNode& aNode)
 {
 	mNodes.push_back(aNode);

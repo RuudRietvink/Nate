@@ -133,6 +133,9 @@
     <ClCompile Include="NateParserMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NateCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -275,6 +278,10 @@
     <ClInclude Include="NateParserMath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="NateData.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NateCode.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="NateLexer.l" />

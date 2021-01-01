@@ -26,12 +26,6 @@ public:
 	struct Math;
 	struct Symbol;
 
-	MATHPARSER_API void setTabSize(uint32_t aTabSize);
-	MATHPARSER_API void addVariable(const std::string& aName);
-	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aValue);
-	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
-	MATHPARSER_API std::string doMath(Math& aMath);
-	
 	class Position
 	{
 	public:
@@ -131,6 +125,14 @@ public:
 	
 	struct MathValue
 	{
+		enum class Type
+		{
+			Real,
+			Int,
+			Complex,
+			Imaginary
+		};
+
 		MathValue(uint32_t aValue)
 			: value(aValue),
 		    oper(Oper::Number){}
@@ -179,6 +181,7 @@ public:
 		Size size;
 		Position lowerRight;
 		bool superscript = false;
+		Type type = Type::Real;
 		MathValueSPtr mathValue;
 	};
 	
@@ -191,11 +194,17 @@ public:
 			Number
 		};
 
-		Type type;
+		Type type = Type::Number;
 		std::string name;
-		std::string value;
+		MathValue::Type valueType = MathValue::Type::Real;
 	};
-
+	
+	MATHPARSER_API void setTabSize(uint32_t aTabSize);
+	MATHPARSER_API void addVariable(const std::string& aName);
+	MATHPARSER_API void addConstant(const std::string& aName, MathValue::Type aType);
+	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
+	MATHPARSER_API std::string doMath(Math& aMath);
+	
 protected:
 	MATHPARSER_API virtual void error(const Position& aPosition, const std::string& aError) const;
 	
@@ -220,12 +229,12 @@ private:
 	void doStartMathParsing(Math& aMath);
 	void doPrepareMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
-	void embedSubMath(Math& aMath, 
+	MathValue* embedSubMath(Math& aMath, 
 										const Math& aSubMath1, 
 										const Math& aSubMath2, 
 										Oper aOper,
 										const Area& aArea);
-	void embedSubMath(Math& aMath, 
+	MathValue* embedSubMath(Math& aMath, 
 										const Math& aSubMath, 
 										Oper aOper,
 										const Area& aArea);

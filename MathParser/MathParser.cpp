@@ -50,12 +50,12 @@ void MathParser::setTabSize(uint32_t aTabSize)
 
 void MathParser::addVariable(const std::string& aName)
 {
-	addSymbol({ Symbol::Type::Variable, aName, "" });
+	addSymbol({ Symbol::Type::Variable, aName, MathValue::Type::Real });
 }
 
-void MathParser::addConstant(const std::string& aName, const std::string& aValue)
+void MathParser::addConstant(const std::string& aName, MathValue::Type aType)
 {
-	addSymbol({ Symbol::Type::Constant, aName, aValue });
+	addSymbol({ Symbol::Type::Constant, aName, aType });
 }
 
 std::string MathParser::doMath(std::istream& aStream, int line)
@@ -93,9 +93,10 @@ std::string MathParser::doMath(std::istream& aStream, int line)
 
 std::string MathParser::doMath(Math& aMath)
 {
-	mSymbols["e"] = Symbol{ Symbol::Type::Constant, "e", "M_E" };
-	mSymbols["𝑒"] = Symbol{ Symbol::Type::Constant, "e", "M_E" };
-	mSymbols["π"] = Symbol{ Symbol::Type::Constant, "π", "M_PI" };
+	mSymbols["e"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
+	mSymbols["𝑒"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
+	mSymbols["π"] = Symbol{ Symbol::Type::Constant, "π", MathValue::Type::Real };
+	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", MathValue::Type::Imaginary };
 
 	fillUpMath(aMath);
 	printDebugMath(aMath);
@@ -416,16 +417,16 @@ MathParser::Math MathParser::getSubMath(
 	return result;
 }
 
-void MathParser::embedSubMath(
+MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath, 
 				Oper aOper,
 				const Area& aArea)
 {
-	embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
+	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
 }
 
-void MathParser::embedSubMath(
+MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
@@ -436,6 +437,7 @@ void MathParser::embedSubMath(
 	auto mathValue = MathValue(aSubMath1, aSubMath2, aOper, size);
 	fillerMath(aMath, aArea, mathValue.mathValue);
 	aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x] = mathValue;
+	return &aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x];
 }
 
 void MathParser::fillerMath(
@@ -746,12 +748,33 @@ void MathParser::doMathMonomial(Math& aMath)
 				{
 					if (lastX != -1)
 					{
+						MathValue* rightMathValue = &aMath.matrix[y][x].mathValue;
 						Area leftArea = lastMathValue->getArea(lastX, y);
 						Area rightArea = aMath.matrix[y][x].getArea(x, y);
 						Math left = getSubMath(aMath, leftArea);
 						Math right = getSubMath(aMath, rightArea);
 						Area area = join(leftArea, rightArea);
-						embedSubMath(aMath, left, right, Oper::Monomial, area);
+						if (lastMathValue->type == MathValue::Type::Imaginary || rightMathValue->type == MathValue::Type::Imaginary)
+						{
+						  if (lastMathValue->type == MathValue::Type::Imaginary && rightMathValue->type == MathValue::Type::Imaginary)
+							{
+								Math number = createSubMath(aMath, area, "-1");
+								embedSubMath(aMath, number, Oper::Number, area);
+							}
+							else if (lastMathValue->type == MathValue::Type::Imaginary)
+							{
+								embedSubMath(aMath, right, Oper::Number, area)->type = MathValue::Type::Imaginary;
+							}
+							else
+							{
+								embedSubMath(aMath, left, Oper::Number, area)->type = MathValue::Type::Imaginary;
+							}
+						}
+						else
+						{
+						  embedSubMath(aMath, left, right, Oper::Monomial, area);
+						}
+
 						printDebugMath(aMath, __FUNCTION__);
 					}
 					else
@@ -921,8 +944,8 @@ void MathParser::doMathSuperscript(Math& aMath)
 				Area area{ Position{ startX, y }, Position{ x, y } };
 				Math superMath = getSubMath(aMath, Area{ Position{ startX, y }, Position{ x, y } });
 				doPrepareMathParsing(superMath);
-				embedSubMath(aMath, superMath, Oper::Nested, area);
-				aMath.matrix[y][startX].mathValue->superscript = true;
+				MathValue* mathValue = embedSubMath(aMath, superMath, Oper::Nested, area);
+				mathValue->superscript = true;
 			}
 		}
 	}

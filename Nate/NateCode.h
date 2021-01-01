@@ -1,0 +1,35 @@
+#pragma once
+
+#include "NateData.h"
+
+#include <ostream>
+
+class NateParser;
+
+class NateCode
+{
+public:
+  NateCode(std::ostream& aOut, NateParser* aParser);
+  void code(const std::vector<std::shared_ptr<TreeNode>>& aStats);
+
+private:
+  std::string in(int extra = 0);
+  void printLineNr(const Location& aLocation);
+  void codeProgram(const std::shared_ptr<TreeNode>& aNode);
+  void codeOutput(const std::string& aStream, const std::shared_ptr<TreeNode>& aNode);
+	void codeOutputNew();
+	void codeOutput(const std::string& aString);
+	void codeOutput(const Expr& aValue);
+	void codeOutputEnd(bool aAddEnd = true);
+	std::string codeExpr(const Expr& aValue);
+
+	NateParser*                 mParser = nullptr;
+  std::ostream&								mOut;
+  int													mIndent = 0;
+	std::string                 mCachedOutput;
+	bool                        mDataOutput = false;
+	bool                        mFirstOutput = true;
+	bool                        mStartOutput = true;
+	std::string                 mStream;
+};
+

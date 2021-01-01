@@ -65,29 +65,6 @@ std::string NateParser::codeExpr(const Expr& aValue)
 	return result;
 }
 
-void NateParser::codeStartProgram(const yy::parser::location_type& aLocation)
-{
-	*mOut << in() << "#define NOMINMAX" << std::endl;
-	*mOut << in() << "#include <windows.h>" << std::endl;
-
-	printLineNr(aLocation);
-
-	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("main", IIdentifiersHolder::ScopeFlag::Local));
-	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
-	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << std::endl;
-	*mOut << in() << "SetConsoleOutputCP(65001);" << std::endl;
-	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
-    
-}
-
-void NateParser::codeEndProgram(const yy::parser::location_type& aLocation)
-{
-	popScope();
-	printLineNr(aLocation);
-	*mOut << in() << "}\n" << std::endl;
-}
-
 void NateParser::codeStartScope()
 {
 	*mOut << in() << "{" << std::endl;

@@ -1,3 +1,7 @@
+program:
+  output "Hello, world", 3
+
+/*
 import Rational
 import Complex
 import Math
@@ -516,3 +520,4 @@ program:
   output "duh"
   test
   //bottles song
+  */

@@ -4,13 +4,13 @@
 #include "ExprNode.h"
 #include "NateFunctions.h"
 
-Identifier::Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
+Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
 	: Identifier(aIdentifiersHolder, aName, aType, ExprPtr(new Expr(ExprNode("default", "{}", aType))))
 {
 	mInitValue->node().setFlag(ExprNode::Default, true);
 }
 
-Identifier::Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue)
+Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue)
 	: mIdentifiersHolder(aIdentifiersHolder),
 	mName(aName),
 	mCodeName(toCodeName(aName)),

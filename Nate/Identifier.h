@@ -13,14 +13,15 @@ class Scope;
 class Identifier;
 typedef std::shared_ptr<Identifier> IdentifierPtr;
 class IIdentifiersHolder;
+typedef std::shared_ptr<IIdentifiersHolder> IIdentifiersHolderPtr;
 class Expr;
 typedef std::shared_ptr<Expr> ExprPtr;
 
 class Identifier : public WithFlags
 {
 public:
-	Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType);
-	Identifier(const std::shared_ptr<IIdentifiersHolder>& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue);
+	Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType);
+	Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue);
 	virtual ~Identifier() = default;
 	std::string setFlagString(const std::string& aFlag) override;
 
@@ -28,7 +29,7 @@ public:
 	const std::string&								codeName()					const;
 	ExprPtr				    								initValue()				  const;
 	TypePtr														type()							const;
-	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
+	std::weak_ptr<IIdentifiersHolder>             identifiersHolder()	const;
 	bool															isObjectMe()				const;
 	static bool					   						isNameMe(const std::string& aName);
 	static std::string     						nameMe();
@@ -76,4 +77,3 @@ public:
 	};
 	virtual ScopeFlag scopeFlag() const = 0;
 };
-typedef std::shared_ptr<IIdentifiersHolder> IIdentifiersHolderPtr;

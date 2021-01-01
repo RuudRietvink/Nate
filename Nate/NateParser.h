@@ -11,6 +11,7 @@
 #include <variant>
 #include <optional>
 
+#include "NateData.h"
 #include "NateFunctions.h"
 #include "MathParser.h"
 #include "NateParser.tab.h"
@@ -33,6 +34,7 @@ class NateParser
 {
 public:
 	static const bool InitializeVariables = true;
+	
 
 	struct ParseData
 	{
@@ -50,7 +52,10 @@ public:
 		bool assignExpr = false;
 		IdentifierPtr propId;
 		WithFlags* flagsHolder = nullptr;
+
+		std::vector<std::shared_ptr<TreeNode>> stats;
 	};
+
 
 	enum class FileType
 	{
@@ -60,6 +65,14 @@ public:
 	};
 	
 	ParseData data;
+
+	TreeNode* curNode();
+	TreeNode* addStat(ByteCode code, const yy::parser::location_type& aLocation);
+
+	TreeNode* addNested(ByteCode code, const yy::parser::location_type& aLocation);
+	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
+	TreeNode* addExpr(const Expr& expr, const yy::parser::location_type& aLocation);
+	TreeNode* up();
 
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 						 FileType aFileType = FileType::Normal);
@@ -78,6 +91,9 @@ public:
 	bool wantsUnary(const std::string& aWord) const;
 	
 	yy::Lexer* getLexer();
+
+	void startProgram(const yy::parser::location_type& aLocation);
+	void endProgram(const yy::parser::location_type& aLocation);
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -163,8 +179,6 @@ public:
 					const yy::parser::location_type& aLocation);
 	
 	std::string codeExpr(const Expr& aValue);
-	void codeStartProgram(const yy::parser::location_type& aLocation);
-	void codeEndProgram(const yy::parser::location_type& aLocation);
 	void codeStartScope();
 	void codeEndScope();
 	void codeCodeInclude();
@@ -279,7 +293,8 @@ private:
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
 		
-
+	
+	TreeNode*									  mCurNode = nullptr;
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
@@ -291,6 +306,7 @@ private:
 	std::list<ITypesHolderPtr>  mTypesHolders;
 	std::list<IDefinesHolderPtr>mDefinesHolders;
 	std::list<ScopePtr>         mScopes;
+	std::list<ScopePtr>         mOldScopes;
 	std::list<CodePtr>          mCodes;
 	bool												mDefineDecl = false;
 	std::list<int>              mLoopWhileCounts;
