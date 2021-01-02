@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////
 
 code:
-  #include "C:\Users\ruud\source\repos\Nate\core\Rational.h"
+  #include "C:\Users\ruud\source\repos\Nate\Nate\core\Rational.h"
 
 code define 110 ${val-1 is rational as exact} \u ^ ${val-2 is number} is rational as right:
 	std::pow($val-1, $val-2)

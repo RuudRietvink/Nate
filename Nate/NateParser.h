@@ -53,7 +53,7 @@ public:
 		IdentifierPtr propId;
 		WithFlags* flagsHolder = nullptr;
 
-		std::vector<std::shared_ptr<TreeNode>> stats;
+		std::shared_ptr<TreeNode> stats;
 	};
 
 
@@ -68,8 +68,6 @@ public:
 
 	TreeNode* curNode();
 	TreeNode* addStat(ByteCode code, const yy::parser::location_type& aLocation);
-
-	TreeNode* addNested(ByteCode code, const yy::parser::location_type& aLocation);
 	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
 	TreeNode* addExpr(const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* up();
@@ -94,6 +92,7 @@ public:
 
 	void startProgram(const yy::parser::location_type& aLocation);
 	void endProgram(const yy::parser::location_type& aLocation);
+	void doAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -198,7 +197,6 @@ public:
 	std::string codePropHeader(bool aAddObjectName,
 													 	const IdentifierPtr& aId, 
 													 	Object::PropType aPropType);
-	void codeAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
 	void codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
 	void codeOutput(const std::string& aString);

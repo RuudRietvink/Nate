@@ -809,7 +809,9 @@ record-var:
 
 assign-statement:
 	  expr-list ASSIGN expr
-		  { nate.codeAssign($[expr-list], $expr, @ASSIGN); }
+		  { 
+        nate.doAssign($[expr-list], $expr, @ASSIGN);
+      }
   ;
 
 expr-list:
@@ -848,7 +850,7 @@ data-list:
 output-statement:
 	  OUTPUT 
 		  { 
-        nate.addNested(ByteCode::StdOutput, @OUTPUT);
+        nate.addStat(ByteCode::StdOutput, @OUTPUT);
       }
 	  output-list
 		  { 

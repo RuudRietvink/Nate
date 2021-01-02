@@ -18,7 +18,7 @@ public:
 	Expr(const std::string& aWord);
 	Expr(const ExprNode& aNode);
 	Expr(const Expr& aExpr1, const Expr& aExpr2);
-	static Expr parenthesized(const Expr& aExpr);
+	static Expr parenthesized(const Expr& aExpr1);
 	
 	Expr(const Expr& aOther);
 	virtual ~Expr() = default;

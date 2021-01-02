@@ -10,11 +10,12 @@ class NateCode
 {
 public:
   NateCode(std::ostream& aOut, NateParser* aParser);
-  void code(const std::vector<std::shared_ptr<TreeNode>>& aStats);
+  void code(const std::shared_ptr<TreeNode>& aStat);
 
 private:
   std::string in(int extra = 0);
   void printLineNr(const Location& aLocation);
+	char end();
   void codeProgram(const std::shared_ptr<TreeNode>& aNode);
   void codeOutput(const std::string& aStream, const std::shared_ptr<TreeNode>& aNode);
 	void codeOutputNew();
@@ -22,6 +23,13 @@ private:
 	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
 	std::string codeExpr(const Expr& aValue);
+	void codeDeclIdentifier(bool aExtern,
+													const IdentifierPtr& aIdentifier,
+													bool initializeVariables,
+													const Location& aLocation);
+	void codeAssign(const std::vector<Expr>& aExpressions,
+									Expr& aValue,
+									const Location& aLocation);
 
 	NateParser*                 mParser = nullptr;
   std::ostream&								mOut;
@@ -31,5 +39,8 @@ private:
 	bool                        mFirstOutput = true;
 	bool                        mStartOutput = true;
 	std::string                 mStream;
+
+	int													mPrevLine = 0;
+	std::string									mPrevFile;
 };
 

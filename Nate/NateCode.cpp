@@ -16,28 +16,26 @@ std::string NateCode::in(int extra)
 
 void NateCode::printLineNr(const Location& aLocation)
 {
-	static int prevLine = 0;
-	static std::string prevFile;
 
-	//if (aLocation.beginLine != prevLine + 1 || 
-	//		aLocation.filename != prevFile)
+	if (aLocation.beginLine != mPrevLine || 
+			aLocation.filename != mPrevFile)
 	{
 		mOut << "#line " << aLocation.beginLine;
-		if (prevFile != aLocation.filename)
+		if (mPrevFile != aLocation.filename)
 		{
 			mOut << " \"" << aLocation.filename << "\"";
 		}
 			
 		mOut << std::endl;
 
-		prevLine = aLocation.beginLine;
-		prevFile = aLocation.filename;
+		mPrevLine = aLocation.beginLine;
+		mPrevFile = aLocation.filename;
 	}
 }
 
-void NateCode::code(const std::vector<std::shared_ptr<TreeNode>>& aStats)
+void NateCode::code(const std::shared_ptr<TreeNode>& aStat)
 {
-  for (auto& stat : aStats)
+  for (auto& stat : aStat->nested)
   {
     switch (stat->code)
     {
@@ -46,6 +44,12 @@ void NateCode::code(const std::vector<std::shared_ptr<TreeNode>>& aStats)
       break;
     case ByteCode::StdOutput:
       codeOutput("*output", stat);
+      break;
+    case ByteCode::LocalVar:
+      codeDeclIdentifier(false, stat->id, stat->initialize, stat->location);
+      break;
+    case ByteCode::Assign:
+      codeAssign(stat->exprList, stat->expr, stat->location);
       break;
     case ByteCode::Expr:
       mOut << codeExpr(stat->expr);
@@ -57,22 +61,28 @@ void NateCode::code(const std::vector<std::shared_ptr<TreeNode>>& aStats)
   }
 }
 
+char NateCode::end()
+{
+	++mPrevLine;
+	return '\n';
+}
+
 void NateCode::codeProgram(const std::shared_ptr<TreeNode>& aNode)
 {
-	mOut << in() << "#define NOMINMAX" << std::endl;
-	mOut << in() << "#include <windows.h>" << std::endl;
+	mOut << in() << "#define NOMINMAX" << end();
+	mOut << in() << "#include <windows.h>" << end();
 
 	printLineNr(aNode->location);
 
-	mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << std::endl;
-	mOut << in(1) << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << std::endl;
-	mOut << in(1) << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << std::endl;
-	mOut << in(1) << "SetConsoleOutputCP(65001);" << std::endl;
-	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << std::endl;
+	mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
+	mOut << in(1) << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
+	mOut << in(1) << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
+	mOut << in(1) << "SetConsoleOutputCP(65001);" << end();
+	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
 
 	++mIndent;
-	code(aNode->nested);
-	mOut << in(-1) << "}\n" << std::endl;
+	code(aNode);
+	mOut << in(-1) << "}" << end();
 }
 
 void NateCode::codeOutput(const std::string& aStream, const std::shared_ptr<TreeNode>& aNode)
@@ -202,9 +212,37 @@ void NateCode::codeOutputEnd(bool aAddEnd)
 		codeOutput("");
 	}
 
-	mOut << std::endl;
+	mOut << end();
 }
 
+void NateCode::codeDeclIdentifier(bool aExtern,
+																	const IdentifierPtr& aIdentifier,
+																	bool initializeVariables,
+																	const Location& aLocation)
+{
+	printLineNr(aLocation);
+
+	mOut << in();
+
+	if (aExtern)
+	{
+	  mOut << "extern ";	
+	}
+
+	if (aIdentifier->is(Identifier::Const))
+	{
+		mOut << "const ";		
+	}
+
+	mOut << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
+
+	if (initializeVariables)
+	{
+		mOut << " = " << codeExpr(*aIdentifier->initValue());
+	}
+	
+	mOut << ";" << end();
+}
 
 std::string NateCode::codeExpr(const Expr& aValue)
 {
@@ -236,4 +274,32 @@ std::string NateCode::codeExpr(const Expr& aValue)
 	}
 
 	return result;
+}
+
+void NateCode::codeAssign(const std::vector<Expr>& aExpressions,
+													Expr& aValue,
+													const Location& aLocation)
+{
+	std::string endPars;
+
+	printLineNr(aLocation);
+
+	for (auto const& expr : aExpressions)
+	{				
+		std::string code = codeExpr(expr);
+		size_t size = code.size();
+		if (size > 6 && code.substr(size - 6, 6) == "_get()")
+		{
+			code[size - 5] = 's';
+			code[size - 1] = '\0';
+			endPars += ")";
+			mOut << in() << code;
+		}
+		else
+		{
+			mOut << in() << code << " = ";
+		}
+	}
+
+	mOut << codeExpr(aValue) << endPars << ";" << end();
 }

@@ -7,6 +7,9 @@
 
 struct Location
 {
+	Location()
+	{}
+
 	Location(const yy::parser::location_type& aLocation, const std::string& aCurFile)
 		: filename(aLocation.begin.filename != nullptr ? *aLocation.begin.filename : aCurFile),
 		  beginLine(aLocation.begin.line),
@@ -15,33 +18,40 @@ struct Location
 	}
 
 	std::string filename;
-	int beginLine;
-	int beginColumn;
+	int beginLine = -1;
+	int beginColumn = -1;
 };
 
 enum class ByteCode
 {
+	Code,
 	Program,
 	Expr,
 	Block,
 	StdOutput,
 	OutputSepComma,
 	OutputSepConcat,
+	LocalVar,
+	Assign,
 };
 
 struct TreeNode
 {
-	TreeNode(ByteCode code, const Location& aLocation) 
+	TreeNode(ByteCode code) 
+		: code(code)
+	{}
+
+	TreeNode(ByteCode code, const Location& aLocation, TreeNode* back = nullptr) 
 		: code(code),
-		  location(aLocation)
+		  location(aLocation),
+		  back(back)
 	{}
 
 	TreeNode* add(ByteCode code, const Location& aLocation, TreeNode* back = nullptr)
 	{
 		//std::cout << this << " add " << (int) code << std::endl;
-		auto node = std::make_shared<TreeNode>(code, aLocation);
+		auto node = std::make_shared<TreeNode>(code, aLocation, back);
 		nested.push_back(node);
-		node->back = back;
 		return node.get();
 	}
 
@@ -59,5 +69,8 @@ struct TreeNode
 	std::vector<std::shared_ptr<TreeNode>> nested;
 	TreeNode* back = nullptr;
 	Expr expr;
+	std::vector<Expr> exprList;
 	Location location;
+	IdentifierPtr id;
+	bool initialize = false;
 };

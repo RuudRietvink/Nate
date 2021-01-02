@@ -17,7 +17,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 	mOut(&aOut),
 	mFileType(aFileType),
 	mFileName(aFilename),
-	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\core"),
+	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core"),
 	mMathParser(new NateParserMath(*this))
 {
 	mLexer->nate = this;
@@ -36,14 +36,7 @@ TreeNode* NateParser::curNode()
 
 TreeNode* NateParser::addStat(ByteCode code, const yy::parser::location_type& aLocation) 
 { 
-	mCurNode = new TreeNode(code, Location(aLocation, mLexer->currentFile()));
-	data.stats.push_back(std::shared_ptr<TreeNode>(mCurNode));
-	return mCurNode;
-}
-
-TreeNode* NateParser::addNested(ByteCode code, const yy::parser::location_type& aLocation)
-{ 
-	return mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
+	return mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
 }
 
 TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
@@ -135,6 +128,8 @@ int NateParser::parse()
 		std::cerr << "Seperate parsing: " << mFileName << std::endl;
 	}
 
+	data.stats = std::make_shared<TreeNode>(ByteCode::Code);
+	mCurNode = data.stats.get();
 	if (mFileType != FileType::ObjectDecl)
 	{
 		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\core.ns" })
@@ -182,6 +177,34 @@ void NateParser::startProgram(const yy::parser::location_type& aLocation)
 void NateParser::endProgram(const yy::parser::location_type& aLocation)
 {
 	popScope();
+}
+
+void NateParser::doAssign(const std::vector<Expr>& aExpressions,
+													Expr& aValue,
+													const yy::parser::location_type& aLocation)
+{
+	for (auto const& expr : aExpressions)
+	{
+		if (expr.is(ExprNode::ConstExpr))
+		{
+			error("Cannot assign to a constant or readonly");
+		}
+		else if (!expr.is(ExprNode::Output))
+		{
+			error("Cannot assign to a non-variable");
+		}
+
+		const TypePtr& exprType = expr.type();
+		bool ok = aValue.node().castToType(exprType);
+		if (!ok)
+		{
+			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
+		}
+	}
+
+  TreeNode* node = add(ByteCode::Assign, aLocation);
+  node->expr = aValue;
+  node->exprList = aExpressions;
 }
 
 std::string NateParser::in(int aOffset) const
@@ -1603,8 +1626,29 @@ void NateParser::declareLocalIdentifiers(
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, type, initValue);
 		id->setFlag(Identifier::Const, aIsConst);
 		id->setFlag(Identifier::ObjectImpl, data.inObjectImpl);
+		
+		addIdentifier(id);
 
-		codeDeclareLocalIdentifier(false, id, initializeVariables, aLocation);
+		if (id->type()->is(Type::Abstract))
+		{
+			error("Abstract type: " + id->type()->name());
+			return;
+		}
+
+		if (id->type()->is(Type::Unknown))
+		{
+			error("Unknown type: " + id->type()->name());
+			return;
+		}
+
+		//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
+		//{
+		//	error("Expected constant expression.");
+		//}
+
+		TreeNode* node = add(ByteCode::LocalVar, aLocation);
+		node->id = id;
+		node->initialize = initializeVariables;
 	}
 }
 

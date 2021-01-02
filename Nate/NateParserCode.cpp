@@ -405,48 +405,6 @@ std::string NateParser::typeScopeName() const
 	return result;
 }
 
-void NateParser::codeAssign(const std::vector<Expr>& aExpressions,
-														Expr& aValue,
-														const yy::parser::location_type& aLocation)
-{
-	std::string endPars;
-
-	printLineNr(aLocation);
-	for (auto const& expr : aExpressions)
-	{
-		if (expr.is(ExprNode::ConstExpr))
-		{
-			error("Cannot assign to a constant or readonly");
-		}
-		else if (!expr.is(ExprNode::Output))
-		{
-			error("Cannot assign to a non-variable");
-		}
-
-		const TypePtr& exprType = expr.type();
-		bool ok = aValue.node().castToType(exprType);
-		if (!ok)
-		{
-			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
-		}
-				
-		std::string code = codeExpr(expr);
-		size_t size = code.size();
-		if (size > 6 && code.substr(size - 6, 6) == "_get()")
-		{
-			code[size - 5] = 's';
-			code[size - 1] = '\0';
-			endPars += ")";
-			*mOut << in() << code;
-		}
-		else
-		{
-			*mOut << in() << code << " = ";
-		}
-	}
-
-	*mOut << codeExpr(aValue) << endPars << ";" << std::endl;
-}
 
 std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 {

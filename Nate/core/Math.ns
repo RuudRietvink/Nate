@@ -109,5 +109,3 @@ code define 85 ${val-1 is number} \u max ${val-2 is number as same} is number as
   
 code define 85 ${val-1 is number} \u min ${val-2 is number as same} is number as same,right:
 	std::min($val-1, $val-2)
-
-import Math
