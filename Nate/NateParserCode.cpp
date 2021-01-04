@@ -650,35 +650,6 @@ void NateParser::codeInputEnd(bool aAddEnd)
 	*mOut << std::endl;
 }
 
-void NateParser::NateParser::codeIf(const Expr& aValue, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	if (!aValue.type()->is(Type::Boolean))
-	{
-		error("Expected boolean expression for IF statement");
-	}
-
-	*mOut << in() << "if (" << codeExpr(aValue) << ")\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeElseIf()
-{
-	*mOut << in() << "else " << std::endl;
-}
-
-void NateParser::codeElse(const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	*mOut << in() << "else\n" << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeEndIf()
-{
-	popScope();
-	*mOut << in() << "}" << std::endl;
-}
 
 void NateParser::codeIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation)
 {

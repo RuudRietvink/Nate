@@ -49,10 +49,22 @@ void NateCode::code(const std::shared_ptr<TreeNode>& aStat)
       codeDeclIdentifier(false, stat->id, stat->initialize, stat->location);
       break;
     case ByteCode::Assign:
-      codeAssign(stat->exprList, stat->expr, stat->location);
+      codeAssign(stat);
       break;
     case ByteCode::Expr:
       mOut << codeExpr(stat->expr);
+      break;
+    case ByteCode::If:
+      codeIf(stat);
+      break;
+    case ByteCode::ElseIf:
+      codeElseIf(stat);
+      break;
+    case ByteCode::Else:
+      codeElse(stat);
+      break;
+    case ByteCode::EndIf:
+      codeEndIf(stat);
       break;
 		default:
 			std::cerr << "Bad bytecode " << (int)stat->code << std::endl;
@@ -276,15 +288,13 @@ std::string NateCode::codeExpr(const Expr& aValue)
 	return result;
 }
 
-void NateCode::codeAssign(const std::vector<Expr>& aExpressions,
-													Expr& aValue,
-													const Location& aLocation)
+void NateCode::codeAssign(const std::shared_ptr<TreeNode>& aNode)
 {
 	std::string endPars;
 
-	printLineNr(aLocation);
+	printLineNr(aNode->location);
 
-	for (auto const& expr : aExpressions)
+	for (auto const& expr : aNode->exprList)
 	{				
 		std::string code = codeExpr(expr);
 		size_t size = code.size();
@@ -301,5 +311,41 @@ void NateCode::codeAssign(const std::vector<Expr>& aExpressions,
 		}
 	}
 
-	mOut << codeExpr(aValue) << endPars << ";" << end();
+	mOut << codeExpr(aNode->expr) << endPars << ";" << end();
+}
+
+void NateCode::codeIf(const std::shared_ptr<TreeNode>& aNode)
+{
+	printLineNr(aNode->location);
+
+	mOut << in() << "if (" << codeExpr(aNode->expr) << ")" << end() << in() << "{" << end();
+	++mIndent;
+	code(aNode);
+}
+
+void NateCode::codeElseIf(const std::shared_ptr<TreeNode>& aNode)
+{
+	--mIndent;
+	mOut << in() << "}" << end();
+	printLineNr(aNode->location);
+	mOut << in() << "else if (" << codeExpr(aNode->expr) << ")" << end() << in() << "{" << end();
+	++mIndent;
+	code(aNode);
+}
+
+void NateCode::codeElse(const std::shared_ptr<TreeNode>& aNode)
+{
+	--mIndent;
+	mOut << in() << "}" << end();
+	printLineNr(aNode->location);
+	mOut << in() << "else" << end() << in() << "{" << end();
+	++mIndent;
+	code(aNode);
+}
+
+void NateCode::codeEndIf(const std::shared_ptr<TreeNode>& aNode)
+{
+	--mIndent;
+	printLineNr(aNode->location);
+	mOut << in() << "}" << end();
 }

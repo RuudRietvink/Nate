@@ -12,10 +12,36 @@ program:
   var x,z,a₁ is float
   var d,g is int-32 := 5
   var f := 4.4
+  var tr := true
   x, a₁ := 3
   output "Hello, world", 3
   output x&d&f,
   output
+
+  if d < 3:
+    d := 4
+
+  if d < 3 or d > 6:
+    d := 5
+  else:
+    output d
+
+  if tr:
+    tr := false
+  else if not tr:
+    if tr:
+      tr := false
+    else if not tr:
+      tr := true
+  else if d > 3:
+    tr := tr
+  else:
+    output tr
+
+  if tr:
+    tr := false
+  else if not tr:
+    tr := true
 
 /*
 include "nate.define"

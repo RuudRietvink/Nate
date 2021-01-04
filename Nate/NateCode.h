@@ -27,9 +27,11 @@ private:
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	void codeAssign(const std::vector<Expr>& aExpressions,
-									Expr& aValue,
-									const Location& aLocation);
+	void codeAssign(const std::shared_ptr<TreeNode>& aNode);
+	void codeIf(const std::shared_ptr<TreeNode>& aNode);
+	void codeElseIf(const std::shared_ptr<TreeNode>& aNode);
+	void codeElse(const std::shared_ptr<TreeNode>& aNode);
+	void codeEndIf(const std::shared_ptr<TreeNode>& aNode);
 
 	NateParser*                 mParser = nullptr;
   std::ostream&								mOut;

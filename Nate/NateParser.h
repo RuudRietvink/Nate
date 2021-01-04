@@ -43,6 +43,7 @@ public:
 		bool prevWasValue = false;
 		std::stack<Expr> ifExpr;
 		std::stack<std::string> ifId;
+		std::stack<yy::parser::location_type> ifLocation;
 		std::string forId;
 		std::list<CodePtr> curParsedCodes;
 		bool inObject = false;
@@ -68,6 +69,7 @@ public:
 
 	TreeNode* curNode();
 	TreeNode* addStat(ByteCode code, const yy::parser::location_type& aLocation);
+	TreeNode* addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
 	TreeNode* addExpr(const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* up();
@@ -93,6 +95,10 @@ public:
 	void startProgram(const yy::parser::location_type& aLocation);
 	void endProgram(const yy::parser::location_type& aLocation);
 	void doAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
+	void doIf(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doElseIf(const yy::parser::location_type& aLocation);
+	void doElse(const yy::parser::location_type& aLocation);
+	void doEndIf(const yy::parser::location_type& aLocation);
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -212,10 +218,6 @@ public:
 	void codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation);
 	void codeDataEnd(const std::string& aId, const yy::parser::location_type& aLocation);
   void codeDataOutputEnd(bool aAddEnd);
-	void codeIf(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void codeElseIf();
-	void codeElse(const yy::parser::location_type& aLocation);
-	void codeEndIf();
 	void codeIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);
 	void codeIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
 	void codeElseIs(const yy::parser::location_type& aLocation);

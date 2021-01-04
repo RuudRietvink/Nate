@@ -1012,11 +1012,13 @@ if-statement:
       { 
         nate.data.ifExpr.push($expr);
         nate.data.ifId.push(nate.uniqueName());
+        nate.data.ifLocation.push(@expr);
       }
     if-rest
       { 
         nate.data.ifExpr.pop(); 
         nate.data.ifId.pop(); 
+        nate.data.ifLocation.pop(); 
       }
   ;
 
@@ -1027,24 +1029,24 @@ if-rest:
 
 if-then:
 	  begin 
-		  { nate.codeIf(nate.data.ifExpr.top(), @begin); }
+		  { nate.doIf(nate.data.ifExpr.top(), nate.data.ifLocation.top()); }
 		  statement-list
-		  { nate.codeEndIf(); }
 	  end
 	  else
   ;
 
 else:
 	  %empty
+		  { nate.doEndIf(@else); }
   | ELSE 
-	  	{ nate.codeElseIf(); }
+	  	{ nate.doElseIf(@ELSE); }
 		  if-statement
   | ELSE col 
-		  { nate.codeElse(@ELSE); }
+		  { nate.doElse(@ELSE); }
     begin
-		statement-list
-		  { nate.codeEndIf(); }
+		  statement-list
 	  end
+		  { nate.doEndIf(@end); }
   ;
 
 if-is:

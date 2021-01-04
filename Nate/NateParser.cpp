@@ -39,6 +39,13 @@ TreeNode* NateParser::addStat(ByteCode code, const yy::parser::location_type& aL
 	return mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
 }
 
+TreeNode* NateParser::addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation) 
+{ 
+	mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
+	mCurNode->expr = expr;
+	return mCurNode;
+}
+
 TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
 { 
 	return mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
@@ -205,6 +212,49 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
   TreeNode* node = add(ByteCode::Assign, aLocation);
   node->expr = aValue;
   node->exprList = aExpressions;
+}
+
+void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	if (!aValue.type()->is(Type::Boolean))
+	{
+		error("Expected boolean expression for IF statement");
+	}
+
+	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
+
+	// join ElseIf and If
+	if (mCurNode->code == ByteCode::ElseIf && mCurNode->expr.isEmpty())
+	{
+		mCurNode->expr = aValue;
+		mCurNode->location = Location(aLocation, mLexer->currentFile());
+	}
+	else
+	{
+		addStat(ByteCode::If, aValue, aLocation);
+	}
+}
+
+void NateParser::doElseIf(const yy::parser::location_type& aLocation)
+{
+	up();
+	popScope();
+	addStat(ByteCode::ElseIf, aLocation);
+}
+
+void NateParser::doElse(const yy::parser::location_type& aLocation)
+{
+	up();
+	popScope();
+	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
+	addStat(ByteCode::Else, aLocation);
+}
+
+void NateParser::doEndIf(const yy::parser::location_type& aLocation)
+{
+	up();
+	add(ByteCode::EndIf, aLocation);
+	popScope();
 }
 
 std::string NateParser::in(int aOffset) const

@@ -38,8 +38,77 @@ int main(int argc, char** argv)
 #line 13
 	int32_t g = d;
 	double f = 4.4;
+	bool tr = true;
 	x = 	a__2081_ = static_cast<float>(3);
 	*output << "Hello, world " << 3;*output << std::endl;
 	*output << (x);*output << (d);*output << (f);*output << " ";
 	*output << std::endl;
+#line 21
+	if (d< 3)
+	{
+#line 22
+		d = 4;
+#line 24
+	}
+#line 24
+	if ((d< 3)|| (d> 6))
+	{
+#line 25
+		d = 5;
+	}
+#line 26
+	else
+	{
+#line 27
+		*output << (d);*output << std::endl;
+#line 29
+	}
+#line 29
+	if (tr)
+	{
+#line 30
+		tr = false;
+	}
+#line 31
+	else if (!tr)
+	{
+#line 32
+		if (tr)
+		{
+#line 33
+			tr = false;
+		}
+#line 34
+		else if (!tr)
+		{
+#line 35
+			tr = true;
+		}
+	}
+#line 36
+	else if (d> 3)
+	{
+#line 37
+		tr = tr;
+	}
+#line 38
+	else
+	{
+#line 39
+		*output << std::boolalpha ;*output << (tr);*output << std::endl;
+#line 41
+	}
+#line 41
+	if (tr)
+	{
+#line 42
+		tr = false;
+	}
+#line 43
+	else if (!tr)
+	{
+#line 44
+		tr = true;
+#line 556
+	}
 }

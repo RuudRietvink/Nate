@@ -33,6 +33,10 @@ enum class ByteCode
 	OutputSepConcat,
 	LocalVar,
 	Assign,
+	If,
+	Else,
+	ElseIf,
+	EndIf,
 };
 
 struct TreeNode
