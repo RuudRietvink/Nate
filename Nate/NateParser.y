@@ -947,7 +947,7 @@ output-part:
 		  { 
         if ($expr.type() && !$expr.type()->empty())
         {
-          nate.addExpr($expr, @expr);
+          nate.add(ByteCode::Expr, $expr, @expr);
         }
         else
         {
@@ -1101,24 +1101,24 @@ loop-statement:
 	  LOOP 
 		  { 
         lexer.pushState(Lexer::LOOP);
-        nate.codeInitLoop(@LOOP);
+        nate.doInitLoop(@LOOP);
       }
 	  for-part
 	  opt-while 
     begin
 		loop-part-statement-list
+    end
 		  { 
-        nate.codeEndLoop();
+        nate.doEndLoop(@end);
         lexer.popState();
       }
-    end
   ;
 
 for-part:
 	  while-loop-statement
   | for-loop-statement
   | col
-		  { nate.codeStartLoop(); }
+		  { nate.doStartLoop(@col); }
   ;
 
 loop-part-statement-list:
@@ -1134,14 +1134,14 @@ loop-part-statement:
 while-loop-statement:
 	  WHILE expr col
 		  { 
-		    nate.codeStartLoop();
-			  nate.codeLoopWhile($expr, @WHILE);
+		    nate.doStartLoop(@col);
+			  nate.doWhile($expr, @WHILE);
 		  }
   ;
   
 while-statement:
 	  WHILE expr col
-		  { nate.codeLoopWhile($expr, @WHILE); }
+		  { nate.doWhile($expr, @WHILE); }
   ;
 
 opt-while:
@@ -1177,7 +1177,7 @@ for-step:
 		      nate.error("Abstract type: " + $[optional-is-type]->name());
 	      }
 
-			  nate.codeStartForStepLoop(nate.data.forId, $[optional-is-type], $[for-to], $from, $to, $step);
+			  nate.doStartLoopForStep(nate.data.forId, $[optional-is-type], $[for-to], $from, $to, $step, @ASSIGN);
 		  }
   ;
 
@@ -1203,7 +1203,7 @@ for-loop-part-end:
 for-range:
 	  IN expr
 		  { 
-			  nate.codeStartForRangeLoop(nate.data.forId, $expr);
+			  nate.doStartLoopForRange(nate.data.forId, $expr, @IN);
 		  }
   ;
 

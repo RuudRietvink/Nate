@@ -42,7 +42,55 @@ program:
     tr := false
   else if not tr:
     tr := true
+    
+  var count := 3
+  loop while count > 0:
+    output count
+    count := count - 1
 
+  count := 5
+  loop:
+    count := count - 1
+  while count > 0:
+    output "out: " + count&
+  output
+
+  loop for var ind := 3 to 5:
+    output "out:"&ind,ind&ind,
+  output
+      
+  loop for var ind := 3 to 20:
+  while count > 0:
+    output ind
+
+  loop for var ind is int-8 := 3 to 20 step 4:
+    output ind
+  while ind < 15:
+    output ind ^ 2
+
+  loop for var ind is int-8 := 3 to 20 step 4 while ind < 15:
+    output ind
+
+  loop for var ind is int-8 := 29 down-to 3 step 3 while ind > 15:
+    output ind
+    
+  var list-1 is list of text
+  append "Hi there" to list-1
+  add 666 to list-1
+  insert "Hello" to list-1
+  output size of list-1, list-1's size
+
+  loop for var item in list-1:
+    output item
+
+  loop for var item in "abcd⅑⅛⅐efg":
+    output item
+    if id-1 = 3.4:
+      output id-1
+    if item = "a":
+      output "aaa"
+      item := 64
+      output item
 /*
 include "nate.define"
 import Hello

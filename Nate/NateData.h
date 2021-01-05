@@ -37,6 +37,10 @@ enum class ByteCode
 	Else,
 	ElseIf,
 	EndIf,
+	LoopStart,
+	LoopStartForStep,
+	LoopStartForRange,
+	While
 };
 
 struct TreeNode
@@ -58,23 +62,24 @@ struct TreeNode
 		nested.push_back(node);
 		return node.get();
 	}
-
-	TreeNode* addExpr(const Expr& expr, const Location& aLocation)
+	
+	TreeNode* add(ByteCode code, const Expr& expr, const Location& aLocation, TreeNode* back = nullptr)
 	{
-		//std::cout << this << " addExpr " << expr << std::endl;
-		auto node = std::make_shared<TreeNode>(ByteCode::Expr, aLocation);
-		nested.push_back(node);
+		//std::cout << this << " add " << (int) code << std::endl;
+		auto node = std::make_shared<TreeNode>(code, aLocation, back);
 		node->expr = expr;
+		nested.push_back(node);
 		return node.get();
 	}
-
 
 	ByteCode code;
 	std::vector<std::shared_ptr<TreeNode>> nested;
 	TreeNode* back = nullptr;
 	Expr expr;
+	Expr expr2;
+	Expr expr3;
 	std::vector<Expr> exprList;
 	Location location;
 	IdentifierPtr id;
-	bool initialize = false;
+	bool bool1 = false;
 };

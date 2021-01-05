@@ -51,9 +51,9 @@ TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocat
 	return mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
 }
 
-TreeNode* NateParser::addExpr(const Expr& expr, const yy::parser::location_type& aLocation) 
+TreeNode* NateParser::add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation)
 { 
-	return mCurNode->addExpr(expr, Location(aLocation, mLexer->currentFile()));
+	return mCurNode->add(code, expr, Location(aLocation, mLexer->currentFile()));
 }
 
 TreeNode* NateParser::up()
@@ -254,6 +254,83 @@ void NateParser::doEndIf(const yy::parser::location_type& aLocation)
 {
 	up();
 	add(ByteCode::EndIf, aLocation);
+	popScope();
+}
+
+void NateParser::doInitLoop(const yy::parser::location_type& aLocation)
+{
+	mLoopWhileCounts.push_back(0);
+	pushScope(std::make_shared<Scope>("while", IIdentifiersHolder::ScopeFlag::Local));
+}
+
+void NateParser::doStartLoop(const yy::parser::location_type& aLocation)
+{
+	addStat(ByteCode::LoopStart, aLocation);
+}
+
+void NateParser::doWhile(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	if (mLoopWhileCounts.back() > 0)
+	{
+		error("Only one while allowed in a loop.");
+	}
+
+	++mLoopWhileCounts.back();
+
+	if (!aValue.type()->is(Type::Boolean))
+	{
+		error("Expected boolean condition in while.");
+	}
+
+	add(ByteCode::While, aValue, aLocation);
+}
+
+void NateParser::doStartLoopForStep(const std::string& aId, 
+																		const TypePtr& aType, 
+																		bool aDownTo,
+																		const Expr& aStart,
+																		const Expr& aEnd,
+																		const Expr& aStep, 
+																		const yy::parser::location_type& aLocation)
+{
+	TypePtr type = aType->empty()
+							   ? aStart.type()
+							   : aType;
+
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
+	addIdentifier(id);
+
+	TreeNode* node = addStat(ByteCode::LoopStartForStep, aLocation);
+	node->id = id;
+	node->bool1 = aDownTo;
+	node->expr = aStart;
+	node->expr2 = aEnd;
+	node->expr3 = aStep;
+}
+
+void NateParser::doStartLoopForRange(const std::string& aId, 
+																	   const Expr& aRange, 
+											  					 	 const yy::parser::location_type& aLocation)
+{
+	TypePtr rangeType = aRange.type();
+	if (rangeType->isOfType("container"))
+	{
+		TypePtr type = rangeType->typenameType();
+		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
+		addIdentifier(id);
+	  TreeNode* node = addStat(ByteCode::LoopStartForRange, aRange, aLocation);
+		node->id = id;
+	}
+	else
+	{
+		error("Range must be a container, got: " + rangeType->name());
+	}
+}
+
+void NateParser::doEndLoop(const yy::parser::location_type& aLocation)
+{
+	up();
+	mLoopWhileCounts.pop_back();
 	popScope();
 }
 
@@ -1698,7 +1775,7 @@ void NateParser::declareLocalIdentifiers(
 
 		TreeNode* node = add(ByteCode::LocalVar, aLocation);
 		node->id = id;
-		node->initialize = initializeVariables;
+		node->bool1 = initializeVariables;
 	}
 }
 

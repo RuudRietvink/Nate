@@ -32,6 +32,11 @@ private:
 	void codeElseIf(const std::shared_ptr<TreeNode>& aNode);
 	void codeElse(const std::shared_ptr<TreeNode>& aNode);
 	void codeEndIf(const std::shared_ptr<TreeNode>& aNode);
+  void codeStartLoop(const std::shared_ptr<TreeNode>& aNode);
+  void codeStartLoopForStep(const std::shared_ptr<TreeNode>& aNode);
+  void codeStartLoopForRange(const std::shared_ptr<TreeNode>& aNode);
+  void codeEndLoop(const std::shared_ptr<TreeNode>& aNode);
+  void codeWhile(const std::shared_ptr<TreeNode>& aNode);
 
 	NateParser*                 mParser = nullptr;
   std::ostream&								mOut;

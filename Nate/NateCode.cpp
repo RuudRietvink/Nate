@@ -46,7 +46,7 @@ void NateCode::code(const std::shared_ptr<TreeNode>& aStat)
       codeOutput("*output", stat);
       break;
     case ByteCode::LocalVar:
-      codeDeclIdentifier(false, stat->id, stat->initialize, stat->location);
+      codeDeclIdentifier(false, stat->id, stat->bool1, stat->location);
       break;
     case ByteCode::Assign:
       codeAssign(stat);
@@ -65,6 +65,18 @@ void NateCode::code(const std::shared_ptr<TreeNode>& aStat)
       break;
     case ByteCode::EndIf:
       codeEndIf(stat);
+      break;
+    case ByteCode::LoopStart:
+      codeStartLoop(stat);
+      break;
+    case ByteCode::LoopStartForStep:
+      codeStartLoopForStep(stat);
+      break;
+    case ByteCode::LoopStartForRange:
+      codeStartLoopForRange(stat);
+      break;
+    case ByteCode::While:
+      codeWhile(stat);
       break;
 		default:
 			std::cerr << "Bad bytecode " << (int)stat->code << std::endl;
@@ -348,4 +360,77 @@ void NateCode::codeEndIf(const std::shared_ptr<TreeNode>& aNode)
 	--mIndent;
 	printLineNr(aNode->location);
 	mOut << in() << "}" << end();
+}
+
+void NateCode::codeStartLoop(const std::shared_ptr<TreeNode>& aNode)
+{
+	printLineNr(aNode->location);
+	mOut << in() << "while (true)" << end() << in() << "{" << end();
+	++mIndent;
+	code(aNode);
+	--mIndent;
+	mOut << in() << "}" << end();
+}
+
+void NateCode::codeStartLoopForStep(const std::shared_ptr<TreeNode>& aNode)
+{
+	printLineNr(aNode->location);
+
+	mOut << in() << "for (" << aNode->id->type()->codeType() << " " 
+			 << aNode->id->codeName() << "= " << codeExpr(aNode->expr) << ";" 
+			 << aNode->id->name() << (aNode->bool1 ? " >= " : "<=") << codeExpr(aNode->expr2) << ";"
+			 << aNode->id->name() << (aNode->bool1 ? " -= " : "+=") << codeExpr(aNode->expr3) << ")" << end()
+		   << in() << "{" << end();
+	++mIndent;
+	code(aNode);
+	--mIndent;
+	mOut << in() << "}" << end();
+}
+
+void NateCode::codeStartLoopForRange(const std::shared_ptr<TreeNode>& aNode)
+{
+	TypePtr rangeType = aNode->expr.type();
+	auto range = mParser->uniqueName();
+	auto iter = mParser->uniqueName();
+	auto next = mParser->uniqueName();
+
+	std::string ref = aNode->expr.is(ExprNode::Output) ? "&" : "";
+	std::string increment;
+
+	if (rangeType->isOfType("text"))
+	{
+		increment = iter + "=" + next;
+		mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(aNode->expr) << ";" << end(); 
+		mOut << in() << "auto " << next << " = " << range << ".cbegin();" << end();
+	}
+	else
+	{
+		increment = "++" + iter;
+		mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(aNode->expr) << ";" << end(); 
+	}
+
+	mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
+			 << iter << " != " << range << ".cend(); "
+			 << increment << ")" << end() << in() << "{" << end();
+
+	++mIndent;
+
+	if (rangeType->isOfType("text"))
+	{
+		mOut << in() << "uint32_t " << aNode->id->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << end();
+	}
+	else
+	{
+		mOut << in() << "auto const& " << aNode->id->codeName() << " = *" << iter << ";" << end();
+	}
+
+	code(aNode);
+	--mIndent;
+	mOut << in() << "}" << end();
+}
+
+void NateCode::codeWhile(const std::shared_ptr<TreeNode>& aNode)
+{
+	printLineNr(aNode->location);
+	mOut << in() << "if (!(" << codeExpr(aNode->expr) << ")) break;" << end();
 }

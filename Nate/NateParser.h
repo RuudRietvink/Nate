@@ -71,7 +71,7 @@ public:
 	TreeNode* addStat(ByteCode code, const yy::parser::location_type& aLocation);
 	TreeNode* addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
-	TreeNode* addExpr(const Expr& expr, const yy::parser::location_type& aLocation);
+	TreeNode* add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* up();
 
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
@@ -99,6 +99,21 @@ public:
 	void doElseIf(const yy::parser::location_type& aLocation);
 	void doElse(const yy::parser::location_type& aLocation);
 	void doEndIf(const yy::parser::location_type& aLocation);
+	void doInitLoop(const yy::parser::location_type& aLocation);
+	void doStartLoop(const yy::parser::location_type& aLocation);
+	void doWhile(const Expr& aValue, const yy::parser::location_type& aLocation);
+  void doStartLoopForStep(const std::string& aId, 
+												 const TypePtr& aType, 
+												 bool aDownTo,
+												 const Expr& aStart,
+												 const Expr& aEnd,
+												 const Expr& aStep, 
+												 const yy::parser::location_type& aLocation);
+  void doStartLoopForRange(const std::string& aId, 
+													 const Expr& aRange, 
+											  	 const yy::parser::location_type& aLocation);
+	void doEndLoop(const yy::parser::location_type& aLocation);
+
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -224,18 +239,6 @@ public:
 	void codeBeginIs();
 	void codeEndIs(const yy::parser::location_type& aLocation);
 	void codeEndIfIs(const yy::parser::location_type& aLocation);
-  void codeInitLoop(const yy::parser::location_type& aLocation);
-  void codeStartLoop();
-  void codeStartForStepLoop(const std::string& aId, 
-														const TypePtr& aType, 
-														bool aDownTo,
-														const Expr& aStart,
-														const Expr& aEnd,
-														const Expr& aStep);
-  void codeStartForRangeLoop(const std::string& aId, 
-														 const Expr& aRange);
-  void codeEndLoop();
-  void codeLoopWhile(const Expr& aExpr, const yy::parser::location_type& aLocation);
   void codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
   void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);
