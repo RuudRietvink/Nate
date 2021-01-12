@@ -45,6 +45,7 @@ private:
   void codeStartLoopForStep(const TreeNodePtr& aNode);
   void codeStartLoopForRange(const TreeNodePtr& aNode);
   void codeWhile(const TreeNodePtr& aNode);
+  void codeScope(const TreeNodePtr& aNode);
 
 	bool isConstIntScalar(const Expr& aExpr);
 	bool isNestedConstIntScalar(const TreeNodePtr& aNode);

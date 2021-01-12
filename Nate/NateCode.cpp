@@ -61,6 +61,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::LoopStartForStep: result = "LoopStartForStep"; break;
 	case ByteCode::LoopStartForRange: result = "LoopStartForRange"; break;
 	case ByteCode::While: result = "While"; break;
+	case ByteCode::Scope: result = "Scope"; break;
 	}
 
 	if (aNode->id)
@@ -135,6 +136,9 @@ void NateCode::code(const TreeNodePtr& aStat)
     break;
   case ByteCode::While:
     codeWhile(aStat);
+    break;
+  case ByteCode::Scope:
+    codeScope(aStat);
     break;
 	default:
 		std::cerr << "Bad bytecode " << (int)aStat->code << std::endl;
@@ -671,4 +675,14 @@ void NateCode::codeWhile(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
 	mOut << in() << "if (!(" << codeExpr(aNode->expr) << ")) break;" << end();
+}
+
+void NateCode::codeScope(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	mOut << in() << "{" << end();
+	++mIndent;
+	codeNested(aNode);
+	--mIndent;
+	mOut << in() << "}" << end();
 }

@@ -38,30 +38,31 @@ program:
   else:
     output tr
 
-  if tr:
-    tr := false
-  else if not tr:
-    tr := true
+  scope:
+    if tr:
+      tr := false
+    else if not tr:
+      tr := true
     
-  var count := 3
-  loop while count > 0:
-    output count
-    count := count - 1
+    var count := 3
+    loop while count > 0:
+      output count
+      count := count - 1
 
-  count := 5
-  loop:
-    count := count - 1
-  while count > 0:
-    output "out: " + count&
-  output
+    count := 5
+    loop:
+      count := count - 1
+    while count > 0:
+      output "out: " + count&
+    output
 
-  loop for var ind := 3 to 5:
-    output "out:"&ind,ind&ind,
-  output
+    loop for var ind := 3 to 5:
+      output "out:"&ind,ind&ind,
+    output
       
-  loop for var ind := 3 to 20:
-  while count > 0:
-    output ind
+    loop for var ind := 3 to 20:
+    while count > 0:
+      output ind
 
   loop for var ind is int-8 := 3 to 20 step 4:
     output ind

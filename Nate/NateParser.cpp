@@ -377,6 +377,18 @@ void NateParser::doEndLoop(const yy::parser::location_type& aLocation)
 	popScope();
 }
 
+void NateParser::doStartScope(const yy::parser::location_type& aLocation)
+{
+	pushScope(std::make_shared<Scope>("scope", IIdentifiersHolder::ScopeFlag::Local));
+	addStat(ByteCode::Scope, aLocation);
+}
+
+void NateParser::doEndScope(const yy::parser::location_type& aLocation)
+{
+	popScope();
+	up();
+}
+
 std::string NateParser::in(int aOffset) const
 {
 	int size = static_cast<int>(mTypesHolders.size()) + aOffset - 1; 

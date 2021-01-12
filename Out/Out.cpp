@@ -12,10 +12,10 @@ std::shared_ptr<std::ostream> error = {};
 #include <fstream>
 #include <fstream>
 #include <sstream>
-#line 78 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
+#line 79 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
 	list_1.push_back("Hi there");
 	list_1.push_back((std::to_string(666)));
-#line 80
+#line 81
 	list_1.insert(list_1.cbegin(), "Hello");
 #line 16 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Complex.ns"
 const double i = 1;
@@ -104,79 +104,82 @@ int main(int argc, char** argv)
 #line 41
 	}
 #line 41
-	if (tr)
 	{
-#line 42
-		tr = false;
-	}
+		if (tr)
+		{
 #line 43
-	else if (!tr)
-	{
+			tr = false;
+		}
 #line 44
-		tr = true;
-#line 46
-	}
-#line 46
-	int32_t count = 3;
-	while (true)
-	{
+		else if (!tr)
+		{
+#line 45
+			tr = true;
 #line 47
-		if (!(count> 0)) break;
-		*output << (count);*output << std::endl;
-		count = count- 1;
-	}
-	count = 5;
-	while (true)
-	{
-#line 53
-		count = count- 1;
-		if (!(count> 0)) break;
-		*output << (("out: "+ (std::to_string(count))));
-	}
-#line 56
-	*output << std::endl;
-#line 58
-	for (int32_t ind= 3;ind<=5;ind+=1)
-	{
+		}
+#line 47
+		int32_t count = 3;
+		while (true)
+		{
+#line 48
+			if (!(count> 0)) break;
+			*output << (count);*output << std::endl;
+			count = count- 1;
+		}
+		count = 5;
+		while (true)
+		{
+#line 54
+			count = count- 1;
+			if (!(count> 0)) break;
+			*output << (("out: "+ (std::to_string(count))));
+		}
+#line 57
+		*output << std::endl;
 #line 59
-		*output << "out:" << (ind);*output << " " << (ind);*output << (ind);*output << " ";
-	}
+		for (int32_t ind= 3;ind<=5;ind+=1)
+		{
 #line 60
-	*output << std::endl;
-#line 62
-	for (int32_t ind= 3;ind<=20;ind+=1)
-	{
+			*output << "out:" << (ind);*output << " " << (ind);*output << (ind);*output << " ";
+		}
+#line 61
+		*output << std::endl;
 #line 63
-		if (!(count> 0)) break;
-		*output << (ind);*output << std::endl;
+		for (int32_t ind= 3;ind<=20;ind+=1)
+		{
+#line 64
+			if (!(count> 0)) break;
+			*output << (ind);*output << std::endl;
+		}
 	}
+#line 67
 	for (int8_t ind= 3;ind<=20;ind+=4)
 	{
-#line 67
+#line 68
 		*output << static_cast<int>(ind);*output << std::endl;
 		if (!(ind< 15)) break;
 		*output << ((std::pow(ind, 2)));*output << std::endl;
 	}
 	for (int8_t ind= 3;ind<=20;ind+=4)
 	{
-#line 71
+#line 72
 		if (!(ind< 15)) break;
 		*output << static_cast<int>(ind);*output << std::endl;
 	}
 	for (int8_t ind= 29;ind >= 3;ind -= 3)
 	{
-#line 74
+#line 75
 		if (!(ind> 15)) break;
 		*output << static_cast<int>(ind);*output << std::endl;
 	}
 	std::list<std::string> list_1 = {};
-#line 81
+#line 82
 	*output << ((static_cast<int32_t>(list_1.size())));*output << " " << ((static_cast<int32_t>(list_1.size())));*output << std::endl;
 	auto const& tmp__14__ = list_1;
 	for (auto tmp__15__ = tmp__14__.cbegin(); tmp__15__ != tmp__14__.cend(); ++tmp__15__)
 	{
 		auto const& item = *tmp__15__;
-#line 84
+#line 85
 		*output << (item);*output << std::endl;
 	}
 	const std::string tmp__17__ = "abcd⅑⅛⅐efg";
@@ -184,98 +187,98 @@ int main(int argc, char** argv)
 	for (auto tmp__18__ = tmp__17__.cbegin(); tmp__18__ != tmp__17__.cend(); tmp__18__=tmp__19__)
 	{
 		uint32_t item = utf8::next(tmp__19__,tmp__17__.cend());
-#line 87
+#line 88
 		*output << (Core::toString(item));*output << std::endl;
 		if (((Complex<double>(0, (i* d)))- 1)== (Complex<double>(3.4, 0)))
 		{
-#line 89
+#line 90
 			*output << (((Complex<double>(0, (i* d)))- 1));*output << std::endl;
 		}
-#line 90
+#line 91
 		if ((Core::toString(item))== "a")
 		{
-#line 91
+#line 92
 			*output << "aaa" << std::endl;
 			item = static_cast<uint32_t>(64);
 			*output << (Core::toString(item));*output << std::endl;
-#line 95
+#line 96
 		}
 	}
-#line 95
+#line 96
 	std::string v3 = "hello";
 	int32_t id7 = 12;
-#line 98
+#line 99
 	*output << "v3:  " << (v3);*output << std::endl;
-#line 101
+#line 102
 	auto const tmp__11__ = id7;
-#line 101
+#line 102
 	switch (tmp__11__)
 	{
-#line 101
+#line 102
 	case 12:
 	case 24:
 	{
-#line 103
+#line 104
 		*output << "hi" << std::endl;
 		id7 = 2;
 		break;
 	}
-#line 105
+#line 106
 	case 16:
 	{
-#line 106
+#line 107
 		*output << "hello" << std::endl;
 		break;
 	}
 	default:
 	{
-#line 108
+#line 109
 		*output << "else" << std::endl;
 		break;
 	}
 	}
-#line 111
+#line 112
 	auto const tmp__12__ = v3;
-#line 111
+#line 112
 	if ((tmp__12__ == "hi")
 
 					 || (tmp__12__ == "hello"))
 	{
-#line 113
+#line 114
 		*output << "hi" << std::endl;
 		id7 = 2;
 	}
-#line 115
+#line 116
 	else if ((tmp__12__ == Core::upperCased(v3)))
 	{
-#line 116
+#line 117
 		*output << "hello" << std::endl;
 	}
 	else
 	{
-#line 118
+#line 119
 		*output << std::endl;
 	}
-#line 121
+#line 122
 	auto const tmp__13__ = id7;
-#line 125
+#line 126
 	if ((tmp__13__ == (12* 34)+ id7)
 
 					 || (tmp__13__ == 16))
 	{
-#line 127
+#line 128
 		*output << "hello" << std::endl;
 	}
 	else
 	{
-#line 121
+#line 122
 		switch (tmp__13__)
 		{
-#line 121
+#line 122
 		case 12:
 		case 2+ ((3/ 4)* 6):
 		{
-#line 123
+#line 124
 			*output << "hi" << std::endl;
 			id7 = 2;
 			break;

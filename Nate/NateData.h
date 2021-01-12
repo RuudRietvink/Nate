@@ -44,7 +44,8 @@ enum class ByteCode
 	LoopStart,
 	LoopStartForStep,
 	LoopStartForRange,
-	While
+	While,
+	Scope,
 };
 
 struct TreeNode

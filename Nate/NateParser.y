@@ -666,11 +666,11 @@ flag:
 
 scope-statement:
     SCOPE col
-      { nate.codeStartScope(); }
+      { nate.doStartScope(@col); }
     begin
       statement-list
     end
-      { nate.codeEndScope(); }
+      { nate.doEndScope(@end); }
   ;
 
 impl-var-statement:

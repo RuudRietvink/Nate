@@ -65,18 +65,6 @@ std::string NateParser::codeExpr(const Expr& aValue)
 	return result;
 }
 
-void NateParser::codeStartScope()
-{
-	*mOut << in() << "{" << std::endl;
-	pushScope(std::make_shared<Scope>("scope", IIdentifiersHolder::ScopeFlag::Local));
-}
-
-void NateParser::codeEndScope()
-{
-	popScope();
-	*mOut << in() << "}\n" << std::endl;
-}
-
 void NateParser::codeCodeInclude()
 {
 	*mOut << in() << mCodes.back()->code() << std::endl;

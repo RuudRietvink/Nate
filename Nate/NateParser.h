@@ -204,8 +204,8 @@ public:
 					const yy::parser::location_type& aLocation);
 	
 	std::string codeExpr(const Expr& aValue);
-	void codeStartScope();
-	void codeEndScope();
+	void doStartScope(const yy::parser::location_type& aLocation);
+	void doEndScope(const yy::parser::location_type& aLocation);
 	void codeCodeInclude();
 	void codeDeclareLocalIdentifier(bool aExtern,
 																	const IdentifierPtr& aIdentifier,
