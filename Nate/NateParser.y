@@ -1051,10 +1051,13 @@ else:
 
 if-is:
     IS 
-	  	{ nate.codeIfIs(nate.data.ifExpr.top(), nate.data.ifId.top(), @IS); }
+	  	{ 
+        nate.doIfIs(nate.data.ifExpr.top(), nate.data.ifId.top(), @IS);
+        nate.doCaseIsList(@IS);
+      }
     is-rest
     is-else
-	  	{ nate.codeEndIfIs(@[is-else]); }
+		  { nate.doEndIs(@[is-else]); }
   ;
   
 is-rest:
@@ -1073,28 +1076,33 @@ is-block:
   
 is-part:
     expr col
-	  	{ nate.codeIs($expr, nate.data.ifExpr.top(), @expr); }
+	  	{ 
+        nate.doCaseIs($expr, nate.data.ifExpr.top(), @expr);
+      }
     is-part-block
   ;
 
 is-part-block:
     %empty
   | begin 
-      { nate.codeBeginIs(); }
       statement-list 
     end
-      { nate.codeEndIs(@end); }
+      { 
+        nate.up();
+        nate.doCaseIsList(@end);
+      }
   ;
   
 is-else:
     %empty
   | ELSE col 
-	  	{ nate.codeElseIs(@ELSE); }
+	  	{ 
+        nate.up();
+        nate.doElseIs(@ELSE);
+      }
     begin 
-      { nate.codeBeginIs(); }
       statement-list 
     end
-      { nate.codeEndIs(@end); }
   ;
 
 loop-statement:

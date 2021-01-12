@@ -91,7 +91,44 @@ program:
       output "aaa"
       item := 64
       output item
-/*
+
+  var v3 := "hello"
+  var id7 := 12
+
+  output "v3: ", v3
+
+  if id7:
+  is 12:
+  is 24:
+    output "hi"
+    id7 := 2
+  is 16:
+    output "hello"
+  else:
+    output "else"
+
+  if v3:
+  is "hi":
+  is "hello":
+    output "hi"
+    id7 := 2
+  is uppercased v3:
+    output "hello"
+  else:
+    output
+
+  if id7:
+  is 12:
+  is 2+3/4*6:
+    output "hi"
+    id7 := 2
+  is 12*34 + id7:
+  is 16:
+    output "hello"
+  else:
+    output "else"
+
+  /*
 include "nate.define"
 import Hello
 

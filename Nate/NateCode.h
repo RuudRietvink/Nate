@@ -10,14 +10,16 @@ class NateCode
 {
 public:
   NateCode(std::ostream& aOut, NateParser* aParser);
-  void code(const std::shared_ptr<TreeNode>& aStat);
+  void code(const TreeNodePtr& aStat);
+  void codeNested(const TreeNodePtr& aStat);
+  void codeTreeDesc(const TreeNodePtr& aStat);
 
 private:
   std::string in(int extra = 0);
   void printLineNr(const Location& aLocation);
 	char end();
-  void codeProgram(const std::shared_ptr<TreeNode>& aNode);
-  void codeOutput(const std::string& aStream, const std::shared_ptr<TreeNode>& aNode);
+  void codeProgram(const TreeNodePtr& aNode);
+  void codeOutput(const std::string& aStream, const TreeNodePtr& aNode);
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
 	void codeOutput(const Expr& aValue);
@@ -27,16 +29,28 @@ private:
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	void codeAssign(const std::shared_ptr<TreeNode>& aNode);
-	void codeIf(const std::shared_ptr<TreeNode>& aNode);
-	void codeElseIf(const std::shared_ptr<TreeNode>& aNode);
-	void codeElse(const std::shared_ptr<TreeNode>& aNode);
-	void codeEndIf(const std::shared_ptr<TreeNode>& aNode);
-  void codeStartLoop(const std::shared_ptr<TreeNode>& aNode);
-  void codeStartLoopForStep(const std::shared_ptr<TreeNode>& aNode);
-  void codeStartLoopForRange(const std::shared_ptr<TreeNode>& aNode);
-  void codeEndLoop(const std::shared_ptr<TreeNode>& aNode);
-  void codeWhile(const std::shared_ptr<TreeNode>& aNode);
+	void codeAssign(const TreeNodePtr& aNode);
+	void codeIf(const TreeNodePtr& aNode);
+	void codeElseIf(const TreeNodePtr& aNode);
+	void codeElse(const TreeNodePtr& aNode);
+	void codeEndIf(const TreeNodePtr& aNode);
+	void codeIfIs(const TreeNodePtr& aNode);
+	bool codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool& firstIf);
+	void codeCaseIsListSwitch(const TreeNodePtr& aNode);
+	void codeSwitch(const TreeNodePtr& aNode, const TreeNodePtr& aElsePart);
+	void codeCaseIsIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool firstCond);
+	void codeCaseIsSwitch(const TreeNodePtr& aNode);
+	void codeElseIs(const TreeNodePtr& aNode);
+  void codeStartLoop(const TreeNodePtr& aNode);
+  void codeStartLoopForStep(const TreeNodePtr& aNode);
+  void codeStartLoopForRange(const TreeNodePtr& aNode);
+  void codeWhile(const TreeNodePtr& aNode);
+
+	bool isConstIntScalar(const Expr& aExpr);
+	bool isNestedConstIntScalar(const TreeNodePtr& aNode);
+	bool isNestedNonConstIntScalar(const TreeNodePtr& aNode);
+
+	std::string codeDesc(const TreeNodePtr& aNode);
 
 	NateParser*                 mParser = nullptr;
   std::ostream&								mOut;

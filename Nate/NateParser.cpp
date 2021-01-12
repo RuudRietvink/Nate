@@ -147,7 +147,7 @@ int NateParser::parse()
 		
 	auto result = mParser->parse();
 	NateCode coder(*mOut, this);
-	coder.code(data.stats);
+	coder.codeNested(data.stats);
 
 	if (mLexer->debug())
 	{
@@ -255,6 +255,49 @@ void NateParser::doEndIf(const yy::parser::location_type& aLocation)
 	up();
 	add(ByteCode::EndIf, aLocation);
 	popScope();
+}
+
+void NateParser::doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation)
+{
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), idName, aValue.type());
+	addIdentifier(id);
+	IfIs info;
+	info.id = id;
+	info.isSwitch = aValue.type()->is(Type::Scalar);
+	mIfIs.push(info);
+	
+
+  TreeNode* node = addStat(ByteCode::IfIs, aValue, aLocation);
+  node->id = id;
+	node->bool1 = aValue.type()->is(Type::Scalar);
+}
+
+void NateParser::doCaseIsList(const yy::parser::location_type& aLocation)
+{
+  addStat(ByteCode::CaseIsList, aLocation);
+}
+
+void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation)
+{
+	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
+				aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
+	{
+		error("Expected expression with same type as in IF");
+	}
+		
+  add(ByteCode::CaseIs, aValue, aLocation);
+}
+
+void NateParser::doElseIs(const yy::parser::location_type& aLocation)
+{
+  addStat(ByteCode::ElseIs, aLocation);
+}
+
+void NateParser::doEndIs(const yy::parser::location_type& aLocation)
+{
+	mIfIs.pop();
+	up();
+	up();
 }
 
 void NateParser::doInitLoop(const yy::parser::location_type& aLocation)

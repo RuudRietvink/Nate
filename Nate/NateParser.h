@@ -54,7 +54,7 @@ public:
 		IdentifierPtr propId;
 		WithFlags* flagsHolder = nullptr;
 
-		std::shared_ptr<TreeNode> stats;
+		TreeNodePtr stats;
 	};
 
 
@@ -99,6 +99,11 @@ public:
 	void doElseIf(const yy::parser::location_type& aLocation);
 	void doElse(const yy::parser::location_type& aLocation);
 	void doEndIf(const yy::parser::location_type& aLocation);
+	void doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);
+	void doCaseIsList(const yy::parser::location_type& aLocation);
+	void doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
+	void doElseIs(const yy::parser::location_type& aLocation);
+	void doEndIs(const yy::parser::location_type& aLocation);
 	void doInitLoop(const yy::parser::location_type& aLocation);
 	void doStartLoop(const yy::parser::location_type& aLocation);
 	void doWhile(const Expr& aValue, const yy::parser::location_type& aLocation);
@@ -233,12 +238,6 @@ public:
 	void codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation);
 	void codeDataEnd(const std::string& aId, const yy::parser::location_type& aLocation);
   void codeDataOutputEnd(bool aAddEnd);
-	void codeIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);
-	void codeIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
-	void codeElseIs(const yy::parser::location_type& aLocation);
-	void codeBeginIs();
-	void codeEndIs(const yy::parser::location_type& aLocation);
-	void codeEndIfIs(const yy::parser::location_type& aLocation);
   void codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
   void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);
@@ -337,13 +336,7 @@ private:
 	struct IfIs
 	{
 		bool isSwitch = true;
-		bool isFirst = true;
-		bool isFirstTest = true;
-		bool nextElse = false;
-		bool nextCase = false;
-		std::string idName;
-		std::shared_ptr<std::ostringstream> out;
-		std::ostream* savedOut = nullptr;
+		IdentifierPtr id;
 	};
 	std::stack<IfIs> mIfIs;
 	

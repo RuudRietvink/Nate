@@ -37,6 +37,10 @@ enum class ByteCode
 	Else,
 	ElseIf,
 	EndIf,
+	IfIs,
+	CaseIsList,
+	CaseIs,
+	ElseIs,
 	LoopStart,
 	LoopStartForStep,
 	LoopStartForRange,
@@ -83,3 +87,5 @@ struct TreeNode
 	IdentifierPtr id;
 	bool bool1 = false;
 };
+
+using TreeNodePtr = std::shared_ptr<TreeNode>;

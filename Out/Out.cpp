@@ -172,18 +172,18 @@ int main(int argc, char** argv)
 	std::list<std::string> list_1 = {};
 #line 81
 	*output << ((static_cast<int32_t>(list_1.size())));*output << " " << ((static_cast<int32_t>(list_1.size())));*output << std::endl;
-	auto const& tmp__11__ = list_1;
-	for (auto tmp__12__ = tmp__11__.cbegin(); tmp__12__ != tmp__11__.cend(); ++tmp__12__)
+	auto const& tmp__14__ = list_1;
+	for (auto tmp__15__ = tmp__14__.cbegin(); tmp__15__ != tmp__14__.cend(); ++tmp__15__)
 	{
-		auto const& item = *tmp__12__;
+		auto const& item = *tmp__15__;
 #line 84
 		*output << (item);*output << std::endl;
 	}
-	const std::string tmp__14__ = "abcd⅑⅛⅐efg";
-	auto tmp__16__ = tmp__14__.cbegin();
-	for (auto tmp__15__ = tmp__14__.cbegin(); tmp__15__ != tmp__14__.cend(); tmp__15__=tmp__16__)
+	const std::string tmp__17__ = "abcd⅑⅛⅐efg";
+	auto tmp__19__ = tmp__17__.cbegin();
+	for (auto tmp__18__ = tmp__17__.cbegin(); tmp__18__ != tmp__17__.cend(); tmp__18__=tmp__19__)
 	{
-		uint32_t item = utf8::next(tmp__16__,tmp__14__.cend());
+		uint32_t item = utf8::next(tmp__19__,tmp__17__.cend());
 #line 87
 		*output << (Core::toString(item));*output << std::endl;
 		if (((Complex<double>(0, (i* d)))- 1)== (Complex<double>(3.4, 0)))
@@ -198,7 +198,93 @@ int main(int argc, char** argv)
 			*output << "aaa" << std::endl;
 			item = static_cast<uint32_t>(64);
 			*output << (Core::toString(item));*output << std::endl;
-#line 604
+#line 95
+		}
+	}
+#line 95
+	std::string v3 = "hello";
+	int32_t id7 = 12;
+#line 98
+	*output << "v3:  " << (v3);*output << std::endl;
+#line 101
+	auto const tmp__11__ = id7;
+#line 101
+	switch (tmp__11__)
+	{
+#line 101
+	case 12:
+	case 24:
+	{
+#line 103
+		*output << "hi" << std::endl;
+		id7 = 2;
+		break;
+	}
+#line 105
+	case 16:
+	{
+#line 106
+		*output << "hello" << std::endl;
+		break;
+	}
+	default:
+	{
+#line 108
+		*output << "else" << std::endl;
+		break;
+	}
+	}
+#line 111
+	auto const tmp__12__ = v3;
+#line 111
+	if ((tmp__12__ == "hi")
+
+					 || (tmp__12__ == "hello"))
+	{
+#line 113
+		*output << "hi" << std::endl;
+		id7 = 2;
+	}
+#line 115
+	else if ((tmp__12__ == Core::upperCased(v3)))
+	{
+#line 116
+		*output << "hello" << std::endl;
+	}
+	else
+	{
+#line 118
+		*output << std::endl;
+	}
+#line 121
+	auto const tmp__13__ = id7;
+#line 125
+	if ((tmp__13__ == (12* 34)+ id7)
+
+					 || (tmp__13__ == 16))
+	{
+#line 127
+		*output << "hello" << std::endl;
+	}
+	else
+	{
+#line 121
+		switch (tmp__13__)
+		{
+#line 121
+		case 12:
+		case 2+ ((3/ 4)* 6):
+		{
+#line 123
+			*output << "hi" << std::endl;
+			id7 = 2;
+			break;
+		}
+		default:
+		{
+			*output << "else" << std::endl;
+			break;
+		}
 		}
 	}
 }
