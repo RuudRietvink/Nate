@@ -3,6 +3,7 @@
 #include "Container.h"
 #include "Type.h"
 #include "WithFlags.h"
+#include "Expr.h"
 
 #include <list>
 #include <string>
@@ -14,22 +15,20 @@ class Identifier;
 typedef std::shared_ptr<Identifier> IdentifierPtr;
 class IIdentifiersHolder;
 typedef std::shared_ptr<IIdentifiersHolder> IIdentifiersHolderPtr;
-class Expr;
-typedef std::shared_ptr<Expr> ExprPtr;
 
 class Identifier : public WithFlags
 {
 public:
 	Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType);
-	Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue);
+	Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const Expr& aInitValue);
 	virtual ~Identifier() = default;
 	std::string setFlagString(const std::string& aFlag) override;
 
 	const std::string&								name()							const;
 	const std::string&								codeName()					const;
-	ExprPtr				    								initValue()				  const;
+	Expr   				    								initValue()				  const;
 	TypePtr														type()							const;
-	std::weak_ptr<IIdentifiersHolder>             identifiersHolder()	const;
+	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
 	bool															isObjectMe()				const;
 	static bool					   						isNameMe(const std::string& aName);
 	static std::string     						nameMe();
@@ -44,7 +43,7 @@ public:
 private:
 	std::string												mName;
 	std::string												mCodeName;
-	ExprPtr 													mInitValue;
+	Expr    													mInitValue;
 	TypePtr														mType;
 	std::weak_ptr<IIdentifiersHolder>	mIdentifiersHolder;
 };

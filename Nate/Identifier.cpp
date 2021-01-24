@@ -5,12 +5,12 @@
 #include "NateFunctions.h"
 
 Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
-	: Identifier(aIdentifiersHolder, aName, aType, ExprPtr(new Expr(ExprNode("default", "{}", aType))))
+	: Identifier(aIdentifiersHolder, aName, aType, Expr(ExprNode("default", "{}", aType)))
 {
-	mInitValue->node().setFlag(ExprNode::Default, true);
+	mInitValue.node().setFlag(ExprNode::Default, true);
 }
 
-Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const ExprPtr& aInitValue)
+Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const Expr& aInitValue)
 	: mIdentifiersHolder(aIdentifiersHolder),
 	mName(aName),
 	mCodeName(toCodeName(aName)),
@@ -55,14 +55,14 @@ bool Identifier::isNameMe(const std::string& aName)
 
 const std::string&		Identifier::name()      const { return mName; }
 const std::string&		Identifier::codeName()  const { return mCodeName; }
-ExprPtr 		      		Identifier::initValue() const { return mInitValue; }
+Expr    		      		Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
 std::weak_ptr<IIdentifiersHolder>	Identifier::identifiersHolder() const { return mIdentifiersHolder; }
 bool					 		    Identifier::isObjectMe()const { return isNameMe(mName); }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 {
-	aStream << "Identifier(" << aValue.name() << "," << aValue.codeName() << "," << *aValue.type() << "," << *aValue.initValue();
+	aStream << "Identifier(" << aValue.name() << "," << aValue.codeName() << "," << *aValue.type() << "," << aValue.initValue();
 	if (aValue.is(Identifier::Const)) aStream << ",Const";
 	if (aValue.is(Identifier::Property)) aStream << ",Property";
 	if (aValue.is(Identifier::ReadOnly)) aStream << ",ReadOnly";

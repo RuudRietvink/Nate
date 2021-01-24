@@ -45,6 +45,9 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Expr: result = "Expr"; break;
 	case ByteCode::Block: result = "Block"; break;
 	case ByteCode::StdOutput: result = "StdOutput"; break;
+	case ByteCode::StdError: result = "Error"; break;
+	case ByteCode::Write: result = "Write"; break;
+	case ByteCode::Data: result = "Data"; break;
 	case ByteCode::OutputSepComma: result = "OutputSepComma"; break;
 	case ByteCode::OutputSepConcat: result = "OutputSepConcat"; break;
 	case ByteCode::LocalVar: result = "LocalVar"; break;
@@ -107,6 +110,9 @@ void NateCode::code(const TreeNodePtr& aStat)
     break;
   case ByteCode::Data:
     codeData(aStat);
+    break;
+  case ByteCode::Write:
+    codeWrite(aStat);
     break;
   case ByteCode::LocalVar:
     codeDeclIdentifier(false, aStat->id, aStat->bool1, aStat->location);
@@ -180,6 +186,22 @@ void NateCode::codeData(const TreeNodePtr& aNode)
 	codeOutput(name, aNode);
 	mOut << in() << "const " << aNode->id->type()->codeType() << " " << aNode->id->codeName() << "= " << name << ".str();" << end();
 
+}
+
+void NateCode::codeWrite(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	mDataOutput = false;
+	if (aNode->bool1)
+	{
+    codeDeclIdentifier(false, aNode->id, true, aNode->location);
+	}
+	else if (!aNode->expr.isEmpty())
+	{
+		mOut << in() << "nate__writer = " << codeExpr(aNode->expr) << ";" << end();
+	}
+
+	codeOutput("*nate__writer", aNode);
 }
 
 void NateCode::codeOutput(const std::string& aStream, const TreeNodePtr& aNode)
@@ -338,7 +360,7 @@ void NateCode::codeDeclIdentifier(bool aExtern,
 
 	if (initializeVariables)
 	{
-		mOut << " = " << codeExpr(*aIdentifier->initValue());
+		mOut << " = " << codeExpr(aIdentifier->initValue());
 	}
 	
 	mOut << ";" << end();

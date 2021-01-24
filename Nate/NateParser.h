@@ -38,7 +38,6 @@ public:
 
 	struct ParseData
 	{
-		std::string prevWriteSink;
 		std::string prevReadSource;
 		bool prevWasValue = false;
 		std::stack<Expr> ifExpr;
@@ -94,7 +93,7 @@ public:
 
 	void startProgram(const yy::parser::location_type& aLocation);
 	void endProgram(const yy::parser::location_type& aLocation);
-	void doAssign(const std::vector<Expr>& aExpressions, Expr& aValue, const yy::parser::location_type& aLocation);
+	void doAssign(const std::vector<Expr>& aExpressions, const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doIf(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doElseIf(const yy::parser::location_type& aLocation);
 	void doElse(const yy::parser::location_type& aLocation);
@@ -120,6 +119,7 @@ public:
 	void doEndLoop(const yy::parser::location_type& aLocation);
 	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
 	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation);
+	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
 
 
 	void pushScope(const ScopePtr& aScope);
@@ -226,9 +226,6 @@ public:
 													 	const IdentifierPtr& aId, 
 													 	Object::PropType aPropType);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-	void codeOutput(const std::string& aString);
-	void codeOutput(const Expr& aValue);
-	void codeOutputEnd(bool aAddEnd = true);
 	void codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
@@ -288,7 +285,6 @@ private:
 								 					 Match& aMatch);
 	void unput(const std::string::const_iterator& aStart,
 						 const std::string::const_iterator& aEnd);
-	void codeOutputNew();
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;

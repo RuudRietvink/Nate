@@ -187,9 +187,10 @@ void NateParser::endProgram(const yy::parser::location_type& aLocation)
 }
 
 void NateParser::doAssign(const std::vector<Expr>& aExpressions,
-													Expr& aValue,
+													const Expr& aValue,
 													const yy::parser::location_type& aLocation)
 {
+	Expr copy(aValue);
 	for (auto const& expr : aExpressions)
 	{
 		if (expr.is(ExprNode::ConstExpr))
@@ -202,15 +203,15 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 		}
 
 		const TypePtr& exprType = expr.type();
-		bool ok = aValue.node().castToType(exprType);
+		bool ok = copy.node().castToType(exprType);
 		if (!ok)
 		{
-			error("cannot cast '" + aValue.text() + "' of type " + aValue.type()->name() + " to type " + exprType->name());
+			error("cannot cast '" + copy.text() + "' of type " + copy.type()->name() + " to type " + exprType->name());
 		}
 	}
 
   TreeNode* node = add(ByteCode::Assign, aLocation);
-  node->expr = aValue;
+  node->expr = copy;
   node->exprList = aExpressions;
 }
 
@@ -400,7 +401,7 @@ void NateParser::doCodeInclude(const yy::parser::location_type& aLocation)
 std::string NateParser::in(int aOffset) const
 {
 	int size = static_cast<int>(mTypesHolders.size()) + aOffset - 1; 
-	if (mCurObject && mOut == &mCurObject->getImplOut())
+	//if (mCurObject && mOut == &mCurObject->getImplOut())
 	{
 		++size;
 	}
@@ -421,6 +422,40 @@ void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocati
 {
 	TreeNode* node = add(ByteCode::OutputEnd, aLocation);
 	node->bool1 = aEnd;
+}
+
+void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+  TreeNode* node = addStat(ByteCode::Write, aValue, aLocation);
+	IdentifierPtr writer = getIdentifier("nate__writer");
+
+	if (aValue.isEmpty())
+	{
+		if (writer)
+		{
+			node->id = writer;
+		}
+		else
+		{
+			error("Need to specify where to write to");
+		}
+	}
+	else if (aValue.type()->isOfType("output"))
+	{
+		if (!writer)
+		{
+			writer = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__writer", determineType("output"), aValue);
+			addIdentifier(writer);
+			node->bool1 = true;
+		}
+
+		node->id = writer;
+		node->expr = aValue;
+	}
+	else
+	{
+		error("Cannot write to type: " + aValue.type()->name());
+	}
 }
 
 std::string NateParser::makeTempDir()
@@ -930,14 +965,14 @@ void NateParser::declareDefine(bool aIsDecl)
 				}
 
 				defineDecl->setFlag(Method::Defined);
-				mOut = &curObject()->getNormalOut();
+				//mOut = &curObject()->getNormalOut();
 				*mOut << in(-1) << curDefine()->createCodeDecl(toCodeName(curObject()->name())) << "\n" << in(-1) << "{" << std::endl;
 			}
 			else
 			{
 				curDefine()->setFlag(Method::Defined);
 				curDefine()->setFlag(Method::Undeclared);
-				mOut = &curObject()->getImplOut();
+				//mOut = &curObject()->getImplOut();
 				*mOut << in(-1) << (curDefine()->isStatic() ? "static " : "") <<
 					                 curDefine()->createCodeDecl() << "\n" << in(-1) << "{" << std::endl;
 			}
@@ -1046,7 +1081,7 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 	
 	addDefine(true);
 	mDefineDecl = false;
-	mOut = &curObject()->getNormalOut();
+	//mOut = &curObject()->getNormalOut();
 
 	if (aPropType == Object::PropType::Get)
 	{
@@ -1799,11 +1834,11 @@ void NateParser::declareLocalIdentifiers(
 	{
 		checkIdentifierName(name);
 
-		ExprPtr initValue;
+		Expr initValue;
 		if (aInitValues.empty())
 		{
-			initValue.reset(new Expr(ExprNode("default", "{}", type)));
-			initValue->node().setFlag(ExprNode::Default);
+			initValue = Expr(ExprNode("default", "{}", type));
+			initValue.node().setFlag(ExprNode::Default);
 			if (aIsConst)
 			{
 				error("Expected initial values for constants");
@@ -1820,13 +1855,13 @@ void NateParser::declareLocalIdentifiers(
 				error("Incompatible type for initial value: " + initIter->code());
 			}
 
-			initValue.reset(new Expr(*initIter++));
-			initValue->node().castToType(aType);
+			initValue = Expr(*initIter++);
+			initValue.node().castToType(aType);
 		}
 		else 
 		{
-			initValue.reset(new Expr(ExprNode(aNames.front(), codeId(aNames.front()), type)));
-			initValue->node().setFlag(ExprNode::ConstExpr, aIsConst);
+			initValue = Expr(ExprNode(aNames.front(), codeId(aNames.front()), type));
+			initValue.node().setFlag(ExprNode::ConstExpr, aIsConst);
 		}
 
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, type, initValue);

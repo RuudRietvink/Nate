@@ -31,6 +31,7 @@ enum class ByteCode
 	StdOutput,
 	StdError,
 	Data,
+	Write,
 	OutputSepComma,
 	OutputSepConcat,
 	OutputEnd,

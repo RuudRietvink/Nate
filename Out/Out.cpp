@@ -1,11 +1,15 @@
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-std::shared_ptr<std::ostream> output = {};
-std::shared_ptr<std::ostream> error = {};
+	std::shared_ptr<std::ostream> output = {};
+	std::shared_ptr<std::ostream> error = {};
 #line 83 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
-	list_1.push_back("Hi there");
-	list_1.push_back((std::to_string(666)));
+		list_1.push_back("Hi there");
+		list_1.push_back((std::to_string(666)));
 #line 85
-	list_1.insert(list_1.cbegin(), "Hello");
+		list_1.insert(list_1.cbegin(), "Hello");
+#line 153
+			out.reset(new std::ofstream("d:\\uit", std::ios::out));
+#line 166
+				if (out) out->close();
 #line 27 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Math.ns"
 #define NOMINMAX
 #include <windows.h>
@@ -20,6 +24,8 @@ const double e = 2.718281828459045;
 #include <string>
 #line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\List.ns"
 #include <list>
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Output.ns"
+#include <fstream>
 #define NOMINMAX
 #include <windows.h>
 #line 11 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
@@ -175,19 +181,19 @@ int main(int argc, char** argv)
 	std::list<std::string> list_1 = {};
 #line 86
 	*output << ((static_cast<int32_t>(list_1.size())));*output << " " << ((static_cast<int32_t>(list_1.size())));*output << std::endl;
-	auto const& tmp__14__ = list_1;
-	for (auto tmp__15__ = tmp__14__.cbegin(); tmp__15__ != tmp__14__.cend(); ++tmp__15__)
+	auto const& tmp__15__ = list_1;
+	for (auto tmp__16__ = tmp__15__.cbegin(); tmp__16__ != tmp__15__.cend(); ++tmp__16__)
 	{
-		auto const& item = *tmp__15__;
+		auto const& item = *tmp__16__;
 #line 89
 		*output << (item);*output << std::endl;
 	}
 	int32_t id_1 = 3;
-	const std::string tmp__17__ = "abcd⅑⅛⅐efg";
-	auto tmp__19__ = tmp__17__.cbegin();
-	for (auto tmp__18__ = tmp__17__.cbegin(); tmp__18__ != tmp__17__.cend(); tmp__18__=tmp__19__)
+	const std::string tmp__18__ = "abcd⅑⅛⅐efg";
+	auto tmp__20__ = tmp__18__.cbegin();
+	for (auto tmp__19__ = tmp__18__.cbegin(); tmp__19__ != tmp__18__.cend(); tmp__19__=tmp__20__)
 	{
-		uint32_t item = utf8::next(tmp__19__,tmp__17__.cend());
+		uint32_t item = utf8::next(tmp__20__,tmp__18__.cend());
 #line 93
 		*output << (Core::toString(item));*output << std::endl;
 		if ((static_cast<double>(id_1))== 3.4)
@@ -308,5 +314,35 @@ int main(int argc, char** argv)
 #line 146
 		*output << (data1);*output << std::endl;
 		*output << (data2);*output << std::endl;
+	}
+	{
+		std::shared_ptr<std::ofstream> out = {};
+		std::shared_ptr<std::ostream> out2 = out;
+		*output << "Before: " << std::boolalpha ;*output << (((out&& out->good())));*output << " " << std::boolalpha ;*output << (((out&& out->is_open())));*output << std::endl;
+#line 154
+		out2 = out;
+		*output << std::endl;
+		if ((out&& out->is_open()))
+		{
+#line 157
+			*output << "Inside: " << std::boolalpha ;*output << (((out&& out->good())));*output << " " << std::boolalpha ;*output << (((out&& out->is_open())));*output << std::endl;
+			std::shared_ptr<std::ostream> nate__writer = out2;
+#line 158
+			*nate__writer << "Hello,planet ";
+			*nate__writer << ((Core::formatted(5.4, Core::Format{8, 1, 32, 265} )));*nate__writer << " ";
+			*nate__writer << 45;*nate__writer << " " << 56;*nate__writer << " ";
+			nate__writer = output;
+#line 161
+			*nate__writer << "Hi ";
+			*output << "Hi " << 45;*output << std::endl;
+			*nate__writer << "End" << std::endl;
+			*nate__writer << std::endl;
+			nate__writer = out2;
+#line 165
+			*nate__writer << "Hi" << std::endl;
+#line 156
+		}
+#line 167
+		*output << "After: " << std::boolalpha ;*output << (((out&& out->good())));*output << " " << std::boolalpha ;*output << (((out&& out->is_open())));*output << std::endl;
 	}
 }

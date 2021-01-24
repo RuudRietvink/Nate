@@ -48,6 +48,7 @@ private:
   void codeWhile(const TreeNodePtr& aNode);
   void codeScope(const TreeNodePtr& aNode);
   void codeCodeInclude(const TreeNodePtr& aNode);
+  void codeWrite(const TreeNodePtr& aNode);
 
 	bool isConstIntScalar(const Expr& aExpr);
 	bool isNestedConstIntScalar(const TreeNodePtr& aNode);

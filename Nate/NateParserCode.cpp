@@ -109,7 +109,7 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 
 	if (initializeVariables)
 	{
-		*mOut << " = " << codeExpr(*aIdentifier->initValue());
+		*mOut << " = " << codeExpr(aIdentifier->initValue());
 	}
 	
 	*mOut << ";" << std::endl;
@@ -148,9 +148,9 @@ void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)
 
 		*mOut << id->codeName() << "(";
 
-		if (!id->initValue()->is(ExprNode::Default))
+		if (!id->initValue().is(ExprNode::Default))
 		{
-			*mOut << codeExpr(*id->initValue());
+			*mOut << codeExpr(id->initValue());
 		}
 		*mOut << ")" << std::endl;
 	}
@@ -238,7 +238,7 @@ void NateParser::codeStartImplObject(const yy::parser::location_type& aLocation)
 		*mOut << "public:" << std::endl;
 		*mOut << "  __impl(" << name << "* aMe) : me(aMe) {}" << std::endl;
 
-		mOut = &curObject()->getNormalOut();
+		//mOut = &curObject()->getNormalOut();
 		*mOut << name << "::" << name << "()" << std::endl;
 		*mOut << "  : _impl(new __impl(this)) {}\n" << std::endl;
 		*mOut << name << "::~" << name << "() { delete _impl; }\n" << std::endl;
@@ -451,105 +451,6 @@ void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_ty
 	*mOut << in() << mStream;
 }
 
-void NateParser::codeOutputNew()
-{
-	if (mFirstOutput && !mDataOutput)
-	{
-		if (mStartOutput)
-		{
-			*mOut << in();
-	     mStartOutput = false;
-		}
-
-		*mOut << mStream;
-		mFirstOutput = false;
-	}
-}
-
-void NateParser::codeOutput(const std::string& aString)
-{
-	if ((!mCachedOutput.empty()) && aString[0] != '"')
-	{
-		codeOutputNew();
-		*mOut << " << \"" << mCachedOutput << "\"";
-		mCachedOutput.clear();
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? "" : ";");
-			mFirstOutput = true;
-		}
-		else
-		{
-			*mOut << (mDataOutput ? "" : ";");
-		}
-	}
-	else if (!mCachedOutput.empty())
-	{
-		mCachedOutput += unquote(aString);
-	}
-	else if (aString[0] == '"')
-	{
-		mCachedOutput = unquote(aString);
-	}
-	else
-	{
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? "" : ";");
-			mFirstOutput = true;
-		}
-	}
-}
-
-void NateParser::codeOutput(const Expr& aValue)
-{
-	if (aValue.type() && aValue.type()->is(Type::Boolean))
-	{
-		codeOutput("std::boolalpha ");
-	}
-	
-	if (aValue.is(ExprNode::Literal))
-	{
-		codeOutput(codeExpr(aValue));
-	}
-	else
-	{
-		if (aValue.type() && aValue.type()->name() == "int-8")
-		{
-			codeOutput("static_cast<int>(" + codeExpr(aValue) + ")");
-		}
-		else
-		{
-			Expr outExpr(Expr("stream-out"), aValue);
-			Expr resExpr = evaluate(outExpr);
-			if (!resExpr.isEmpty())
-			{
-				codeOutput("(" + codeExpr(resExpr) + ")");
-			}
-			else
-			{
-				codeOutput("(" + codeExpr(aValue) + ")");
-			}
-		}
-	}
-}
-
-void NateParser::codeOutputEnd(bool aAddEnd)
-{
-	if (aAddEnd)
-	{
-		codeOutputNew();
-		codeOutput("std::endl");
-	}
-	else
-	{
-		codeOutput("");
-	}
-
-	*mOut << std::endl;
-}
 
 void NateParser::codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
 {

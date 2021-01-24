@@ -874,15 +874,12 @@ error-statement:
 write-statement:
 	  WRITE write-sink COL
       {
-        nate.codeWriteStart($[write-sink], @WRITE);
-        if (!$[write-sink].isEmpty())
-        {
-          nate.data.prevWriteSink = $[write-sink].code();
-        }
+        nate.doWrite($[write-sink], @WRITE);
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd($[output-list]);
+        nate.doOutputEnd($[output-list], @[output-list]);
+        nate.up();
       }
   ;
   
