@@ -19,6 +19,7 @@ private:
   void printLineNr(const Location& aLocation);
 	char end();
   void codeProgram(const TreeNodePtr& aNode);
+	void codeData(const TreeNodePtr& aNode);
   void codeOutput(const std::string& aStream, const TreeNodePtr& aNode);
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
@@ -30,10 +31,10 @@ private:
 													bool initializeVariables,
 													const Location& aLocation);
 	void codeAssign(const TreeNodePtr& aNode);
+	void codeIfThen(const TreeNodePtr& aNode);
 	void codeIf(const TreeNodePtr& aNode);
 	void codeElseIf(const TreeNodePtr& aNode);
 	void codeElse(const TreeNodePtr& aNode);
-	void codeEndIf(const TreeNodePtr& aNode);
 	void codeIfIs(const TreeNodePtr& aNode);
 	bool codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool& firstIf);
 	void codeCaseIsListSwitch(const TreeNodePtr& aNode);
@@ -46,6 +47,7 @@ private:
   void codeStartLoopForRange(const TreeNodePtr& aNode);
   void codeWhile(const TreeNodePtr& aNode);
   void codeScope(const TreeNodePtr& aNode);
+  void codeCodeInclude(const TreeNodePtr& aNode);
 
 	bool isConstIntScalar(const Expr& aExpr);
 	bool isNestedConstIntScalar(const TreeNodePtr& aNode);

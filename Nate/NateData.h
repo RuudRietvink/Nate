@@ -29,14 +29,17 @@ enum class ByteCode
 	Expr,
 	Block,
 	StdOutput,
+	StdError,
+	Data,
 	OutputSepComma,
 	OutputSepConcat,
+	OutputEnd,
 	LocalVar,
 	Assign,
+	IfThen,
 	If,
 	Else,
 	ElseIf,
-	EndIf,
 	IfIs,
 	CaseIsList,
 	CaseIs,
@@ -46,6 +49,7 @@ enum class ByteCode
 	LoopStartForRange,
 	While,
 	Scope,
+	CodeInclude,
 };
 
 struct TreeNode
@@ -87,6 +91,7 @@ struct TreeNode
 	Location location;
 	IdentifierPtr id;
 	bool bool1 = false;
+	std::string string;
 };
 
 using TreeNodePtr = std::shared_ptr<TreeNode>;

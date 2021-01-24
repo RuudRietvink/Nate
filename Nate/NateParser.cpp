@@ -45,7 +45,7 @@ TreeNode* NateParser::addStat(ByteCode code, const Expr& expr, const yy::parser:
 	mCurNode->expr = expr;
 	return mCurNode;
 }
-
+	
 TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
 { 
 	return mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
@@ -231,6 +231,7 @@ void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLoca
 	}
 	else
 	{
+		addStat(ByteCode::IfThen, aValue, aLocation);
 		addStat(ByteCode::If, aValue, aLocation);
 	}
 }
@@ -253,7 +254,7 @@ void NateParser::doElse(const yy::parser::location_type& aLocation)
 void NateParser::doEndIf(const yy::parser::location_type& aLocation)
 {
 	up();
-	add(ByteCode::EndIf, aLocation);
+	up();
 	popScope();
 }
 
@@ -389,6 +390,13 @@ void NateParser::doEndScope(const yy::parser::location_type& aLocation)
 	up();
 }
 
+void NateParser::doCodeInclude(const yy::parser::location_type& aLocation)
+{
+	TreeNode* node = add(ByteCode::CodeInclude, aLocation);
+	node->string = mCodes.back()->code();
+	mCodes.pop_back();
+}
+
 std::string NateParser::in(int aOffset) const
 {
 	int size = static_cast<int>(mTypesHolders.size()) + aOffset - 1; 
@@ -397,6 +405,22 @@ std::string NateParser::in(int aOffset) const
 		++size;
 	}
 	return std::string(size, '\t');
+}
+
+
+void NateParser::doData(const std::string& aId, const yy::parser::location_type& aLocation)
+{
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
+	id->setFlag(Identifier::Const);
+	addIdentifier(id);
+	TreeNode* node = addStat(ByteCode::Data, aLocation);
+	node->id = id;
+}
+
+void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+{
+	TreeNode* node = add(ByteCode::OutputEnd, aLocation);
+	node->bool1 = aEnd;
 }
 
 std::string NateParser::makeTempDir()

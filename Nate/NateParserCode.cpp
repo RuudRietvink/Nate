@@ -65,12 +65,6 @@ std::string NateParser::codeExpr(const Expr& aValue)
 	return result;
 }
 
-void NateParser::codeCodeInclude()
-{
-	*mOut << in() << mCodes.back()->code() << std::endl;
-	mCodes.pop_back();
-}
-
 void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 																						const IdentifierPtr& aIdentifier,
 																						bool initializeVariables,
@@ -94,11 +88,11 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 	//	error("Expected constant expression.");
 	//}
 
-	std::ostream* savedOut = mOut;
-	if (data.inObjectImpl)
-	{
-		mOut = &curObject()->getImplOut();
-	}
+	//std::ostream* savedOut = mOut;
+	//if (data.inObjectImpl)
+	//{
+	//	mOut = &curObject()->getImplOut();
+	//}
 
 	printLineNr(aLocation);
 	if (aExtern)
@@ -120,7 +114,7 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 	
 	*mOut << ";" << std::endl;
 
-	mOut = savedOut;
+	//mOut = savedOut;
 }
 
 
@@ -222,8 +216,8 @@ void NateParser::codeEndDeclObject()
 
 void NateParser::codeStartImplObject(const yy::parser::location_type& aLocation)
 {	
-	mSavedOut = mOut;
-	mOut = &curObject()->getImplOut();
+	//mSavedOut = mOut;
+	//mOut = &curObject()->getImplOut();
 	
 	printLineNr(aLocation);
 
@@ -353,14 +347,14 @@ void NateParser::codeDefaultPropertyImpl(const IdentifierPtr& propId)
 
 void NateParser::codeEndImplObject()
 {
-	mOut = &curObject()->getNormalOut();
+	//mOut = &curObject()->getNormalOut();
 
 	for (const auto& propMethod : curObject()->propertyMethods())
 	{
 		codeDefaultPropertyImpl(propMethod.first);
 	}
 
-	mOut = mSavedOut;
+	//mOut = mSavedOut;
 
 	if (curObject()->is(Type::ObjectImpl))
 	{		
@@ -455,45 +449,6 @@ void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_ty
 
 	printLineNr(aLocation);
 	*mOut << in() << mStream;
-}
-
-void NateParser::codeDataStart(const std::string& aId, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	mDataOutput = true;
-	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
-	*mOut << "std::ostringstream " << id->codeName() << "_temp;";
-	*mOut << id->codeName() << "_temp ";
-}
-
-void NateParser::codeDataEnd(const std::string& aId, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
-	addIdentifier(id);
-	*mOut << "; " << id->type()->codeType() << " " << id->codeName() << "= " << id->codeName() << "_temp" << ".str();" << std::endl;
-}
-
-void NateParser::codeDataOutputEnd(bool aAddEnd)
-{
-	if (aAddEnd)
-	{
-		codeOutput("std::endl");
-	}
-	else
-	{
-		codeOutput("");
-	}
-}
-
-void NateParser::codeOutputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	mStream = aStream;
-	mFirstOutput = true;
-	mStartOutput = true;
-	mDataOutput = false;
-	mCachedOutput.clear();
 }
 
 void NateParser::codeOutputNew()

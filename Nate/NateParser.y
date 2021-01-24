@@ -443,7 +443,7 @@ code-include:
 		  { 
 			  lexer.popState();
 			  nate.endCode();
-        nate.codeCodeInclude();
+        nate.doCodeInclude(@CODE);
 		  }
   ;
 
@@ -828,22 +828,22 @@ data-statement:
 		  { lexer.popState(); }
     col
 		  { 
-        nate.codeDataStart($id, @DATA);
+        nate.doData($id, @col);
       }
     begin
       data-list
     end
-      { nate.codeDataEnd($id, @begin); }
+      { nate.up(); }
   ;
   
 data-list:
     output-list 
 		  { 
-        nate.codeOutputEnd($[output-list]);
+        nate.doOutputEnd($[output-list], @[output-list]);
       }
   | data-list opt-eos output-list 
 		  { 
-        nate.codeOutputEnd($[output-list]);
+        nate.doOutputEnd($[output-list], @[output-list]);
       }
   ;
 
@@ -854,6 +854,7 @@ output-statement:
       }
 	  output-list
 		  { 
+        nate.doOutputEnd($[output-list], @[output-list]);
         nate.up();
       }
   ;
@@ -861,11 +862,12 @@ output-statement:
 error-statement:
 	  ERROR 
 		  { 
-        nate.codeOutputStart("std::cerr", @ERROR);
+        nate.addStat(ByteCode::StdError, @ERROR);
       }
 	  output-list
 		  { 
-        nate.codeOutputEnd($[output-list]);
+        nate.doOutputEnd($[output-list], @[output-list]);
+        nate.up();
       }
   ;
   
