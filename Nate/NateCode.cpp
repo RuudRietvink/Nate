@@ -46,10 +46,11 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Block: result = "Block"; break;
 	case ByteCode::StdOutput: result = "StdOutput"; break;
 	case ByteCode::StdError: result = "Error"; break;
+	case ByteCode::StdInput: result = "Input"; break;
 	case ByteCode::Write: result = "Write"; break;
 	case ByteCode::Data: result = "Data"; break;
-	case ByteCode::OutputSepComma: result = "OutputSepComma"; break;
-	case ByteCode::OutputSepConcat: result = "OutputSepConcat"; break;
+	case ByteCode::SepComma: result = "OutputSepComma"; break;
+	case ByteCode::SepConcat: result = "OutputSepConcat"; break;
 	case ByteCode::LocalVar: result = "LocalVar"; break;
 	case ByteCode::Assign: result = "Assign"; break;
 	case ByteCode::IfThen: result = "IfThen"; break;
@@ -66,6 +67,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::While: result = "While"; break;
 	case ByteCode::Scope: result = "Scope"; break;
 	case ByteCode::CodeInclude: result = "CodeInclude"; break;
+	default: result = "****"; break;
 	}
 
 	if (aNode->id)
@@ -107,6 +109,9 @@ void NateCode::code(const TreeNodePtr& aStat)
     break;
   case ByteCode::StdError:
     codeOutput("*error", aStat);
+    break;
+  case ByteCode::StdInput:
+    codeInput("*input", aStat);
     break;
   case ByteCode::Data:
     codeData(aStat);
@@ -169,6 +174,7 @@ void NateCode::codeProgram(const TreeNodePtr& aNode)
 	mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
 	mOut << in(1) << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
 	mOut << in(1) << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
+	mOut << in(1) << "input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
 	mOut << in(1) << "SetConsoleOutputCP(65001);" << end();
 	//mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
 
@@ -220,12 +226,12 @@ void NateCode::codeOutput(const std::string& aStream, const TreeNodePtr& aNode)
     case ByteCode::Expr:
       codeOutput(part->expr);
       break;
-    case ByteCode::OutputSepComma:
+    case ByteCode::SepComma:
       codeOutput("\" \"");
       break;
-    case ByteCode::OutputSepConcat:
+    case ByteCode::SepConcat:
       break;
-    case ByteCode::OutputEnd:
+    case ByteCode::End:
       codeOutputEnd(part->bool1);
       break;
 		default:
@@ -335,6 +341,47 @@ void NateCode::codeOutputEnd(bool aAddEnd)
 	mOut << end();
 	mStartOutput = true;
 	mFirstOutput = true;
+}
+
+void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+
+	mOut << aStream;
+  for (auto& part : aNode->nested)
+  {
+    switch (part->code)
+    {
+    case ByteCode::Expr:
+			if (part->expr.type()->is(Type::Boolean))
+			{
+				mOut << ">> std::boolalpha";
+				mOut << ">> " << codeExpr(part->expr);
+				mOut << ">> std::noboolalpha";
+			}
+			else
+			{
+				mOut << ">> " << codeExpr(part->expr);
+			}
+      break;
+    case ByteCode::SepComma:
+			mOut << ">> std::skipws";
+      break;
+    case ByteCode::SepConcat:
+			mOut << ">> std::noskipws";
+      break;
+    case ByteCode::End:
+			mOut << ";" << end();
+			if (part->bool1)
+			{
+				mOut << "(" << aStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');" << end();
+			}
+      break;
+		default:
+			std::cerr << "Bad Input bytecode " << (int)part->code << std::endl;
+			break;
+    }
+  }
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,

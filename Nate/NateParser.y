@@ -241,9 +241,7 @@ role-statement:
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { 
-        nate.endDeclObject();
-		  }
+		  { nate.endDeclObject(); }
   ;
 
 declare-object-statement:
@@ -270,9 +268,7 @@ declare-object-statement:
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { 
-        nate.endDeclObject();
-		  }
+		  { nate.endDeclObject(); }
   ;
   
 base-classes:
@@ -485,9 +481,7 @@ code-list:
   
 code-start:
     NUMBER 
-		  { 
-			  nate.curCode()->setPriority(atoi($NUMBER.c_str())); 
-		  }
+		  { nate.curCode()->setPriority(atoi($NUMBER.c_str())); }
   ;
 
 code-stat-list:
@@ -538,9 +532,7 @@ call-return:
   
 type-flags:
     IS type 
-		  { 
-			  nate.curMethod()->setType($type);
-		  }
+		  { nate.curMethod()->setType($type); }
     opt-holder-flag-list
   | AS holder-flag-list
   ;
@@ -809,9 +801,7 @@ record-var:
 
 assign-statement:
 	  expr-list ASSIGN expr
-		  { 
-        nate.doAssign($[expr-list], $expr, @ASSIGN);
-      }
+		  { nate.doAssign($[expr-list], $expr, @ASSIGN); }
   ;
 
 expr-list:
@@ -827,9 +817,7 @@ data-statement:
     id 
 		  { lexer.popState(); }
     col
-		  { 
-        nate.doData($id, @col);
-      }
+		  { nate.doData($id, @col); }
     begin
       data-list
     end
@@ -838,60 +826,37 @@ data-statement:
   
 data-list:
     output-list 
-		  { 
-        nate.doOutputEnd($[output-list], @[output-list]);
-      }
+		  { nate.doEnd($[output-list], @[output-list]); }
   | data-list opt-eos output-list 
-		  { 
-        nate.doOutputEnd($[output-list], @[output-list]);
-      }
+		  { nate.doEnd($[output-list], @[output-list]); }
   ;
 
 output-statement:
 	  OUTPUT 
-		  { 
-        nate.addStat(ByteCode::StdOutput, @OUTPUT);
-      }
+		  { nate.addStat(ByteCode::StdOutput, @OUTPUT); }
 	  output-list
-		  { 
-        nate.doOutputEnd($[output-list], @[output-list]);
-        nate.up();
-      }
+		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
   ;
   
 error-statement:
 	  ERROR 
-		  { 
-        nate.addStat(ByteCode::StdError, @ERROR);
-      }
+		  { nate.addStat(ByteCode::StdError, @ERROR); }
 	  output-list
-		  { 
-        nate.doOutputEnd($[output-list], @[output-list]);
-        nate.up();
-      }
+		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
   ;
   
 write-statement:
 	  WRITE write-sink COL
-      {
-        nate.doWrite($[write-sink], @WRITE);
-      }
+      { nate.doWrite($[write-sink], @WRITE); }
 	  output-list
-		  { 
-        nate.doOutputEnd($[output-list], @[output-list]);
-        nate.up();
-      }
+		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
   ;
   
 write-sink:
     %empty
-		  { 
-        $$ = Expr();
-      }
+		  { $$ = Expr(); }
   | TO definitely-expr[expr]
-		  { 
-        $$ = $expr;
-      }
+		  { $$ = $expr; }
   ;
     
 read-statement:
@@ -904,20 +869,14 @@ read-statement:
         }
       }
 	  input-list
-		  { 
-        nate.codeInputEnd($[input-list]);
-      }
+		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
   ;
   
 read-source:
     %empty
-		  { 
-        $$ = Expr();
-      }
+		  { $$ = Expr(); }
   | FROM definitely-expr[expr]
-		  { 
-        $$ = $expr;
-      }
+		  { $$ = $expr; }
   ;
 
 output-list:
@@ -943,34 +902,21 @@ output-part-rest:
 
 output-part:
 	  expr
-		  { 
-        if ($expr.type() && !$expr.type()->empty())
-        {
-          nate.add(ByteCode::Expr, $expr, @expr);
-        }
-        else
-        {
-          nate.error("Cannot have typeless expression");
-        }
-      }
+		  { nate.doOutputExpr($expr, @expr); }
   ;
 
 output-sep:
 	  COMMA
-		  { nate.add(ByteCode::OutputSepComma, @COMMA); }
+		  { nate.add(ByteCode::SepComma, @COMMA); }
 	| CONCAT
-		  { nate.add(ByteCode::OutputSepConcat, @CONCAT); }
+		  { nate.add(ByteCode::SepConcat, @CONCAT); }
   ;
 
 input-statement:
 	  INPUT 
-		  { 
-        nate.codeInputStart("std::cin", @INPUT);
-      }
+		  { nate.addStat(ByteCode::StdInput, @INPUT); }
 	  input-list
-		  { 
-        nate.codeInputEnd($[input-list]);
-      }
+		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
   ;
 
 input-list:
@@ -996,14 +942,14 @@ input-part-rest:
 
 input-part:
 	  expr
-		  { nate.codeInput($expr); }
+		  { nate.doInputExpr($expr, @expr); }
   ;
 
 input-sep:
 	  COMMA
-		  { nate.codeInputSpace(); }
+		  { nate.add(ByteCode::SepComma, @COMMA); }
 	| CONCAT
-		  { nate.codeInputNoSpace(); }
+		  { nate.add(ByteCode::SepConcat, @CONCAT); }
   ;
 
 if-statement:
@@ -1039,7 +985,7 @@ else:
 		  { nate.doEndIf(@else); }
   | ELSE 
 	  	{ nate.doElseIf(@ELSE); }
-		  if-statement
+		if-statement
   | ELSE col 
 		  { nate.doElse(@ELSE); }
     begin
@@ -1075,9 +1021,7 @@ is-block:
   
 is-part:
     expr col
-	  	{ 
-        nate.doCaseIs($expr, nate.data.ifExpr.top(), @expr);
-      }
+	  	{ nate.doCaseIs($expr, nate.data.ifExpr.top(), @expr); }
     is-part-block
   ;
 
@@ -1209,9 +1153,7 @@ for-loop-part-end:
   
 for-range:
 	  IN expr
-		  { 
-			  nate.doStartLoopForRange(nate.data.forId, $expr, @IN);
-		  }
+		  { nate.doStartLoopForRange(nate.data.forId, $expr, @IN); }
   ;
 
 return-statement:

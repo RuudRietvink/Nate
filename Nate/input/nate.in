@@ -5,7 +5,7 @@ import Math
 import Text
 import List
 import File-Output
-//import File-Input
+import File-Input
 //import Data-input
 
 program:
@@ -14,6 +14,9 @@ program:
   var f := 4.4
   var tr := true
   x, a₁ := 3
+
+  input tr, x&z,
+  input d
   output "Hello, world", 3
   output x&d&f,
   output

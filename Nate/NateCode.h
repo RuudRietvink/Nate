@@ -25,6 +25,7 @@ private:
 	void codeOutput(const std::string& aString);
 	void codeOutput(const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
+	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
 	std::string codeExpr(const Expr& aValue);
 	void codeDeclIdentifier(bool aExtern,
 													const IdentifierPtr& aIdentifier,

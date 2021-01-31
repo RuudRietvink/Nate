@@ -393,36 +393,6 @@ std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 	return getOrFakeIdentifier(aName, aScope)->codeName();
 }
 
-void NateParser::codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation)
-{
-	mDataOutput = false;
-
-	if (aValue.isEmpty())
-	{
-		if (!mLastWriteStream.empty())
-		{
-			mStream = mLastWriteStream;
-		}
-		else
-		{
-			error("Need to specify where to write to");
-		}
-	}
-	else if (aValue.type()->isOfType("output"))
-	{
-		mStream = "*" + codeExpr(aValue);
-		mLastWriteStream = mStream;
-	}
-	else
-	{
-		error("Cannot write to type: " + aValue.type()->name());
-	}
-
-	printLineNr(aLocation);
-	mFirstOutput = true;
-	mStartOutput = true;
-	mCachedOutput.clear();
-}
 
 void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
@@ -452,47 +422,6 @@ void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_ty
 }
 
 
-void NateParser::codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation)
-{
-	mStream = aStream;
-	printLineNr(aLocation);
-	*mOut << in() << aStream;
-}
-
-void NateParser::codeInputSpace()
-{
-}
-
-void NateParser::codeInputNoSpace()
-{
-}
-
-void NateParser::codeInput(const Expr& aValue)
-{
-	if (aValue.is(ExprNode::Output) && !aValue.is(ExprNode::ConstExpr))
-	{
-		if (aValue.type() && aValue.type()->is(Type::Boolean))
-		{
-			*mOut << ">> std::boolalpha ";
-		}
-	
-		*mOut << ">> " << codeExpr(aValue);
-	}
-	else
-	{
-		error("Expected non-constant variable for input");
-	}
-}
-
-void NateParser::codeInputEnd(bool aAddEnd)
-{
-	*mOut << ";";
-	if (aAddEnd)
-	{
-		*mOut << "(" << mStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');";
-	}
-	*mOut << std::endl;
-}
 
  void NateParser::codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
  {

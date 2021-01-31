@@ -118,8 +118,10 @@ public:
 											  	 const yy::parser::location_type& aLocation);
 	void doEndLoop(const yy::parser::location_type& aLocation);
 	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
-	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation);
+	void doEnd(bool aEnd, const yy::parser::location_type& aLocation);
 	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 
 
 	void pushScope(const ScopePtr& aScope);
@@ -226,13 +228,7 @@ public:
 													 	const IdentifierPtr& aId, 
 													 	Object::PropType aPropType);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-	void codeWriteStart(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void codeInputStart(const std::string& aStream, const yy::parser::location_type& aLocation);
-	void codeInputSpace();
-	void codeInputNoSpace();
-	void codeInput(const Expr& aValue);
-	void codeInputEnd(bool aAddEnd = true);
   void codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
   void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);

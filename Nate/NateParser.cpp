@@ -110,11 +110,13 @@ void NateParser::initTypesAndObjects()
 	{
 		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")), InitializeVariables);
 		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")), InitializeVariables);
+		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")), InitializeVariables);
 	}
 	else
 	{	
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")));
 	}
 }
 
@@ -418,9 +420,9 @@ void NateParser::doData(const std::string& aId, const yy::parser::location_type&
 	node->id = id;
 }
 
-void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+void NateParser::doEnd(bool aEnd, const yy::parser::location_type& aLocation)
 {
-	TreeNode* node = add(ByteCode::OutputEnd, aLocation);
+	TreeNode* node = add(ByteCode::End, aLocation);
 	node->bool1 = aEnd;
 }
 
@@ -455,6 +457,31 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 	else
 	{
 		error("Cannot write to type: " + aValue.type()->name());
+	}
+}
+
+void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+  if (aValue.type() && !aValue.type()->empty())
+  {
+    add(ByteCode::Expr, aValue, aLocation);
+  }
+  else
+  {
+    error("Cannot have typeless expression in output");
+  }
+}
+
+void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	if (aValue.is(ExprNode::Output) && !aValue.is(ExprNode::ConstExpr))
+	{
+		TreeNode* node = add(ByteCode::Expr, aValue, aLocation);
+		node->bool1 = (aValue.type() && aValue.type()->is(Type::Boolean));
+	}
+	else
+	{
+		error("Expected non-constant variable for input");
 	}
 }
 
