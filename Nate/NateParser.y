@@ -318,8 +318,8 @@ declare-object-content-statement:
   | define-decl
 			{ 
 			  lexer.popState();
-			  nate.declareDefine(true);
-        nate.endDefine();
+			  nate.doStartDefine(true, @[define-decl]);
+        nate.doEndDefine(@[define-decl]);
       }
   | EOS
   ;
@@ -411,14 +411,14 @@ define-statement:
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.declareDefine(false/*aIsDecl*/);
+			  nate.doStartDefine(false/*aIsDecl*/, @COL);
 		  }
 	  begin
 		  statement-list
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.endDefine();
+			  nate.doEndDefine(@end);
 		  }
   ;
   
@@ -609,7 +609,7 @@ property-get-code:
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Get);
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Get, @end);
 		  }
   ;
   
@@ -624,7 +624,7 @@ property-set-code:
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Set);
+			  nate.endDefineProp(nate.data.propId, Object::PropType::Set, @end);
 		  }
   ;
   
@@ -1152,7 +1152,7 @@ for-range:
 
 return-statement:
     RETURN expr
-      { nate.codeReturn($2, @RETURN); }
+      { nate.doReturn($2, @RETURN); }
   ;
   
 expr-statement:

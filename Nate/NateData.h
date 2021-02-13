@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Expr.h"
+#include "Define.h"
 #include "NateParser.tab.h"
 
 #include <memory>
@@ -53,6 +54,8 @@ enum class ByteCode
 	Scope,
 	CodeInclude,
 	Record,
+	Define,
+	Return,
 };
 
 struct TreeNode
@@ -94,6 +97,7 @@ struct TreeNode
 	Location location;
 	IdentifierPtr id;
 	TypePtr type;
+	DefinePtr defyne;
 	bool bool1 = false;
 	std::string string;
 };

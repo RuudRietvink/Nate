@@ -505,6 +505,11 @@ void NateParser::doEndRecord(const yy::parser::location_type& aLocation)
 	up();
 }
 
+void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	add(ByteCode::Return, aValue, aLocation);
+}
+
 std::string NateParser::makeTempDir()
 {
 	std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
@@ -994,7 +999,8 @@ void NateParser::deleteCurDefine()
 	curDefinesHolder()->defines().get().pop_back();
 }
 
-void NateParser::declareDefine(bool aIsDecl)
+void NateParser::doStartDefine(bool aIsDecl,
+										           const yy::parser::location_type& aLocation)
 {
 	curDefine()->endDecl();
 	mDefineDecl = aIsDecl;
@@ -1063,25 +1069,20 @@ void NateParser::declareDefine(bool aIsDecl)
 			error("Not allowed keyword: final");
 		}
 
-		*mOut << in(-1) << curDefine()->createCodeDecl();
-		if (aIsDecl)
-		{
-			*mOut << ";" << std::endl;
-		}
-		else
-		{
-			*mOut << "\n" << in(-1) << "{" << std::endl;
-		}
+		TreeNode* node = addStat(ByteCode::Define, aLocation);
+		node->defyne = curDefine();
+		node->bool1 = aIsDecl;
 	}
 
 	curDefine()->createCodeCall();
 }
 
-void NateParser::endDefine()
+void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
 	popDefineScope();
 	mLastWriteStream.clear();
+	up();
 	if (!mDefineDecl)
 	{
 		*mOut << in() << "}\n" << std::endl;
@@ -1145,9 +1146,10 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 	}
 }
 
-void NateParser::endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
+void NateParser::endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+															 const yy::parser::location_type& aLocation)
 {
-	endDefine();
+	doEndDefine(aLocation);
 	deleteCurDefine();
 }
 

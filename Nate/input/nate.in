@@ -8,22 +8,28 @@ import File-Output
 import File-Input
 //import Data-input
 
+record shop:
+  var beer-inventory is int := 255
+  var name is text := "shop"
+
+define ${bottles is int} in ${store is shop} or on wall is boolean:
+  return store's beer-inventory + bottles > 0  
+
 program:
   var x,z,a₁ is float
   var d,g is int-32 := 5
   var f := 4.4
   var tr := true
   x, a₁ := 3
-
-  record shop:
-    var beer-inventory is int := 255
-    var name is text := "shop"
-    
+      
   record rec-a:
     var beer-inventory is int := 255
     var name is text := "shop"
     var record is shop
 
+  var store is shop
+  var bottles := 44
+  output bottles in store or on wall
   input tr, x&z,
   input d
   output "Hello, world", 3

@@ -68,6 +68,8 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Scope: result = "Scope"; break;
 	case ByteCode::CodeInclude: result = "CodeInclude"; break;
 	case ByteCode::Record: result = "Record"; break;
+	case ByteCode::Define: result = "Define"; break;
+	case ByteCode::Return: result = "Return"; break;
 	default: result = "****"; break;
 	}
 
@@ -155,6 +157,12 @@ void NateCode::code(const TreeNodePtr& aStat)
     break;
   case ByteCode::Record:
     codeRecord(aStat);
+    break;
+  case ByteCode::Define:
+    codeDefine(aStat);
+    break;
+  case ByteCode::Return:
+    codeReturn(aStat);
     break;
 	default:
 		std::cerr << "Bad bytecode " << (int)aStat->code << std::endl;
@@ -835,4 +843,99 @@ void NateCode::codeRecord(const TreeNodePtr& aNode)
 	codeNested(aNode);
 	--mIndent;
 	*mOut << in() << "};" << end();
+}
+
+void NateCode::codeDefine(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	DefinePtr defyne = aNode->defyne;
+	bool isDecl = aNode->bool1;
+	
+	if (defyne->isObjectMethod())
+	{
+	}
+	else
+	{
+		createCodeDecl(defyne, "");
+		if (isDecl)
+		{
+			*mOut << ";" << end();
+		}
+		else
+		{
+			*mOut << end() << in() << "{" << end();
+			++mIndent;
+			codeNested(aNode);
+			--mIndent;
+			*mOut << in() << "}" << end();
+		}
+	}
+}
+
+
+void NateCode::createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName)
+{
+	if (aDefine->is(Define::None))
+	{
+		*mOut << "void ";
+	}
+	else
+	{
+		*mOut << aDefine->type()->codeType() << " ";
+	}
+
+	if (!aObjectName.empty())
+	{
+		*mOut << aObjectName << "::";
+	}
+
+	*mOut << aDefine->pattern();
+	createCodeDeclArgs(aDefine, aDefine->args());
+	
+	if (aDefine->is(Define::ConstMethod))
+	{
+		*mOut << " const";
+	}
+}
+
+void NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs)
+{
+	bool first = true;
+	
+	*mOut << "(";
+
+	for (auto const& arg : aDefine->args())
+	{
+		if (arg.isIdentifier() && !arg.identifier()->isObjectMe())
+		{
+			if (!first)
+			{
+				*mOut << ", ";
+			}
+
+			first = false;
+
+			if (arg.identifier()->type()->is(Type::NeedsRef) && !arg.is(Arg::Out))
+			{
+				*mOut << "const ";
+			}
+
+			*mOut << arg.identifier()->type()->codeType();
+
+			if (arg.identifier()->type()->is(Type::NeedsRef) || arg.is(Arg::Out))
+			{
+				*mOut << "&";
+			}
+
+			*mOut << " " << arg.identifier()->codeName();
+		}
+	}
+
+	*mOut << ")";
+}
+
+void NateCode::codeReturn(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	*mOut << in() << "return " << codeExpr(aNode->expr) << ";" << end();
 }

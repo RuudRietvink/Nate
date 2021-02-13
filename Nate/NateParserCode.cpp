@@ -65,59 +65,6 @@ std::string NateParser::codeExpr(const Expr& aValue)
 	return result;
 }
 
-void NateParser::codeDeclareLocalIdentifier(bool aExtern,
-																						const IdentifierPtr& aIdentifier,
-																						bool initializeVariables,
-																						const yy::parser::location_type& aLocation)
-{
-	addIdentifier(aIdentifier);
-	if (aIdentifier->type()->is(Type::Abstract))
-	{
-		error("Abstract type: " + aIdentifier->type()->name());
-		return;
-	}
-
-	if (aIdentifier->type()->is(Type::Unknown))
-	{
-		error("Unknown type: " + aIdentifier->type()->name());
-		return;
-	}
-	
-	//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
-	//{
-	//	error("Expected constant expression.");
-	//}
-
-	//std::ostream* savedOut = mOut;
-	//if (data.inObjectImpl)
-	//{
-	//	mOut = &curObject()->getImplOut();
-	//}
-
-	printLineNr(aLocation);
-	if (aExtern)
-	{
-	  *mOut << in() << "extern ";	
-	}
-
-	if (aIdentifier->is(Identifier::Const))
-	{
-		*mOut << in() << "const ";		
-	}
-
-	*mOut << in() << aIdentifier->type()->codeType() << " " << aIdentifier->codeName();
-
-	if (initializeVariables)
-	{
-		*mOut << " = " << codeExpr(aIdentifier->initValue());
-	}
-	
-	*mOut << ";" << std::endl;
-
-	//mOut = savedOut;
-}
-
-
 void NateParser::codeObjectBases(const ObjectPtr& aObject)
 {
 	*mOut << "class " << toCodeName(aObject->name());
@@ -377,14 +324,6 @@ void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_ty
 	printLineNr(aLocation);
 	*mOut << in() << mStream;
 }
-
-
-
- void NateParser::codeReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
- {
-	 printLineNr(aLocation);
-	 *mOut << in() << "return " << codeExpr(aValue) << ";" << std::endl;
- }
 
  void NateParser::codeExpressionStatement(const Expr& aValue, const yy::parser::location_type& aLocation)
  {

@@ -51,6 +51,10 @@ private:
   void codeCodeInclude(const TreeNodePtr& aNode);
   void codeWrite(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
+  void codeDefine(const TreeNodePtr& aNode);
+	void createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
+	void createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName);
+  void codeReturn(const TreeNodePtr& aNode);
 
 
 	bool isConstIntScalar(const Expr& aExpr);
