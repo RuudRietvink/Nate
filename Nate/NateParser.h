@@ -123,6 +123,8 @@ public:
 	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 
+	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);
+	void doEndRecord(const yy::parser::location_type& aLocation);
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -198,8 +200,6 @@ public:
 					const std::vector<Expr>& aInitValues,
 					bool initializeVariables,
 					const yy::parser::location_type& aLocation);
-	void codeStartRecord(const RecordPtr& aRecord,
-											 const yy::parser::location_type& aLocation);
 	void declareRecordIdentifiers(
 					bool aIsConst,
 					const std::vector<std::string>& aNames,
@@ -215,7 +215,6 @@ public:
 																	const IdentifierPtr& aIdentifier,
 																	bool initializeVariables,
 																	const yy::parser::location_type& aLocation = yy::parser::location_type(yy::position(), yy::position()));
-	void codeEndRecord(const yy::parser::location_type& aLocation);
 	void codeStartDeclObject(const yy::parser::location_type& aLocation);
 	void codeEndDeclObject();
 	void codeStartImplObject(const yy::parser::location_type& aLocation);
@@ -322,6 +321,7 @@ private:
 	std::unique_ptr<MathParser> mMathParser;
 	MathParser::Math            mMath;
 	yy::parser::location_type   mMathStart;
+	yy::parser::location_type   mDummyLocation;
 
 	struct IfIs
 	{

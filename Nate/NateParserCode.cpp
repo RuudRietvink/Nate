@@ -118,49 +118,6 @@ void NateParser::codeDeclareLocalIdentifier(bool aExtern,
 }
 
 
-void NateParser::codeStartRecord(const RecordPtr& aRecord,
-																 const yy::parser::location_type& aLocation)
-{
-	printLineNr(aLocation);
-	*mOut << in() << "struct " << aRecord->codeType() << "\n" << in() << "{" << std::endl;
-  data.curRecord.push(aRecord);
-	addType(aRecord, aRecord->name());
-	pushIdentifiersHolder(aRecord);
-}
-void NateParser::codeEndRecord(const yy::parser::location_type& aLocation)
-{
-	RecordPtr record = data.curRecord.top();
-
-	*mOut << in() << record->codeType() << "()" << std::endl;
-	bool first = true;
-
-	for (auto& id : record->identifiers().get())
-	{
-		if (first)
-		{
-			*mOut << in(1) << ": ";
-			first = false;
-		}
-		else
-		{
-			*mOut << in(1) << ", ";
-		}
-
-		*mOut << id->codeName() << "(";
-
-		if (!id->initValue().is(ExprNode::Default))
-		{
-			*mOut << codeExpr(id->initValue());
-		}
-		*mOut << ")" << std::endl;
-	}
-
-	*mOut << in(1) << "{}" << std::endl;
-	popIdentifiersHolder();
-	printLineNr(aLocation);
-	*mOut << in() << "};\n" << std::endl;
-}
-
 void NateParser::codeObjectBases(const ObjectPtr& aObject)
 {
 	*mOut << "class " << toCodeName(aObject->name());

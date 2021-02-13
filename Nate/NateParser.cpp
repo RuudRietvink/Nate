@@ -105,19 +105,6 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("input", getType("object")));
 	addType(std::make_shared<Type>("file-input", getType("input")));
 	addType(std::make_shared<Type>("data-input", getType("input")));
-
-	if (mFileType == FileType::Normal)
-	{
-		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")), InitializeVariables);
-		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")), InitializeVariables);
-		codeDeclareLocalIdentifier(false, std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")), InitializeVariables);
-	}
-	else
-	{	
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")));
-	}
 }
 
 void NateParser::initOutput()
@@ -139,6 +126,20 @@ int NateParser::parse()
 
 	data.stats = std::make_shared<TreeNode>(ByteCode::Code);
 	mCurNode = data.stats.get();
+
+	if (mFileType == FileType::Normal)
+	{
+		declareLocalIdentifiers(false, { "output" }, getType("output"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "error" }, getType("output"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "input" }, getType("input"), {}, false, mDummyLocation);
+	}
+	else
+	{	
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")));
+	}
+
 	if (mFileType != FileType::ObjectDecl)
 	{
 		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\core.ns" })
@@ -365,8 +366,7 @@ void NateParser::doStartLoopForRange(const std::string& aId,
 		TypePtr type = rangeType->typenameType();
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 		addIdentifier(id);
-	  TreeNode* node = addStat(ByteCode::LoopStartForRange, aRange, aLocation);
-		node->id = id;
+	  addStat(ByteCode::LoopStartForRange, aRange, aLocation)->id = id;
 	}
 	else
 	{
@@ -416,8 +416,7 @@ void NateParser::doData(const std::string& aId, const yy::parser::location_type&
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
 	id->setFlag(Identifier::Const);
 	addIdentifier(id);
-	TreeNode* node = addStat(ByteCode::Data, aLocation);
-	node->id = id;
+	addStat(ByteCode::Data, aLocation)->id = id;
 }
 
 void NateParser::doEnd(bool aEnd, const yy::parser::location_type& aLocation)
@@ -483,6 +482,27 @@ void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type
 	{
 		error("Expected non-constant variable for input");
 	}
+}
+
+void NateParser::doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation)
+{
+  if (curTypesHolder()->types().get(anId))
+  {
+		error("Duplicate type of :" + anId);
+  }
+
+  RecordPtr record = std::make_shared<Record>(anId);
+  curRecordsHolder()->records().add(record, anId);
+  data.curRecord.push(record);
+	addType(record, record->name());
+	pushIdentifiersHolder(record);
+  addStat(ByteCode::Record, aLocation)->type = record;
+}
+
+void NateParser::doEndRecord(const yy::parser::location_type& aLocation)
+{
+	popIdentifiersHolder();
+	up();
 }
 
 std::string NateParser::makeTempDir()

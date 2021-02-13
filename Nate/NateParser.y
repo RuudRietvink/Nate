@@ -770,18 +770,12 @@ var-init:
 record-statement:
     RECORD WORD[id] col
       { 
-        if (nate.curTypesHolder()->types().get($id))
-        {
-				  nate.error("Duplicate type of :" + $id);
-        }
-        RecordPtr record = std::make_shared<Record>($id);
-        nate.curRecordsHolder()->records().add(record, $id);
-        nate.codeStartRecord(record, @col);
+        nate.doStartRecord($id, @col);
       }
     begin
       record-var-list
     end
-      { nate.codeEndRecord(@end); }
+      { nate.doEndRecord(@end); }
   ;
 
 record-var-list:

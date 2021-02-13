@@ -15,6 +15,15 @@ program:
   var tr := true
   x, a₁ := 3
 
+  record shop:
+    var beer-inventory is int := 255
+    var name is text := "shop"
+    
+  record rec-a:
+    var beer-inventory is int := 255
+    var name is text := "shop"
+    var record is shop
+
   input tr, x&z,
   input d
   output "Hello, world", 3

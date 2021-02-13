@@ -52,6 +52,7 @@ enum class ByteCode
 	While,
 	Scope,
 	CodeInclude,
+	Record,
 };
 
 struct TreeNode
@@ -92,6 +93,7 @@ struct TreeNode
 	std::vector<Expr> exprList;
 	Location location;
 	IdentifierPtr id;
+	TypePtr type;
 	bool bool1 = false;
 	std::string string;
 };
