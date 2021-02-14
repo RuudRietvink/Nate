@@ -855,13 +855,7 @@ write-sink:
     
 read-statement:
 	  READ read-source COL
-      {
-        nate.codeReadStart($[read-source], @READ);
-        if (!$[read-source].isEmpty())
-        {
-          nate.data.prevReadSource = $[read-source].code();
-        }
-      }
+      { nate.doRead($[read-source], @READ); }
 	  input-list
 		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
   ;
@@ -917,7 +911,7 @@ input-list:
 	  %empty
       { $$ = true; }
   | input-part-list
-      { $$ = $[input-part-list]; }
+      { $$ = $[input-part-list]; }  
   ;
 
 input-part-list:

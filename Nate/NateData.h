@@ -34,6 +34,7 @@ enum class ByteCode
 	StdInput,
 	Data,
 	Write,
+	Read,
 	SepComma,
 	SepConcat,
 	End,

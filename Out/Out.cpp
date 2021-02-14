@@ -6,9 +6,11 @@
 		list_1.push_back((std::to_string(666)));
 #line 103
 		list_1.insert(list_1.cbegin(), "Hello");
-#line 171
+#line 168
+			in.reset(new std::istringstream(data1));
+#line 185
 			out.reset(new std::ofstream("d:\\uit", std::ios::out));
-#line 184
+#line 198
 				if (out) out->close();
 #line 1 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
 std::shared_ptr<std::ostream> output;
@@ -34,6 +36,8 @@ const double e = 2.718281828459045;
 #include <fstream>
 #line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Input.ns"
 #include <fstream>
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Data-input.ns"
+#include <sstream>
 #line 11 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
 struct shop
 {
@@ -347,7 +351,7 @@ int main(int argc, char** argv)
 	{
 		std::ostringstream data1_temp;
 #line 156
-		data1_temp << 1; data1_temp << " " << 2; data1_temp << " sdsddsaaa" << std::endl; 
+		data1_temp << 1; data1_temp << " " << 2; data1_temp << " sdsddsaaa "; 
 		data1_temp << 3; data1_temp << " " << 4; data1_temp << " "; 
 		data1_temp << "hi " << ((4* 5)); data1_temp << std::endl; 
 		const std::string data1= data1_temp.str();
@@ -359,35 +363,58 @@ int main(int argc, char** argv)
 #line 164
 		*output << (data1); *output << std::endl; 
 		*output << (data2); *output << std::endl; 
+#line 167
+		std::shared_ptr<std::istringstream> in = {};
+#line 167
+		std::shared_ptr<std::istringstream> in2 = {};
+#line 170
+		int32_t x2 = {};
+#line 170
+		int32_t y = {};
+		std::string s = {};
+		std::shared_ptr<std::istream> nate__reader = in;
+#line 172
+*nate__reader >> x2 >> std::skipws >> y >> std::skipws >> s;
+(*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+#line 173
+		*output << (x2); *output << std::endl; 
+		*output << (y); *output << std::endl; 
+		*output << "*" << (s); *output << "*" << std::endl; 
+*nate__reader >> x2 >> std::skipws >> y >> std::skipws >> s;
+(*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+#line 177
+		*output << (x2); *output << std::endl; 
+		*output << (y); *output << std::endl; 
+		*output << "*" << (s); *output << "*" << std::endl; 
 	}
 	{
 		std::shared_ptr<std::ofstream> out = {};
 		std::shared_ptr<std::ostream> out2 = out;
 		*output << "Before: " << std::boolalpha ; *output << (((out&& out->good()))); *output << " " << std::boolalpha ; *output << (((out&& out->is_open()))); *output << std::endl; 
-#line 172
+#line 186
 		out2 = out;
 		*output << std::endl; 
 		if ((out&& out->is_open()))
 		{
-#line 175
+#line 189
 			*output << "Inside: " << std::boolalpha ; *output << (((out&& out->good()))); *output << " " << std::boolalpha ; *output << (((out&& out->is_open()))); *output << std::endl; 
 			std::shared_ptr<std::ostream> nate__writer = out2;
-#line 176
+#line 190
 			*nate__writer << "Hello,planet "; 
 			*nate__writer << ((Core::formatted(5.4, Core::Format{8, 1, 32, 265} ))); *nate__writer << " "; 
 			*nate__writer << 45; *nate__writer << " " << 56; *nate__writer << " "; 
 			nate__writer = output;
-#line 179
+#line 193
 			*nate__writer << "Hi "; 
 			*output << "Hi " << 45; *output << std::endl; 
 			*nate__writer << "End" << std::endl; 
 			*nate__writer << std::endl; 
 			nate__writer = out2;
-#line 183
+#line 197
 			*nate__writer << "Hi" << std::endl; 
-#line 174
+#line 188
 		}
-#line 185
+#line 199
 		*output << "After: " << std::boolalpha ; *output << (((out&& out->good()))); *output << " " << std::boolalpha ; *output << (((out&& out->is_open()))); *output << std::endl; 
 	}
 }

@@ -122,6 +122,9 @@ void NateCode::code(const TreeNodePtr& aStat)
   case ByteCode::Write:
     codeWrite(aStat);
     break;
+  case ByteCode::Read:
+    codeRead(aStat);
+    break;
   case ByteCode::LocalVar:
     codeDeclIdentifier(false, aStat->id, aStat->bool1, aStat->location);
     break;
@@ -220,6 +223,21 @@ void NateCode::codeWrite(const TreeNodePtr& aNode)
 	}
 
 	codeOutput("*nate__writer", aNode);
+}
+
+void NateCode::codeRead(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	if (aNode->bool1)
+	{
+    codeDeclIdentifier(false, aNode->id, true, aNode->location);
+	}
+	else if (!aNode->expr.isEmpty())
+	{
+		*mOut << in() << "nate__reader = " << codeExpr(aNode->expr) << ";" << end();
+	}
+
+	codeInput("*nate__reader", aNode);
 }
 
 void NateCode::codeOutput(const std::string& aStream, const TreeNodePtr& aNode)

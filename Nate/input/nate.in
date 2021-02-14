@@ -6,7 +6,7 @@ import Text
 import List
 import File-Output
 import File-Input
-//import Data-input
+import Data-input
 
 record shop:
   var beer-inventory is int := 255
@@ -154,7 +154,7 @@ program:
     
   scope:
     data data1:
-      1, 2, "sdsdds" & "aaa"
+      1, 2, "sdsdds" & "aaa",
       3, 4,
       "hi", 4 * 5
     
@@ -163,6 +163,20 @@ program:
 
     output data1
     output data2
+        
+    var in,in2 is data-input
+    open in for reading from data data1
+
+    var x2, y is int-32
+    var s is text;
+    read from in: x2, y, s
+    output x2
+    output y
+    output "*" & s & "*"
+    read: x2, y, s
+    output x2
+    output y
+    output "*" & s & "*"
 
   scope:
     var out is file-output

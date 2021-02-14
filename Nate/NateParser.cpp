@@ -451,11 +451,43 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 		}
 
 		node->id = writer;
-		node->expr = aValue;
 	}
 	else
 	{
 		error("Cannot write to type: " + aValue.type()->name());
+	}
+}
+
+void NateParser::doRead(const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+  TreeNode* node = addStat(ByteCode::Read, aValue, aLocation);
+	IdentifierPtr reader = getIdentifier("nate__reader");
+
+	if (aValue.isEmpty())
+	{
+		if (reader)
+		{
+			node->id = reader;
+		}
+		else
+		{
+			error("Need to specify where to read from");
+		}
+	}
+	else if (aValue.type()->isOfType("input"))
+	{
+		if (!reader)
+		{
+			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("input"), aValue);
+			addIdentifier(reader);
+			node->bool1 = true;
+		}
+
+		node->id = reader;
+	}
+	else
+	{
+		error("Cannot read from type: " + aValue.type()->name());
 	}
 }
 

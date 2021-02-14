@@ -298,35 +298,8 @@ std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 }
 
 
-void NateParser::codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::codeExpressionStatement(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
-	if (aValue.isEmpty())
-	{
-		if (!mLastReadStream.empty())
-		{
-			mStream = mLastReadStream;
-		}
-		else
-		{
-			error("Need to specify where to read from");
-		}
-	}
-	else if (aValue.type()->isOfType("input"))
-	{
-		mStream = "*" + codeExpr(aValue);
-		mLastReadStream = mStream;
-	}
-	else
-	{
-		error("Cannot read from type: " + aValue.type()->name());
-	}
-
-	printLineNr(aLocation);
-	*mOut << in() << mStream;
+ printLineNr(aLocation);
+	*mOut << in() << codeExpr(aValue) << ";" << std::endl;
 }
-
- void NateParser::codeExpressionStatement(const Expr& aValue, const yy::parser::location_type& aLocation)
- {
-	 printLineNr(aLocation);
-	 *mOut << in() << codeExpr(aValue) << ";" << std::endl;
- }

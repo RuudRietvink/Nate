@@ -129,6 +129,11 @@ public:
 										 const yy::parser::location_type& aLocation);
 	void doEndDefine(const yy::parser::location_type& aLocation);
   void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doRead(const Expr& aValue, const yy::parser::location_type& aLocation);	
+	void doStartScope(const yy::parser::location_type& aLocation);
+	void doEndScope(const yy::parser::location_type& aLocation);
+	void doCodeInclude(const yy::parser::location_type& aLocation);	void codeStartDeclObject(const yy::parser::location_type& aLocation);
+
 
 	void pushScope(const ScopePtr& aScope);
 	void popScope();
@@ -211,9 +216,6 @@ public:
 					const yy::parser::location_type& aLocation);
 	
 	std::string codeExpr(const Expr& aValue);
-	void doStartScope(const yy::parser::location_type& aLocation);
-	void doEndScope(const yy::parser::location_type& aLocation);
-	void doCodeInclude(const yy::parser::location_type& aLocation);	void codeStartDeclObject(const yy::parser::location_type& aLocation);
 	void codeEndDeclObject();
 	void codeStartImplObject(const yy::parser::location_type& aLocation);
 	void codeEndImplObject();
@@ -225,7 +227,6 @@ public:
 													 	const IdentifierPtr& aId, 
 													 	Object::PropType aPropType);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-	void codeReadStart(const Expr& aValue, const yy::parser::location_type& aLocation);
   void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);
 	void printLineNr(const yy::parser::location_type& aLocation);

@@ -50,6 +50,7 @@ private:
   void codeScope(const TreeNodePtr& aNode);
   void codeCodeInclude(const TreeNodePtr& aNode);
   void codeWrite(const TreeNodePtr& aNode);
+  void codeRead(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);
 	void createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
