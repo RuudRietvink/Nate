@@ -124,9 +124,6 @@
     <ClCompile Include="core\Created\BaseObject.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="NateParserCode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\Rational.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>

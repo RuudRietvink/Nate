@@ -235,13 +235,13 @@ role-statement:
       {
         lexer.popState();
         nate.checkObject(nate.curObject());
-        nate.codeStartDeclObject(@id);
+        nate.doDeclObject(@id);
 		  }
     col
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { nate.endDeclObject(); }
+		  { nate.doEndDeclObject(); }
   ;
 
 declare-object-statement:
@@ -262,13 +262,13 @@ declare-object-statement:
       {
         lexer.popState();
         nate.checkObject(nate.curObject());
-        nate.codeStartDeclObject(@id);
+        nate.doDeclObject(@id);
 		  }
     col
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { nate.endDeclObject(); }
+		  { nate.doEndDeclObject(); }
   ;
   
 base-classes:
@@ -333,25 +333,7 @@ implement-object-statement:
 	  id 
 		  { 
         lexer.popState();
-        auto objectDecl = nate.getObject($id);
-        bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
-        if (!existingObjectDecl)
-        {
-          auto object = std::make_shared<Object>($id, nate.getType("object"));
-          object->setCodeType(toCodeName($id));
-          object->setFlag(Type::Abstract, false);
-          object->setFlag(Type::Unknown, false);
-          object->setFlag(Type::ObjectImpl);
-          
-          nate.addObject(object);
-          nate.checkObject(object);
-          nate.codeStartImplObject(@id);
-        }
-        else
-        {
-          nate.startObject(objectDecl);
-          nate.codeStartImplObject(@id);
-        }
+        nate.doImplObject($id, @id);
 		  }
     col
 	  begin
@@ -359,8 +341,7 @@ implement-object-statement:
 	  end
 		  { 
         nate.data.inObject = false;
-        nate.codeEndImplObject();
-			  nate.endImplementObject();
+        nate.doEndImplObject();
 		  }
   ;
   
@@ -602,14 +583,14 @@ property-get-code:
     GET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.defineProp(nate.data.propId, Object::PropType::Get);
+			  nate.doProp(nate.data.propId, Object::PropType::Get, @COL);
 		  }
 	  begin
 		  statement-list
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Get, @end);
+			  nate.doEndProp(nate.data.propId, Object::PropType::Get, @end);
 		  }
   ;
   
@@ -617,14 +598,14 @@ property-set-code:
     SET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.defineProp(nate.data.propId, Object::PropType::Set);
+			  nate.doProp(nate.data.propId, Object::PropType::Set, @COL);
 		  }
 	  begin
 		  statement-list
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.endDefineProp(nate.data.propId, Object::PropType::Set, @end);
+			  nate.doEndProp(nate.data.propId, Object::PropType::Set, @end);
 		  }
   ;
   
@@ -1152,7 +1133,7 @@ return-statement:
 expr-statement:
     expr
       { 
-        nate.codeExpressionStatement($expr, @expr);
+        nate.doExpressionStatement($expr, @expr);
         if ($expr.type() && !$expr.type()->empty())
         {
           nate.warning("Ignoring result of expression");

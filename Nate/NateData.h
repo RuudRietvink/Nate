@@ -28,6 +28,7 @@ enum class ByteCode
 	Code,
 	Program,
 	Expr,
+	ExprStat,
 	Block,
 	StdOutput,
 	StdError,
@@ -57,6 +58,10 @@ enum class ByteCode
 	Record,
 	Define,
 	Return,
+	DeclObject,
+	DeclObjectDefine,
+	ImplObject,
+	Prop,
 };
 
 struct TreeNode
@@ -98,6 +103,7 @@ struct TreeNode
 	Location location;
 	IdentifierPtr id;
 	TypePtr type;
+	ObjectPtr object;
 	DefinePtr defyne;
 	bool bool1 = false;
 	std::string string;

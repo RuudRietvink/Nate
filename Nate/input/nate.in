@@ -8,6 +8,8 @@ import File-Output
 import File-Input
 import Data-input
 
+import Hello
+
 record shop:
   var beer-inventory is int := 255
   var name is text := "shop"

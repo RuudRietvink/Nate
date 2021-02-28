@@ -132,7 +132,16 @@ public:
 	void doRead(const Expr& aValue, const yy::parser::location_type& aLocation);	
 	void doStartScope(const yy::parser::location_type& aLocation);
 	void doEndScope(const yy::parser::location_type& aLocation);
-	void doCodeInclude(const yy::parser::location_type& aLocation);	void codeStartDeclObject(const yy::parser::location_type& aLocation);
+	void doCodeInclude(const yy::parser::location_type& aLocation);	
+	void doDeclObject(const yy::parser::location_type& aLocation);
+	void doEndDeclObject();
+	void doImplObject(const std::string& anId, const yy::parser::location_type& aLocation);
+	void doEndImplObject();
+	void doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+							const yy::parser::location_type& aLocation);
+	void doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+								 const yy::parser::location_type& aLocation);
+  void doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
 
 
 	void pushScope(const ScopePtr& aScope);
@@ -167,7 +176,6 @@ public:
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
 	void addUndeclaredProperties(const ObjectPtr& aObject);
-	void endDeclObject();
 	void endImplementObject();
 	void startObject(const ObjectPtr& aObject);
 	ObjectPtr curObject();
@@ -180,9 +188,6 @@ public:
 												 const TypePtr& aType,
 												 const std::vector<std::string>& flags,
 												 const yy::parser::location_type& aLocation);
-	void defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType);
-	void endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-											 const yy::parser::location_type& aLocation);
 	
 	void startMath(const yy::parser::location_type& aLocation);
 	void endMath();
@@ -215,21 +220,8 @@ public:
 					const std::vector<Expr>& aInitValues,
 					const yy::parser::location_type& aLocation);
 	
-	std::string codeExpr(const Expr& aValue);
-	void codeEndDeclObject();
-	void codeStartImplObject(const yy::parser::location_type& aLocation);
-	void codeEndImplObject();
-	void codeObjectMethodHeaderDecl(const ObjectPtr& aObject, const DefinePtr& aDefine);
-	void codeDeclareProperty(const IdentifierPtr& aId, const yy::parser::location_type& aLocation);
-	void codeDefaultPropertyImpl(const IdentifierPtr& propId);
-
-	std::string codePropHeader(bool aAddObjectName,
-													 	const IdentifierPtr& aId, 
-													 	Object::PropType aPropType);
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-  void codeExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);
-	void printLineNr(const yy::parser::location_type& aLocation);
 
 private:
 	void checkIdentifierName(const std::string& aName);
@@ -245,7 +237,6 @@ private:
 	void pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder);
 	void popDefinesHolder();
 	
-	void codeObjectBases(const ObjectPtr& aObject);
 
 	struct Match
 	{
@@ -309,7 +300,6 @@ private:
 	bool                        mFirstOutput = true;
 	bool                        mStartOutput = true;
 	std::string                 mStream;
-	std::string                 mLastWriteStream;
 	std::string                 mLastReadStream;
 	std::map<std::string, std::string> mAliases;
 	std::set<std::string>       mImports;

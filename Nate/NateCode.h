@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NateData.h"
+#include "Object.h"
 
 #include <ostream>
 
@@ -27,6 +28,7 @@ private:
 	void codeOutputEnd(bool aAddEnd = true);
 	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
 	std::string codeExpr(const Expr& aValue);
+	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
 	void codeDeclIdentifier(bool aExtern,
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
@@ -56,6 +58,24 @@ private:
 	void createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	void createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName);
   void codeReturn(const TreeNodePtr& aNode);
+  void codeDeclObject(const TreeNodePtr& aNode);
+	void codeObjectBases(const ObjectPtr& aObject);
+	void codeDeclObjectDefine(const TreeNodePtr& aNode);
+  void codeImplObject(const TreeNodePtr& aNode);
+  void codeProp(const TreeNodePtr& aNode);
+	std::string codePropHeader(const ObjectPtr& aObject,
+														 bool aAddObjectName,
+												 	 	 const IdentifierPtr& aId, 
+													 	 Object::PropType aPropType);
+	void codeDefaultPropertyImpl(const ObjectPtr& aObject,
+															 const IdentifierPtr& propId);
+	void codeDefaultProperties(const ObjectPtr& aObject);
+	void codeDeclProperties(const ObjectPtr& aObject);
+	void codeDeclareProperty(const ObjectPtr& aObject,
+												 	 const IdentifierPtr& aId,
+													 const Location& aLocation);
+	void codeExprStat(const TreeNodePtr& aNode);
+	void codeImplObjectVariables(const TreeNodePtr& aNode);
 
 
 	bool isConstIntScalar(const Expr& aExpr);

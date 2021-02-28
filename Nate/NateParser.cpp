@@ -58,7 +58,13 @@ TreeNode* NateParser::add(ByteCode code, const Expr& expr, const yy::parser::loc
 
 TreeNode* NateParser::up()
 { 
-	return mCurNode = mCurNode->back;
+	mCurNode = mCurNode->back;
+	if (mCurNode == nullptr)
+	{
+		std::cerr << "oops";
+	}
+
+	return mCurNode;
 }
 
 yy::Lexer* NateParser::getLexer()
@@ -542,6 +548,54 @@ void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& a
 	add(ByteCode::Return, aValue, aLocation);
 }
 
+void NateParser::doDeclObject(const yy::parser::location_type& aLocation)
+{	
+	TreeNode* node = addStat(ByteCode::DeclObject, aLocation);
+	node->object = curObject();
+}
+
+void NateParser::doEndDeclObject()
+{
+	if (!curObject()->isRole())
+	{
+		addUndeclaredProperties(curObject());
+	}
+
+  data.inObject = false;
+	endObject();
+	up();
+}
+
+void NateParser::doImplObject(const std::string& anId, const yy::parser::location_type& aLocation)
+{
+  auto objectDecl = getObject(anId);
+  bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
+  if (!existingObjectDecl)
+  {
+    auto object = std::make_shared<Object>(anId, getType("object"));
+    object->setCodeType(toCodeName(anId));
+    object->setFlag(Type::Abstract, false);
+    object->setFlag(Type::Unknown, false);
+    object->setFlag(Type::ObjectImpl);
+          
+    addObject(object);
+    checkObject(object);
+		addStat(ByteCode::ImplObject, aLocation)->object = object;
+  }
+  else
+  {
+    startObject(objectDecl);
+		addStat(ByteCode::ImplObject, aLocation)->object = objectDecl;
+  }
+}
+
+
+void NateParser::doEndImplObject()
+{
+	endImplementObject();
+	up();
+}
+
 std::string NateParser::makeTempDir()
 {
 	std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
@@ -848,23 +902,10 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject)
 					{
 						location.begin.filename = &propMethod.second.filename;
 					}
-					codeDeclareProperty(id, propMethod.second.location);
 				}
 			}
 		}
 	}
-}
-
-void NateParser::endDeclObject()
-{
-	if (!curObject()->isRole())
-	{
-		addUndeclaredProperties(curObject());
-	}
-
-  data.inObject = false;
-  codeEndDeclObject();
-	endObject();
 }
 
 void NateParser::endObject()
@@ -1050,16 +1091,19 @@ void NateParser::doStartDefine(bool aIsDecl,
 				}
 
 				defineDecl->setFlag(Method::Defined);
-				//mOut = &curObject()->getNormalOut();
-				*mOut << in(-1) << curDefine()->createCodeDecl(toCodeName(curObject()->name())) << "\n" << in(-1) << "{" << std::endl;
+				TreeNode* node = addStat(ByteCode::Define, aLocation);
+				node->defyne = defineDecl;
+				node->bool1 = true;
+				node->object = curObject();
 			}
 			else
 			{
 				curDefine()->setFlag(Method::Defined);
 				curDefine()->setFlag(Method::Undeclared);
-				//mOut = &curObject()->getImplOut();
-				*mOut << in(-1) << (curDefine()->isStatic() ? "static " : "") <<
-					                 curDefine()->createCodeDecl() << "\n" << in(-1) << "{" << std::endl;
+				TreeNode* node = addStat(ByteCode::Define, aLocation);
+				node->defyne = curDefine();
+				node->bool1 = false;
+				node->object = curObject();
 			}
 
 		}
@@ -1074,7 +1118,11 @@ void NateParser::doStartDefine(bool aIsDecl,
 				}
 				curDefine()->setFlag(Method::Overriden);
 			}
-			codeObjectMethodHeaderDecl(curObject(), curDefine());
+
+			TreeNode* node = addStat(ByteCode::DeclObjectDefine, aLocation);
+			node->defyne = curDefine();
+			node->object = curObject();
+			node->bool1 = aIsDecl;
 		}
 
 		if (curDefine()->isStatic())
@@ -1113,12 +1161,7 @@ void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
 	popDefineScope();
-	mLastWriteStream.clear();
 	up();
-	if (!mDefineDecl)
-	{
-		*mOut << in() << "}\n" << std::endl;
-	}
 }
 
 DefinePtr NateParser::curDefine() { return mCurDefine; }
@@ -1137,11 +1180,11 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 
 		optionalError(id->setFlagStrings(flags));
 		curObject()->addProp(id, aLocation, mLexer->currentFile());
-		codeDeclareProperty(id, aLocation);
 	}
 }
 
-void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType)
+void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+										    const yy::parser::location_type& aLocation)
 {
 	const std::string method = aPropType == Object::PropType::Get ? "get" : "set";
 
@@ -1161,28 +1204,33 @@ void NateParser::defineProp(const IdentifierPtr& aIdentifier, Object::PropType a
 	
 	addDefine(true);
 	mDefineDecl = false;
-	//mOut = &curObject()->getNormalOut();
-
+	bool getter = false;
 	if (aPropType == Object::PropType::Get)
 	{
-		*mOut << in(-1) << codePropHeader(true, aIdentifier, Object::PropType::Get) << "\n" 
-			    << in(-1) << "{" << std::endl;
+		getter = true;
 	}
 	else
 	{
-		*mOut << in(-1) << codePropHeader(true, aIdentifier, Object::PropType::Set) << "\n" 
-			    << in(-1) << "{" << std::endl;
-
 		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
 		addIdentifier(value);
 	}
+
+	TreeNode* node = addStat(ByteCode::Prop, aLocation);
+	node->bool1 = getter;
+	node->id = aIdentifier;
+	node->object = curObject();
 }
 
-void NateParser::endDefineProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+void NateParser::doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
 															 const yy::parser::location_type& aLocation)
 {
 	doEndDefine(aLocation);
 	deleteCurDefine();
+}
+
+void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)
+{
+	add(ByteCode::ExprStat, aExpr, aLocation);
 }
 
 void NateParser::addArgWord(const std::string& aWord)
@@ -2001,4 +2049,26 @@ void NateParser::declareRecordIdentifiers(
 				const yy::parser::location_type& aLocation)
 {
 	declareLocalIdentifiers(aIsConst, aNames, aType, aInitValues, !NateParser::InitializeVariables, aLocation);
+}
+
+std::string NateParser::typeScopeName() const
+{
+	std::string result;
+
+	for (auto const& holder : mTypesHolders)
+	{
+		auto name = holder->typeScopeName();
+		if (!name.empty())
+		{
+			result += toCodeName(name);
+			result += "::";
+		}
+	}
+
+	return result;
+}
+
+std::string NateParser::codeId(const std::string& aName, Scope* aScope)
+{
+	return getOrFakeIdentifier(aName, aScope)->codeName();
 }

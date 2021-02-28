@@ -1,143 +1,134 @@
 #pragma once
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\BaseObject.h"
+#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Text.ns"
 #include <string>
 #line 3 ".\\Hello.nd"
 class Greetable
 {
 public:
-  virtual ~Greetable() = default;
+	virtual ~Greetable() = default;
+#line 4
 	struct Greet
 	{
-#line 5
-	std::string greeting;
-	int32_t count;
-	Greet()
-		: greeting()
-		, count()
+		Greet()
+			: greeting()
+			, count()
 		{}
-#line 8
+#line 5
+		std::string greeting;
+		int32_t count;
 	};
 
-public:
-#line 8
-	virtual Greetable::Greet greet_get() const = 0;
-#line 8
-	virtual const Greetable::Greet& greet_set(const Greetable::Greet& value) = 0;
+#line 10
 	virtual std::string ls_E_me__E_text_(const std::string& world) const = 0;
+public:
+	virtual Greetable::Greet greet_get() const = 0;
+	virtual const Greetable::Greet& greet_set(const Greetable::Greet& value) = 0;
 };
 
-#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\BaseObject.h"
-#line 12 ".\\Hello.nd"
+#line 12
 class Hi: public virtual Greetable, public BaseObject
 {
 public:
-  virtual ~Hi();
-  Hi();
+	virtual ~Hi();
+	Hi();
 private:
-  class __impl;
-  __impl* _impl;
-  friend class __impl;
-public:
+	class __impl;
+	__impl* _impl;
+	friend class __impl;
+	public:
+#line 13
 	struct Datum
 	{
-#line 14
-	std::string fun;
-	int32_t count;
-	Datum()
-		: fun()
-		, count()
+		Datum()
+			: fun()
+			, count()
 		{}
-#line 17
+#line 14
+		std::string fun;
+		int32_t count;
 	};
 
+#line 20
+	static std::shared_ptr<Hi> new_Hi2_();
+#line 22
+	virtual std::string E_me__E_text_(const std::string& world) const;
+	std::string ls_E_me__E_text_(const std::string& world) const override;
 private:
-#line 17
+	Greet greet = {};
+public:
+	Greetable::Greet greet_get() const override;
+	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
+private:
 	int32_t age = {};
 public:
-#line 17
 	virtual int32_t age_get() const;
 private:
 	Datum datum = {};
 public:
 	virtual Hi::Datum datum_get() const;
 	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
-	static std::shared_ptr<Hi> new_Hi2_();
-	virtual std::string E_me__E_text_(const std::string& world) const;
-	std::string ls_E_me__E_text_(const std::string& world) const override;
-private:
-#line 8
-	Greet greet = {};
-public:
-#line 8
-	Greetable::Greet greet_get() const override;
-#line 8
-	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
 };
 
 #line 25
 class Hello: public Hi, public virtual Greetable
 {
 public:
-  virtual ~Hello();
-  Hello();
+	virtual ~Hello();
+	Hello();
 private:
-  class __impl;
-  __impl* _impl;
-  friend class __impl;
-public:
+	class __impl;
+	__impl* _impl;
+	friend class __impl;
+	public:
+#line 26
 	struct Data
 	{
-#line 27
-	std::string greet;
-	int32_t count;
-	Data()
-		: greet()
-		, count()
+		Data()
+			: greet()
+			, count()
 		{}
-#line 30
+#line 27
+		std::string greet;
+		int32_t count;
 	};
 
+#line 34
+	static std::shared_ptr<Hello> new_Hello_();
+#line 36
+	virtual std::shared_ptr<Hello> E_O_me__greeted_();
+#line 38
+	std::string E_me__E_text_(const std::string& world) const override;
+#line 40
+	static std::string hi_E_Hello_(const std::shared_ptr<Hello>& other);
+#line 42
+	virtual std::string stream_out_E_me__() const;
+#line 44
+	std::string ls_E_me__E_text_(const std::string& world) const override;
 private:
-#line 30
-	std::string name = {};
-public:
-#line 30
-	virtual std::string name_get() const;
-#line 30
-	virtual const std::string& name_set(const std::string& value);
-private:
-#line 30
 	std::string address = {};
 public:
-#line 30
 	virtual std::string address_get() const;
-#line 30
 	virtual const std::string& address_set(const std::string& value);
+private:
+	std::string name = {};
+public:
+	virtual std::string name_get() const;
+	virtual const std::string& name_set(const std::string& value);
+private:
+	Data data = {};
+public:
+	virtual Hello::Data data_get() const;
+	virtual const Hello::Data& data_set(const Hello::Data& value);
 private:
 	int32_t age = {};
 public:
 	int32_t age_get() const override;
 private:
-#line 32
-	Data data = {};
-public:
-#line 32
-	virtual Hello::Data data_get() const;
-#line 32
-	virtual const Hello::Data& data_set(const Hello::Data& value);
-	static std::shared_ptr<Hello> new_Hello_();
-	virtual std::shared_ptr<Hello> E_O_me__greeted_();
-	std::string E_me__E_text_(const std::string& world) const override;
-	static std::string hi_E_Hello_(const std::shared_ptr<Hello>& other);
-	virtual std::string stream_out_E_me__() const;
-	std::string ls_E_me__E_text_(const std::string& world) const override;
-private:
-#line 8
 	Greet greet = {};
 public:
-#line 8
 	Greetable::Greet greet_get() const override;
-#line 8
 	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
 };
 

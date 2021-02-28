@@ -13,7 +13,7 @@ NateCode::NateCode(std::ostream& aOut, NateParser* aParser)
 
 std::string NateCode::in(int extra)
 {
-	return std::string(mIndent + extra, '\t');
+	return std::string(std::max(0, mIndent + extra), '\t');
 }
 
 void NateCode::printLineNr(const Location& aLocation)
@@ -70,6 +70,11 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Record: result = "Record"; break;
 	case ByteCode::Define: result = "Define"; break;
 	case ByteCode::Return: result = "Return"; break;
+	case ByteCode::DeclObject: result = "DeclObject"; break;
+	case ByteCode::DeclObjectDefine: result = "DeclObjectDefine"; break;
+	case ByteCode::ImplObject: result = "ImplObject"; break;
+	case ByteCode::Prop: result = "Prop"; break;
+	case ByteCode::ExprStat: result = "ExprStat"; break;
 	default: result = "****"; break;
 	}
 
@@ -126,7 +131,7 @@ void NateCode::code(const TreeNodePtr& aStat)
     codeRead(aStat);
     break;
   case ByteCode::LocalVar:
-    codeDeclIdentifier(false, aStat->id, aStat->bool1, aStat->location);
+		codeLocalVar(aStat);
     break;
   case ByteCode::Assign:
     codeAssign(aStat);
@@ -166,6 +171,21 @@ void NateCode::code(const TreeNodePtr& aStat)
     break;
   case ByteCode::Return:
     codeReturn(aStat);
+    break;
+  case ByteCode::DeclObject:
+    codeDeclObject(aStat);
+    break;
+  case ByteCode::DeclObjectDefine:
+    codeDeclObjectDefine(aStat);
+    break;
+  case ByteCode::ImplObject:
+    codeImplObject(aStat);
+    break;
+  case ByteCode::Prop:
+    codeProp(aStat);
+    break;
+  case ByteCode::ExprStat:
+    codeExprStat(aStat);
     break;
 	default:
 		std::cerr << "Bad bytecode " << (int)aStat->code << std::endl;
@@ -412,6 +432,14 @@ void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
 			break;
     }
   }
+}
+
+void NateCode::codeLocalVar(const TreeNodePtr& aNode, bool inImplObject)
+{
+	if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
+	{
+    codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
+	}
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,
@@ -860,20 +888,37 @@ void NateCode::codeRecord(const TreeNodePtr& aNode)
 	*mOut << in() << "{}" << end();
 	codeNested(aNode);
 	--mIndent;
-	*mOut << in() << "};" << end();
+	*mOut << in() << "};" << end() << end();
 }
 
 void NateCode::codeDefine(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
 	DefinePtr defyne = aNode->defyne;
-	bool isDecl = aNode->bool1;
 	
 	if (defyne->isObjectMethod())
-	{
+	{				
+		bool defineDecl = aNode->bool1;
+		if (defineDecl)
+		{
+			*mOut << in(-1) << defyne->createCodeDecl(toCodeName(aNode->object->name())) << end() <<
+				       in(-1) << "{" << end();
+		}
+		else
+		{				
+			*mOut << in() << (defyne->isStatic() ? "static " : "") <<
+					              defyne->createCodeDecl() << end() << 
+				       in() << "{" << end();
+		}
+
+		++mIndent;
+		codeNested(aNode);
+		--mIndent;
+		*mOut << in() << "}" << end() << end();
 	}
 	else
 	{
+		bool isDecl = aNode->bool1;
 		createCodeDecl(defyne, "");
 		if (isDecl)
 		{
@@ -885,7 +930,7 @@ void NateCode::codeDefine(const TreeNodePtr& aNode)
 			++mIndent;
 			codeNested(aNode);
 			--mIndent;
-			*mOut << in() << "}" << end();
+			*mOut << in() << "}" << end() << end();
 		}
 	}
 }
@@ -956,4 +1001,256 @@ void NateCode::codeReturn(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
 	*mOut << in() << "return " << codeExpr(aNode->expr) << ";" << end();
+}
+
+void NateCode::codeDeclObject(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	ObjectPtr object = aNode->object;
+	codeObjectBases(object);
+
+	*mOut << end();
+	*mOut << in() << "{" << end();
+	auto name = toCodeName(object->name());
+	
+	*mOut << in() << "public:" << end();
+	
+	++mIndent;
+	if (object->isRole())
+	{
+		*mOut << in() << "virtual ~" << name << "() = default;" << end();
+	}
+	else
+	{
+		*mOut << in() << "virtual ~" << name << "();" << end();
+		*mOut << in()  << name << "();" << end();
+		*mOut << in(-1) << "private:" << end();
+		*mOut << in() << "class __impl;"  << end();
+		*mOut << in() << "__impl* _impl;"  << end();
+		*mOut << in() << "friend class __impl;"  << end();
+	  *mOut << in() << "public:" << end();
+	}
+
+	codeNested(aNode);
+	codeDeclProperties(object);
+
+	--mIndent;
+	*mOut << in() << "};" << end() << end();
+}
+
+void NateCode::codeObjectBases(const ObjectPtr& aObject)
+{
+	*mOut << in() << "class " << toCodeName(aObject->name());
+
+	if (aObject->getBases().empty() && !aObject->isRole())
+	{
+		*mOut << ": public std::enable_shared_from_this<" << toCodeName(aObject->name()) << ">";
+	}
+	else
+	{
+		bool first = true;
+		for (auto const& base : aObject->getBases())
+		{
+			*mOut << (first ? ": public " : ", public ") << 
+						   (base->isRole() ? "virtual " : "") <<
+				       toCodeName(base->name());
+			first = false;
+		}
+	}
+}
+
+void NateCode::codeDeclObjectDefine(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+
+	DefinePtr defyne = aNode->defyne;
+	const char* startKeys = defyne->is(Method::Final) || defyne->is(Method::Overriden)
+												  ? "" : "virtual ";
+	const char* endKeys = defyne->is(Method::Overriden)
+												? " override" : "";
+	const char* abstract = aNode->object->isRole()
+												 ? " = 0" : "";
+	*mOut << in() << (defyne->isStatic() ? "static " : startKeys) << 
+									  defyne->createCodeDecl() << endKeys << abstract << ";" << end();
+}
+
+void NateCode::codeImplObject(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	ObjectPtr object = aNode->object;
+
+	if (object->is(Type::ObjectImpl))
+	{
+		codeObjectBases(object);
+		*mOut << in() << end();
+		*mOut << in() << "{" << end();
+		*mOut << in() << "public:" << end();
+		++mIndent;
+		codeNested(aNode);
+
+		--mIndent;
+		*mOut << in() << "};" << end() << end();
+	}
+	else
+	{
+		auto name = toCodeName(object->name());
+		*mOut << in() << "class " << name << "::__impl" << end();
+		*mOut << in() << "{" << end();
+		*mOut << in() << "private:" << end();
+		*mOut << in(1) << "friend class " << name << ";" << end();
+		*mOut << in(1) << name << "* me;" << end();
+		++mIndent;
+		codeImplObjectVariables(aNode);
+		--mIndent;
+		*mOut << in() << "public:" << end();
+		*mOut << in(1) << "__impl(" << name << "* aMe) : me(aMe) {}" << end();
+		*mOut << in() << "};" << end() << end();
+
+		*mOut << in() << name << "::" << name << "()" << end();
+		*mOut << in(1) << ": _impl(new __impl(this)) {}" << end();
+		*mOut << in() << name << "::~" << name << "() { delete _impl; }" << end();
+		codeNested(aNode);
+	}
+	
+	codeDefaultProperties(object);
+}
+
+void NateCode::codeImplObjectVariables(const TreeNodePtr& aNode)
+{
+  for (auto& part : aNode->nested)
+  {
+    switch (part->code)
+    {
+    case ByteCode::LocalVar:
+      codeLocalVar(part, true);
+      break;
+		default:
+			break;
+    }
+  }
+}
+
+void NateCode::codeProp(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+
+	*mOut << in() << codePropHeader(aNode->object, true, aNode->id, 
+																	aNode->bool1  ? Object::PropType::Get : Object::PropType::Set) << end() 
+			  << in() << "{" << end() ;
+
+	++mIndent;
+	codeNested(aNode);
+	--mIndent;
+	*mOut << in() << "}" << end() << end();
+}
+
+std::string NateCode::codePropHeader(const ObjectPtr& aObject,
+																	   bool aAddObjectName,
+																		 const IdentifierPtr& aId, 
+																		 Object::PropType aPropType)
+{
+	std::stringstream buf;
+	
+	auto scopeName = aId->type()->typeScopeName();
+	std::string propType = (aId->type()->is(Type::NeedsRef))
+											    ? scopeName + aId->type()->codeType()
+			                    : aId->type()->codeType();
+	std::string refType = (aId->type()->is(Type::NeedsRef))
+											    ? "&"
+			                    : "";
+	std::string objectPrefix = aAddObjectName
+													   ? toCodeName(aObject->name()) + "::"
+														 : "";
+
+	if (aPropType == Object::PropType::Get)
+	{
+	  buf << propType << " " << objectPrefix << aId->codeName();
+		buf << "_get() const";
+	}
+	else
+	{
+	  buf << "const " <<  propType << refType << " " << objectPrefix << aId->codeName();
+		buf << "_set(const " << propType << refType << " value)";
+	}
+
+	return buf.str();
+}
+
+void NateCode::codeDefaultProperties(const ObjectPtr& aObject)
+{
+	for (const auto& propMethod : aObject->propertyMethods())
+	{
+		codeDefaultPropertyImpl(aObject, propMethod.first);
+	}
+}
+
+void NateCode::codeDefaultPropertyImpl(const ObjectPtr& aObject,
+																	     const IdentifierPtr& propId)
+{
+		if (aObject->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Declared)
+		{
+			*mOut << in() << codePropHeader(aObject, true, propId, Object::PropType::Get) 
+				    << " { return " << propId->codeName() << "; }" << end();
+		}
+
+		if (aObject->getPropState(propId, Object::PropType::Set).state == Object::PropState::State::Declared)
+		{
+			*mOut << in() << codePropHeader(aObject, true, propId, Object::PropType::Set) 
+				    << " { return " << propId->codeName() << " = value; }" << end();
+		}
+}
+
+void NateCode::codeDeclProperties(const ObjectPtr& aObject)
+{
+	for (auto& propMethod : aObject->propertyMethods())
+	{
+		Location location(propMethod.second.location, propMethod.second.filename);
+		codeDeclareProperty(aObject, propMethod.first, location);
+	}
+}
+
+void NateCode::codeDeclareProperty(const ObjectPtr& aObject,
+																	 const IdentifierPtr& aId,
+																	 const Location& aLocation)
+{
+	TypePtr idType = aId->type();
+	std::string propType = (idType->is(Type::NeedsRef))
+											    ? idType->codeType() + "&"
+			                    : idType->codeType();
+	std::string declType = idType->codeType();
+				
+	if (!aObject->isRole())
+	{
+		*mOut << in(-1) << "private:" << end();
+		*mOut << in() << declType << " " << aId->codeName() << " = {};" << end();
+	}
+		
+	const char* permisKey = "public";
+	*mOut << in(-1) << permisKey << ":" << end();
+
+	bool overriden = aObject->basesIsPropDeclared(aId, Object::PropType::Get);
+
+	const char* startKeys = aId->is(Identifier::Final) || overriden
+			                    ? "" : "virtual ";
+	const char* abstractKey = aObject->isRole()
+			                      ? " = 0" : "";
+	const char* endKeys = overriden
+			                  ? " override" : "";
+	*mOut << in() << startKeys << codePropHeader(aObject, false, aId, Object::PropType::Get) << endKeys << abstractKey << ";" << end();
+
+	if (!aId->is(Identifier::ReadOnly))
+	{
+		overriden = aObject->basesIsPropDeclared(aId, Object::PropType::Set);
+	  startKeys = aId->is(Identifier::Final) || overriden
+			          ? "" : "virtual ";
+		endKeys = overriden
+			        ? " override" : "";
+		*mOut << in() << startKeys << codePropHeader(aObject, false, aId, Object::PropType::Set) << endKeys << abstractKey << ";" << end();
+	}
+}
+
+void NateCode::codeExprStat(const TreeNodePtr& aNode)
+{
+	printLineNr(aNode->location);
+	*mOut << in() << codeExpr(aNode->expr) << ";" << end();
 }
