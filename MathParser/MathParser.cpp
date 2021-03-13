@@ -417,7 +417,7 @@ MathParser::Math MathParser::getSubMath(
 	return result;
 }
 
-MathValue* MathParser::embedSubMath(
+MathParser::MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath, 
 				Oper aOper,
@@ -426,7 +426,7 @@ MathValue* MathParser::embedSubMath(
 	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
 }
 
-MathValue* MathParser::embedSubMath(
+MathParser::MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
@@ -748,7 +748,7 @@ void MathParser::doMathMonomial(Math& aMath)
 				{
 					if (lastX != -1)
 					{
-						MathValue* rightMathValue = &aMath.matrix[y][x].mathValue;
+						MathValueSPtr& rightMathValue = aMath.matrix[y][x].mathValue;
 						Area leftArea = lastMathValue->getArea(lastX, y);
 						Area rightArea = aMath.matrix[y][x].getArea(x, y);
 						Math left = getSubMath(aMath, leftArea);

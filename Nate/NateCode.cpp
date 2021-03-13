@@ -42,7 +42,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	{
 	case ByteCode::Code: result = "Code"; break;
 	case ByteCode::Program: result = "Program"; break;
-	case ByteCode::Expr: result = "Expr"; break;
+	case ByteCode::Expr: result = "Expr " + aNode->expr.text(); break;
 	case ByteCode::Block: result = "Block"; break;
 	case ByteCode::StdOutput: result = "StdOutput"; break;
 	case ByteCode::StdError: result = "Error"; break;
@@ -75,6 +75,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::ImplObject: result = "ImplObject"; break;
 	case ByteCode::Prop: result = "Prop"; break;
 	case ByteCode::ExprStat: result = "ExprStat"; break;
+	case ByteCode::End: result = aNode->bool1 ? "End" : ""; break;
 	default: result = "****"; break;
 	}
 
@@ -88,7 +89,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 
 void NateCode::codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out)
 {
-	std::cout << in() << codeDesc(aStat) << std::endl;
+	out << in() << codeDesc(aStat) << std::endl;
 	++mIndent;
   for (auto& stat : aStat->nested)
   {
