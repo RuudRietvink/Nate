@@ -123,6 +123,17 @@ void NateParser::initOutput()
 	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Core.h\"" << std::endl;
 }
 
+int NateParser::parseAndCode()
+{
+	int result = parse();
+	if (result == 0)
+	{
+		result = code();
+	}
+
+	return result;
+}
+
 int NateParser::parse()
 {
 	if (mLexer->debug())
@@ -154,13 +165,20 @@ int NateParser::parse()
 		}
 	}
 		
-	auto result = mParser->parse();
+	return mParser->parse();
+}
+
+int NateParser::code()
+{
+	int result = 0;
+
 	NateCode coder(*mOut, this);
 	coder.codeNested(data.stats);
 
 	if (mLexer->debug())
 	{
 		std::cerr << "End seperate parsing: " << mFileName << std::endl;
+		result = 1;
 	}
 
 	return result;
@@ -202,17 +220,17 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 	Expr copy(aValue);
 	for (auto const& expr : aExpressions)
 	{
-		if (expr.is(ExprNode::ConstExpr))
+		if (expr.is(Expr::ConstExpr))
 		{
 			error("Cannot assign to a constant or readonly");
 		}
-		else if (!expr.is(ExprNode::Output))
+		else if (!expr.is(Expr::Output))
 		{
 			error("Cannot assign to a non-variable");
 		}
 
 		const TypePtr& exprType = expr.type();
-		bool ok = copy.node().castToType(exprType);
+		bool ok = copy.castToType(exprType);
 		if (!ok)
 		{
 			error("cannot cast '" + copy.text() + "' of type " + copy.type()->name() + " to type " + exprType->name());
@@ -511,7 +529,7 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
 
 void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
-	if (aValue.is(ExprNode::Output) && !aValue.is(ExprNode::ConstExpr))
+	if (aValue.is(Expr::Output) && !aValue.is(Expr::ConstExpr))
 	{
 		TreeNode* node = add(ByteCode::Expr, aValue, aLocation);
 		node->bool1 = (aValue.type() && aValue.type()->is(Type::Boolean));
@@ -1773,7 +1791,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 	match.nodeStartIter = aExpr.nodes().cend();
 	match.nodeEndIter = aExpr.nodes().cend();
 
-	if (aExpr.nodes().size() > 1 || aExpr.node().is(ExprNode::Word))
+	if (aExpr.nodes().size() > 1 || aExpr.is(Expr::Word))
 	{
 		for (auto& object : mObjects)
 		{		
@@ -1808,7 +1826,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 
 			if (aDebug) std::cerr << "******* " << (evalResult.type ? *evalResult.type : Type()) << " " << evalResult.code << std::endl;
 			
-			ExprNode node(evalResult.origText + " ", evalResult.code, evalResult.type);
+			Expr node(evalResult.origText + " ", evalResult.code, evalResult.type);
 			node.setFlags(evalResult.flags);
 
 			Expr newExpr;
@@ -1831,10 +1849,10 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 		}
 	}
 
-	if (aExpr.nodes().size() > 1 || aExpr.nodes().front().is(ExprNode::Word))
+	if (!aExpr.nodes().empty() || aExpr.is(Expr::Word))
 	{
 		error("Bad expression: " + aExpr.text());
-		return Expr(ExprNode("1", getType("int-32")));
+		return Expr("1", getType("int-32"));
 	}
 
 	handleCompileCommands(result);
@@ -1899,7 +1917,7 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 void NateParser::handleCompileCommands(Expr& aExpr)
 {
 	size_t pos;
-	std::string& code = aExpr.node().code();
+	std::string& code = aExpr.code();
 	bool ok = true;
 
 	do
@@ -1966,8 +1984,8 @@ void NateParser::declareLocalIdentifiers(
 		Expr initValue;
 		if (aInitValues.empty())
 		{
-			initValue = Expr(ExprNode("default", "{}", type));
-			initValue.node().setFlag(ExprNode::Default);
+			initValue = Expr("default", "{}", type);
+			initValue.setFlag(Expr::Default);
 			if (aIsConst)
 			{
 				error("Expected initial values for constants");
@@ -1985,12 +2003,12 @@ void NateParser::declareLocalIdentifiers(
 			}
 
 			initValue = Expr(*initIter++);
-			initValue.node().castToType(aType);
+			initValue.castToType(aType);
 		}
 		else 
 		{
-			initValue = Expr(ExprNode(aNames.front(), codeId(aNames.front()), type));
-			initValue.node().setFlag(ExprNode::ConstExpr, aIsConst);
+			initValue = Expr(aNames.front(), codeId(aNames.front()), type);
+			initValue.setFlag(Expr::ConstExpr, aIsConst);
 		}
 
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), name, type, initValue);
@@ -2011,7 +2029,7 @@ void NateParser::declareLocalIdentifiers(
 			return;
 		}
 
-		//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(ExprNode::ConstExpr))
+		//if (aIdentifier->is(Identifier::Const) && !aIdentifier->initValue().is(Expr::ConstExpr))
 		//{
 		//	error("Expected constant expression.");
 		//}

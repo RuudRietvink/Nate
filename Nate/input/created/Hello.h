@@ -56,11 +56,6 @@ private:
 	virtual std::string E_me__E_text_(const std::string& world) const;
 	std::string ls_E_me__E_text_(const std::string& world) const override;
 private:
-	Greet greet = {};
-public:
-	Greetable::Greet greet_get() const override;
-	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
-private:
 	int32_t age = {};
 public:
 	virtual int32_t age_get() const;
@@ -69,6 +64,11 @@ private:
 public:
 	virtual Hi::Datum datum_get() const;
 	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
+private:
+	Greet greet = {};
+public:
+	Greetable::Greet greet_get() const override;
+	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
 };
 
 #line 25
@@ -107,24 +107,24 @@ private:
 #line 44
 	std::string ls_E_me__E_text_(const std::string& world) const override;
 private:
-	std::string address = {};
-public:
-	virtual std::string address_get() const;
-	virtual const std::string& address_set(const std::string& value);
-private:
 	std::string name = {};
 public:
 	virtual std::string name_get() const;
 	virtual const std::string& name_set(const std::string& value);
 private:
+	int32_t age = {};
+public:
+	int32_t age_get() const override;
+private:
+	std::string address = {};
+public:
+	virtual std::string address_get() const;
+	virtual const std::string& address_set(const std::string& value);
+private:
 	Data data = {};
 public:
 	virtual Hello::Data data_get() const;
 	virtual const Hello::Data& data_set(const Hello::Data& value);
-private:
-	int32_t age = {};
-public:
-	int32_t age_get() const override;
 private:
 	Greet greet = {};
 public:

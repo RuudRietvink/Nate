@@ -86,13 +86,13 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	return result;
 }
 
-void NateCode::codeTreeDesc(const TreeNodePtr& aStat)
+void NateCode::codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out)
 {
 	std::cout << in() << codeDesc(aStat) << std::endl;
 	++mIndent;
   for (auto& stat : aStat->nested)
   {
-		codeTreeDesc(stat);
+		codeTreeDesc(stat, out);
 	}
 	--mIndent;
 }
@@ -350,7 +350,7 @@ void NateCode::codeOutput(const Expr& aValue)
 		codeOutput("std::boolalpha ");
 	}
 	
-	if (aValue.is(ExprNode::Literal))
+	if (aValue.is(Expr::Literal))
 	{
 		codeOutput(codeExpr(aValue));
 	}
@@ -362,7 +362,8 @@ void NateCode::codeOutput(const Expr& aValue)
 		}
 		else
 		{
-			Expr outExpr(Expr("stream-out"), aValue);
+			Expr outExpr(aValue);
+			outExpr.insertNode(Expr("stream-out"));
 			Expr resExpr = mParser->evaluate(outExpr);
 			if (!resExpr.isEmpty())
 			{
@@ -474,7 +475,7 @@ void NateCode::codeDeclIdentifier(bool aExtern,
 std::string NateCode::codeExpr(const Expr& aValue)
 {
 	std::string result = aValue.code();
-	if (aValue.is(ExprNode::Identifier) && !aValue.is(ExprNode::Property))
+	if (aValue.is(Expr::Identifier) && !aValue.is(Expr::Property))
 	{
 		IdentifierPtr id = aValue.id();
 		if (id)
@@ -586,7 +587,7 @@ void NateCode::codeElse(const TreeNodePtr& aNode)
 
 bool NateCode::isConstIntScalar(const Expr& aExpr)
 {
-  return (aExpr.is(ExprNode::ConstExpr) && aExpr.type()->is(Type::Scalar) &&
+  return (aExpr.is(Expr::ConstExpr) && aExpr.type()->is(Type::Scalar) &&
 		      !aExpr.type()->is(Type::Real));
 }
 
@@ -797,7 +798,7 @@ void NateCode::codeStartLoopForRange(const TreeNodePtr& aNode)
 	auto iter = mParser->uniqueName();
 	auto next = mParser->uniqueName();
 
-	std::string ref = aNode->expr.is(ExprNode::Output) ? "&" : "";
+	std::string ref = aNode->expr.is(Expr::Output) ? "&" : "";
 	std::string increment;
 
 	if (rangeType->isOfType("text"))
@@ -878,7 +879,7 @@ void NateCode::codeRecord(const TreeNodePtr& aNode)
 
 		*mOut << id->codeName() << "(";
 
-		if (!id->initValue().is(ExprNode::Default))
+		if (!id->initValue().is(Expr::Default))
 		{
 			*mOut << codeExpr(id->initValue());
 		}

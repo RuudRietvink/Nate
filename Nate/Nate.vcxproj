@@ -209,7 +209,6 @@
     <ClCompile Include="core\Rational.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="Expr.cpp" />
-    <ClCompile Include="ExprNode.cpp" />
     <ClCompile Include="Container.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="input\created\Hello.cpp">
@@ -311,7 +310,6 @@
     <ClInclude Include="core\UpperLower.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Expr.h" />
-    <ClInclude Include="ExprNode.h" />
     <ClInclude Include="Container.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="input\created\Hello.h">

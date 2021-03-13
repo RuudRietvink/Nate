@@ -213,9 +213,9 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, i
 		{
 			if (arg.isIdentifier())
 			{
-				if (nodeIter->is(ExprNode::Word))
+				if (nodeIter->is(Expr::Word))
 				{
-					if (aDebug >= 3) std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(ExprNode::Word) << std::endl;
+					if (aDebug >= 3) std::cerr << "not id " << arg.isIdentifier() << " " << !nodeIter->is(Expr::Word) << std::endl;
 					return false;
 				}
 			}
@@ -301,28 +301,28 @@ void Method::handleOwnerMember(
 
 		aNodeType = identifier->type();
 					
-		aResult.flags[ExprNode::Output] = true;
-		if (aOwnerNode->is(ExprNode::Property) && !identifier->is(Identifier::Property))
+		aResult.flags[Expr::Output] = true;
+		if (aOwnerNode->is(Expr::Property) && !identifier->is(Identifier::Property))
 		{
-			aResult.flags[ExprNode::ConstExpr] = true;
+			aResult.flags[Expr::ConstExpr] = true;
 		}
 
 		if (identifier->is(Identifier::Const))
 		{
-			aResult.flags[ExprNode::ConstExpr] = true;
+			aResult.flags[Expr::ConstExpr] = true;
 		}
 		if (identifier->is(Identifier::Property))
 		{
-			aResult.flags[ExprNode::Property] = true;
+			aResult.flags[Expr::Property] = true;
 		}
 		if (identifier->is(Identifier::ObjectImpl))
 		{
-			aResult.flags[ExprNode::ObjectImpl] = true;
+			aResult.flags[Expr::ObjectImpl] = true;
 		}
 	}
 }
 
-ExprNode Method::createTypeCastNode(
+Expr Method::createTypeCastNode(
 					const ExprNodesCIter& aNodeIter,
 					const Arg& aArg,
 					const TypePtr& aTemplateType,
@@ -330,7 +330,7 @@ ExprNode Method::createTypeCastNode(
 					const TypePtr& aHighestType,
 					std::string& aNodeCode) const
 {
-	ExprNode node = *aNodeIter;
+	Expr node = *aNodeIter;
 	if (aArg.is(Arg::Typename))
 	{
 		node.castToType(aTemplateType->typenameType());
@@ -359,7 +359,7 @@ ExprNode Method::createTypeCastNode(
 
 void Method::createArgCode(
 					const Arg& aArg,
-					const ExprNode& aNode,
+					const Expr& aNode,
 					const DefinePtr& aCurDefine,
 					const std::string& aNodeCode,
 					bool aIsObjectArg,
@@ -369,9 +369,9 @@ void Method::createArgCode(
 
 	std::string code = (aArg.is(Arg::Member) || 
 											aArg.is(Arg::Out) ||
-											aNode.is(ExprNode::Literal) ||
-											aNode.is(ExprNode::Property) ||
-											aNode.is(ExprNode::Identifier))
+											aNode.is(Expr::Literal) ||
+											aNode.is(Expr::Property) ||
+											aNode.is(Expr::Identifier))
 											? aNodeCode 
 											: "(" + aNodeCode + ")";
 			
@@ -390,13 +390,13 @@ void Method::createArgCode(
 					code = "this";
 				}
 			}
-			else if (aCurDefine->is(Method::Undeclared) && aNode.is(ExprNode::Property) &&
-							 aNode.is(ExprNode::Identifier) && !aArg.is(Arg::Member))
+			else if (aCurDefine->is(Method::Undeclared) && aNode.is(Expr::Property) &&
+							 aNode.is(Expr::Identifier) && !aArg.is(Arg::Member))
 			{
 				code = "me->" + code;
 			}
 			else if (!aCurDefine->is(Method::Undeclared) &&
-							 aNode.is(ExprNode::Identifier) && aNode.is(ExprNode::ObjectImpl))
+							 aNode.is(Expr::Identifier) && aNode.is(Expr::ObjectImpl))
 			{
 				code = "_impl->" + code;
 			}
@@ -466,14 +466,14 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 				nodeCode = nodeIter->code();
 			}
 
-			ExprNode node = createTypeCastNode(
+			Expr node = createTypeCastNode(
 													nodeIter, *arg, templateType, firstType, highestType,	// ->
 													nodeCode);
 			createArgCode(*arg, node, aCurDefine, nodeCode, (arg == mObjectArg), //-->
 										result.code);
 
 			lastType = nodeType;
-			if (!node.is(ExprNode::ConstExpr))
+			if (!node.is(Expr::ConstExpr))
 			{
 				isConst = false;
 			}
@@ -490,7 +490,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	else if (is(Me))
 	{
 		result.type = aCurDefine->object();
-	  result.flags[ExprNode::Output] = true;
+	  result.flags[Expr::Output] = true;
 	}
 	else if (is(Last))
 	{
@@ -503,7 +503,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 
 	if (isConst)
 	{
-	  result.flags[ExprNode::ConstExpr] = true;
+	  result.flags[Expr::ConstExpr] = true;
 	}
 	
 	if (isStatic())
@@ -645,12 +645,12 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					firstType = nodeType;
 				}
 				
-				if (!isCodeMethod() && arg->is(Arg::Out) && nodeIter->is(ExprNode::Property))
+				if (!isCodeMethod() && arg->is(Arg::Out) && nodeIter->is(Expr::Property))
 				{				
 					error << "Property may not be output: " << nodeIter->text();
 					result.matches = false;
 				}
-				else if (arg->is(Arg::Out) && !nodeIter->is(ExprNode::Output))
+				else if (arg->is(Arg::Out) && !nodeIter->is(Expr::Output))
 				{				
 					error << "Argument must be output: " << nodeIter->text();
 					result.matches = false;

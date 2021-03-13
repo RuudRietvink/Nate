@@ -28,7 +28,7 @@ namespace yy
 	class parser;
 };
 
-class ExprNode;
+class Expr;
 
 class NateParser
 {
@@ -77,7 +77,9 @@ public:
 						 FileType aFileType = FileType::Normal);
 	virtual ~NateParser();
 	std::string in(int aOffset = 0) const;
+	int parseAndCode();
 	int parse();
+	int code();
 	void import(const std::string& aName);
 	void importBaseObject(const std::string& aInObjectName);
 	std::string baseObjectName() const;

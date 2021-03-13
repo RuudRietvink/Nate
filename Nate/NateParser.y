@@ -1110,7 +1110,7 @@ for-to:
 
 step:
 	  %empty
-		  { $$ = Expr(ExprNode("1", "1", nate.getType("int-32"))); }
+		  { $$ = Expr("1", "1", nate.getType("int-32")); }
   | STEP expr
 		  { $$ = $expr; }
   ;
@@ -1195,9 +1195,9 @@ expr-non-word:
 		  { 
         auto number = $NUMBER;
         TypePtr type = nate.getNumberType(number);
-			  $$ = Expr(ExprNode($NUMBER, number, type));
-			  $$.node().setFlag(ExprNode::Literal, true);
-			  $$.node().setFlag(ExprNode::ConstExpr, true);
+			  $$ = Expr($NUMBER, number, type);
+			  $$.setFlag(Expr::Literal, true);
+			  $$.setFlag(Expr::ConstExpr, true);
         lexer.noSpace();
         nate.data.prevWasValue = true;
 		  }
@@ -1207,25 +1207,25 @@ expr-non-word:
         Rational temp($RATIONAL);
         std::stringstream ss;
         ss << temp.whole() << "," << temp.numerator() << "," << temp.denominator();
-			  $$ = Expr(ExprNode($RATIONAL, "Rational(" + ss.str() + ")", type));
-			  $$.node().setFlag(ExprNode::Literal, true);
-			  $$.node().setFlag(ExprNode::ConstExpr, true);
+			  $$ = Expr($RATIONAL, "Rational(" + ss.str() + ")", type);
+			  $$.setFlag(Expr::Literal, true);
+			  $$.setFlag(Expr::ConstExpr, true);
         lexer.noSpace();
         nate.data.prevWasValue = true;
 		  }
 	| string
 		  { 
-			  $$ = Expr(ExprNode($string, $string, nate.getType("text")));
-			  $$.node().setFlag(ExprNode::Literal, true);
-			  $$.node().setFlag(ExprNode::ConstExpr, true);
+			  $$ = Expr($string, $string, nate.getType("text"));
+			  $$.setFlag(Expr::Literal, true);
+			  $$.setFlag(Expr::ConstExpr, true);
         lexer.noSpace();
         nate.data.prevWasValue = true;
 		  }
   | BOOL
 		  { 
-			  $$ = Expr(ExprNode($BOOL, $BOOL, nate.getType("boolean")));
-			  $$.node().setFlag(ExprNode::Literal, true);
-			  $$.node().setFlag(ExprNode::ConstExpr, true);
+			  $$ = Expr($BOOL, $BOOL, nate.getType("boolean"));
+			  $$.setFlag(Expr::Literal, true);
+			  $$.setFlag(Expr::ConstExpr, true);
         lexer.noSpace();
         nate.data.prevWasValue = true;
 		  }
@@ -1238,13 +1238,13 @@ expr-non-word:
         if (!lexer.spaceBeen && nate.data.prevWasValue)
         {
           //std::cerr << "monomial " << value << std::endl;
-          $$ = Expr(ExprNode("monomial"));
-			    $$.addNode(ExprNode(identifier));
+          $$ = Expr("monomial");
+			    $$.addNode(Expr(identifier));
         }
         else
         {
-			    $$ = Expr(ExprNode(identifier));
-			    $$.node().setFlag(ExprNode::Output, !identifier->is(Identifier::Const));
+			    $$ = Expr(identifier);
+			    $$.setFlag(Expr::Output, !identifier->is(Identifier::Const));
           //std::cerr << "spacebeen " << $$ << std::endl;
         }
 
@@ -1266,12 +1266,12 @@ expr-non-word:
       }
   | IF
 		  { 
-        $$ = Expr(ExprNode("if"));
+        $$ = Expr("if");
         nate.data.prevWasValue = false;
       }
   | ELSE
 		  { 
-        $$ = Expr(ExprNode("else"));
+        $$ = Expr("else");
         nate.data.prevWasValue = false;
       }
   ;
@@ -1303,8 +1303,8 @@ expr-word:
           else
           {
             //std::cerr << "monomial " << value << std::endl;
-            $$ = Expr(ExprNode("monomial"));
-			      $$.addNode(ExprNode(value));
+            $$ = Expr("monomial");
+			      $$.addNode(value);
           }
 
           nate.data.prevWasValue = !nate.wantsUnary(value);

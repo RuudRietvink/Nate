@@ -11,7 +11,7 @@ int parse(const std::string& aIn, const std::string& aOut, NateParser::FileType 
 	std::ifstream in(aIn);
 	std::ofstream out(aOut);
 	NateParser nate(aIn, in, out, aFileType);
-	auto parseResult = nate.parse();
+	auto parseResult = nate.parseAndCode();
 	std::cerr << "Errors: " << nate.errorCount() << ", Warnings: " << nate.warningCount() << std::endl;
 	return (parseResult != 0 || nate.errorCount() != 0) ? 1 : 0;
 }

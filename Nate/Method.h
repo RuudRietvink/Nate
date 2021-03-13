@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Arg.h"
-#include "ExprNode.h"
+#include "Expr.h"
 #include "Type.h"
 #include "WithFlags.h"
 
@@ -104,7 +104,7 @@ private:
 					Method::EvaluateResult& aResult,
 					std::string& aNodeCode,
 					TypePtr& aNodeType) const;
-	ExprNode createTypeCastNode(
+	Expr createTypeCastNode(
 					const ExprNodesCIter& aNodeIter,
 					const Arg& aArg,
 					const TypePtr& aTemplateType,
@@ -113,7 +113,7 @@ private:
 					std::string& aNodeCode) const;
 	void createArgCode(
 					const Arg& aArg,
-					const ExprNode& aNode,
+					const Expr& aNode,
 					const DefinePtr& aCurDefine,
 					const std::string& aNodeCode,
 					bool aIsObjectArg,

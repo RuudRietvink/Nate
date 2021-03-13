@@ -76,9 +76,6 @@
     <ClCompile Include="Expr.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
-    <ClCompile Include="ExprNode.cpp">
-      <Filter>Source Files\Structs</Filter>
-    </ClCompile>
     <ClCompile Include="Identifier.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
@@ -210,9 +207,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Expr.h">
-      <Filter>Source Files\Structs</Filter>
-    </ClInclude>
-    <ClInclude Include="ExprNode.h">
       <Filter>Source Files\Structs</Filter>
     </ClInclude>
     <ClInclude Include="Identifier.h">

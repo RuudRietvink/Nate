@@ -13,7 +13,7 @@ public:
   NateCode(std::ostream& aOut, NateParser* aParser);
   void code(const TreeNodePtr& aStat);
   void codeNested(const TreeNodePtr& aStat);
-  void codeTreeDesc(const TreeNodePtr& aStat);
+  void codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out = std::cout);
 
 private:
   std::string in(int extra = 0);
