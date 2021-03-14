@@ -51,7 +51,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Data: result = "Data"; break;
 	case ByteCode::SepComma: result = "OutputSepComma"; break;
 	case ByteCode::SepConcat: result = "OutputSepConcat"; break;
-	case ByteCode::LocalVar: result = "LocalVar"; break;
+	case ByteCode::LocalVar: result = "LocalVar " + aNode->id->name() + " " + aNode->id->type()->codeType() + "=" + aNode->id->initValue().text(); break;
 	case ByteCode::Assign: result = "Assign"; break;
 	case ByteCode::IfThen: result = "IfThen"; break;
 	case ByteCode::If: result = "If"; break;
@@ -77,11 +77,6 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::ExprStat: result = "ExprStat"; break;
 	case ByteCode::End: result = aNode->bool1 ? "End" : ""; break;
 	default: result = "****"; break;
-	}
-
-	if (aNode->id)
-	{
-		result += " " + aNode->id->codeName();
 	}
 
 	return result;
