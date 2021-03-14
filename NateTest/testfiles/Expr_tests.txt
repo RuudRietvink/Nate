@@ -1,0 +1,5 @@
+###NormalOperators
+  var a := 1 + 2
+---
+    LocalVar a int32_t=1 + 2
+###

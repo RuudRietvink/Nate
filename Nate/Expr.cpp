@@ -39,9 +39,20 @@ Expr::Expr(const std::string& aText, const std::string& aCode, const TypePtr& aT
 
 Expr::Expr(const Expr& aExpr1, const Expr& aExpr2)
 {
-	*this = aExpr1;
-
-	if (!aExpr2.isEmpty())
+	if (aExpr1.nodes().empty() && !aExpr1.mText.empty())
+	{
+		addNode(aExpr1);
+	}
+	else
+	{
+		addNodes(aExpr1.nodes().begin(), aExpr1.nodes().end());
+	}
+	
+	if (aExpr2.nodes().empty() && !aExpr2.mText.empty())
+	{
+		addNode(aExpr2);
+	}
+	else
 	{
 		addNodes(aExpr2.nodes().begin(), aExpr2.nodes().end());
 	}
@@ -57,7 +68,10 @@ Expr Expr::parenthesized(const Expr& aExpr)
 
 void Expr::addNode(const Expr& aNode)
 {
-	mNodes.push_back(aNode);
+	if (!aNode.nodes().empty() || !aNode.mText.empty())
+	{
+		mNodes.push_back(aNode);
+	}
 }
 
 void Expr::insertNode(const Expr& aNode)
@@ -172,11 +186,11 @@ bool Expr::castToType(const TypePtr& aToType)
 	return ok;
 }
 
-const std::string& Expr::code()			const { return mCode; }
-std::string&       Expr::code()						{ return mCode; }
-TypePtr            Expr::type()			const { return mType; }
+const std::string& Expr::code()			const { return mNodes.empty() ? mCode : mNodes.front().code(); }
+std::string&       Expr::code()						{ return mNodes.empty() ? mCode : mNodes.front().code(); }
+TypePtr            Expr::type()			const { return mNodes.empty() ? mType : mNodes.front().type(); }
 bool               Expr::isEmpty()	const { return text().empty(); }
-IdentifierPtr      Expr::id()	  		const { return mId; }
+IdentifierPtr      Expr::id()	  		const { return mNodes.empty() ? mId : mNodes.front().id(); }
 
 const std::vector<Expr>& Expr::nodes() const { return mNodes; }
 

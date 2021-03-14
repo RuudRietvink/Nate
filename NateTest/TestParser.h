@@ -61,6 +61,17 @@ R"__(program:
     return out2.str();
   }
 
+  std::string trimEnd(const std::string& in)
+  {
+    std::string result = in;
+    while (!result.empty() && std::isspace(result.back()))
+    {
+      result = result.erase(result.size() - 1);
+    }
+
+    return result;
+  }
+
   void compareWhole(const std::string& exp, const std::string& out)
   {
     EXPECT_STREQ(exp.c_str(), replaceAll(out, "\t", "  ").c_str());
@@ -80,7 +91,7 @@ R"__(Code
 )__";
     static const size_t startLen = start.size();
 
-    EXPECT_STREQ(exp.c_str(), replaceAll(out, "\t", "  ").substr(startLen).c_str());
+    EXPECT_STREQ(trimEnd(exp).c_str(), trimEnd(replaceAll(out, "\t", "  ").substr(startLen)).c_str());
   }
 
   void testCodePiece(const std::string& testName, const std::filesystem::path& filename)

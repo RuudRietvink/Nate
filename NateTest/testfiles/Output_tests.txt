@@ -9,4 +9,26 @@
     StdOutput
       Expr "Hello"
       End
+###Multiple
+  output "Hello", "Hi" & 3
+---
+    StdOutput
+      Expr "Hello"
+      OutputSepComma
+      Expr "Hi"
+      OutputSepConcat
+      Expr 3
+      End
+###CommaAtEnd
+  output "Hello",
+---
+    StdOutput
+      Expr "Hello"
+      OutputSepComma
+###ConcatAtEnd
+  output "Hello"&
+---
+    StdOutput
+      Expr "Hello"
+      OutputSepConcat
 ###

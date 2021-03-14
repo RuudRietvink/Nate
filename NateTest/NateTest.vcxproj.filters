@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="TestOutput.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="TestFiles">
+      <UniqueIdentifier>{35ee2f69-f145-4c15-90c4-b86e98e58089}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="testfiles\Expr_tests.txt">
+      <Filter>TestFiles</Filter>
+    </Text>
+    <Text Include="testfiles\Output_tests.txt">
+      <Filter>TestFiles</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

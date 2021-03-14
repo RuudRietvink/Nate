@@ -10,7 +10,6 @@ import Data-input
 
 import Hello
 
-/*
 include "nate.define"
 
 // √⌊⌋⌈⌉|⏐
@@ -515,7 +514,7 @@ define bottles song:
     loop while bottles of beer on the wall:
       take one of the bottles down and pass it around
     go to the store and buy some more bottles
-*/
+
 program:
   output "duh", abs -2
   //test

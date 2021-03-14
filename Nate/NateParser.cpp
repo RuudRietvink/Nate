@@ -1833,6 +1833,10 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 			newExpr.addNodes(aExpr.nodes().cbegin(), match.nodeStartIter);
 			newExpr.addNode(node);
 			newExpr.addNodes(match.nodeEndIter, aExpr.nodes().cend());
+			if (newExpr.nodes().size() == 1)
+			{
+				newExpr = node;
+			}
 			//std::cerr << newExpr << std::endl;
 			return evaluate(newExpr, aDebug);
 		}
@@ -1848,10 +1852,15 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 			}
 		}
 	}
-
-	if (!aExpr.nodes().empty() || aExpr.is(Expr::Word))
+	
+	if (aExpr.nodes().size() == 1)
 	{
-		error("Bad expression: " + aExpr.text());
+		result = aExpr.nodes().front();
+	}
+
+	if (!result.nodes().empty() || result.is(Expr::Word))
+	{
+		error("Bad expression: " + result.text());
 		return Expr("1", getType("int-32"));
 	}
 

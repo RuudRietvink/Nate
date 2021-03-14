@@ -33,6 +33,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClCompile Include="TestExpr.cpp" />
     <ClCompile Include="TestOutput.cpp" />
     <ClCompile Include="TestProgram.cpp" />
   </ItemGroup>
@@ -51,6 +52,7 @@
     <ClInclude Include="TestParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="testfiles\Expr_tests.txt" />
     <Text Include="testfiles\Output_tests.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
