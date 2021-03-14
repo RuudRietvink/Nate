@@ -1,0 +1,12 @@
+###Empty
+  output
+---
+    StdOutput
+      End
+###String
+  output "Hello"
+---
+    StdOutput
+      Expr "Hello"
+      End
+###
