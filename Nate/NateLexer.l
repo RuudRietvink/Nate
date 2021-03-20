@@ -389,15 +389,15 @@ include\h*\".*\"  s(); includeFile();
 
 <CODE>{
 [\p{Alpha}]+[\h]*[\n]?  return yy::parser::make_WORD(str(), location());
-[^\${Alpha}\h\n]+[\h]*[\n]?	  return yy::parser::make_WORD(str(), location());
+[^\$\h\n]+[\h]*[\n]?	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            // ignore
 }
 
 <MATH>{
 [\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
-[^\${Alpha}\h\n]+	  return yy::parser::make_WORD(str(), location());
-[$]{idName}   return yy::parser::make_WORD(str(), location());
+[^\$\h\n]+	  return yy::parser::make_WORD(str(), location());
+[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            // ignore
 }
 

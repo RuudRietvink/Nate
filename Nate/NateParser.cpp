@@ -1826,7 +1826,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 
 			if (aDebug) std::cerr << "******* " << (evalResult.type ? *evalResult.type : Type()) << " " << evalResult.code << std::endl;
 			
-			Expr node(evalResult.origText + " ", evalResult.code, evalResult.type);
+			Expr::Node node(evalResult.origText + " ", evalResult.code, evalResult.type);
 			node.setFlags(evalResult.flags);
 
 			Expr newExpr;
@@ -1855,10 +1855,10 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 	
 	if (aExpr.nodes().size() == 1)
 	{
-		result = aExpr.nodes().front();
+		result = Expr(aExpr.nodes().front());
 	}
 
-	if (!result.nodes().empty() || result.is(Expr::Word))
+	if (result.nodes().size() != 1 || result.is(Expr::Word))
 	{
 		error("Bad expression: " + result.text());
 		return Expr("1", getType("int-32"));

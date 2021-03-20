@@ -1238,8 +1238,7 @@ expr-non-word:
         if (!lexer.spaceBeen && nate.data.prevWasValue)
         {
           //std::cerr << "monomial " << value << std::endl;
-          $$ = Expr("monomial");
-			    $$.addNode(Expr(identifier));
+          $$ = Expr(Expr("monomial"), Expr(identifier));
         }
         else
         {

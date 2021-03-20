@@ -330,7 +330,7 @@ Expr Method::createTypeCastNode(
 					const TypePtr& aHighestType,
 					std::string& aNodeCode) const
 {
-	Expr node = *aNodeIter;
+	Expr::Node node = *aNodeIter;
 	if (aArg.is(Arg::Typename))
 	{
 		node.castToType(aTemplateType->typenameType());

@@ -12,13 +12,13 @@ R"__(program:
 
   const char* exp =
 R"__(Code
-  LocalVar output std::shared_ptr<std::ostream>=default
-  LocalVar error std::shared_ptr<std::ostream>=default
-  LocalVar input std::shared_ptr<std::istream>=default
+  LocalVar output std::shared_ptr<std::ostream>={}
+  LocalVar error std::shared_ptr<std::ostream>={}
+  LocalVar input std::shared_ptr<std::istream>={}
   Program
-    LocalVar text std::string=default
-    LocalVar int32 int32_t=default
-    LocalVar float float=default
+    LocalVar text std::string={}
+    LocalVar int32 int32_t={}
+    LocalVar float float={}
     StdOutput
       Expr "Hello"
       End

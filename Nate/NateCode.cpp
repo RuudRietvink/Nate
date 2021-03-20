@@ -42,7 +42,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	{
 	case ByteCode::Code: result = "Code"; break;
 	case ByteCode::Program: result = "Program"; break;
-	case ByteCode::Expr: result = "Expr " + aNode->expr.text(); break;
+	case ByteCode::Expr: result = "Expr " + aNode->expr.code(); break;
 	case ByteCode::Block: result = "Block"; break;
 	case ByteCode::StdOutput: result = "StdOutput"; break;
 	case ByteCode::StdError: result = "Error"; break;
@@ -51,7 +51,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::Data: result = "Data"; break;
 	case ByteCode::SepComma: result = "OutputSepComma"; break;
 	case ByteCode::SepConcat: result = "OutputSepConcat"; break;
-	case ByteCode::LocalVar: result = "LocalVar " + aNode->id->name() + " " + aNode->id->type()->codeType() + "=" + aNode->id->initValue().text(); break;
+	case ByteCode::LocalVar: result = "LocalVar " + aNode->id->name() + " " + aNode->id->type()->codeType() + "=" + aNode->id->initValue().code(); break;
 	case ByteCode::Assign: result = "Assign"; break;
 	case ByteCode::IfThen: result = "IfThen"; break;
 	case ByteCode::If: result = "If"; break;
@@ -74,7 +74,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::DeclObjectDefine: result = "DeclObjectDefine"; break;
 	case ByteCode::ImplObject: result = "ImplObject"; break;
 	case ByteCode::Prop: result = "Prop"; break;
-	case ByteCode::ExprStat: result = "ExprStat " + aNode->expr.text(); break;
+	case ByteCode::ExprStat: result = "ExprStat " + aNode->expr.code(); break;
 	case ByteCode::End: result = aNode->bool1 ? "End" : ""; break;
 	default: result = "****"; break;
 	}
@@ -363,8 +363,7 @@ void NateCode::codeOutput(const Expr& aValue)
 		}
 		else
 		{
-			Expr outExpr(aValue);
-			outExpr.insertNode(Expr("stream-out"));
+			Expr outExpr(aValue, Expr("stream-out"));
 			Expr resExpr = mParser->evaluate(outExpr);
 			if (!resExpr.isEmpty())
 			{
