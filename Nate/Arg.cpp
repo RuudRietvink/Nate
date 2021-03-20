@@ -61,6 +61,10 @@ std::string Arg::setFlagString(const std::string& aFlag)
 	{
 		setFlag(Exact, true);
 	}
+	else if (aFlag == "literal")
+	{
+		setFlag(Literal, true);
+	}
   else
   {
     errorString = "Unknown argument type: " + aFlag;
@@ -91,6 +95,7 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	if (aValue.is(Arg::Exact)) aStream << ",Exact";
 	if (aValue.is(Arg::Typename)) aStream << ",Typename";
 	if (aValue.is(Arg::Template)) aStream << ",Template";
+	if (aValue.is(Arg::Literal)) aStream << ",Literal";
 
 	aStream << "}";
 

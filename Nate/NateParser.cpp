@@ -1911,6 +1911,13 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 
 		result = toCodeName(getOrFakeIdentifier(result)->type()->name());
 	}
+	else if (aCommand == "UNQUOTE")
+	{
+		if (result.size() > 1 && result[0] == '"')
+		{
+			result = result.substr(1, result.size() - 2);
+		}
+	}
 	else if (aCommand == "OBJECT_TYPE")
 	{
 		result = toCodeName(curObject()->name());

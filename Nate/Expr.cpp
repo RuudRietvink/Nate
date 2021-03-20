@@ -154,10 +154,8 @@ Expr::Expr(const Expr& aExpr1, const Expr& aExpr2)
 
 Expr Expr::parenthesized(const Expr& aExpr)
 {
-	Expr result;
-	result.addNode(Node("("));
-	result.addNodes(aExpr.nodes().begin(), aExpr.nodes().end());
-	result.addNode(Node(")"));
+	Expr result(aExpr);
+	result.code() = "(" + result.code() + ")";
 	return result;
 }
 

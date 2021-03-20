@@ -17,7 +17,7 @@ public:
 	std::string E_me__E_text_(const std::string& world) const
 	{
 #line 13
-		return ("Local "+ world)+ (std::to_string(localVar));
+		return (std::string("Local ") + world)+ (std::to_string(localVar));
 	}
 
 };
@@ -74,7 +74,7 @@ std::string Hi::E_me__E_text_(const std::string& world) const
 std::string Hi::ls_E_me__E_text_(const std::string& world) const
 {
 #line 35
-	return "ls "+ (__impl::yo_());
+	return std::string("ls ") + (__impl::yo_());
 }
 
 Greetable::Greet Hi::greet_get() const { return greet; }
@@ -144,7 +144,7 @@ int32_t get_E_me__age_() const
 	if (myBool)
 	{
 #line 65
-		*output << "Test " << (1); *output << " " << (1); *output << " " << (1); *output << std::endl; 
+		*output << "Test " << (myVar); *output << " " << ((myData. greet)); *output << " " << (((Local::new_Local_())->E_me__E_text_(" world"))); *output << std::endl; 
 #line 64
 	}
 #line 66
@@ -163,7 +163,7 @@ std::string E_me__greetings_() const
 {
 #line 72
 	std::shared_ptr<Hello> other = Hello::new_Hello_();
-	return "Hello "+ (Hello::hi_E_Hello_(other));
+	return std::string("Hello ") + (Hello::hi_E_Hello_(other));
 }
 
 #line 75
@@ -200,12 +200,12 @@ std::string Hello::stream_out_E_me__() const
 std::string Hello::ls_E_me__E_text_(const std::string& world) const
 {
 #line 90
-	return "ls "+ (_impl->E_me__greetings_());
+	return std::string("ls ") + (_impl->E_me__greetings_());
 }
 
+int32_t Hello::age_get() const { return age; }
 Hello::Data Hello::data_get() const { return data; }
 const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
 Greetable::Greet Hello::greet_get() const { return greet; }
 std::string Hello::address_get() const { return address; }
 const std::string& Hello::address_set(const std::string& value) { return address = value; }
-int32_t Hello::age_get() const { return age; }

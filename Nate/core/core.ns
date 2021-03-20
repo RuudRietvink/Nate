@@ -34,6 +34,9 @@ code define 70 ${val-1 is number} \u + ${val-2 is number} is number as highest, 
 
 code define 70 ${val-1 is number} \u - ${val-2 is number} is number as highest, const:
   $val-1 - $val-2
+  
+code define 62 ${val-1 is text as literal } \u + ${val-2 is text as literal } is text as const:
+  std::string($val-1) + $val-2 
 
 code define 62 ${val-1 is text} \u + ${val-2 is text} is text as const:
   $val-1 + $val-2

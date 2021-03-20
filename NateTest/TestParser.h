@@ -126,3 +126,9 @@ R"__(Code
   std::stringstream mOutStream;
   std::unique_ptr<NateParser> mParser;
 };
+
+#define TEST_PIECE(SUBJECT, NAME) \
+TEST_F(TestParser, SUBJECT##NAME) \
+{ \
+  testCodePiece(#NAME, in); \
+}

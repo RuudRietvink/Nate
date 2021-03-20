@@ -28,6 +28,7 @@ public:
 	static const size_t Member  	= 8;
 	static const size_t Template	= 9;
 	static const size_t Typename	= 10;
+	static const size_t Literal 	= 11;
 
 private:
 	IdentifierPtr   mIdentifier;

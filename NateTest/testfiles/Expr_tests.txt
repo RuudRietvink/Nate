@@ -6,10 +6,18 @@
   var a := 1 ⁄ 2 × 3 - 4 ÷ 5
 ---
     LocalVar a int32_t=((1/ 2)* 3)- (4/ 5)
+###Parentheses
+  var a := (1 + 2) / (3 * (4 - 2))
+---
+    LocalVar a int32_t=((1+ 2))/ ((3* ((4- 2))))
 ###StringOperators
   var a := "Hello, World"
   var b := a + "Hi" + "There" + a
+  var c := "Hi" + "There"
+  var d := "Hi" + a
 ---
     LocalVar a std::string="Hello, World"
     LocalVar b std::string=((a+ "Hi")+ "There")+ a
+    LocalVar c std::string=std::string("Hi") + "There"
+    LocalVar d std::string="Hi"+ a
 ###

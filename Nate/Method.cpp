@@ -655,6 +655,11 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					error << "Argument must be output: " << nodeIter->text();
 					result.matches = false;
 				}
+				else if (arg->is(Arg::Literal) && !nodeIter->is(Expr::Literal))
+				{				
+					error << "Argument must be literal: " << nodeIter->text();
+					result.matches = false;
+				}
 				else if (arg->is(Arg::Cmp) && !nodeType->is(Type::Comparable))
 				{				
 					error << "Not a comparible: " << nodeIter->text() << " for " << arg->identifier()->name();

@@ -363,7 +363,7 @@ void NateCode::codeOutput(const Expr& aValue)
 		}
 		else
 		{
-			Expr outExpr(aValue, Expr("stream-out"));
+			Expr outExpr(Expr("stream-out"), aValue);
 			Expr resExpr = mParser->evaluate(outExpr);
 			if (!resExpr.isEmpty())
 			{
