@@ -124,7 +124,7 @@ void Type::setType(const std::string& aName)
 		setFlag(Comparable, true);
 		setFlag(NeedsRef, true);
 		setFlag(Object, false);
-		mCodeType = "std::string";
+		mCodeType = "string_t";
 		mBitSize = 1000;
 	}
 	else if (aName == "record")

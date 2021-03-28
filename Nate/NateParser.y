@@ -412,7 +412,7 @@ code-include:
     CODE COL
 		  { 
 			  nate.addCode();
-			  lexer.pushState(Lexer::CODE);
+			  lexer.pushState(Lexer::INCLUDE_CODE);
 		  }
 	  begin
 		  code-stat-list

@@ -36,24 +36,31 @@ TreeNode* NateParser::curNode()
 
 TreeNode* NateParser::addStat(ByteCode code, const yy::parser::location_type& aLocation) 
 { 
-	return mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
+	mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
+	mCurNode->defyne = curDefine();
+	return mCurNode;
 }
 
 TreeNode* NateParser::addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation) 
 { 
 	mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
 	mCurNode->expr = expr;
+	mCurNode->defyne = curDefine();
 	return mCurNode;
 }
 	
 TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
 { 
-	return mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
+	TreeNode* result = mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
+	result->defyne = curDefine();
+	return result;
 }
 
 TreeNode* NateParser::add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation)
 { 
-	return mCurNode->add(code, expr, Location(aLocation, mLexer->currentFile()));
+	TreeNode* result = mCurNode->add(code, expr, Location(aLocation, mLexer->currentFile()));
+	result->defyne = curDefine();
+	return result;
 }
 
 TreeNode* NateParser::up()
@@ -667,7 +674,7 @@ bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::
 				std::cerr << "Importing: " << path << std::endl;
 			}
 			
-			auto parseResult = nate.parse();
+			auto parseResult = nate.parseAndCode();
 
 			mErrors += nate.errorCount();
 			mWarnings += nate.warningCount();

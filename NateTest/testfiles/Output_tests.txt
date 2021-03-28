@@ -1,34 +1,34 @@
 ###Empty
   output
 ---
-    StdOutput
-      End
+  StdOutput
+    End
 ###String
   output "Hello"
 ---
-    StdOutput
-      Expr "Hello"
-      End
+  StdOutput
+    Expr "Hello"
+    End
 ###Multiple
   output "Hello", "Hi" & 3
 ---
-    StdOutput
-      Expr "Hello"
-      OutputSepComma
-      Expr "Hi"
-      OutputSepConcat
-      Expr 3
-      End
+  StdOutput
+    Expr "Hello"
+    OutputSepComma
+    Expr "Hi"
+    OutputSepConcat
+    Expr 3
+    End
 ###CommaAtEnd
   output "Hello",
 ---
-    StdOutput
-      Expr "Hello"
-      OutputSepComma
+  StdOutput
+    Expr "Hello"
+    OutputSepComma
 ###ConcatAtEnd
   output "Hello"&
 ---
-    StdOutput
-      Expr "Hello"
-      OutputSepConcat
+  StdOutput
+    Expr "Hello"
+    OutputSepConcat
 ###

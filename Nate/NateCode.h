@@ -24,12 +24,13 @@ private:
   void codeOutput(const std::string& aStream, const TreeNodePtr& aNode);
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
-	void codeOutput(const Expr& aValue);
+	void codeOutput(const TreeNodePtr& aNode, const Expr& aValue);
 	void codeOutputEnd(bool aAddEnd = true);
 	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
-	std::string codeExpr(const Expr& aValue);
+	std::string codeExpr(const TreeNodePtr& aNode, const Expr& aValue);
 	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
-	void codeDeclIdentifier(bool aExtern,
+	void codeDeclIdentifier(const TreeNodePtr& aNode, 
+													bool aExtern,
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
@@ -76,6 +77,7 @@ private:
 													 const Location& aLocation);
 	void codeExprStat(const TreeNodePtr& aNode);
 	void codeImplObjectVariables(const TreeNodePtr& aNode);
+	void codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl);
 
 
 	bool isConstIntScalar(const Expr& aExpr);

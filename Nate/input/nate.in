@@ -277,7 +277,7 @@ define test:
   scope:
     var f is rational := 3½;
     var g is float := f;
-    output g, ⇑f, f, f⇑, f, ⇓f, f, f⇓, inc#f, f, f#dec, f
+    output g, ⇑#f, f, f#⇑, f, ⇓#f, f, f#⇓, inc#f, f, f#dec, f
     output abs f, ceil f, floor f, round f
     output 2f, f * 2, f / 2, |f⏐f, ⌊f⌋, ⌈f⌉
     output |4f|-f⏐⏐, ⌊-f⌋, ⌈-f⌉
@@ -292,7 +292,7 @@ define test:
 
   scope:
     var f := 3.5;
-    output ⇑f, f, f⇑, f, ⇓f, f, f⇓, inc#f, f, f#dec, f
+    output ⇑#f, f, f#⇑, f, ⇓#f, f, f#⇓, inc#f, f, f#dec, f
     output abs f, ceil f, floor f, round f
     output 2f, |f⏐f, ⌊f⌋, ⌈f⌉
     output |4f|-f⏐⏐, ⌊-f⌋, ⌈-f⌉

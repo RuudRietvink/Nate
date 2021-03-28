@@ -6,6 +6,8 @@
 alias "÷" "/"
 alias "⁄" "/"
 alias "×" "*"
+alias "⇑" "inc"
+alias "⇓" "dec"
 
 ///////////////////////////////////////////////
 // operators
@@ -36,13 +38,10 @@ code define 70 ${val-1 is number} \u - ${val-2 is number} is number as highest, 
   $val-1 - $val-2
   
 code define 62 ${val-1 is text as literal } \u + ${val-2 is text as literal } is text as const:
-  std::string($val-1) + $val-2 
+  string_t($val-1) + $val-2 
 
 code define 62 ${val-1 is text} \u + ${val-2 is text} is text as const:
   $val-1 + $val-2
-
-code define 60 ${val-1 is any} \u if ${cond is boolean} \u else ${val-2 as same} as same, const:
-  $cond ? $val-1 : $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u = ${val-2 is any as comphigh, cmp} is boolean as const:
   $val-1 == $val-2
@@ -72,28 +71,16 @@ code define 35 ${cond-1 is boolean} \u or ${cond-2 is boolean} is boolean as con
 // face value
 ///////////////////////////////////////////////
 
-code define 120 \u ⇑ ${val is number as out} as same:
+code define 120 inc \u # ${val is number as out} as same:
   ++$val
 
-code define 120 ${val is number as out} \u ⇑ as same:
+code define 120 ${val is number as out} # inc as same:
   $val++
 
-code define 120 \u ⇓ ${val is number as out} as same:
+code define 120 dec \u # ${val is number as out} as same:
   --$val
 
-code define 120 ${val is number as out} \u ⇓ as same:
-  $val--
-
-code define 120 \u inc# ${val is number as out} as same:
-  ++$val
-
-code define 120 ${val is number as out} \u #inc as same:
-  $val++
-
-code define 120 \u dec# ${val is number as out} as same:
-  --$val
-
-code define 120 ${val is number as out} \u #dec as same:
+code define 120 ${val is number as out} # dec as same:
   $val--
 
 code define 65 \u decrease ${val-1 is number as out} \u with ${val-2 as same}:
@@ -107,6 +94,10 @@ code define 65 \u increase ${val-1 is number as out} \u with ${val-2 as same}:
 
 code define 65 \u increase ${val is number as out}:
   ++$val
+
+code define 60 ${val-1 is any} \u if ${cond is boolean} \u else ${val-2 as same} as same, const, right:
+  $cond ? $val-1 : $val-2
+
 
 ///////////////////////////////////////////////
 // language

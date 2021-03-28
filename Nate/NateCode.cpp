@@ -40,7 +40,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	std::string result;
 	switch (aNode->code)
 	{
-	case ByteCode::Code: result = "Code"; break;
+	case ByteCode::Code: result = "Code"; mIndent = -1; break;
 	case ByteCode::Program: result = "Program"; break;
 	case ByteCode::Expr: result = "Expr " + aNode->expr.code(); break;
 	case ByteCode::Block: result = "Block"; break;
@@ -138,7 +138,7 @@ void NateCode::code(const TreeNodePtr& aStat)
     codeAssign(aStat);
     break;
   case ByteCode::Expr:
-    *mOut << codeExpr(aStat->expr);
+    *mOut << codeExpr(aStat, aStat->expr);
     break;
   case ByteCode::IfThen:
     codeIfThen(aStat);
@@ -168,7 +168,7 @@ void NateCode::code(const TreeNodePtr& aStat)
     codeRecord(aStat);
     break;
   case ByteCode::Define:
-    codeDefine(aStat);
+		codeDefine(aStat);
     break;
   case ByteCode::Return:
     codeReturn(aStat);
@@ -236,11 +236,11 @@ void NateCode::codeWrite(const TreeNodePtr& aNode)
 	mDataOutput = false;
 	if (aNode->bool1)
 	{
-    codeDeclIdentifier(false, aNode->id, true, aNode->location);
+    codeDeclIdentifier(aNode, false, aNode->id, true, aNode->location);
 	}
 	else if (!aNode->expr.isEmpty())
 	{
-		*mOut << in() << "nate__writer = " << codeExpr(aNode->expr) << ";" << end();
+		*mOut << in() << "nate__writer = " << codeExpr(aNode, aNode->expr) << ";" << end();
 	}
 
 	codeOutput("*nate__writer", aNode);
@@ -251,11 +251,11 @@ void NateCode::codeRead(const TreeNodePtr& aNode)
 	printLineNr(aNode->location);
 	if (aNode->bool1)
 	{
-    codeDeclIdentifier(false, aNode->id, true, aNode->location);
+    codeDeclIdentifier(aNode, false, aNode->id, true, aNode->location);
 	}
 	else if (!aNode->expr.isEmpty())
 	{
-		*mOut << in() << "nate__reader = " << codeExpr(aNode->expr) << ";" << end();
+		*mOut << in() << "nate__reader = " << codeExpr(aNode, aNode->expr) << ";" << end();
 	}
 
 	codeInput("*nate__reader", aNode);
@@ -275,7 +275,7 @@ void NateCode::codeOutput(const std::string& aStream, const TreeNodePtr& aNode)
     switch (part->code)
     {
     case ByteCode::Expr:
-      codeOutput(part->expr);
+      codeOutput(part, part->expr);
       break;
     case ByteCode::SepComma:
       codeOutput("\" \"");
@@ -344,7 +344,7 @@ void NateCode::codeOutput(const std::string& aString)
 	}
 }
 
-void NateCode::codeOutput(const Expr& aValue)
+void NateCode::codeOutput(const TreeNodePtr& aNode, const Expr& aValue)
 {
 	if (aValue.type() && aValue.type()->is(Type::Boolean))
 	{
@@ -353,13 +353,13 @@ void NateCode::codeOutput(const Expr& aValue)
 	
 	if (aValue.is(Expr::Literal))
 	{
-		codeOutput(codeExpr(aValue));
+		codeOutput(codeExpr(aNode, aValue));
 	}
 	else
 	{
 		if (aValue.type() && aValue.type()->name() == "int-8")
 		{
-			codeOutput("static_cast<int>(" + codeExpr(aValue) + ")");
+			codeOutput("static_cast<int>(" + codeExpr(aNode, aValue) + ")");
 		}
 		else
 		{
@@ -367,11 +367,11 @@ void NateCode::codeOutput(const Expr& aValue)
 			Expr resExpr = mParser->evaluate(outExpr);
 			if (!resExpr.isEmpty())
 			{
-				codeOutput("(" + codeExpr(resExpr) + ")");
+				codeOutput("(" + codeExpr(aNode, resExpr) + ")");
 			}
 			else
 			{
-				codeOutput("(" + codeExpr(aValue) + ")");
+				codeOutput("(" + codeExpr(aNode, aValue) + ")");
 			}
 		}
 	}
@@ -407,12 +407,12 @@ void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
 			if (part->expr.type()->is(Type::Boolean))
 			{
 				*mOut << " >> std::boolalpha";
-				*mOut << " >> " << codeExpr(part->expr);
+				*mOut << " >> " << codeExpr(aNode, part->expr);
 				*mOut << " >> std::noboolalpha";
 			}
 			else
 			{
-				*mOut << " >> " << codeExpr(part->expr);
+				*mOut << " >> " << codeExpr(aNode, part->expr);
 			}
       break;
     case ByteCode::SepComma:
@@ -439,11 +439,12 @@ void NateCode::codeLocalVar(const TreeNodePtr& aNode, bool inImplObject)
 {
 	if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
 	{
-    codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
+    codeDeclIdentifier(aNode, false, aNode->id, aNode->bool1, aNode->location);
 	}
 }
 
-void NateCode::codeDeclIdentifier(bool aExtern,
+void NateCode::codeDeclIdentifier(const TreeNodePtr& aNode, 
+																	bool aExtern,
 																	const IdentifierPtr& aIdentifier,
 																	bool initializeVariables,
 																	const Location& aLocation)
@@ -466,13 +467,13 @@ void NateCode::codeDeclIdentifier(bool aExtern,
 
 	if (initializeVariables)
 	{
-		*mOut << " = " << codeExpr(aIdentifier->initValue());
+		*mOut << " = " << codeExpr(aNode, aIdentifier->initValue());
 	}
 	
 	*mOut << ";" << end();
 }
 
-std::string NateCode::codeExpr(const Expr& aValue)
+std::string NateCode::codeExpr(const TreeNodePtr& aNode, const Expr& aValue)
 {
 	std::string result = aValue.code();
 	if (aValue.is(Expr::Identifier) && !aValue.is(Expr::Property))
@@ -489,13 +490,13 @@ std::string NateCode::codeExpr(const Expr& aValue)
 				IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
 				if (holder)
 				{
-				/*	if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
+					if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
 					{
-						if (curDefine() && !curDefine()->is(Define::Undeclared))
+						if (aNode->defyne && !aNode->defyne->is(Define::Undeclared))
 						{
 							result = "_impl->" + result;
 						}
-					}*/
+					}
 				}
 			}
 		}
@@ -512,7 +513,7 @@ void NateCode::codeAssign(const TreeNodePtr& aNode)
 
 	for (auto const& expr : aNode->exprList)
 	{				
-		std::string code = codeExpr(expr);
+		std::string code = codeExpr(aNode, expr);
 		size_t size = code.size();
 		if (size > 6 && code.substr(size - 6, 6) == "_get()")
 		{
@@ -527,7 +528,7 @@ void NateCode::codeAssign(const TreeNodePtr& aNode)
 		}
 	}
 
-	*mOut << codeExpr(aNode->expr) << endPars << ";" << end();
+	*mOut << codeExpr(aNode, aNode->expr) << endPars << ";" << end();
 }
 
 void NateCode::codeIfThen(const TreeNodePtr& aNode)
@@ -560,7 +561,7 @@ void NateCode::codeIf(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
 
-	*mOut << in() << "if (" << codeExpr(aNode->expr) << ")" << end() << in() << "{" << end();
+	*mOut << in() << "if (" << codeExpr(aNode, aNode->expr) << ")" << end() << in() << "{" << end();
 	++mIndent;
 	codeNested(aNode);
 }
@@ -570,7 +571,7 @@ void NateCode::codeElseIf(const TreeNodePtr& aNode)
 	--mIndent;
 	*mOut << in() << "}" << end();
 	printLineNr(aNode->location);
-	*mOut << in() << "else if (" << codeExpr(aNode->expr) << ")" << end() << in() << "{" << end();
+	*mOut << in() << "else if (" << codeExpr(aNode, aNode->expr) << ")" << end() << in() << "{" << end();
 	++mIndent;
 	codeNested(aNode);
 }
@@ -611,7 +612,7 @@ void NateCode::codeIfIs(const TreeNodePtr& aNode)
 	TreeNodePtr elsePart;
 	
 	printLineNr(aNode->location);
-	*mOut << in() << "auto const " << aNode->id->codeName() << " = " << codeExpr(aNode->expr) << ";" << end();
+	*mOut << in() << "auto const " << aNode->id->codeName() << " = " << codeExpr(aNode, aNode->expr) << ";" << end();
 
   for (auto& part : aNode->nested)
   {
@@ -700,7 +701,7 @@ void NateCode::codeCaseIsIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNo
 		*mOut << end() << in(4) << " || ";
 	}
 
-	*mOut << "(" << aIfIsNode->id->codeName() << " == " << codeExpr(aNode->expr) << ")";
+	*mOut << "(" << aIfIsNode->id->codeName() << " == " << codeExpr(aNode, aNode->expr) << ")";
 }
 
 void NateCode::codeSwitch(const TreeNodePtr& aNode, const TreeNodePtr& aElsePart)
@@ -756,7 +757,7 @@ void NateCode::codeCaseIsListSwitch(const TreeNodePtr& aNode)
 void NateCode::codeCaseIsSwitch(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
-	*mOut << in() << "case " << codeExpr(aNode->expr) << ":" << end();
+	*mOut << in() << "case " << codeExpr(aNode, aNode->expr) << ":" << end();
 }
 
 void NateCode::codeElseIs(const TreeNodePtr& aNode)
@@ -781,9 +782,9 @@ void NateCode::codeStartLoopForStep(const TreeNodePtr& aNode)
 	printLineNr(aNode->location);
 
 	*mOut << in() << "for (" << aNode->id->type()->codeType() << " " 
-			 << aNode->id->codeName() << "= " << codeExpr(aNode->expr) << ";"  
-			 << aNode->id->name() << (aNode->bool1 ? " >= " : "<=") << codeExpr(aNode->expr2) << "; "
-			 << aNode->id->name() << (aNode->bool1 ? " -= " : "+=") << codeExpr(aNode->expr3) << ")" << end()
+			 << aNode->id->codeName() << "= " << codeExpr(aNode, aNode->expr) << ";"  
+			 << aNode->id->name() << (aNode->bool1 ? " >= " : "<=") << codeExpr(aNode, aNode->expr2) << "; "
+			 << aNode->id->name() << (aNode->bool1 ? " -= " : "+=") << codeExpr(aNode, aNode->expr3) << ")" << end()
 		   << in() << "{" << end();
 	++mIndent;
 	codeNested(aNode);
@@ -804,13 +805,13 @@ void NateCode::codeStartLoopForRange(const TreeNodePtr& aNode)
 	if (rangeType->isOfType("text"))
 	{
 		increment = iter + "=" + next;
-		*mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(aNode->expr) << ";" << end(); 
+		*mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(aNode, aNode->expr) << ";" << end(); 
 		*mOut << in() << "auto " << next << " = " << range << ".cbegin();" << end();
 	}
 	else
 	{
 		increment = "++" + iter;
-		*mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(aNode->expr) << ";" << end(); 
+		*mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(aNode, aNode->expr) << ";" << end(); 
 	}
 
 	*mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
@@ -836,7 +837,7 @@ void NateCode::codeStartLoopForRange(const TreeNodePtr& aNode)
 void NateCode::codeWhile(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
-	*mOut << in() << "if (!(" << codeExpr(aNode->expr) << ")) break;" << end();
+	*mOut << in() << "if (!(" << codeExpr(aNode, aNode->expr) << ")) break;" << end();
 }
 
 void NateCode::codeScope(const TreeNodePtr& aNode)
@@ -881,7 +882,7 @@ void NateCode::codeRecord(const TreeNodePtr& aNode)
 
 		if (!id->initValue().is(Expr::Default))
 		{
-			*mOut << codeExpr(id->initValue());
+			*mOut << codeExpr(aNode, id->initValue());
 		}
 		*mOut << ")" << end();
 	}
@@ -1001,7 +1002,7 @@ void NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Ar
 void NateCode::codeReturn(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
-	*mOut << in() << "return " << codeExpr(aNode->expr) << ";" << end();
+	*mOut << in() << "return " << codeExpr(aNode, aNode->expr) << ";" << end();
 }
 
 void NateCode::codeDeclObject(const TreeNodePtr& aNode)
@@ -1088,6 +1089,8 @@ void NateCode::codeImplObject(const TreeNodePtr& aNode)
 		*mOut << in() << "public:" << end();
 		++mIndent;
 		codeNested(aNode);
+		*mOut << in(-1) << "private:" << end();
+		codeImplObjectVariables(aNode);
 
 		--mIndent;
 		*mOut << in() << "};" << end() << end();
@@ -1102,15 +1105,16 @@ void NateCode::codeImplObject(const TreeNodePtr& aNode)
 		*mOut << in(1) << name << "* me;" << end();
 		++mIndent;
 		codeImplObjectVariables(aNode);
+		*mOut << in(-1) << "public:" << end();
+		*mOut << in() << "__impl(" << name << "* aMe) : me(aMe) {}" << end();
+		codeImplObjectNested(aNode, true);
 		--mIndent;
-		*mOut << in() << "public:" << end();
-		*mOut << in(1) << "__impl(" << name << "* aMe) : me(aMe) {}" << end();
 		*mOut << in() << "};" << end() << end();
 
 		*mOut << in() << name << "::" << name << "()" << end();
 		*mOut << in(1) << ": _impl(new __impl(this)) {}" << end();
 		*mOut << in() << name << "::~" << name << "() { delete _impl; }" << end();
-		codeNested(aNode);
+		codeImplObjectNested(aNode, false);
 	}
 	
 	codeDefaultProperties(object);
@@ -1124,6 +1128,34 @@ void NateCode::codeImplObjectVariables(const TreeNodePtr& aNode)
     {
     case ByteCode::LocalVar:
       codeLocalVar(part, true);
+      break;
+		default:
+			break;
+    }
+  }
+}
+
+void NateCode::codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl)
+{
+  for (auto& part : aNode->nested)
+  {
+    switch (part->code)
+    {
+    case ByteCode::Define:
+		{
+			DefinePtr defyne = part->defyne;
+	
+			if (defyne->isObjectMethod() && inImpl != part->bool1)
+			{				
+				codeDefine(part);
+			}
+      break;
+		}
+    case ByteCode::Prop:
+			if (!inImpl)
+			{
+				codeProp(part);
+			}
       break;
 		default:
 			break;
@@ -1253,5 +1285,5 @@ void NateCode::codeDeclareProperty(const ObjectPtr& aObject,
 void NateCode::codeExprStat(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
-	*mOut << in() << codeExpr(aNode->expr) << ";" << end();
+	*mOut << in() << codeExpr(aNode, aNode->expr) << ";" << end();
 }

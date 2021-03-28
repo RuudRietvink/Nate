@@ -231,6 +231,7 @@ public:
 %x EXPR
 %s LOOP
 %s DEFINE
+%x INCLUDE_CODE
 %x CODE
 %x MATH
 %x ARGS
@@ -278,11 +279,11 @@ string          ["][^"]*[""]
 <*>{
 // ** spacing
 (?^^\h*\n)     s();// eat empty lines without affecting indent stops
-\h+            s();// ignore
+<^CODE,^INCLUDE_CODE>\h+     s();// ignore
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^MATH>\n  return yy::parser::make_EOS(location());
+<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^MATH>\n  return yy::parser::make_EOS(location());
 }
 
 // *** comments
@@ -387,11 +388,19 @@ include\h*\".*\"  s(); includeFile();
 \h*\k?        // ignore
 }
 
-<CODE>{
-[\p{Alpha}]+[\h]*[\n]?  return yy::parser::make_WORD(str(), location());
-[^\$\h\n]+[\h]*[\n]?	  return yy::parser::make_WORD(str(), location());
-[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
+<INCLUDE_CODE>{
+[^\h\n][^\n]*\n      return yy::parser::make_WORD(str(), location());
+^[\h]+        // ignore
 \n            // ignore
+}
+
+<CODE>{
+{string}    	return yy::parser::make_WORD(str(), location());
+[^\$"\h\n]+   return yy::parser::make_WORD(str(), location());
+^[\h]+        // ignore
+[\h]*\n       // ignore
+[\h]+         return yy::parser::make_WORD(str(), location());
+[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 }
 
 <MATH>{

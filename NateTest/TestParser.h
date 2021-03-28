@@ -81,13 +81,13 @@ R"__(program:
   {
     static const std::string start =  
 R"__(Code
-  LocalVar output std::shared_ptr<std::ostream>={}
-  LocalVar error std::shared_ptr<std::ostream>={}
-  LocalVar input std::shared_ptr<std::istream>={}
-  Program
-    LocalVar text std::string={}
-    LocalVar int32 int32_t={}
-    LocalVar float float={}
+LocalVar output std::shared_ptr<std::ostream>={}
+LocalVar error std::shared_ptr<std::ostream>={}
+LocalVar input std::shared_ptr<std::istream>={}
+Program
+  LocalVar text string_t={}
+  LocalVar int32 int32_t={}
+  LocalVar float float={}
 )__";
     static const size_t startLen = start.size();
 

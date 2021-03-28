@@ -12,16 +12,16 @@ R"__(program:
 
   const char* exp =
 R"__(Code
-  LocalVar output std::shared_ptr<std::ostream>={}
-  LocalVar error std::shared_ptr<std::ostream>={}
-  LocalVar input std::shared_ptr<std::istream>={}
-  Program
-    LocalVar text std::string={}
-    LocalVar int32 int32_t={}
-    LocalVar float float={}
-    StdOutput
-      Expr "Hello"
-      End
+LocalVar output std::shared_ptr<std::ostream>={}
+LocalVar error std::shared_ptr<std::ostream>={}
+LocalVar input std::shared_ptr<std::istream>={}
+Program
+  LocalVar text string_t={}
+  LocalVar int32 int32_t={}
+  LocalVar float float={}
+  StdOutput
+    Expr "Hello"
+    End
 )__";
 
   EXPECT_EQ(0, parseProgram(in));

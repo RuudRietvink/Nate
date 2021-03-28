@@ -1,23 +1,69 @@
 ###NormalOperators
   var a := -1 + -2 * +3 - -4 / 5 mod ---++--+6
 ---
-    LocalVar a int32_t=((-1)+ ((-2)* (3)))- (((-4)/ 5)% (-(-(-(((-(-(6)))))))))
+  LocalVar a int32_t=((-1) + ((-2) * (3))) - (((-4) / 5) % (-(-(-(((-(-(6)))))))))
 ###Aliases
   var a := 1 ⁄ 2 × 3 - 4 ÷ 5
 ---
-    LocalVar a int32_t=((1/ 2)* 3)- (4/ 5)
+  LocalVar a int32_t=((1 / 2) * 3) - (4 / 5)
 ###Parentheses
   var a := (1 + 2) / (3 * (4 - 2))
 ---
-    LocalVar a int32_t=((1+ 2))/ ((3* ((4- 2))))
+  LocalVar a int32_t=((1 + 2)) / ((3 * ((4 - 2))))
 ###StringOperators
   var a := "Hello, World"
   var b := a + "Hi" + "There" + a
   var c := "Hi" + "There"
   var d := "Hi" + a
 ---
-    LocalVar a std::string="Hello, World"
-    LocalVar b std::string=((a+ "Hi")+ "There")+ a
-    LocalVar c std::string=std::string("Hi") + "There"
-    LocalVar d std::string="Hi"+ a
+  LocalVar a string_t="Hello, World"
+  LocalVar b string_t=((a + "Hi") + "There") + a
+  LocalVar c string_t=string_t("Hi") + "There"
+  LocalVar d string_t="Hi" + a
+###BoolOperators
+  var a := 1 < 3 or 1 <= 3 and not 1 = 3 and 1 != 3 or 1 > 3 and 1 >= 3
+  var b := a or not a
+---
+  LocalVar a bool=((1 < 3) || (((1 <= 3) && (!(1 == 3))) && (1 != 3))) || ((1 > 3) && (1 >= 3))
+  LocalVar b bool=a || (!a)
+###Increments
+  var a := 1
+  var b := inc#a + a#inc + ⇑#a + a#⇑ + a
+  var c := inc #a + a# inc + ⇑ #a + a# ⇑ + a
+  var d := inc # a + a # inc + ⇑ # a + a # ⇑ + a
+---
+  LocalVar a int32_t=1
+  LocalVar b int32_t=((((++a) + (a++)) + (++a)) + (a++)) + a
+  LocalVar c int32_t=((((++a) + (a++)) + (++a)) + (a++)) + a
+  LocalVar d int32_t=((((++a) + (a++)) + (++a)) + (a++)) + a
+###Decrements
+  var a-123 := 1
+  var a := 1
+  var b := dec#a-123 + a-123#dec + ⇓#a-123 + a-123#⇓ + a-123
+  var c := dec #a + a# dec + ⇓ #a + a# ⇓ + a
+  var d := dec # a + a # dec + ⇓ # a + a # ⇓ + a
+---
+  LocalVar a-123 int32_t=1
+  LocalVar a int32_t=1
+  LocalVar b int32_t=((((--a_123) + (a_123--)) + (--a_123)) + (a_123--)) + a_123
+  LocalVar c int32_t=((((--a) + (a--)) + (--a)) + (a--)) + a
+  LocalVar d int32_t=((((--a) + (a--)) + (--a)) + (a--)) + a
+###IncreaseDecrease
+  var a := 1
+  increase a
+  increase a with 2
+  decrease a
+  decrease a with 3
+---
+  LocalVar a int32_t=1
+  ExprStat ++a
+  ExprStat a += 2
+  ExprStat --a
+  ExprStat a -= 3
+###IfElse
+  var a := 3 * 4 if 5 + 6 < 5 else 5/2
+  var b := a if true else a + 1 if false else a + 2
+---
+  LocalVar a int32_t=((5 + 6) < 5) ? (3 * 4) : (5 / 2)
+  LocalVar b int32_t=true ? a : (false ? (a + 1) : (a + 2))
 ###
