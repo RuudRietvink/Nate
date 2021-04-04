@@ -517,7 +517,7 @@ define bottles song:
 
 program:
   output "duh", abs -2
-  //test
-  //bottles song
+  test
+  bottles song
 
   

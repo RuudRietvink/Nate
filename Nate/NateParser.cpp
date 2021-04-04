@@ -579,11 +579,12 @@ void NateParser::doDeclObject(const yy::parser::location_type& aLocation)
 	node->object = curObject();
 }
 
-void NateParser::doEndDeclObject()
+void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
 {
 	if (!curObject()->isRole())
 	{
-		addUndeclaredProperties(curObject());
+		addUndeclaredProperties(curObject(), aLocation);
+		addUndeclaredDefines(curObject(), aLocation);
 	}
 
   data.inObject = false;
@@ -906,7 +907,7 @@ void NateParser::checkObject(const ObjectPtr& aObject)
 	}
 }
 
-void NateParser::addUndeclaredProperties(const ObjectPtr& aObject)
+void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::parser::location_type& aLocation)
 {
 	for (const auto& base : aObject->getBases())
 	{
@@ -921,11 +922,35 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject)
 					IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
 					id->setFlags(propId->getFlags());
 					addIdentifier(id);
-				  curObject()->addProp(id, propMethod.second.location, mLexer->currentFile());
-					yy::parser::location_type location = propMethod.second.location;
-					if (location.begin.filename == nullptr)
+				  curObject()->addProp(id, aLocation, mLexer->currentFile());
+				}
+			}
+		}
+	}
+}
+
+void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser::location_type& aLocation)
+{
+	if (!aObject->isRole())
+	{
+		for (const auto& base : aObject->getBases())
+		{
+			if (base->isRole())
+			{
+				for (auto& baseMethod : base->defines().get())
+				{
+					auto foundMethod = aObject->basesGetLike(baseMethod, base);
+					if (!foundMethod)
 					{
-						location.begin.filename = &propMethod.second.filename;
+						if (!aObject->defines().getLike(baseMethod))
+						{
+							DefinePtr newDefine = aObject->defines().add(DefinePtr(new Define(*baseMethod)));
+							newDefine->setFlag(Method::Overriden);
+							TreeNode* node = add(ByteCode::DeclObjectDefine, aLocation);
+							node->defyne = newDefine;
+							node->object = aObject;
+							node->bool1 = true;
+						}
 					}
 				}
 			}
@@ -1130,7 +1155,6 @@ void NateParser::doStartDefine(bool aIsDecl,
 				node->bool1 = false;
 				node->object = curObject();
 			}
-
 		}
 		else
 		{

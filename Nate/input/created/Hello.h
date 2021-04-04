@@ -55,16 +55,17 @@ private:
 	static std::shared_ptr<Hi> new_Hi2_();
 #line 22
 	virtual string_t E_me__E_text_(const string_t& world) const;
+#line 24
 	string_t ls_E_me__E_text_(const string_t& world) const override;
-private:
-	int32_t age = {};
-public:
-	virtual int32_t age_get() const;
 private:
 	Datum datum = {};
 public:
 	virtual Hi::Datum datum_get() const;
 	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
+private:
+	int32_t age = {};
+public:
+	virtual int32_t age_get() const;
 private:
 	Greet greet = {};
 public:
@@ -72,7 +73,7 @@ public:
 	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
 };
 
-#line 25
+#line 24
 class Hello: public Hi, public virtual Greetable
 {
 public:
@@ -83,35 +84,35 @@ private:
 	__impl* _impl;
 	friend class __impl;
 	public:
-#line 26
+#line 25
 	struct Data
 	{
 		Data()
 			: greet()
 			, count()
 		{}
-#line 27
+#line 26
 		string_t greet;
 		int32_t count;
 	};
 
-#line 34
+#line 33
 	static std::shared_ptr<Hello> new_Hello_();
-#line 36
+#line 35
 	virtual std::shared_ptr<Hello> E_O_me__greeted_();
-#line 38
+#line 37
 	string_t E_me__E_text_(const string_t& world) const override;
-#line 40
+#line 39
 	static string_t hi_E_Hello_(const std::shared_ptr<Hello>& other);
-#line 42
+#line 41
 	virtual string_t stream_out_E_me__() const;
-#line 44
+#line 43
 	string_t ls_E_me__E_text_(const string_t& world) const override;
 private:
-	string_t name = {};
+	string_t address = {};
 public:
-	virtual string_t name_get() const;
-	virtual const string_t& name_set(const string_t& value);
+	virtual string_t address_get() const;
+	virtual const string_t& address_set(const string_t& value);
 private:
 	Greet greet = {};
 public:
@@ -127,9 +128,9 @@ public:
 	virtual Hello::Data data_get() const;
 	virtual const Hello::Data& data_set(const Hello::Data& value);
 private:
-	string_t address = {};
+	string_t name = {};
 public:
-	virtual string_t address_get() const;
-	virtual const string_t& address_set(const string_t& value);
+	virtual string_t name_get() const;
+	virtual const string_t& name_set(const string_t& value);
 };
 

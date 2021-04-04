@@ -20,7 +20,6 @@ declare object Hi as Greetable:
   define new Hi2 is Hi
 
   define ${me is Hi} ${world is text} is text
-  define ls ${me} ${world is text} is text
 
 declare object Hello is Hi as Greetable:
   record Data:

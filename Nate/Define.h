@@ -14,7 +14,7 @@ class Defines
 {
 public:
 	virtual std::list<DefinePtr>& get();
-	virtual void add(const DefinePtr& aDefine);
+	virtual DefinePtr add(const DefinePtr& aDefine);
 	virtual DefinePtr getLike(const DefinePtr& aDefine);
 
 private:			

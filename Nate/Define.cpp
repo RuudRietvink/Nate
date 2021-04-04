@@ -121,16 +121,20 @@ std::list<DefinePtr>& Defines::get()
 	return mDefines;
 }
 
-void Defines::add(const DefinePtr& aDefine)
+DefinePtr Defines::add(const DefinePtr& aDefine)
 {
 	mDefines.push_back(aDefine);
+	return aDefine;
 }
 
 DefinePtr Defines::getLike(const DefinePtr& aDefine)
 {
 	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
 													 [&aDefine](const DefinePtr& item)
-													 { return aDefine != item &&
-													   aDefine->pattern() == item->pattern(); });
+													 { 
+														 return aDefine != item &&
+													   aDefine->pattern() == item->pattern();
+													 });
+
 	return (iter != mDefines.end()) ? *iter : DefinePtr();
 }

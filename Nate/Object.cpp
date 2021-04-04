@@ -21,24 +21,32 @@ std::stringstream& Object::getNormalOut()    { return mNormalOut; }
 const std::vector<ObjectPtr>& Object::getBases() { return mBases; }
 void Object::addBase(const ObjectPtr& aBase) { mBases.push_back(aBase); }
 
-bool Object::isOfType(const std::string& aType) const
+bool Object::basesOfType(const std::string& aType) const
 {
-	return Type::isOfType(aType) ||
-		     std::any_of(mBases.begin(), mBases.end(), 
+	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
 										 { return aBase->name() == aType || aBase->isOfType(aType); } );
 }
 
-DefinePtr Object::basesGetLike(const DefinePtr& aDefine)
+bool Object::isOfType(const std::string& aType) const
+{
+	return Type::isOfType(aType) ||
+		     basesOfType(aType);
+}
+
+DefinePtr Object::basesGetLike(const DefinePtr& aDefine, const ObjectPtr& inheritsFromThis)
 {
 	DefinePtr result;
 
 	for (auto base = mBases.begin(); base != mBases.end() && !result; ++base)
 	{
-		result = (*base)->defines().getLike(aDefine);
-		if (!result)
+		if (!inheritsFromThis || (*base)->basesOfType(inheritsFromThis->name()))
 		{
-			result = (*base)->basesGetLike(aDefine);
+			result = (*base)->defines().getLike(aDefine);
+			if (!result)
+			{
+				result = (*base)->basesGetLike(aDefine);
+			}
 		}
 	}
 

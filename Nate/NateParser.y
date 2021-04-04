@@ -241,7 +241,7 @@ role-statement:
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { nate.doEndDeclObject(); }
+		  { nate.doEndDeclObject(@end); }
   ;
 
 declare-object-statement:
@@ -268,7 +268,7 @@ declare-object-statement:
 	  begin
 		  declare-object-content-statement-list
 	  end
-		  { nate.doEndDeclObject(); }
+		  { nate.doEndDeclObject(@end); }
   ;
   
 base-classes:

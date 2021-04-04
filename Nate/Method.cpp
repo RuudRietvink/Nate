@@ -89,7 +89,7 @@ bool Method::isObjectMethod() const
 
 bool Method::isStatic() const
 {
-	return isObjectMethod() && mObjectArg == mArgs.cend();
+	return isObjectMethod() && is(Static);
 }
 
 void Method::addArgWord(const std::string& aWord)
@@ -146,6 +146,11 @@ void Method::endDecl()
 				mTypenameArg = arg;
 			}
 		}
+	}
+
+	if (mObjectArg == args().cend())
+	{
+		setFlag(Static);
 	}
 }
 

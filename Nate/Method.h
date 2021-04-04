@@ -90,6 +90,7 @@ public:
 	static const size_t Final        =11;
 	static const size_t Overriden    =12;
 	static const size_t Me           =13;
+	static const size_t Static       =14;
   
 private:
 	void getTypes(

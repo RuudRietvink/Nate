@@ -136,7 +136,7 @@ public:
 	void doEndScope(const yy::parser::location_type& aLocation);
 	void doCodeInclude(const yy::parser::location_type& aLocation);	
 	void doDeclObject(const yy::parser::location_type& aLocation);
-	void doEndDeclObject();
+	void doEndDeclObject(const yy::parser::location_type& aLocation);
 	void doImplObject(const std::string& anId, const yy::parser::location_type& aLocation);
 	void doEndImplObject();
 	void doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
@@ -177,7 +177,8 @@ public:
 	
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
-	void addUndeclaredProperties(const ObjectPtr& aObject);
+	void addUndeclaredProperties(const ObjectPtr& aObject, const yy::parser::location_type& aLocation);
+	void addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser::location_type& aLocation);
 	void endImplementObject();
 	void startObject(const ObjectPtr& aObject);
 	ObjectPtr curObject();

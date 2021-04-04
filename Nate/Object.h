@@ -23,6 +23,7 @@ public:
 	virtual ~Object() = default;
 	
 	bool isOfType(const std::string& aType) const override;
+	bool basesOfType(const std::string& aType) const;
 
 	// IIdentifiersHolder
 	ScopeFlag scopeFlag() const override { return ScopeFlag::ObjectImpl; }
@@ -42,7 +43,7 @@ public:
 
 	const std::vector<ObjectPtr>& getBases();
 	void addBase(const ObjectPtr& aBase);
-	DefinePtr basesGetLike(const DefinePtr& aDefine);
+	DefinePtr basesGetLike(const DefinePtr& aDefine, const ObjectPtr& inheritsFromThis = ObjectPtr());
 	
 	enum class PropType
 	{
