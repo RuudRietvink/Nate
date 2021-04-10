@@ -237,7 +237,11 @@ Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMa
 {
 	CompareResult result = CompareResult::No;
 	
-	if (aType->name() == name())
+	if (!aType)
+	{
+		result = CompareResult::No;
+	}
+	else if (aType->name() == name())
 	{
 		result = CompareResult::Yes;
 	}

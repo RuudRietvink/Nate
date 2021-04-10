@@ -492,7 +492,8 @@ std::string NateCode::codeExpr(const TreeNodePtr& aNode, const Expr& aValue)
 				{
 					if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
 					{
-						if (aNode->defyne && !aNode->defyne->is(Define::Undeclared))
+						if (aNode->defyne && !aNode->defyne->is(Define::Undeclared) && 
+								!aNode->defyne->object()->is(Type::ObjectImpl))
 						{
 							result = "_impl->" + result;
 						}
@@ -903,13 +904,13 @@ void NateCode::codeDefine(const TreeNodePtr& aNode)
 		bool defineDecl = aNode->bool1;
 		if (defineDecl)
 		{
-			*mOut << in(-1) << defyne->createCodeDecl(toCodeName(aNode->object->name())) << end() <<
+			*mOut << in(-1) << createCodeDecl(defyne, toCodeName(aNode->object->name())) << end() <<
 				       in(-1) << "{" << end();
 		}
 		else
 		{				
 			*mOut << in() << (defyne->isStatic() ? "static " : "") <<
-					              defyne->createCodeDecl() << end() << 
+					              createCodeDecl(defyne) << end() << 
 				       in() << "{" << end();
 		}
 
@@ -938,36 +939,47 @@ void NateCode::codeDefine(const TreeNodePtr& aNode)
 }
 
 
-void NateCode::createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName)
+std::string NateCode::createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName)
 {
+	std::ostringstream out;
+
 	if (aDefine->is(Define::None))
 	{
-		*mOut << "void ";
+		out << "void ";
 	}
 	else
 	{
-		*mOut << aDefine->type()->codeType() << " ";
+		out << aDefine->type()->codeType();
+		if (aDefine->is(Method::Ref))
+		{
+			out << "&";
+		}
+		out << " ";
 	}
 
 	if (!aObjectName.empty())
 	{
-		*mOut << aObjectName << "::";
+		out << aObjectName << "::";
 	}
 
-	*mOut << aDefine->pattern();
-	createCodeDeclArgs(aDefine, aDefine->args());
+	out << aDefine->pattern();
+	out << createCodeDeclArgs(aDefine, aDefine->args());
 	
-	if (aDefine->is(Define::ConstMethod))
+	if (aDefine->is(Define::ConstMethod) && !aDefine->is(Method::Ref))
 	{
-		*mOut << " const";
+		out << " const";
 	}
+
+	return out.str();
 }
 
-void NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs)
+std::string NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs)
 {
+	std::ostringstream out;
+
 	bool first = true;
 	
-	*mOut << "(";
+	out << "(";
 
 	for (auto const& arg : aDefine->args())
 	{
@@ -975,28 +987,30 @@ void NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Ar
 		{
 			if (!first)
 			{
-				*mOut << ", ";
+				out << ", ";
 			}
 
 			first = false;
 
 			if (arg.identifier()->type()->is(Type::NeedsRef) && !arg.is(Arg::Out))
 			{
-				*mOut << "const ";
+				out << "const ";
 			}
 
-			*mOut << arg.identifier()->type()->codeType();
+			out << arg.identifier()->type()->codeType();
 
 			if (arg.identifier()->type()->is(Type::NeedsRef) || arg.is(Arg::Out))
 			{
-				*mOut << "&";
+				out << "&";
 			}
 
-			*mOut << " " << arg.identifier()->codeName();
+			out << " " << arg.identifier()->codeName();
 		}
 	}
 
-	*mOut << ")";
+	out << ")";
+
+	return out.str();
 }
 
 void NateCode::codeReturn(const TreeNodePtr& aNode)
@@ -1073,7 +1087,7 @@ void NateCode::codeDeclObjectDefine(const TreeNodePtr& aNode)
 	const char* abstract = aNode->object->isRole()
 												 ? " = 0" : "";
 	*mOut << in() << (defyne->isStatic() ? "static " : startKeys) << 
-									  defyne->createCodeDecl() << endKeys << abstract << ";" << end();
+									  createCodeDecl(defyne) << endKeys << abstract << ";" << end();
 }
 
 void NateCode::codeImplObject(const TreeNodePtr& aNode)
@@ -1166,8 +1180,9 @@ void NateCode::codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl)
 void NateCode::codeProp(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
-
-	*mOut << in() << codePropHeader(aNode->object, true, aNode->id, 
+	
+	bool addObjectName = !aNode->object->is(Type::ObjectImpl);
+	*mOut << in() << codePropHeader(aNode->object, addObjectName, aNode->id, 
 																	aNode->bool1  ? Object::PropType::Get : Object::PropType::Set) << end() 
 			  << in() << "{" << end() ;
 
@@ -1220,17 +1235,18 @@ void NateCode::codeDefaultProperties(const ObjectPtr& aObject)
 void NateCode::codeDefaultPropertyImpl(const ObjectPtr& aObject,
 																	     const IdentifierPtr& propId)
 {
-		if (aObject->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Declared)
-		{
-			*mOut << in() << codePropHeader(aObject, true, propId, Object::PropType::Get) 
-				    << " { return " << propId->codeName() << "; }" << end();
-		}
+	bool addObjectName = !aObject->is(Type::ObjectImpl);
+	if (aObject->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Declared)
+	{
+		*mOut << in() << codePropHeader(aObject, addObjectName, propId, Object::PropType::Get) 
+				  << " { return " << propId->codeName() << "; }" << end();
+	}
 
-		if (aObject->getPropState(propId, Object::PropType::Set).state == Object::PropState::State::Declared)
-		{
-			*mOut << in() << codePropHeader(aObject, true, propId, Object::PropType::Set) 
-				    << " { return " << propId->codeName() << " = value; }" << end();
-		}
+	if (aObject->getPropState(propId, Object::PropType::Set).state == Object::PropState::State::Declared)
+	{
+		*mOut << in() << codePropHeader(aObject, addObjectName, propId, Object::PropType::Set) 
+				  << " { return " << propId->codeName() << " = value; }" << end();
+	}
 }
 
 void NateCode::codeDeclProperties(const ObjectPtr& aObject)

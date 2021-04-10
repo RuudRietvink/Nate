@@ -570,11 +570,22 @@ void NateParser::doEndRecord(const yy::parser::location_type& aLocation)
 
 void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
+	if (!curDefine())
+	{
+		error("Return outside define");
+	}
+	else if (!curDefine()->type() || curDefine()->type()->canBeCastedFrom(aValue.type()) == Type::CompareResult::No )
+	{
+		error("Incompatible return type");
+	}
+
 	add(ByteCode::Return, aValue, aLocation);
 }
 
 void NateParser::doDeclObject(const yy::parser::location_type& aLocation)
 {	
+	addObject(data.object);
+  checkObject(curObject());
 	TreeNode* node = addStat(ByteCode::DeclObject, aLocation);
 	node->object = curObject();
 }
@@ -592,24 +603,29 @@ void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
 	up();
 }
 
-void NateParser::doImplObject(const std::string& anId, const yy::parser::location_type& aLocation)
+void NateParser::doImplObject(const yy::parser::location_type& aLocation)
 {
-  auto objectDecl = getObject(anId);
+  auto objectDecl = getObject(data.object->name());
   bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
+
   if (!existingObjectDecl)
   {
-    auto object = std::make_shared<Object>(anId, getType("object"));
-    object->setCodeType(toCodeName(anId));
-    object->setFlag(Type::Abstract, false);
-    object->setFlag(Type::Unknown, false);
-    object->setFlag(Type::ObjectImpl);
+		addObject(data.object);
+    curObject()->setCodeType(toCodeName(data.object->name()));
+    curObject()->setFlag(Type::Abstract, false);
+    curObject()->setFlag(Type::Unknown, false);
+    curObject()->setFlag(Type::ObjectImpl);
           
-    addObject(object);
-    checkObject(object);
-		addStat(ByteCode::ImplObject, aLocation)->object = object;
+    checkObject(curObject());
+		addStat(ByteCode::ImplObject, aLocation)->object = curObject();
   }
   else
   {
+		if (!data.object->getBases().empty())
+		{
+			error("Redefinition of base objects/roles");
+		}
+		
     startObject(objectDecl);
 		addStat(ByteCode::ImplObject, aLocation)->object = objectDecl;
   }
@@ -1010,22 +1026,22 @@ ObjectPtr NateParser::getObject(const std::string& aId)
 	return iter != mObjects.cend() ? *iter : ObjectPtr();
 }
 
-void NateParser::addObjectBase(const ObjectPtr& aObject)
+void NateParser::addObjectBase(ObjectPtr& aCurObject, const ObjectPtr& aObject)
 {
 	if (aObject->isRole())
 	{
 		error("Base object must not be a role: " + aObject->name());
 	}
-	curObject()->addBase(aObject);
+	aCurObject->addBase(aObject);
 }
 
-void NateParser::addObjectRole(const ObjectPtr& aObject)
+void NateParser::addObjectRole(ObjectPtr& aCurObject, const ObjectPtr& aObject)
 {
 	if (!aObject->isRole())
 	{
 		error("Base role must not be an object: " + aObject->name());
 	}
-	curObject()->addBase(aObject);
+	aCurObject->addBase(aObject);
 }
 
 ObjectPtr NateParser::curObject()
@@ -1237,7 +1253,7 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 {
 	const std::string method = aPropType == Object::PropType::Get ? "get" : "set";
 
-	if (!curObject()->isPropDeclared(aIdentifier, aPropType))
+	if (!curObject()->isPropDeclared(aIdentifier, aPropType) && !aIdentifier->is(Identifier::Undeclared))
 	{
 	  error("Undeclared " + method + " method for property: " + aIdentifier->name());
 	}
@@ -1247,11 +1263,17 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 	  error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
+	if (aIdentifier->is(Identifier::ReadOnly && aPropType != Object::PropType::Get))
+	{
+		error("Defined " + method + " method for readonly property");
+	}
+
 	Object::PropState propState = curObject()->getPropState(aIdentifier, aPropType);
 	propState.state = Object::PropState::State::Defined;
 	curObject()->setPropState(aIdentifier, aPropType, propState);
 	
 	addDefine(true);
+	curDefine()->setType(aIdentifier->type());
 	mDefineDecl = false;
 	bool getter = false;
 	if (aPropType == Object::PropType::Get)
@@ -1494,7 +1516,7 @@ IdentifierPtr NateParser::getIdentifier(const std::string& aName, IIdentifiersHo
 	{
 		for (auto& identifiersHolder : mIdentifiersHolders)
 		{
-			auto var = identifiersHolder->identifiers().get(aName);
+			auto var = identifiersHolder->getIdentifier(aName);
 			if (var != nullptr)
 			{
 				return var;
@@ -1505,7 +1527,7 @@ IdentifierPtr NateParser::getIdentifier(const std::string& aName, IIdentifiersHo
 	}
 	else
 	{
-		return aIdentifiersHolder->identifiers().get(aName);
+		return aIdentifiersHolder->getIdentifier(aName);
 	}
 }
 
@@ -1517,6 +1539,42 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, IIdentif
 		error(std::string("Undeclared identifier: ") + aName);
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), aName, getType("int-32")));
 		result = getIdentifier(aName);
+	}
+
+	return result;
+}
+
+IdentifierPtr NateParser::getImplObjectPropertyIdentifier(const std::string& aName, 
+																													const TypePtr& optType,
+																												  const std::vector<std::string>& flags,
+																													const yy::parser::location_type& aLocation)
+{
+	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
+	if (!result)
+	{
+		if (optType->empty())
+		{
+			error("Undeclared property requires type");
+		}
+
+		declareProperties({ aName }, optType, flags, aLocation);
+		result = getIdentifier(aName, curIdentifiersHolder().get());
+	}
+	else
+	{
+		if (!optType->empty())
+		{
+			error("Redefinition of type of property");
+		}
+		else if (!flags.empty())
+		{
+			error("Redefinition of flags of property");
+		}
+	}
+
+	if (!curObject()->hasProp(result))
+	{
+		result->setFlag(Identifier::Undeclared);
 	}
 
 	return result;
@@ -2064,7 +2122,7 @@ void NateParser::declareLocalIdentifiers(
 		
 		addIdentifier(id);
 
-		if (id->type()->is(Type::Abstract))
+		if (id->type()->is(Type::Abstract) && !id->type()->is(Type::Object))
 		{
 			error("Abstract type: " + id->type()->name());
 			return;

@@ -229,12 +229,11 @@ role-statement:
         object->setFlag(Type::Abstract, true);
         object->setFlag(Type::Unknown, false);
         object->setIsRole(true);
-        nate.addObject(object);
+        nate.data.object = object;
       }
     opt-as-roles
       {
         lexer.popState();
-        nate.checkObject(nate.curObject());
         nate.doDeclObject(@id);
 		  }
     col
@@ -256,12 +255,11 @@ declare-object-statement:
         object->setCodeType(toCodeName($id));
         object->setFlag(Type::Abstract, false);
         object->setFlag(Type::Unknown, false);
-        nate.addObject(object);
+        nate.data.object = object;
       }
     base-classes
       {
         lexer.popState();
-        nate.checkObject(nate.curObject());
         nate.doDeclObject(@id);
 		  }
     col
@@ -295,7 +293,7 @@ base-class:
     id
       {
         nate.importBaseObject($id);
-        nate.addObjectBase(nate.getObject($id));
+        nate.addObjectBase(nate.data.object, nate.getObject($id));
       }
   ;
   
@@ -303,7 +301,7 @@ role:
     id
       {
         nate.importBaseObject($id);
-        nate.addObjectRole(nate.getObject($id));
+        nate.addObjectRole(nate.data.object, nate.getObject($id));
       }
   ;
 
@@ -332,8 +330,16 @@ implement-object-statement:
       }
 	  id 
 		  { 
+        auto object = std::make_shared<Object>($id, nate.getType("object"));
+        object->setCodeType(toCodeName($id));
+        object->setFlag(Type::Abstract, false);
+        object->setFlag(Type::Unknown, false);
+        nate.data.object = object;
+		  }
+    base-classes
+      {
         lexer.popState();
-        nate.doImplObject($id, @id);
+        nate.doImplObject(@id);
 		  }
     col
 	  begin
@@ -560,8 +566,10 @@ property-define-statement:
     id COL
       { 
 		    lexer.popState(); 
-        nate.data.propId = nate.getOrFakeIdentifier($id, nate.curIdentifiersHolder().get());
-
+      }
+    optional-is-type opt-flag-list
+      {
+        nate.data.propId = nate.getImplObjectPropertyIdentifier($id, $[optional-is-type], $[opt-flag-list], @PROP);
       }
 	  begin
       property-get-set-list
@@ -1136,7 +1144,7 @@ expr-statement:
         nate.doExpressionStatement($expr, @expr);
         if ($expr.type() && !$expr.type()->empty())
         {
-          nate.warning("Ignoring result of expression");
+          nate.warning("Ignoring result of expression " + $expr.type()->name());
         }
       }
   ;

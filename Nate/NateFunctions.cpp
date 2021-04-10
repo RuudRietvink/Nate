@@ -26,6 +26,10 @@ std::string toCodeName(const std::string& aName)
 		{
 			buf << '_';
 		}
+		else if (*name == '\'')
+		{
+			buf << "__qt_";
+		}
 		else if (*name > 255)
 		{
 			buf << "__" << std::hex << *name << "_";

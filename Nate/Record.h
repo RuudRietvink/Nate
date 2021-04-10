@@ -17,6 +17,7 @@ public:
 	// IIdentifiersHolder
 	Identifiers& identifiers() override { return mIdentifiers; }
 	ScopeFlag scopeFlag() const override { return ScopeFlag::Member; }
+	IdentifierPtr getIdentifier(const std::string& aName) override { return mIdentifiers.get(aName); }
 	
 	const std::string& name() const override { return mName; }
 	virtual std::ostream& print(std::ostream& aStream) const override;

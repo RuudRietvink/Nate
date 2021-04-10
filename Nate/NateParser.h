@@ -52,6 +52,7 @@ public:
 		bool assignExpr = false;
 		IdentifierPtr propId;
 		WithFlags* flagsHolder = nullptr;
+		ObjectPtr object;
 
 		TreeNodePtr stats;
 	};
@@ -137,7 +138,7 @@ public:
 	void doCodeInclude(const yy::parser::location_type& aLocation);	
 	void doDeclObject(const yy::parser::location_type& aLocation);
 	void doEndDeclObject(const yy::parser::location_type& aLocation);
-	void doImplObject(const std::string& anId, const yy::parser::location_type& aLocation);
+	void doImplObject(const yy::parser::location_type& aLocation);
 	void doEndImplObject();
 	void doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
 							const yy::parser::location_type& aLocation);
@@ -170,6 +171,9 @@ public:
 	TypePtr makeType(const std::string& aValue);
 	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
+	IdentifierPtr getImplObjectPropertyIdentifier(const std::string& aName, const TypePtr& optType,
+												                        const std::vector<std::string>& flags,
+																								const yy::parser::location_type& aLocation);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 	std::string uniqueName() const;
@@ -185,8 +189,8 @@ public:
 	void checkObject(const ObjectPtr& aObject);
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);
-	void addObjectBase(const ObjectPtr& aObject);
-	void addObjectRole(const ObjectPtr& aObject);
+	void addObjectBase(ObjectPtr& aCurObject, const ObjectPtr& aObject);
+	void addObjectRole(ObjectPtr& aCurObject, const ObjectPtr& aObject);
 	void declareProperties(const std::vector<std::string>& aNames,
 												 const TypePtr& aType,
 												 const std::vector<std::string>& flags,

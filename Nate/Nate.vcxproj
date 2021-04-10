@@ -298,6 +298,7 @@
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
     </CustomBuild>
+    <None Include="input\nateBak.in" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code.h" />

@@ -35,8 +35,6 @@ public:
 	virtual ~Define() = default;
   
 	void createCodeCall();
-	std::string createCodeDeclArgs(const std::vector<Arg>& aArgs);
-	std::string createCodeDecl(const std::string& aObjectName = "");
 
 private:
 };

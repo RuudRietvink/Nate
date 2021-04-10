@@ -20,6 +20,7 @@ public:
 	// IIdentifiersHolder
 	Identifiers& identifiers() override { return mIdentifiers; }
 	ScopeFlag scopeFlag() const override { return mScopeFlag; }
+	IdentifierPtr getIdentifier(const std::string& aName) override { return mIdentifiers.get(aName); }
 	
 	// ITypesHolder
 	Types& types() override { return mTypes; }

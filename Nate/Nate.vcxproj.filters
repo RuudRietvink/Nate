@@ -189,6 +189,9 @@
     <None Include="core\Data-input.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="input\nateBak.in">
+      <Filter>Source Files\Input</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">

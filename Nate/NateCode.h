@@ -56,8 +56,8 @@ private:
   void codeRead(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);
-	void createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
-	void createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName);
+	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
+	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
   void codeReturn(const TreeNodePtr& aNode);
   void codeDeclObject(const TreeNodePtr& aNode);
 	void codeObjectBases(const ObjectPtr& aObject);

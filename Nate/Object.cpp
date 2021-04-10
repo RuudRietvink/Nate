@@ -21,6 +21,20 @@ std::stringstream& Object::getNormalOut()    { return mNormalOut; }
 const std::vector<ObjectPtr>& Object::getBases() { return mBases; }
 void Object::addBase(const ObjectPtr& aBase) { mBases.push_back(aBase); }
 
+IdentifierPtr Object::getIdentifier(const std::string& aName)
+{
+	IdentifierPtr result = Record::getIdentifier(aName);
+	if (!result)
+	{
+		for (auto base = mBases.begin(); base != mBases.end() && !result; ++base)
+		{
+			result = (*base)->getIdentifier(aName);
+		}
+	}
+
+	return result;
+}
+
 bool Object::basesOfType(const std::string& aType) const
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
@@ -72,6 +86,13 @@ void Object::addProp(const IdentifierPtr& anId, const yy::parser::location_type&
 
 	mPropertyMethods.emplace(anId, prop);
 } 
+
+bool Object::hasProp(const IdentifierPtr& anId) const
+{
+	return std::find_if(mPropertyMethods.begin(), mPropertyMethods.end(),
+													 [&](const auto& aPair) { return anId->name() == aPair.first->name(); })
+				    != mPropertyMethods.cend();
+}
 
 Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aPropType) const
 {

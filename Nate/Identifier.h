@@ -39,6 +39,7 @@ public:
 	static const size_t Final        = 3;
 	static const size_t ObjectImpl   = 4;
 	static const size_t Local        = 5;
+	static const size_t Undeclared   = 6;
 
 private:
 	std::string												mName;
@@ -67,6 +68,7 @@ class IIdentifiersHolder
 {
 public:
 	virtual Identifiers& identifiers() = 0;
+	virtual IdentifierPtr getIdentifier(const std::string& aName) = 0;
 	enum class ScopeFlag
 	{
 		Local = 1,

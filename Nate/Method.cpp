@@ -74,6 +74,10 @@ std::string Method::setFlagString(const std::string& aFlag)
 	{
 		setFlag(Final);
 	}
+	else if (aFlag == "ref")
+	{
+		setFlag(Ref);
+	}
 	else
 	{
 		errorResult = "Bad flag: " + aFlag;
@@ -513,7 +517,8 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	
 	if (isStatic())
 	{
-		if (is(Method::Undeclared) && object() == aCurDefine->object())
+		if (is(Method::Undeclared) && aCurDefine && object() == aCurDefine->object() &&
+				!object()->is(Type::ObjectImpl))
 		{
 			result.code = "__impl::" + result.code;
 		}
@@ -670,22 +675,6 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					error << "Not a comparible: " << nodeIter->text() << " for " << arg->identifier()->name();
 					result.matches = false;
 				}
-				else if (arg->is(Arg::Same) && 
-								 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) 
-														== Type::CompareResult::No)
-				{
-					error << "1 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									 " must be of type " << firstType->name();
-					result.matches = false;
-				}
-				else if (arg->is(Arg::CompHigh) && 
-								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
-														== Type::CompareResult::No)
-				{
-					error << "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									 " must be compatible with type " << highestType->name();
-					result.matches = false;
-				}
 				else if (arg->is(Arg::Owner))
 				{
 					// above code
@@ -706,6 +695,27 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				else if (arg->is(Arg::Template))
 				{
 					// above code
+				}
+				else if (!nodeType)
+				{
+					error << "0 No type defined for " << nodeIter->text();
+					result.matches = false;
+				}
+				else if (arg->is(Arg::Same) && 
+								 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) 
+														== Type::CompareResult::No)
+				{
+					error << "1 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+									 " must be of type " << firstType->name();
+					result.matches = false;
+				}
+				else if (arg->is(Arg::CompHigh) && 
+								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
+														== Type::CompareResult::No)
+				{
+					error << "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
+									 " must be compatible with type " << highestType->name();
+					result.matches = false;
 				}
 				else if (arg->is(Arg::Typename))
 				{
@@ -776,6 +786,8 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::Undeclared)) aStream << ",Undeclared";
 	if (aValue.is(Method::Overriden)) aStream << ",Overriden";	
 	if (aValue.is(Method::Me)) aStream << ",Me";	
+	if (aValue.is(Method::Static)) aStream << ",Static";	
+	if (aValue.is(Method::Ref)) aStream << ",Ref";	
 
 	aStream << ")";
 	return aStream;

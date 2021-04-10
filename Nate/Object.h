@@ -27,6 +27,7 @@ public:
 
 	// IIdentifiersHolder
 	ScopeFlag scopeFlag() const override { return ScopeFlag::ObjectImpl; }
+	IdentifierPtr getIdentifier(const std::string& aName) override;
 
 	// ITypesHolder
 	Types& types() override { return mTypes; }
@@ -75,6 +76,7 @@ public:
 	std::map<IdentifierPtr, PropData>& propertyMethods() { return mPropertyMethods; }
 	
 	void     addProp(const IdentifierPtr& anId, const yy::parser::location_type& aLocation, const std::string& filename);
+	bool     hasProp(const IdentifierPtr& anId) const;
 	PropState getPropState(const IdentifierPtr& anId, PropType aPropType) const;
 	void     setPropState(const IdentifierPtr& anId, PropType aPropType, PropState aPropState);
 	bool     isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const;

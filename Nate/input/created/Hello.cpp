@@ -209,6 +209,6 @@ string_t Hello::ls_E_me__E_text_(const string_t& world) const
 int32_t Hello::age_get() const { return age; }
 Hello::Data Hello::data_get() const { return data; }
 const Hello::Data& Hello::data_set(const Hello::Data& value) { return data = value; }
+Greetable::Greet Hello::greet_get() const { return greet; }
 string_t Hello::address_get() const { return address; }
 const string_t& Hello::address_set(const string_t& value) { return address = value; }
-Greetable::Greet Hello::greet_get() const { return greet; }

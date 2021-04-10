@@ -109,16 +109,6 @@ private:
 #line 43
 	string_t ls_E_me__E_text_(const string_t& world) const override;
 private:
-	string_t address = {};
-public:
-	virtual string_t address_get() const;
-	virtual const string_t& address_set(const string_t& value);
-private:
-	Greet greet = {};
-public:
-	Greetable::Greet greet_get() const override;
-	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
-private:
 	int32_t age = {};
 public:
 	int32_t age_get() const override;
@@ -128,9 +118,19 @@ public:
 	virtual Hello::Data data_get() const;
 	virtual const Hello::Data& data_set(const Hello::Data& value);
 private:
+	Greet greet = {};
+public:
+	Greetable::Greet greet_get() const override;
+	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
+private:
 	string_t name = {};
 public:
 	virtual string_t name_get() const;
 	virtual const string_t& name_set(const string_t& value);
+private:
+	string_t address = {};
+public:
+	virtual string_t address_get() const;
+	virtual const string_t& address_set(const string_t& value);
 };
 

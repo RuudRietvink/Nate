@@ -67,6 +67,7 @@ std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 	if (aValue.is(Identifier::ReadOnly)) aStream << ",ReadOnly";
 	if (aValue.is(Identifier::ObjectImpl)) aStream << ",ObjectImpl";
 	if (aValue.is(Identifier::Local)) aStream << ",Local";
+	if (aValue.is(Identifier::Undeclared)) aStream << ",Undeclared";
 	aStream << ")";
 	return aStream;
 }
