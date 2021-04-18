@@ -251,7 +251,7 @@
     <None Include="input\Hello.ns" />
     <None Include="input\nate.define" />
     <None Include="input\nate.import" />
-    <None Include="input\nate.in" />
+    <None Include="input\nateSong.in" />
     <CustomBuild Include="NateLexer.l">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -298,7 +298,7 @@
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
     </CustomBuild>
-    <None Include="input\nateBak.in" />
+    <None Include="input\nate.in" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code.h" />
@@ -335,6 +335,9 @@
     <ClInclude Include="WithFlags.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MathParser\MathParser.vcxproj">
+      <Project>{fcd377e6-97c5-4d43-a398-1d6f1823d18b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\utf8\utf8.vcxproj">
       <Project>{668543a2-ce69-4098-8d25-bac059ae7bd8}</Project>
     </ProjectReference>

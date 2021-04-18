@@ -1,14 +1,17 @@
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\created\BaseObject.h"
 #line 1 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
 std::shared_ptr<std::ostream> output;
 #line 1
 std::shared_ptr<std::ostream> error;
 #line 1
 std::shared_ptr<std::istream> input;
-#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Text.ns"
-#include <string>
-typedef std::string string_t;
+#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Rational.ns"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Rational.h"
+#line 12 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Complex.ns"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
+#include <complex>
+#line 16
+const double i = 1;
 #line 27 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Math.ns"
 #define NOMINMAX
 #include <windows.h>
@@ -19,307 +22,32 @@ const double pi = 3.14159265358979323;
 const double tau = 6.283185307179586;
 #line 36
 const double e = 2.718281828459045;
-#line 5 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
-struct Product
-{
-	Product()
-		: name()
-		, price()
-	{}
-#line 6
-	string_t name;
-	int32_t price;
-};
-
-#line 9
-struct Inventory
-{
-	Inventory()
-		: product()
-		, count()
-	{}
-#line 10
-	Product product;
-	int32_t count;
-};
-
-#line 13
-Product beer = {};
-#line 15
-class ShopRole
-{
-public:
-	virtual ~ShopRole() = default;
-#line 18
-	virtual bool E_me__sells_E_Product_(const Product& product) const = 0;
-	virtual Inventory& E_me____qt_s_inventory_of_E_Product_(const Product& product) = 0;
-	virtual int32_t buy_E_int_32_of_E_Product_from_E_O_me__(int32_t count, const Product& product) = 0;
-public:
-	virtual string_t name_get() const = 0;
-};
-
-#line 22
-class Grocer: public virtual ShopRole, public BaseObject
-{
-public:
-#line 27
-	static std::shared_ptr<Grocer> new_Grocer_named_E_text_(const string_t& name)
-	{
-#line 28
-		std::shared_ptr<Grocer> result = {};
-		result.reset(new decltype(result)::element_type());
-		result->initialize_E_O_me__();
-		result -> shopName = name;
-		return result;
-	}
-
-#line 34
-	void initialize_E_O_me__()
-	{
-#line 35
-		tomatoes . name = "tomatoes";
-		inventory . product = tomatoes;
-		inventory . count = 42;
-	}
-
-	string_t name_get() const
-	{
-#line 41
-		return shopName;
-	}
-
-#line 43
-	bool E_me__sells_E_Product_(const Product& product) const
-	{
-#line 44
-		return (product . name) == (tomatoes . name);
-	}
-
-#line 46
-	Inventory& E_me____qt_s_inventory_of_E_Product_(const Product& product)
-	{
-#line 47
-		return inventory;
-	}
-
-#line 49
-	int32_t buy_E_int_32_of_E_Product_from_E_O_me__(int32_t count, const Product& product)
-	{
-#line 50
-		return 0;
-	}
-
-private:
-#line 23
-	string_t shopName = {};
-	Product tomatoes = {};
-	Inventory inventory = {};
-};
-
-#line 52
-class LiqourStore: public virtual ShopRole, public BaseObject
-{
-public:
-#line 57
-	static std::shared_ptr<LiqourStore> new_LiqourStore_named_E_text_(const string_t& name)
-	{
-#line 58
-		std::shared_ptr<LiqourStore> result = {};
-		result.reset(new decltype(result)::element_type());
-		result->initialize_E_O_me__();
-		result -> shopName = name;
-		return result;
-	}
-
-#line 64
-	void initialize_E_O_me__()
-	{
-#line 65
-		beer_product . name = "beer";
-		inventory . product = beer_product;
-		inventory . count = 116;
-	}
-
-	string_t name_get() const
-	{
-#line 71
-		return shopName;
-	}
-
-#line 73
-	bool E_me__sells_E_Product_(const Product& product) const
-	{
-#line 74
-		return (product . name) == (beer_product . name);
-	}
-
-#line 76
-	Inventory& E_me____qt_s_inventory_of_E_Product_(const Product& product)
-	{
-#line 77
-		return inventory;
-	}
-
-#line 79
-	int32_t buy_E_int_32_of_E_Product_from_E_O_me__(int32_t count, const Product& product)
-	{
-#line 80
-		int32_t sales = std::min((inventory . count), count);
-		inventory . count = (inventory . count) - sales;
-		return sales;
-	}
-
-private:
-#line 53
-	string_t shopName = {};
-	Product beer_product = {};
-	Inventory inventory = {};
-};
-
-#line 85
-class Bottles_Song: public BaseObject
-{
-public:
-	static std::shared_ptr<Bottles_Song> new_Bottles_Song_for_E_ShopRole_(const std::shared_ptr<ShopRole>& shop)
-	{
-#line 89
-		std::shared_ptr<Bottles_Song> result = {};
-		result.reset(new decltype(result)::element_type());
-		result -> shop = shop;
-		return result;
-	}
-
-#line 94
-	static bool E_int_32_in_the_E_ShopRole_or_on_wall_(int32_t bottles, const std::shared_ptr<ShopRole>& store)
-	{
-#line 95
-		return (((store->E_me____qt_s_inventory_of_E_Product_(beer)) . count) + bottles) > 0;
-	}
-
-#line 97
-	static string_t count_E_int_32_(int32_t bottles)
-	{
-#line 98
-		return (bottles == 0) ? "no more" : (Core::formatted(bottles, Core::Format{2, -1, 32, 266} ));
-	}
-
-#line 100
-	static string_t describe_E_int_32_(int32_t bottles)
-	{
-#line 101
-		return (bottles == 1) ? "bottle" : "bottles";
-	}
-
-#line 103
-	static string_t list_E_int_32_(int32_t bottles)
-	{
-#line 104
-		return (((Bottles_Song::count_E_int_32_(bottles)) + " ") + (Bottles_Song::describe_E_int_32_(bottles))) + " of beer";
-	}
-
-#line 106
-	static string_t E_text_on_the_wall_(const string_t& bottles)
-	{
-#line 107
-		return bottles + " on the wall";
-	}
-
-#line 109
-	static string_t start_sentence_with_E_text_(const string_t& text)
-	{
-#line 110
-		return (Core::upperCased((Core::firstOf(text)))) + (Core::restOf(text));
-	}
-
-#line 112
-	static bool E_int_32_of_beer_on_the_wall_(int32_t bottles)
-	{
-#line 113
-		*output << ((Bottles_Song::E_text_on_the_wall_((Bottles_Song::start_sentence_with_E_text_((Bottles_Song::list_E_int_32_(bottles))))))); *output << ", " << ((Bottles_Song::list_E_int_32_(bottles))); *output << "." << std::endl; 
-		return bottles > 0;
-	}
-
-#line 116
-	static void take_one_of_the_E_O_int_32_down_and_pass_it_around_(int32_t& bottles)
-	{
-#line 117
-		--bottles;
-		*output << "Take one down and pass it around, " << ((Bottles_Song::E_text_on_the_wall_((Bottles_Song::list_E_int_32_(bottles))))); *output << "." << std::endl; 
-	}
-
-#line 120
-	static void go_to_the_E_O_ShopRole_and_buy_some_E_O_int_32_(std::shared_ptr<ShopRole>& store, int32_t& bottles)
-	{
-#line 121
-		bottles = store->buy_E_int_32_of_E_Product_from_E_O_me__(((std::min(((store->E_me____qt_s_inventory_of_E_Product_(beer)) . count), 99))), beer);
-	}
-
-#line 123
-	static void go_to_the_E_O_ShopRole_and_buy_some_more_E_O_int_32_(std::shared_ptr<ShopRole>& store, int32_t& bottles)
-	{
-#line 124
-		Bottles_Song::go_to_the_E_O_ShopRole_and_buy_some_E_O_int_32_(store, bottles);
-		const string_t some = (bottles > 0) ? "buy some" : "find no";
-		*output << "Go to the " << (store -> name_get()); *output << " and " << (some); *output << " more, " << ((Bottles_Song::E_text_on_the_wall_((Bottles_Song::list_E_int_32_(bottles))))); *output << "." << std::endl; 
-	}
-
-#line 128
-	void sing_E_O_me__()
-	{
-#line 129
-		int32_t bottles = 15;
-#line 131
-		if (shop->E_me__sells_E_Product_(beer))
-		{
-#line 132
-			while (true)
-			{
-#line 132
-				if (!(Bottles_Song::E_int_32_in_the_E_ShopRole_or_on_wall_(bottles, shop))) break;
-				while (true)
-				{
-#line 133
-					if (!(Bottles_Song::E_int_32_of_beer_on_the_wall_(bottles))) break;
-					Bottles_Song::take_one_of_the_E_O_int_32_down_and_pass_it_around_(bottles);
-				}
-#line 135
-				Bottles_Song::go_to_the_E_O_ShopRole_and_buy_some_more_E_O_int_32_(shop, bottles);
-			}
-		}
-#line 136
-		else
-		{
-#line 137
-			*output << (shop -> name_get()); *output << " doesn't sell " << ((beer . name)); *output << std::endl; 
-#line 131
-		}
-	}
-
-private:
-#line 86
-	std::shared_ptr<ShopRole> shop = {};
-};
-
+#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Text.ns"
+#include <string>
+typedef std::string string_t;
+#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\List.ns"
+#include <list>
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Output.ns"
+#include <fstream>
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Input.ns"
+#include <fstream>
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Data-input.ns"
+#include <sstream>
 #define NOMINMAX
 #include <windows.h>
-#line 139
+#line 472 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in"
 int main(int argc, char** argv)
 {
 	output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
 	error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});
 	input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
 	SetConsoleOutputCP(65001);
-#line 140
-	std::shared_ptr<ShopRole> shop = Grocer::new_Grocer_named_E_text_("Grover's Grocer");
-	std::shared_ptr<Bottles_Song> song = Bottles_Song::new_Bottles_Song_for_E_ShopRole_(shop);
-	beer . name = "beer";
-#line 144
-	song->sing_E_O_me__();
-#line 146
-	*output << std::endl; 
-#line 148
-	shop = LiqourStore::new_LiqourStore_named_E_text_("Gall&Gall");
-	song = Bottles_Song::new_Bottles_Song_for_E_ShopRole_(shop);
-#line 151
-	song->sing_E_O_me__();
+#line 473
+	float x = static_cast<float>(Rational(3,1,2).toDouble());
+	double aaa = 3.5;
+	double z = 2.0;
+#line 490
+	z = ((x * (((std::pow(((((((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))) * ((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))))))), ((x - 3.3)))) + (std::exp(((std::pow((32), (z))))))))) * (std::pow(((std::sqrt((((std::sqrt((((std::pow((x), (3))) - 4))))))))), ((std::pow(((((1 / ((x + z)))))), (((((((((2 * x)) * z))) / 2.4)))))))))) * (-(std::pow((0.34), (((-42.5) + ((x * (std::pow((((z - 5))), (((3 * (std::pow((55), (4)))))))))))))));
+#line 490
+	*output << (x); *output << " " << (z); *output << " " << ((std::exp(3))); *output << " " << ((std::exp((std::exp(4))))); *output << std::endl; 
 }

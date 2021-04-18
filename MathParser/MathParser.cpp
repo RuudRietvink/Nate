@@ -93,8 +93,7 @@ std::string MathParser::doMath(std::istream& aStream, int line)
 
 std::string MathParser::doMath(Math& aMath)
 {
-	mSymbols["e"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
-	mSymbols["𝑒"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
+	mSymbols["e"] = mSymbols["𝑒"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
 	mSymbols["π"] = Symbol{ Symbol::Type::Constant, "π", MathValue::Type::Real };
 	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", MathValue::Type::Imaginary };
 
@@ -215,6 +214,11 @@ uint32_t MathParser::operatorDivide() const
 bool MathParser::isSymbol(const std::string& aInput) const
 {
 	return mSymbols.find(aInput) != mSymbols.end();
+}
+
+MathParser::Symbol MathParser::getSymbol(const std::string& aInput) const
+{
+	return mSymbols.at(aInput);
 }
 
 bool MathParser::isNumber(const std::string& aInput) const
@@ -540,6 +544,7 @@ void MathParser::doMathParentheses(Math& aMath)
 			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎠ or ⎟ below ⎞");
 		}
 	}
+	printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathFractionBar(Math& aMath)
@@ -590,6 +595,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				error(mathPos(aMath, *leftHorizontalBar), "expected some expression above division bar");
 		}
 	}
+	printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathSquareRoot(Math& aMath)
@@ -641,6 +647,7 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			}
 		}
 	}
+	printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathPower(Math& aMath)
@@ -677,7 +684,7 @@ void MathParser::doMathPower(Math& aMath)
 		if (area1 && isSub && isSym)
 		{
 			std::string text = mathString(aMath.mathValue(baseArea.upperLeft).embedded1);
-			if (text == "e")
+			if (text == "e") 
 		  {
 				embedSubMath(aMath, exp, Oper::Exponential, baseArea);
 			}
@@ -694,6 +701,7 @@ void MathParser::doMathPower(Math& aMath)
 		printDebugMath(aMath, __FUNCTION__);
 		doMathParsing(aMath);
 	}
+	printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathVariablesNumbers(Math& aMath)
@@ -791,6 +799,7 @@ void MathParser::doMathMonomial(Math& aMath)
 			}
 		}
 	}
+	printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper)
@@ -1111,7 +1120,7 @@ std::tuple<int, MathParser::Symbol> MathParser::parseVariable(
 		}
 		else
 		{
-			symbol = mSymbols.at(variable);
+			symbol = getSymbol(variable);
 		}
 	}
 	else

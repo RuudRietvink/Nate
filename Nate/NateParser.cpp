@@ -1094,7 +1094,10 @@ void NateParser::startMath(const yy::parser::location_type& aLocation)
 
 void NateParser::endMath()
 {
-	std::cerr << mMathParser->doMath(mMath) << std::endl;;
+	std::string code = mMathParser->doMath(mMath);
+	std::cerr << code << std::endl;
+	mLexer->unputString("\n  ");
+	mLexer->unputString(code);
 }
 
 void NateParser::addMathStatWord(const std::string& aWord,

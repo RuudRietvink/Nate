@@ -1,10 +1,11 @@
 #pragma once
 
-#ifdef MATHPARSER_EXPORTS
-#define MATHPARSER_API __declspec(dllexport)
-#else
-#define MATHPARSER_API __declspec(dllimport)
-#endif
+#define MATHPARSER_API 
+//#ifdef MATHPARSER_EXPORTS
+//#define MATHPARSER_API __declspec(dllexport)
+//#else
+//#define MATHPARSER_API __declspec(dllimport)
+//#endif
 
 #include <string>
 #include <vector>
@@ -156,7 +157,7 @@ public:
 		
 		bool isSubMatrix() const { return value == SUBMATRIX; }
 		bool hasSubMatrix() const { return isSubMatrix() || value == SUBMATRIXREFERENCE; }
-		bool isSuperscript() const { return mathValue->superscript; }
+		bool isSuperscript() const { return superscript; }
 		Area getArea(int x, int y) const
 		{
 			Area result;
@@ -212,10 +213,11 @@ protected:
 	MATHPARSER_API virtual uint32_t operatorMultiply() const;
 	MATHPARSER_API virtual uint32_t operatorDivide() const;
 
-	virtual bool MATHPARSER_API isSymbol(const std::string& aInput) const;
-	virtual bool MATHPARSER_API isNumber(const std::string& aInput) const;
-	virtual bool MATHPARSER_API isVarStart(uint32_t kar) const;
-	virtual bool MATHPARSER_API isVarNext(uint32_t kar) const;
+	MATHPARSER_API virtual bool isSymbol(const std::string& aInput) const;
+	MATHPARSER_API virtual Symbol getSymbol(const std::string& aInput) const;
+	MATHPARSER_API virtual bool isNumber(const std::string& aInput) const;
+	MATHPARSER_API virtual bool isVarStart(uint32_t kar) const;
+	MATHPARSER_API virtual bool isVarNext(uint32_t kar) const;
 
 	std::string mathString(const Math& aMath) const;
 	bool needsParens(const Math& aMath) const;
