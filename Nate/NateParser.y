@@ -65,6 +65,8 @@
 %token OBJECT "object"
 %token CODE "code"
 %token MATH "math"
+%token START_SPEC "{{"
+%token END_SPEC "}}"
 %token DEFINE "define"
 %token IF "if"
 %token ELSE "else"
@@ -118,6 +120,7 @@
 %type <Expr>                     expr;
 %type <Expr>                     definitely-expr;
 %type <Expr>                     inline-expr;
+%type <Expr>                     math-expr;
 %type <Expr>                     expr-at-end-of-statement;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
@@ -212,7 +215,6 @@ statement:
   | return-statement
   | record-statement
   | expr-statement
-  | math-statement
   | EOS
   ;
   
@@ -524,19 +526,22 @@ type-flags:
   | AS holder-flag-list
   ;
   
-math-statement:
-    MATH COL
-		  { 
+math-expr:
+    START_SPEC MATH 
+      {
 			  nate.startMath(@MATH);
 			  lexer.pushState(Lexer::MATH);
-		  }
-	  begin
-		  math-stat-list
-	  end
+      }
+		math-stat-list
+    END_SPEC
 		  { 
 			  lexer.popState();
 			  nate.endMath();
 		  }
+    inline-expr
+      {
+        $$ = $[inline-expr];
+      }
   ;
   
 math-stat-list:
@@ -545,9 +550,7 @@ math-stat-list:
   ;
 
 math-stat:
-    %empty
-  | begin math-stat-list end
-  | WORD
+    WORD
 		  { nate.addMathStatWord($WORD, @WORD); }
   ;
 
@@ -1194,7 +1197,8 @@ expr-part-list:
   ;
 
 expr-part:
-    expr-word
+    math-expr
+  | expr-word
   | expr-non-word
   ;
 

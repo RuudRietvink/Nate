@@ -1088,7 +1088,7 @@ void NateParser::startMath(const yy::parser::location_type& aLocation)
 {
 	mMathStart = aLocation;
 	mMath = NateParserMath::Math();
-	mMath.x = aLocation.begin.column;
+	mMath.x = 0;
 	mMath.y = aLocation.begin.line;
 }
 
@@ -1096,30 +1096,36 @@ void NateParser::endMath()
 {
 	std::string code = mMathParser->doMath(mMath);
 	std::cerr << code << std::endl;
-	mLexer->unputString("\n  ");
 	mLexer->unputString(code);
 }
 
 void NateParser::addMathStatWord(const std::string& aWord,
 											           const yy::parser::location_type& aLocation)
 {
-	int y = aLocation.begin.line - mMathStart.begin.line;
-	int x = aLocation.begin.column - mMathStart.begin.column;
-	while (y >= mMath.matrix.size())
+	if (aWord == "\n")
 	{
-		mMath.matrix.push_back(NateParserMath::MathVector());
+		mMathStart.begin.column = 0;
 	}
-
-	while (x >= mMath.matrix[y].size())
+	else
 	{
-		mMath.matrix[y].push_back(32);
-	}
+		int y = aLocation.begin.line - mMathStart.begin.line;
+		int x = aLocation.begin.column - mMathStart.begin.column;
+		while (y >= mMath.matrix.size())
+		{
+			mMath.matrix.push_back(NateParserMath::MathVector());
+		}
 
-	std::string::const_iterator iter = aWord.begin();
-	while (iter != aWord.end())
-	{
-		uint32_t kar = utf8::next(iter, aWord.end());
-		mMath.matrix[y].push_back(kar);
+		while (x >= 0 && x >= mMath.matrix[y].size())
+		{
+			mMath.matrix[y].push_back(32);
+		}
+
+		std::string::const_iterator iter = aWord.begin();
+		while (iter != aWord.end())
+		{
+			uint32_t kar = utf8::next(iter, aWord.end());
+			mMath.matrix[y].push_back(kar);
+		}
 	}
 }
 

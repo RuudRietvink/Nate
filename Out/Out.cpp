@@ -46,8 +46,7 @@ int main(int argc, char** argv)
 	float x = static_cast<float>(Rational(3,1,2).toDouble());
 	double aaa = 3.5;
 	double z = 2.0;
-#line 490
-	z = ((x * (((std::pow(((((((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))) * ((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))))))), ((x - 3.3)))) + (std::exp(((std::pow((32), (z))))))))) * (std::pow(((std::sqrt((((std::sqrt((((std::pow((x), (3))) - 4))))))))), ((std::pow(((((1 / ((x + z)))))), (((((((((2 * x)) * z))) / 2.4)))))))))) * (-(std::pow((0.34), (((-42.5) + ((x * (std::pow((((z - 5))), (((3 * (std::pow((55), (4)))))))))))))));
-#line 490
+	z = (((x * (((std::pow(((((((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))) * ((((((((((std::sqrt((4))) * (std::pow((x), (2))))) - (std::sqrt(((((x / 4)))))))) / ((1.3 + ((((std::sqrt(((x - 2))))) / (((((x * x)) * x)))))))))) / ((std::cos(((4 * (std::pow((aaa), (2)))))))))))))), ((x - 3.3)))) + (std::exp(((std::pow((3), (z))))))))) * (std::pow(((std::sqrt((((std::sqrt((((std::pow((x), (3))) - 4))))))))), ((std::pow(((((1 / ((x + z)))))), (((((((((2 * x)) * z))) / 2.4)))))))))) * (-(std::pow((0.34), (((-2.5) + ((x * (std::pow((((z - 5))), ((std::pow((0.3), ((std::pow((5), (4))))))))))))))))) + 5;
+#line 491
 	*output << (x); *output << " " << (z); *output << " " << ((std::exp(3))); *output << " " << ((std::exp((std::exp(4))))); *output << std::endl; 
 }

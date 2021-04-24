@@ -294,7 +294,7 @@ string          ["][^"]*[""]
                ++commentNested;                  // allow nesting /*-comments
 }
 
-<*,^COMMENT,^ARGS>{
+<*,^COMMENT,^ARGS,^MATH>{
 ^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
 ^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
 \j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
@@ -404,10 +404,10 @@ include\h*\".*\"  s(); includeFile();
 }
 
 <MATH>{
+"}}"          return yy::parser::make_END_SPEC(location());
 [\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
 [^\$\h\n]+	  return yy::parser::make_WORD(str(), location());
-[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
-\n            // ignore
+\n            return yy::parser::make_WORD(str(), location());
 }
 
 <DECL_TYPE>{
@@ -470,6 +470,8 @@ include\h*\".*\"  s(); includeFile();
 ";"				    return yy::parser::make_EOS(location());
 "("				    return yy::parser::make_OPENPAR(location());
 ")"				    return yy::parser::make_CLOSEPAR(location());
+"{{"          return yy::parser::make_START_SPEC(location());
+"}}"          return yy::parser::make_END_SPEC(location());
 
 {number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
 {rational}	  return yy::parser::make_RATIONAL(str(), location());
