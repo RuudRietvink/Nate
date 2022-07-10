@@ -1,5 +1,5 @@
 import BaseObject
 
 implement object BaseObject:
-  define initialize ${me is BaseObject as inout}:
+  implement initialize ${me is BaseObject as inout}:
     ;

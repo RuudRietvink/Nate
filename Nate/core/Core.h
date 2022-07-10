@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <ostream>
 #include <sstream>
+#include <cstdlib>
+#include <ctime>
 
 // for created code //////
 #include <cstdint>
@@ -92,6 +94,12 @@ namespace Core
 	std::string directorySeperator();
 	std::string currentDirectory();
 	void makeDirectory(const std::string& aDirectoryName);
+
+	template <typename T>
+	T random(T from, T to)
+	{
+		return from < to ? std::rand() % (1 + to - from) + from : 0;
+	}
 
 	struct Format
 	{

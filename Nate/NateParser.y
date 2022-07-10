@@ -315,10 +315,10 @@ declare-object-content-statement-list:
 declare-object-content-statement:
 	  record-statement
 	| property-declare-statement
-  | define-decl
+  | DECLARE define-decl
 			{ 
 			  lexer.popState();
-			  nate.doStartDefine(true, @[define-decl]);
+			  nate.doStartDefine(true, false/*aIsImpl*/, @[define-decl]);
         nate.doEndDefine(@[define-decl]);
       }
   | EOS
@@ -361,13 +361,13 @@ implement-object-content-statement-list:
 implement-object-content-statement:
 	  record-statement
 	| property-define-statement
+  | implement-define-statement
   | define-statement
   | impl-var-statement
   | EOS
   ;
 
 define-decl:
-	  DEFINE 
 		  { 
 			  nate.addDefine(nate.data.inObject);
 			  lexer.pushState(Lexer::ARGS);
@@ -395,12 +395,12 @@ arg:
     ARGEND
   ;
     
-define-statement:
-	  define-decl COL
+implement-define-statement:
+	  IMPLEMENT define-decl COL
 		  { 
 			  lexer.popState();
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.doStartDefine(false/*aIsDecl*/, @COL);
+			  nate.doStartDefine(false/*aIsDecl*/, true/*aIsImpl*/, @COL);
 		  }
 	  begin
 		  statement-list
@@ -411,6 +411,22 @@ define-statement:
 		  }
   ;
   
+define-statement:
+	  DEFINE define-decl COL
+		  { 
+			  lexer.popState();
+			  lexer.pushState(Lexer::DEFINE);
+			  nate.doStartDefine(false/*aIsDecl*/, false/*aIsImpl*/, @COL);
+		  }
+	  begin
+		  statement-list
+	  end
+		  { 
+			  lexer.popState(); 
+			  nate.doEndDefine(@end);
+		  }
+  ;
+
 code-statement:
     code-define
   | code-include
@@ -724,7 +740,7 @@ type:
           }
           else
           {
-            nate.error("Not a template: " + $WORD);
+            nate.error("Not a generic: " + $WORD);
           }
         }
         else

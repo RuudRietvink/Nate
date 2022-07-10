@@ -51,21 +51,26 @@ private:
 		int32_t count;
 	};
 
-#line 20
+#line 21
 	static std::shared_ptr<Hi> new_Hi2_();
-#line 22
+#line 23
 	virtual string_t E_me__E_text_(const string_t& world) const;
-#line 24
+#line 25
 	string_t ls_E_me__E_text_(const string_t& world) const override;
+private:
+	int32_t test = {};
+public:
+	virtual int32_t test_get() const;
+	virtual const int32_t test_set(const int32_t value);
+private:
+	int32_t age = {};
+public:
+	virtual int32_t age_get() const;
 private:
 	Datum datum = {};
 public:
 	virtual Hi::Datum datum_get() const;
 	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
-private:
-	int32_t age = {};
-public:
-	virtual int32_t age_get() const;
 private:
 	Greet greet = {};
 public:
@@ -73,8 +78,8 @@ public:
 	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
 };
 
-#line 24
-class Hello: public Hi, public virtual Greetable
+#line 25
+class Hello: public Hi
 {
 public:
 	virtual ~Hello();
@@ -84,53 +89,44 @@ private:
 	__impl* _impl;
 	friend class __impl;
 	public:
-#line 25
+#line 26
 	struct Data
 	{
 		Data()
 			: greet()
 			, count()
 		{}
-#line 26
+#line 27
 		string_t greet;
 		int32_t count;
 	};
 
-#line 33
+#line 34
 	static std::shared_ptr<Hello> new_Hello_();
-#line 35
+#line 36
 	virtual std::shared_ptr<Hello> E_O_me__greeted_();
-#line 37
+#line 38
 	string_t E_me__E_text_(const string_t& world) const override;
-#line 39
+#line 40
 	static string_t hi_E_Hello_(const std::shared_ptr<Hello>& other);
-#line 41
+#line 42
 	virtual string_t stream_out_E_me__() const;
-#line 43
+#line 44
 	string_t ls_E_me__E_text_(const string_t& world) const override;
-private:
-	int32_t age = {};
-public:
-	int32_t age_get() const override;
 private:
 	Data data = {};
 public:
 	virtual Hello::Data data_get() const;
 	virtual const Hello::Data& data_set(const Hello::Data& value);
 private:
-	Greet greet = {};
+	string_t address = {};
 public:
-	Greetable::Greet greet_get() const override;
-	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
+	virtual string_t address_get() const;
+	virtual const string_t& address_set(const string_t& value);
 private:
 	string_t name = {};
 public:
 	virtual string_t name_get() const;
 	virtual const string_t& name_set(const string_t& value);
-private:
-	string_t address = {};
-public:
-	virtual string_t address_get() const;
-	virtual const string_t& address_set(const string_t& value);
 };
 

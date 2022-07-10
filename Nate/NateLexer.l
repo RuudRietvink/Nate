@@ -55,18 +55,20 @@ public:
 		}
 		else
 		{
-			FILE* fd;
-			fopen_s(&fd, aFile.c_str(), "r");
-			if (!fd)
-			{
-				std::cerr << "Include file not found: " << aFile << std::endl;
-			}
-			else
-			{
+      std::ifstream inFile(aFile);
+      if (inFile.good())
+      {
+        std::string str{std::istreambuf_iterator<char>(inFile),
+                        std::istreambuf_iterator<char>()};
+        std::istringstream* inStream = new std::istringstream(str);
 				++depth;
 				pushFile(aFile);
-				push_matcher(new_matcher(fd));  // push current matcher, use new matcher
-			}
+				push_matcher(new_matcher(*inStream));  // push current matcher, use new matcher
+      }
+			else
+			{
+				std::cerr << "Include file not found: " << aFile << std::endl;
+      }
 		}
 	}
 
@@ -86,7 +88,8 @@ public:
       {
         std::cerr << "End of file: " << currentFile() << std::endl;
       }
-			fclose(in());                   // close current input in() (a FILE*)
+
+      delete in().istream();          // close current input in() (a istream*)
 			pop_matcher();                  // delete current matcher, pop matcher
 			popFile();
 			--depth;
@@ -292,6 +295,7 @@ string          ["][^"]*[""]
 \h*"/*"\k?     s();
                if (commentNested == 0) pushState(COMMENT);
                ++commentNested;                  // allow nesting /*-comments
+
 }
 
 <*,^COMMENT,^ARGS,^MATH>{

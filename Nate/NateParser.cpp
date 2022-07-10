@@ -934,13 +934,18 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::par
 				auto const& propId = propMethod.first;
 				if (curObject()->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Unknown)
 				{
-					checkIdentifierName(propId->name());
-					IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
-					id->setFlags(propId->getFlags());
-					addIdentifier(id);
+					IdentifierPtr id = getIdentifier(propId->name(), curIdentifiersHolder().get());
+					if (!id || !id->is(Identifier::Property))
+					{
+						checkIdentifierName(propId->name());
+						id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
+						id->setFlags(propId->getFlags());
+						addIdentifier(id);
+					}
 				  curObject()->addProp(id, aLocation, mLexer->currentFile());
 				}
 			}
+			addUndeclaredProperties(base, aLocation);
 		}
 	}
 }
@@ -969,6 +974,8 @@ void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser
 						}
 					}
 				}
+				
+				addUndeclaredDefines(base, aLocation);
 			}
 		}
 	}
@@ -1147,7 +1154,7 @@ void NateParser::deleteCurDefine()
 	curDefinesHolder()->defines().get().pop_back();
 }
 
-void NateParser::doStartDefine(bool aIsDecl,
+void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 										           const yy::parser::location_type& aLocation)
 {
 	curDefine()->endDecl();
@@ -1272,9 +1279,9 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 	  error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
-	if (aIdentifier->is(Identifier::ReadOnly && aPropType != Object::PropType::Get))
+	if (aIdentifier->is(Identifier::ReadOnly) && aPropType != Object::PropType::Get)
 	{
-		error("Defined " + method + " method for readonly property");
+		error("Defined " + method + " method for readonly property: " + aIdentifier->name());
 	}
 
 	Object::PropState propState = curObject()->getPropState(aIdentifier, aPropType);
@@ -2166,10 +2173,10 @@ void NateParser::checkIdentifierName(const std::string& aName)
 		{
 			error("reserved name: " + aName);
 		}
-		else
+		/*else
 		{
 			warning("hides declaration of: " + aName);
-		}
+		}*/
 	}
 }
 

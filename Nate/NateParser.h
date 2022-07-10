@@ -128,7 +128,7 @@ public:
 
 	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);
 	void doEndRecord(const yy::parser::location_type& aLocation);
-	void doStartDefine(bool aIsDecl,
+	void doStartDefine(bool aIsDecl, bool aIsImpl,
 										 const yy::parser::location_type& aLocation);
 	void doEndDefine(const yy::parser::location_type& aLocation);
   void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);

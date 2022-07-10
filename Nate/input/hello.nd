@@ -7,7 +7,7 @@ role Greetable:
 
   property greet is Greet
   
-  define ls ${me is Greetable} ${world is text} is text
+  declare ls ${me is Greetable} ${world is text} is text
 
 declare object Hi as Greetable:
   record Datum:
@@ -16,28 +16,29 @@ declare object Hi as Greetable:
 
   property age is int as readonly
   property datum is Datum
+  property test is int
 
-  define new Hi2 is Hi
+  declare new Hi2 is Hi
 
-  define ${me is Hi} ${world is text} is text
+  declare ${me is Hi} ${world is text} is text
 
-declare object Hello is Hi as Greetable:
+declare object Hello is Hi:
   record Data:
     var greet is text
     var count is int
 
   property name,address is text
-  property age is int as readonly, final
+  //property age is int as readonly, final
   property data is Data
 
-  define new Hello is Hello
+  declare new Hello is Hello
 
-  define ${me as out} greeted is Hello
+  declare ${me as out} greeted is Hello
 
-  define ${me} ${world is text} is text as final
+  declare ${me} ${world is text} is text as final
 
-  define hi ${other is Hello} is text
+  declare hi ${other is Hello} is text
   
-  define stream-out ${me} is text
+  declare stream-out ${me} is text
   
-  define ls ${me} ${world is text} is text
+  declare ls ${me} ${world is text} is text
