@@ -176,7 +176,12 @@ Record* Method::getOwner(const ExprNodesCIter& aNodeIter) const
 	if (mOwnerArg != args().cend())
 	{
 		auto ownerIter = getOwnerNode(aNodeIter);
-		owner = dynamic_cast<Record*>(ownerIter->type().get());
+		auto type = ownerIter->type().get();
+		owner = dynamic_cast<Object*>(type);
+		if (owner == nullptr)
+		{
+			owner = dynamic_cast<Record*>(type);
+		}
 	}
 
 	return owner;
@@ -211,10 +216,16 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, i
 		if (arg.is(Arg::Member))
 		{
 			Record* owner = getOwner(aBegin);
-			if (owner == nullptr || !owner->identifiers().get(nodeIter->text()))
+			if (owner == nullptr || !owner->getIdentifier(nodeIter->text()))
 			{
-				if (aDebug >= 3) if (owner == nullptr) std::cerr << "No owner" << std::endl;
-				if (aDebug >= 3) std::cerr << "Field is not member of owner: " << nodeIter->text() << std::endl;
+				if (owner == nullptr) 
+				{
+					if (aDebug >= 3) std::cerr << "No owner of " << nodeIter->text() << std::endl;
+				}
+				else
+				{
+					if (aDebug >= 3) std::cerr << "Field is not member of owner: " << owner->name() << ":" << nodeIter->text() << std::endl;
+				}
 				return false;
 			}
 		}
@@ -263,7 +274,7 @@ void Method::getTypes(
 
 			if (arg.is(Arg::Member) && aOwner != nullptr)
 			{
-				auto identifier = aOwner->identifiers().get(nodeIter->text());
+				auto identifier = aOwner->getIdentifier(nodeIter->text());
 				if (identifier)
 				{
 					nodeType = identifier->type();
@@ -296,10 +307,10 @@ void Method::handleOwnerMember(
 					std::string& aNodeCode,
 					TypePtr& aNodeType) const
 {
-	auto identifier = aOwner->identifiers().get(aNodeIter->text());
+	auto identifier = aOwner->getIdentifier(aNodeIter->text());
 	if (identifier)
 	{
-		if (identifier->is(Identifier::Property))
+		if (identifier->isProperty())
 		{
 			aNodeCode = identifier->codeName() + "_get()";
 		}
@@ -311,7 +322,7 @@ void Method::handleOwnerMember(
 		aNodeType = identifier->type();
 					
 		aResult.flags[Expr::Output] = true;
-		if (aOwnerNode->is(Expr::Property) && !identifier->is(Identifier::Property))
+		if (aOwnerNode->is(Expr::Property) && !identifier->isProperty())
 		{
 			aResult.flags[Expr::ConstExpr] = true;
 		}
@@ -320,7 +331,7 @@ void Method::handleOwnerMember(
 		{
 			aResult.flags[Expr::ConstExpr] = true;
 		}
-		if (identifier->is(Identifier::Property))
+		if (identifier->isProperty())
 		{
 			aResult.flags[Expr::Property] = true;
 		}
@@ -686,7 +697,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 						error << "No object/record specified for member: " << nodeIter->text();
 						result.matches = false;
 					}
-					else if (!owner->identifiers().get(nodeIter->text()))
+					else if (!owner->getIdentifier(nodeIter->text()))
 					{
 						error << "Not a member of '" << owner->name() << "': " << nodeIter->text();
 						result.matches = false;

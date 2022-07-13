@@ -13,55 +13,41 @@ implement object Local:
     return "Local " + world + localVar
     
 implement object Hi:
-  property age:
+  /*property age:
     get:
-      return age
+      return age*/
      
-  property greet:
+  property prop-hi:
     set:
-      greet := value
-      return greet
+      prop-hi := value
+      return prop-hi
 
   define yo is text:
     return "Hi"
 
-  define ls ${me} ${world is text} is text:
+  define ls ${me as out} ${world is text} is text:
+    me's prop-hi := -3 + (me's prop-hi)
     return "ls " + yo
 
   implement new Hi2 is Hi:
     return constructed object
     
   implement ${me is Hi} ${world is text} is text:
-    return yo + " " + age + " " + $world
+    return yo + " " + prop-hi + " " + $world
     
 
 implement object Hello:
   var myVar := "Hi There"
   var myBool := false
   var myData is Data
-
-  property name:
+    
+  property prop-hello:
     get:
-      var hi := 3
-      return name + myVar
+      return prop-hello
     set:
-      var hi := 5
-      var temp := name + value + address + hi
-      name := temp
-      if myBool:
-        name := name + myData's greet
-      return name
-  
-  property address:
-    get:
-      return address
-    set:
-      return address
+      prop-hello := value + "hi"
+      return prop-hello
 
-  property greet:
-    set:
-      greet := value
-      return greet
 
   implement new Hello is Hello:
     return constructed object
@@ -79,23 +65,23 @@ implement object Hello:
     var other := new Hello
     return "Hello " + hi other
 
-  implement ls ${me is Hello} ${world is text} is text:
+  implement ls ${me is Hello as out} ${world is text} is text:
     myVar := "const" 
-    me's name := "hi"
-    test := 3
-    greet := greet
+    prop-hello := "hi"
+    prop-hi := 3
+    me's prop-hi := me's prop-hi
     return "ls " + me greetings
   
   implement ${me is Hello} ${world is text} is text:
     return greetings + " " + $world
 
   implement ${me is Hello as out} greeted is Hello:
-    myData's greet := me greetings
+    //myData's greet := me greetings
     var other := me
+    myVar := "earth" 
     return me
     
   implement hi ${other is Hello} is text:
-    myVar := "earth" 
     return other " earth"
    
   implement stream-out ${me is Hello} is text:

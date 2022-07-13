@@ -31,7 +31,7 @@ IdentifierPtr Object::getIdentifier(const std::string& aName)
 			result = (*base)->getIdentifier(aName);
 		}
 	}
-
+	
 	return result;
 }
 

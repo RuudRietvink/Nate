@@ -58,6 +58,7 @@ Expr    		      		Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
 std::weak_ptr<IIdentifiersHolder>	Identifier::identifiersHolder() const { return mIdentifiersHolder; }
 bool					 		    Identifier::isObjectMe()const { return isNameMe(mName); }
+bool					 		    Identifier::isProperty()const { return is(Property); }
 
 std::ostream& operator<<(std::ostream& aStream, const Identifier& aValue)
 {

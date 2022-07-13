@@ -233,6 +233,7 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 		}
 		else if (!expr.is(Expr::Output))
 		{
+			std::cerr << expr << std::endl;
 			error("Cannot assign to a non-variable");
 		}
 
@@ -935,7 +936,7 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::par
 				if (curObject()->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Unknown)
 				{
 					IdentifierPtr id = getIdentifier(propId->name(), curIdentifiersHolder().get());
-					if (!id || !id->is(Identifier::Property))
+					if (!id || !id->isProperty())
 					{
 						checkIdentifierName(propId->name());
 						id = std::make_shared<Identifier>(curIdentifiersHolder(), propId->name(), propId->type());
@@ -1291,13 +1292,10 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 	addDefine(true);
 	curDefine()->setType(aIdentifier->type());
 	mDefineDecl = false;
-	bool getter = false;
-	if (aPropType == Object::PropType::Get)
+	bool getter = true;
+	if (aPropType != Object::PropType::Get)
 	{
-		getter = true;
-	}
-	else
-	{
+		getter = false;
 		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
 		addIdentifier(value);
 	}
@@ -1309,7 +1307,7 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 }
 
 void NateParser::doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-															 const yy::parser::location_type& aLocation)
+													 const yy::parser::location_type& aLocation)
 {
 	doEndDefine(aLocation);
 	deleteCurDefine();
@@ -1965,6 +1963,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 
 	if (result.nodes().size() != 1 || result.is(Expr::Word))
 	{
+		std::cerr << result << std::endl;
 		error("Bad expression: " + result.text());
 		return Expr("1", getType("int-32"));
 	}

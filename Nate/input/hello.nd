@@ -5,18 +5,19 @@ role Greetable:
     var greeting is text
     var count is int
 
-  property greet is Greet
+  //property greet is Greet
+  property prop-greetable is int
   
-  declare ls ${me is Greetable} ${world is text} is text
+  declare ls ${me is Greetable as out} ${world is text} is text
 
 declare object Hi as Greetable:
   record Datum:
     var fun is text
     var count is int
 
-  property age is int as readonly
-  property datum is Datum
-  property test is int
+  //property age is int as readonly
+  //property datum is Datum
+  property prop-hi is int
 
   declare new Hi2 is Hi
 
@@ -27,9 +28,9 @@ declare object Hello is Hi:
     var greet is text
     var count is int
 
-  property name,address is text
+  //property name,address is text
   //property age is int as readonly, final
-  property data is Data
+  property prop-hello is text
 
   declare new Hello is Hello
 
@@ -41,4 +42,4 @@ declare object Hello is Hi:
   
   declare stream-out ${me} is text
   
-  declare ls ${me} ${world is text} is text
+  declare ls ${me as out} ${world is text} is text

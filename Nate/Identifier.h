@@ -30,6 +30,7 @@ public:
 	TypePtr														type()							const;
 	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
 	bool															isObjectMe()				const;
+	bool															isProperty()				const;
 	static bool					   						isNameMe(const std::string& aName);
 	static std::string     						nameMe();
 	
