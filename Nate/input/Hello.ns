@@ -13,9 +13,9 @@ implement object Local:
     return "Local " + world + localVar
     
 implement object Hi:
-  /*property age:
+  property age:
     get:
-      return age*/
+      return age
      
   property prop-hi:
     set:
@@ -26,7 +26,7 @@ implement object Hi:
     return "Hi"
 
   define ls ${me as out} ${world is text} is text:
-    me's prop-hi := -3 + (me's prop-hi)
+    prop-hi := -3 + prop-hi
     return "ls " + yo
 
   implement new Hi2 is Hi:
@@ -56,27 +56,26 @@ implement object Hello:
     var hi := 34
     if myBool:
       output "Test", myVar, myData's greet, new Local " world"
-    return /*me's age + age*/ + hi
+    return me's age + hi
     
   define greetings is text:
     return "Hello"
     
   define ${me is Hello} greetings is text:
     var other := new Hello
-    return "Hello " + hi other
+    return "Hello " + hi other + me's datum's count
 
   implement ls ${me is Hello as out} ${world is text} is text:
     myVar := "const" 
     prop-hello := "hi"
-    prop-hi := 3
-    me's prop-hi := me's prop-hi
+    me's prop-hi := me's prop-hi + 3
     return "ls " + me greetings
   
   implement ${me is Hello} ${world is text} is text:
     return greetings + " " + $world
 
   implement ${me is Hello as out} greeted is Hello:
-    //myData's greet := me greetings
+    myData's greet := me greetings
     var other := me
     myVar := "earth" 
     return me

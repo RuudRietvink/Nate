@@ -5,7 +5,7 @@ role Greetable:
     var greeting is text
     var count is int
 
-  //property greet is Greet
+  property greet is Greet
   property prop-greetable is int
   
   declare ls ${me is Greetable as out} ${world is text} is text
@@ -15,8 +15,8 @@ declare object Hi as Greetable:
     var fun is text
     var count is int
 
-  //property age is int as readonly
-  //property datum is Datum
+  property age is int as readonly
+  property datum is Datum
   property prop-hi is int
 
   declare new Hi2 is Hi
@@ -28,7 +28,7 @@ declare object Hello is Hi:
     var greet is text
     var count is int
 
-  //property name,address is text
+  property name,address is text
   //property age is int as readonly, final
   property prop-hello is text
 

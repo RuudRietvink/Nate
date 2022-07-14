@@ -236,6 +236,14 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 			std::cerr << expr << std::endl;
 			error("Cannot assign to a non-variable");
 		}
+		else if (expr.is(Identifier::Property) && expr.nodes().size() == 1)
+		{
+			std::ostringstream errorStr;
+			if (!checkProperty(errorStr, expr.nodes().begin()))
+			{
+				error(errorStr.str());
+			}
+		}
 
 		const TypePtr& exprType = expr.type();
 		bool ok = copy.castToType(exprType);
@@ -1052,7 +1060,7 @@ void NateParser::addObjectRole(ObjectPtr& aCurObject, const ObjectPtr& aObject)
 	aCurObject->addBase(aObject);
 }
 
-ObjectPtr NateParser::curObject()
+ObjectPtr NateParser::curObject() const
 {
 	return mCurObject;
 }
@@ -1558,6 +1566,30 @@ IdentifierPtr NateParser::getOrFakeIdentifier(const std::string& aName, IIdentif
 	return result;
 }
 
+bool NateParser::checkProperty(std::ostringstream& error, const ExprNodesCIter& nodeIter) const
+{
+	bool ok = true;
+
+	if (nodeIter->is(Expr::Property))
+	{
+		auto id = nodeIter->id();
+		if (id)
+		{
+			IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
+			if (holder)
+			{
+				if (holder != curObject())
+				{
+					error << "Use me's reference when using base object property: " << id->name();
+					ok = false;
+				}
+			}
+		}
+	}
+	
+	return ok;
+}
+
 IdentifierPtr NateParser::getImplObjectPropertyIdentifier(const std::string& aName, 
 																													const TypePtr& optType,
 																												  const std::vector<std::string>& flags,
@@ -1733,7 +1765,7 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
          ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
 				  (!aLeftToRight && aStartIter >= aMatch.nodeStartIter))))))
 	{
-		Method::MatchResult matchResult = aMethod->checkArgTypes(aStartIter, aEndIter, aDebug);
+		Method::MatchResult matchResult = aMethod->checkArgTypes(*this, aStartIter, aEndIter, aDebug);
 		
 		if (matchResult.matches)
 		{
@@ -1945,11 +1977,11 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 		}
 		else
 		{
-			if (!match.matchedMethod)
+			//if (!match.matchedMethod)
 			{
 				if (!match.matchResult.error.empty())
 				{
-					error("Bad argument types for code: " + match.matchedMethod->signature() + ": " + 
+					error(result.text() + ": " + 
 								match.matchResult.error);
 				}
 			}
@@ -1959,12 +1991,21 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 	if (aExpr.nodes().size() == 1)
 	{
 		result = Expr(aExpr.nodes().front());
+		std::ostringstream errorStr;
+		if (!checkProperty(errorStr, aExpr.nodes().begin()))
+		{
+			error(errorStr.str());
+		}
 	}
 
 	if (result.nodes().size() != 1 || result.is(Expr::Word))
 	{
-		std::cerr << result << std::endl;
-		error("Bad expression: " + result.text());
+		if (match.matchResult.error.empty())
+		{
+			std::cerr << result << std::endl;
+			error("Bad expression: " + result.text());
+		}
+
 		return Expr("1", getType("int-32"));
 	}
 

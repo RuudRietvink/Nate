@@ -6,6 +6,7 @@
 #include "Record.h"
 #include "NateFunctions.h"
 #include "core/Core.h"
+#include "NateParser.h"
 
 #include <reflex/matcher.h>
 #include <iostream>
@@ -170,18 +171,25 @@ ExprNodesCIter Method::getOwnerNode(const ExprNodesCIter& aNodeIter) const
 	return ownerIter;
 }
 
+Record* Method::getOwnerType(const Type* type) const
+{
+	auto tempType = const_cast<Type*>(type);
+	Record* owner = dynamic_cast<Object*>(tempType);
+	if (owner == nullptr)
+	{
+		owner = dynamic_cast<Record*>(tempType);
+	}
+
+	return owner;
+}
+
 Record* Method::getOwner(const ExprNodesCIter& aNodeIter) const
 {
 	Record* owner = nullptr;
 	if (mOwnerArg != args().cend())
 	{
 		auto ownerIter = getOwnerNode(aNodeIter);
-		auto type = ownerIter->type().get();
-		owner = dynamic_cast<Object*>(type);
-		if (owner == nullptr)
-		{
-			owner = dynamic_cast<Record*>(type);
-		}
+		owner = getOwnerType(ownerIter->type().get());
 	}
 
 	return owner;
@@ -593,7 +601,7 @@ const std::string& Method::pattern() const
 }
 
 Method::MatchResult 
-Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
+Method::checkArgTypes(NateParser& parser, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
 {
 	MatchResult result;
 	TypePtr firstType;
@@ -618,7 +626,7 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 				}
 				else
 				{
-					owner = dynamic_cast<Record*>(nodeType.get());
+					owner = getOwnerType(nodeType.get());
 					if (owner == nullptr)
 					{
 						error << "Not a object/record: " << nodeType->name();
@@ -754,6 +762,17 @@ Method::checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, 
 					}
 
 					result.matches = false;
+				}
+
+				if (result.matches)
+				{
+					if (!arg->is(Arg::Member))
+					{
+						if (!parser.checkProperty(error, nodeIter))
+						{
+							result.matches = false;
+						}
+					}
 				}
 
 				if (comp == Type::CompareResult::RequiresCast)

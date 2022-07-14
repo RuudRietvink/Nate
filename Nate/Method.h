@@ -14,6 +14,7 @@ class Identifier;
 class Record;
 class Object;
 class Define;
+class NateParser;
 typedef std::shared_ptr<Define> DefinePtr;
 typedef std::shared_ptr<Object> ObjectPtr;
 
@@ -43,7 +44,7 @@ public:
 	};
 
 	virtual bool matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
-	virtual MatchResult checkArgTypes(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
+	virtual MatchResult checkArgTypes(NateParser& parser, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
 	virtual EvaluateResult createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug = 0) const;
 	virtual void addArgWord(const std::string& aWord);
 	virtual void addArgId(const IdentifierPtr& aId);
@@ -64,6 +65,7 @@ public:
 	const std::string&  signature() const;
 	ExprNodesCIter      getOwnerNode(const ExprNodesCIter& aNodeIter) const;
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
+	Record*             getOwnerType(const Type* type) const;
 	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
 	bool						    isStatic() const;
 	bool						    isObjectMethod() const;

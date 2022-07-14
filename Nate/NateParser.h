@@ -169,6 +169,7 @@ public:
 	bool isType(const std::string& aName);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
+  bool checkProperty(std::ostringstream& error, const ExprNodesCIter& nodeIter) const;
 	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	IdentifierPtr getImplObjectPropertyIdentifier(const std::string& aName, const TypePtr& optType,
@@ -185,7 +186,7 @@ public:
 	void addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser::location_type& aLocation);
 	void endImplementObject();
 	void startObject(const ObjectPtr& aObject);
-	ObjectPtr curObject();
+	ObjectPtr curObject() const;
 	void checkObject(const ObjectPtr& aObject);
 	void setCurObject(const ObjectPtr& aObject);
 	ObjectPtr getObject(const std::string& aId);

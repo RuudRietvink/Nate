@@ -26,6 +26,9 @@ public:
 public:
 	virtual int32_t prop_greetable_get() const = 0;
 	virtual const int32_t prop_greetable_set(const int32_t value) = 0;
+public:
+	virtual Greetable::Greet greet_get() const = 0;
+	virtual const Greetable::Greet& greet_set(const Greetable::Greet& value) = 0;
 };
 
 #line 13
@@ -62,6 +65,20 @@ private:
 public:
 	int32_t prop_greetable_get() const override;
 	const int32_t prop_greetable_set(const int32_t value) override;
+private:
+	Greet greet = {};
+public:
+	Greetable::Greet greet_get() const override;
+	const Greetable::Greet& greet_set(const Greetable::Greet& value) override;
+private:
+	int32_t age = {};
+public:
+	virtual int32_t age_get() const;
+private:
+	Datum datum = {};
+public:
+	virtual Hi::Datum datum_get() const;
+	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
 private:
 	int32_t prop_hi = {};
 public:
@@ -109,5 +126,15 @@ private:
 public:
 	virtual string_t prop_hello_get() const;
 	virtual const string_t& prop_hello_set(const string_t& value);
+private:
+	string_t address = {};
+public:
+	virtual string_t address_get() const;
+	virtual const string_t& address_set(const string_t& value);
+private:
+	string_t name = {};
+public:
+	virtual string_t name_get() const;
+	virtual const string_t& name_set(const string_t& value);
 };
 
