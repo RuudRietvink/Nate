@@ -116,7 +116,6 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
 	addType(std::make_shared<Type>("input", getType("object")));
-	addType(std::make_shared<Type>("file-input", getType("input")));
 	addType(std::make_shared<Type>("data-input", getType("input")));
 }
 
@@ -161,7 +160,7 @@ int NateParser::parse()
 	{	
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("Input")));
 	}
 
 	if (mFileType != FileType::ObjectDecl)
@@ -514,7 +513,7 @@ void NateParser::doRead(const Expr& aValue, const yy::parser::location_type& aLo
 			error("Need to specify where to read from");
 		}
 	}
-	else if (aValue.type()->isOfType("input"))
+	else if (aValue.type()->isOfType("Input"))
 	{
 		if (!reader)
 		{
@@ -740,10 +739,11 @@ void NateParser::import(const std::string& aName)
 		mImports.insert(aName);
 
 		std::string library = mLibrary;
-		std::string path = library + Core::directorySeperator() + aName + ".ns";
-		if (Core::exists(path))
+		std::string nsPath = library + Core::directorySeperator() + aName + ".ns";
+		std::string ndPath = library + Core::directorySeperator() + aName + ".nd";
+		if (Core::exists(nsPath) && !Core::exists(ndPath))
 		{
-			mLexer->includeFile(path);
+			mLexer->includeFile(nsPath);
 		}
 		else
 		{
@@ -1100,48 +1100,64 @@ CodePtr NateParser::getCode(const CodePtr& aCode)
 	return iter != mCodes.cend() ? *iter : CodePtr();
 }
 
-void NateParser::startMath(const yy::parser::location_type& aLocation)
+void NateParser::startInbrackets(const yy::parser::location_type& aLocation, const std::string& type)
 {
 	mMathStart = aLocation;
+	mInBracketsType = type;
 	mMath = NateParserMath::Math();
 	mMath.x = 0;
 	mMath.y = aLocation.begin.line;
-}
-
-void NateParser::endMath()
-{
-	std::string code = mMathParser->doMath(mMath);
-	std::cerr << code << std::endl;
-	mLexer->unputString(code);
-}
-
-void NateParser::addMathStatWord(const std::string& aWord,
-											           const yy::parser::location_type& aLocation)
-{
-	if (aWord == "\n")
+	data.inBracketsCode.clear();
+	if (type != "code" && type != "math")
 	{
-		mMathStart.begin.column = 0;
+		error("Unknown {{ type: " + type);
+	}
+}
+
+void NateParser::endInbrackets()
+{
+	if (mInBracketsType == "math")
+	{
+		std::string code = mMathParser->doMath(mMath);
+		std::cerr << code << std::endl;
+		mLexer->unputString(code);
+	}
+}
+
+void NateParser::addInbracketsStatWord(const std::string& aWord,
+											                 const yy::parser::location_type& aLocation)
+{
+	if (mInBracketsType == "math")
+	{
+		if (aWord == "\n")
+		{
+			mMathStart.begin.column = 0;
+		}
+		else
+		{
+			int y = aLocation.begin.line - mMathStart.begin.line;
+			int x = aLocation.begin.column - mMathStart.begin.column;
+			while (y >= mMath.matrix.size())
+			{
+				mMath.matrix.push_back(NateParserMath::MathVector());
+			}
+
+			while (x >= 0 && x >= mMath.matrix[y].size())
+			{
+				mMath.matrix[y].push_back(32);
+			}
+
+			std::string::const_iterator iter = aWord.begin();
+			while (iter != aWord.end())
+			{
+				uint32_t kar = utf8::next(iter, aWord.end());
+				mMath.matrix[y].push_back(kar);
+			}
+		}
 	}
 	else
 	{
-		int y = aLocation.begin.line - mMathStart.begin.line;
-		int x = aLocation.begin.column - mMathStart.begin.column;
-		while (y >= mMath.matrix.size())
-		{
-			mMath.matrix.push_back(NateParserMath::MathVector());
-		}
-
-		while (x >= 0 && x >= mMath.matrix[y].size())
-		{
-			mMath.matrix[y].push_back(32);
-		}
-
-		std::string::const_iterator iter = aWord.begin();
-		while (iter != aWord.end())
-		{
-			uint32_t kar = utf8::next(iter, aWord.end());
-			mMath.matrix[y].push_back(kar);
-		}
+		data.inBracketsCode += aWord;
 	}
 }
 

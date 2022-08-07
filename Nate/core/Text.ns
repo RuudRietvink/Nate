@@ -3,10 +3,6 @@
 // Text
 ///////////////////////////////////////////////
 
-code:
-  #include <string>
-  typedef std::string string_t;
-
 code define 150 \u uppercased ${val is text} is text:
   Core::upperCased($val)
   

@@ -18,7 +18,14 @@ Type::Type(const std::string& aName, const TypePtr& aBaseType)
 
 void Type::setType(const std::string& aName)
 {
-	if (aName == "any")
+	if (aName.size() > 2 && aName.substr(0, 2) == "{{")
+	{
+		setFlag(Abstract, false);
+		setFlag(NeedsRef, true);
+		mName = mCodeType = aName.substr(2);
+		mIsCodeVar = true;
+	}
+	else if (aName == "any")
 	{
 		setFlag(Abstract, true);
 		setFlag(Any, true);
@@ -175,12 +182,12 @@ void Type::setType(const std::string& aName)
 		setFlag(NeedsRef, true);
 		mCodeType = "std::istream";
 	}
-	else if (aName == "file-input")
-	{
-		setFlag(Abstract, false);
-		setFlag(NeedsRef, true);
-		mCodeType = "std::ifstream";
-	}
+	//else if (aName == "file-input")
+	//{
+	//	setFlag(Abstract, false);
+	//	setFlag(NeedsRef, true);
+	//	mCodeType = "std::ifstream";
+	//}
 	else if (aName == "data-input")
 	{
 		setFlag(Abstract, false);
@@ -293,6 +300,7 @@ const TypePtr&		 Type::baseType()  const { return mBaseType; }
 void Type::setTypenameType(const TypePtr& aTypenameType) { mTypenameType = aTypenameType; }
 void Type::setCodeType(const std::string& aCodeType) { mCodeType = aCodeType; }
 
+bool Type::isCodeVar() const { return mIsCodeVar; }
 
 std::string Type::codeType() const
 { 
@@ -320,7 +328,6 @@ std::string Type::codeType() const
 			result = mTypenameType->codeType();
 		}
 	}
-	
 
 	return result;
 }

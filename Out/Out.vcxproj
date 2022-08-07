@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="..\Nate\core\Core.cpp" />
     <ClCompile Include="..\Nate\core\created\BaseObject.cpp" />
+    <ClCompile Include="..\Nate\core\created\File-Input.cpp" />
     <ClCompile Include="..\Nate\core\Rational.cpp" />
     <ClCompile Include="..\Nate\input\created\Hello.cpp" />
     <ClCompile Include="Out.cpp" />

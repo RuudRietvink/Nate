@@ -1,0 +1,152 @@
+
+import Text
+import Math
+
+record Product:
+  var name is text
+  var price is int-32
+
+record Inventory:
+  var product is Product
+  var count is int-32
+  
+var beer is Product
+
+role ShopRole:    
+  property name is text as readonly
+
+  define ${me} sells ${product is Product} is boolean
+  define ${me}'s inventory of ${product is Product} is Inventory as ref
+  define buy ${count is int-32} of ${product is Product} from ${me as inout} is int-32
+
+implement object Grocer as ShopRole:
+  var shopName is text
+  var tomatoes is Product
+  var inventory is Inventory
+
+  define new Grocer named ${name is text} is Grocer:
+    var result is Grocer
+    construct result
+    initialize result
+    result's shopName := name
+    return result
+     
+  define initialize ${me as inout}:
+    tomatoes's name := "tomatoes"
+    inventory's product := tomatoes
+    inventory's count := 42
+
+  property name:
+    get:
+      return shopName
+
+  define ${me} sells ${product is Product} is boolean:
+    return name of product = tomatoes's name
+
+  define ${me}'s inventory of ${product is Product} is Inventory as ref:
+    return inventory
+
+  define buy ${count is int-32} of ${product is Product} from ${me as inout} is int-32:
+    return 0
+  
+implement object LiqourStore as ShopRole:
+  var shopName is text
+  var beer-product is Product
+  var inventory is Inventory
+
+  define new LiqourStore named ${name is text} is LiqourStore:
+    var result is LiqourStore
+    construct result
+    initialize result
+    result's shopName := name
+    return result
+     
+  define initialize ${me as inout}:
+    beer-product's name := "beer"
+    inventory's product := beer-product
+    inventory's count := 116
+
+  property name:
+    get:
+      return shopName
+
+  define ${me} sells ${product is Product} is boolean:
+    return name of product = beer-product's name
+
+  define ${me}'s inventory of ${product is Product} is Inventory as ref:
+    return inventory
+
+  define buy ${count is int-32} of ${product is Product} from ${me as inout} is int-32:
+    var sales := inventory's count min count
+    inventory's count := inventory's count - sales
+    return sales
+  
+
+implement object Bottles-Song:
+  var shop is ShopRole
+  
+  define new Bottles-Song for ${shop is ShopRole} is Bottles-Song:
+    var result is Bottles-Song
+    construct result
+    result's shop := shop
+    return result
+
+  define ${bottles is int} in the ${store is ShopRole} or on wall is boolean:
+    return store's inventory of beer's count + bottles > 0  
+    
+  define count ${bottles is int} is text:
+    return "no more" if bottles = 0 else bottles@"W:2,A:>"
+    
+  define describe ${bottles is int} is text:
+    return "bottle" if bottles = 1 else "bottles"
+
+  define list ${bottles is int} is text:
+    return count bottles + " " + describe bottles + " of beer"
+    
+  define ${$bottles is text} on the wall is text:
+    return bottles + " on the wall"
+    
+  define start sentence with ${text is text} is text:
+    return uppercased first of text + rest of text
+
+  define ${bottles is int} of beer on the wall is boolean:
+    output start sentence with list bottles on the wall & ",", list bottles & "."
+    return bottles > 0
+
+  define take one of the ${bottles is int-32 as inout} down and pass it around:
+    decrease bottles
+    output "Take one down and pass it around,", list bottles on the wall & "."
+    
+  define go to the ${store is ShopRole as inout} and buy some ${bottles is int as out}:
+    bottles := buy (store's inventory of beer's count min 99) of beer from store
+
+  define go to the ${store is ShopRole as inout} and buy some more ${bottles is int as out}:
+    go to the store and buy some bottles
+    constant some := "buy some" if bottles > 0 else "find no"
+    output "Go to the", store's name, "and", some, "more,", list bottles on the wall & "."
+  
+  define sing ${me as inout}:
+    var bottles is int-32 := 15
+
+    if shop sells beer:    
+      loop while bottles in the shop or on wall:
+        loop while bottles of beer on the wall:
+          take one of the bottles down and pass it around
+        go to the shop and buy some more bottles
+    else:
+      output shop's name, "doesn't sell", beer's name
+
+program:
+  var shop is ShopRole := new Grocer named "Grover's Grocer"
+  var song := new Bottles-Song for shop
+  name of beer := "beer";
+  
+  sing song
+
+  output
+
+  shop := new LiqourStore named "Gall&Gall"
+  song := new Bottles-Song for shop
+
+  sing song
+  

@@ -4,11 +4,11 @@ import Complex
 import Text
 import List
 import File-Output
-import File-Input
 import Data-input
 import IFile*/
 
 import Math
+import File-Input
 
 import Hello
 
@@ -529,7 +529,7 @@ program:
   */
 
 program:
-  var cnt := 1
+  /*var cnt := 1
   if cnt > 0:                
     output cnt              
   else:
@@ -545,3 +545,10 @@ program:
     error "Oops"
 
   var hello is Hello := new Hello;
+  */
+  
+  var in is File-Input
+  open in from file "d:\\uit"
+  if in is opened:		
+    var s is text
+    read from in: s

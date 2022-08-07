@@ -23,6 +23,9 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{b383cede-c771-4dd7-baff-5f9cb27c014c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Core\created">
+      <UniqueIdentifier>{ed76b20c-983a-4450-9730-6b1ae382f8a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lex.yy.cpp">
@@ -115,9 +118,6 @@
     <ClCompile Include="input\created\Hello.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="core\Created\BaseObject.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="core\Rational.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -168,9 +168,6 @@
     <None Include="input\Hello.ns">
       <Filter>Source Files\Input</Filter>
     </None>
-    <None Include="core\BaseObjects\BaseObject.ns">
-      <Filter>Source Files\Core</Filter>
-    </None>
     <None Include="core\BaseObject.nd">
       <Filter>Source Files\Core</Filter>
     </None>
@@ -199,6 +196,15 @@
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="core\IFile.nd">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\File-Input.nd">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Input.nd">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\BaseObject.ns">
       <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
@@ -269,9 +275,6 @@
     <ClInclude Include="input\created\Hello.h">
       <Filter>Source Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="core\Created\BaseObject.h">
-      <Filter>Source Files\Core</Filter>
-    </ClInclude>
     <ClInclude Include="core\Rational.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
@@ -282,6 +285,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="NateCode.h" />
+    <ClInclude Include="core\created\BaseObject.h">
+      <Filter>Source Files\Core\created</Filter>
+    </ClInclude>
+    <ClInclude Include="core\created\Input.h">
+      <Filter>Source Files\Core\created</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="NateLexer.l" />

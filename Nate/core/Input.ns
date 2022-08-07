@@ -3,5 +3,9 @@
 // Input
 ///////////////////////////////////////////////
   
-code define 65 \u ${stream is input} \is ok is boolean:
-  ($stream && $stream->good())
+implement object Input:
+
+  implement ${me} \is ok is boolean:
+    return {{code
+      $stream && $stream->good()) 
+    }} is boolean

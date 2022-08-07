@@ -3,17 +3,30 @@
 // File-Input
 ///////////////////////////////////////////////
   
-import Input
+import File-Input
 
 code:
   #include <fstream>
-
-code define 65 open \u ${stream is file-input as out} to read from file \u ${file is text},
-               open \u ${stream is file-input as out} for reading from file \u ${file is text}:
-  $stream.reset(new std::ifstream($file, std::ios::in))
   
-code define 65 \u ${stream is input} \is opened is boolean:
-  ($stream && $stream->is_open())
+implement object File-Input:
+  var stream is {{code std::ifstream }}
 
-code define 65 close \u ${stream is file-input as out}:
-  if ($stream) $stream->close()
+  implement ${me} \is opened is boolean:
+    return {{code
+      _impl->$stream.is_open()
+    }} is boolean
+
+  implement ${me} \is ok is boolean:
+    return {{code
+      _impl->$stream.good()
+    }} is boolean
+
+  implement open \u ${me as out} from file \u ${file is text}:
+    {{code
+      _impl->$stream.open($file, std::ios::in)
+    }}
+
+  implement close \u ${me as out}:
+    {{code
+      if (_impl->$stream) _impl->$stream.close()
+    }}

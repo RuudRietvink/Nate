@@ -149,7 +149,7 @@ public:
       "LOOP",
       "DEFINE",
       "CODE",
-      "MATH",
+      "INLINE",
       "ARGS",
       "VAR_DECL",
       "FOR_VAR_DECL",
@@ -236,7 +236,7 @@ public:
 %s DEFINE
 %x INCLUDE_CODE
 %x CODE
-%x MATH
+%x INBRACKETS
 %x ARGS
 %x VAR_DECL
 %x FOR_VAR_DECL
@@ -286,7 +286,7 @@ string          ["][^"]*[""]
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
 <*>{
-<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^MATH>\n  return yy::parser::make_EOS(location());
+<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^INBRACKETS>\n  return yy::parser::make_EOS(location());
 }
 
 // *** comments
@@ -298,7 +298,7 @@ string          ["][^"]*[""]
 
 }
 
-<*,^COMMENT,^ARGS,^MATH>{
+<*,^COMMENT,^ARGS,^INBRACKETS>{
 ^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
 ^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
 \j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
@@ -407,16 +407,18 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 }
 
-<MATH>{
+<INBRACKETS>{
 "}}"          return yy::parser::make_END_SPEC(location());
 [\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
 [^\$\h\n]+	  return yy::parser::make_WORD(str(), location());
+[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            return yy::parser::make_WORD(str(), location());
 }
 
 <DECL_TYPE>{
 \bof\b		    return yy::parser::make_OF(location());
 \bas\b		    return yy::parser::make_AS(location());
+"{{"          return yy::parser::make_START_SPEC(location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
 

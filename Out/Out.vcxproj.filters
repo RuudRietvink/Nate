@@ -23,6 +23,9 @@
     <ClCompile Include="..\Nate\core\Rational.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Nate\core\created\File-Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\Nate\input\created\Hello.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

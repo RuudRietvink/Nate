@@ -18,6 +18,8 @@
 extern std::shared_ptr<std::ostream> output;
 extern std::shared_ptr<std::ostream> error;
 
+typedef std::string string_t;
+
 //////////////////////////
 
 namespace Core

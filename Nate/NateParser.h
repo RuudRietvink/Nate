@@ -53,6 +53,7 @@ public:
 		IdentifierPtr propId;
 		WithFlags* flagsHolder = nullptr;
 		ObjectPtr object;
+		std::string inBracketsCode;
 
 		TreeNodePtr stats;
 	};
@@ -197,10 +198,10 @@ public:
 												 const std::vector<std::string>& flags,
 												 const yy::parser::location_type& aLocation);
 	
-	void startMath(const yy::parser::location_type& aLocation);
-	void endMath();
-	void addMathStatWord(const std::string& aWord,
-											 const yy::parser::location_type& aLocation);
+	void startInbrackets(const yy::parser::location_type& aLocation, const std::string& type);
+	void endInbrackets();
+	void addInbracketsStatWord(const std::string& aWord,
+											       const yy::parser::location_type& aLocation);
 	void addCode();
 	void endCode();
 	CodePtr curCode();
@@ -316,6 +317,7 @@ private:
 	std::string                 mLibrary;
 	std::unique_ptr<MathParser> mMathParser;
 	MathParser::Math            mMath;
+	std::string									mInBracketsType;
 	yy::parser::location_type   mMathStart;
 	yy::parser::location_type   mDummyLocation;
 

@@ -21,6 +21,7 @@ public:
 	bool isBiggerThan(const TypePtr& aType) const;
 	bool empty() const;
 	void setType(const std::string& aType);
+	bool isCodeVar() const;
 	virtual std::ostream& print(std::ostream& aStream) const;
 	virtual bool isOfType(const std::string& aType) const;
 
@@ -78,6 +79,7 @@ private:
 	TypePtr	    mTypenameType;
 	TypePtr	    mBaseType;
 	std::string mTypeScopeName;
+	bool        mIsCodeVar = false;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Type& aValue);

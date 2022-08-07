@@ -110,6 +110,7 @@
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
 %type <std::string>              type-extra;
+%type <std::string>              code-key;
 %type <bool>                     var;
 %type <std::vector<Expr>>        var-init-assign;
 %type <std::vector<Expr>>        var-init-list;
@@ -121,6 +122,7 @@
 %type <Expr>                     definitely-expr;
 %type <Expr>                     inline-expr;
 %type <Expr>                     math-expr;
+%type <Expr>                     code-expr;
 %type <Expr>                     expr-at-end-of-statement;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
@@ -541,18 +543,44 @@ type-flags:
     opt-holder-flag-list
   | AS holder-flag-list
   ;
-  
+
+code-expr:
+    START_SPEC code-key
+      {
+			  nate.startInbrackets(@[code-key], $[code-key]);
+			  lexer.pushState(Lexer::INBRACKETS);
+      }
+		inbrackets-stat-list
+    END_SPEC 
+		  { 
+			  lexer.popState();
+      }
+    optional-is-type
+		  { 
+			  nate.endInbrackets();
+			  $$ = Expr(nate.data.inBracketsCode, nate.data.inBracketsCode, $[optional-is-type]);
+		  }
+  ;
+
+code-key:
+    CODE
+      {
+        $$ = "code";
+      }
+  | WORD
+  ;
+
 math-expr:
     START_SPEC MATH 
       {
-			  nate.startMath(@MATH);
-			  lexer.pushState(Lexer::MATH);
+			  nate.startInbrackets(@MATH, "math");
+			  lexer.pushState(Lexer::INBRACKETS);
       }
-		math-stat-list
+		inbrackets-stat-list
     END_SPEC
 		  { 
 			  lexer.popState();
-			  nate.endMath();
+			  nate.endInbrackets();
 		  }
     inline-expr
       {
@@ -560,14 +588,16 @@ math-expr:
       }
   ;
   
-math-stat-list:
-    math-stat
-  | math-stat-list math-stat
+inbrackets-stat-list:
+    inbrackets-stat
+  | inbrackets-stat-list inbrackets-stat
   ;
 
-math-stat:
+inbrackets-stat:
     WORD
-		  { nate.addMathStatWord($WORD, @WORD); }
+		  { nate.addInbracketsStatWord($WORD, @WORD); }
+  | id
+		  { nate.addInbracketsStatWord(toCodeName($[id]), @id); }
   ;
 
 property-declare-statement:
@@ -728,6 +758,11 @@ is-type:
   ;
 
 type:
+    code-expr
+      {
+        $$ = nate.determineType(std::string("{{") + $[code-expr].code());
+      }
+  |
     WORD type-extra
       { 
         if (!$[type-extra].empty())
@@ -1214,6 +1249,7 @@ expr-part-list:
 
 expr-part:
     math-expr
+  | code-expr
   | expr-word
   | expr-non-word
   ;
