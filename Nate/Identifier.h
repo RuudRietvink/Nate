@@ -41,6 +41,7 @@ public:
 	static const size_t ObjectImpl   = 4;
 	static const size_t Local        = 5;
 	static const size_t Undeclared   = 6;
+	static const size_t CodeVar      = 7;
 
 private:
 	std::string												mName;

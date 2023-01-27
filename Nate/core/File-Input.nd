@@ -5,8 +5,8 @@
   
 import Input
 
-declare object File-Input is Input:
+declare object File-Input as Input:
+  declare new File-Input is File-Input
   declare open \u ${me as out} from file \u ${file is text}
   declare ${me} \is opened is boolean
   declare close \u ${me as out}
-  declare ${me} \is ok is boolean

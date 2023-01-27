@@ -3,5 +3,6 @@
 // Input
 ///////////////////////////////////////////////
   
-declare object Input:
+role Input:
   declare ${me} \is ok is boolean
+  declare ${me} stream is {{ code std::shared_ptr<std::istream> }}

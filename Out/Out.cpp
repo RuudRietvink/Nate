@@ -27,16 +27,18 @@ int main(int argc, char** argv)
 	input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
 	SetConsoleOutputCP(65001);
 #line 550
-	std::shared_ptr<File_Input> in = {};
+	std::shared_ptr<File_Input> in = File_Input::new_File_Input_();
 	in->open_E_O_me__from_file_E_text_("d:\\uit");
 	if (in->E_me__is_opened_())
 	{
 #line 553
 		string_t s = {};
-		std::shared_ptr<std::istream> nate__reader = in;
+		std::shared_ptr<std::istream> nate__reader = (in)->E_me__stream_();
 #line 554
 *nate__reader >> s;
 (*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+#line 555
+		*output << (s); *output << std::endl; 
 #line 552
 	}
 }

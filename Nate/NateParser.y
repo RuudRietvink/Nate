@@ -25,6 +25,8 @@
   #include "NateParser.h"
   #undef yylex
   #define yylex lexer.lex  // Within bison's parse() we should invoke lexer.yylex(), not the global yylex()
+
+  std::string tempCopiedCodeExpr;
   
   void copyParsedCodes(NateParser& aNate)
   {
@@ -749,11 +751,15 @@ optional-is-type:
 
 is-type:
     IS 
-      { lexer.pushState(Lexer::DECL_TYPE); }
+      { 
+        tempCopiedCodeExpr = nate.data.inBracketsCode;
+        lexer.pushState(Lexer::DECL_TYPE);
+      }
     type
 	  	{ 
         lexer.popState();
         $$ = $type;
+        nate.data.inBracketsCode = tempCopiedCodeExpr;
       }
   ;
 

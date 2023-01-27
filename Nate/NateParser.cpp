@@ -115,8 +115,8 @@ void NateParser::initTypesAndObjects()
 
 	addType(std::make_shared<Type>("output", getType("object")));
 	addType(std::make_shared<Type>("file-output", getType("output")));
-	addType(std::make_shared<Type>("input", getType("object")));
-	addType(std::make_shared<Type>("data-input", getType("input")));
+	addType(std::make_shared<Type>("input-stream", getType("object")));
+	addType(std::make_shared<Type>("data-input-stream", getType("input-stream")));
 }
 
 void NateParser::initOutput()
@@ -154,13 +154,13 @@ int NateParser::parse()
 	{
 		declareLocalIdentifiers(false, { "output" }, getType("output"), {}, false, mDummyLocation);
 		declareLocalIdentifiers(false, { "error" }, getType("output"), {}, false, mDummyLocation);
-		declareLocalIdentifiers(false, { "input" }, getType("input"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "input" }, getType("input-stream"), {}, false, mDummyLocation);
 	}
 	else
 	{	
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
 		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("Input")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input-stream")));
 	}
 
 	if (mFileType != FileType::ObjectDecl)
@@ -517,7 +517,9 @@ void NateParser::doRead(const Expr& aValue, const yy::parser::location_type& aLo
 	{
 		if (!reader)
 		{
-			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("input"), aValue);
+			Expr init = aValue;
+			init.setCode("(" + aValue.code() + ")->E_me__stream_()");
+			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("input-stream"), init);
 			addIdentifier(reader);
 			node->bool1 = true;
 		}

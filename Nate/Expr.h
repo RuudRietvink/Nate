@@ -29,6 +29,7 @@ public:
 		virtual ~Node() = default;
 
 		bool castToType(const TypePtr& aToType);
+		void setCode(const std::string& aCode);
 
 		const std::string& text()       const;
 		const std::string& code()       const;
@@ -54,6 +55,7 @@ public:
 	static Expr parenthesized(const Expr& aExpr1);
 		
 	bool castToType(const TypePtr& aToType);
+  void setCode(const std::string& aText);
 	bool is(size_t aFlag) const;
 	void setFlag(size_t aFlag);
 	void setFlag(size_t aFlag, bool aEnable);

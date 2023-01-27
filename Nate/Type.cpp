@@ -176,18 +176,18 @@ void Type::setType(const std::string& aName)
 		setFlag(NeedsRef, true);
 		mCodeType = "std::ofstream";
 	}
-	else if (aName == "input")
+	else if (aName == "input-stream")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::istream";
 	}
-	//else if (aName == "file-input")
-	//{
-	//	setFlag(Abstract, false);
-	//	setFlag(NeedsRef, true);
-	//	mCodeType = "std::ifstream";
-	//}
+	else if (aName == "file-input-stream")
+	{
+		setFlag(Abstract, false);
+		setFlag(NeedsRef, true);
+		mCodeType = "std::ifstream";
+	}
 	else if (aName == "data-input")
 	{
 		setFlag(Abstract, false);

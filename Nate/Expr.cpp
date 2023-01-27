@@ -43,6 +43,11 @@ std::string&       Expr::Node::code()						{ return mCode; }
 TypePtr            Expr::Node::type()			const { return mType; }
 IdentifierPtr      Expr::Node::id()	  		const { return mId; }
 
+void Expr::Node::setCode(const std::string& aCode)
+{
+	mCode = aCode;
+}
+
 bool Expr::Node::castToType(const TypePtr& aToType)
 {
 	bool ok = true;
@@ -209,6 +214,14 @@ IdentifierPtr      Expr::id()	  		const { return mNodes.empty() ? IdentifierPtr(
 bool Expr::castToType(const TypePtr& aToType)
 {
 	return mNodes.empty() ? false : mNodes.front().castToType(aToType);
+}
+
+void Expr::setCode(const std::string& aCode)
+{
+	if (!mNodes.empty())
+	{
+		mNodes.front().setCode(aCode);
+	}
 }
 
 const std::vector<Expr::Node>& Expr::nodes() const { return mNodes; }

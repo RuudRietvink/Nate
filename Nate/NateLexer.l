@@ -389,6 +389,7 @@ include\h*\".*\"  s(); includeFile();
 {word}		    return yy::parser::make_WORD(str(), location());
 {number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
 {oper}				return yy::parser::make_WORD(str(), location());
+"{{"          return yy::parser::make_START_SPEC(location());
 \h*\k?        // ignore
 }
 
@@ -409,7 +410,7 @@ include\h*\".*\"  s(); includeFile();
 
 <INBRACKETS>{
 "}}"          return yy::parser::make_END_SPEC(location());
-[\p{Alpha}]+  return yy::parser::make_WORD(str(), location());
+[\h]?[\p{Alpha}]+[\h]?  return yy::parser::make_WORD(str(), location());
 [^\$\h\n]+	  return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            return yy::parser::make_WORD(str(), location());

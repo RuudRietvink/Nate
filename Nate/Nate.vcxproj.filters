@@ -127,6 +127,15 @@
     <ClCompile Include="NateCode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\created\BaseObject.cpp">
+      <Filter>Source Files\Core\created</Filter>
+    </ClCompile>
+    <ClCompile Include="core\created\File-Input.cpp">
+      <Filter>Source Files\Core\created</Filter>
+    </ClCompile>
+    <ClCompile Include="core\created\Input.cpp">
+      <Filter>Source Files\Core\created</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -175,9 +184,6 @@
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="core\File-Input.ns">
-      <Filter>Source Files\Core</Filter>
-    </None>
-    <None Include="core\Input.ns">
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="core\Data-input.ns">
@@ -286,6 +292,9 @@
     </ClInclude>
     <ClInclude Include="NateCode.h" />
     <ClInclude Include="core\created\BaseObject.h">
+      <Filter>Source Files\Core\created</Filter>
+    </ClInclude>
+    <ClInclude Include="core\created\File-Input.h">
       <Filter>Source Files\Core\created</Filter>
     </ClInclude>
     <ClInclude Include="core\created\Input.h">

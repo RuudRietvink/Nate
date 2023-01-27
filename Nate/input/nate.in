@@ -547,8 +547,9 @@ program:
   var hello is Hello := new Hello;
   */
   
-  var in is File-Input
+  var in is File-Input := new File-Input
   open in from file "d:\\uit"
   if in is opened:		
     var s is text
     read from in: s
+    output s
