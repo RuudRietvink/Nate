@@ -466,6 +466,8 @@ include\h*\".*\"  s(); includeFile();
 \brecord\b    return yy::parser::make_RECORD(location());
 \bto\b		    return yy::parser::make_TO(location());
 \bfrom\b		  return yy::parser::make_FROM(location());
+\bline\b		  return yy::parser::make_LINE(location());
+\ball\b		    return yy::parser::make_ALL(location());
 \bdata\b		  return yy::parser::make_DATA(location());
 ":="			    return yy::parser::make_ASSIGN(location());
 ":"				    return yy::parser::make_COL(location());

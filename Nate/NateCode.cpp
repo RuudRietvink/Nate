@@ -47,6 +47,7 @@ std::string NateCode::codeDesc(const TreeNodePtr& aNode)
 	case ByteCode::StdOutput: result = "StdOutput"; break;
 	case ByteCode::StdError: result = "Error"; break;
 	case ByteCode::StdInput: result = "Input"; break;
+	case ByteCode::Read: result = "Read"; break;
 	case ByteCode::Write: result = "Write"; break;
 	case ByteCode::Data: result = "Data"; break;
 	case ByteCode::SepComma: result = "OutputSepComma"; break;
@@ -397,33 +398,47 @@ void NateCode::codeOutputEnd(bool aAddEnd)
 void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
+	ByteCode lastSeperator = ByteCode::None;
 
-	*mOut << aStream;
-  for (auto& part : aNode->nested)
-  {
+	for (auto iter = aNode->nested.cbegin(); iter != aNode->nested.cend(); ++iter)
+	{
+		auto const &part = *iter;
+		InputType curInputType = aNode->inputType;
+	  auto next = std::next(iter);
+		std::string skipSpaces = lastSeperator == ByteCode::SepComma ? " >> std::ws" : "";
+
     switch (part->code)
     {
     case ByteCode::Expr:
-			if (part->expr.type()->is(Type::Boolean))
+			if ((*next)->code != ByteCode::End || !part->expr.type()->is(Type::Text)) {
+					curInputType = InputType::Normal;			
+			}
+
+			if (curInputType == InputType::Line)
 			{
-				*mOut << " >> std::boolalpha";
-				*mOut << " >> " << codeExpr(aNode, part->expr);
-				*mOut << " >> std::noboolalpha";
+				*mOut << "std::getline(" << aStream << skipSpaces << ", " << codeExpr(aNode, part->expr) << ");" << end();
+			}
+			else if (curInputType == InputType::All)
+			{
 			}
 			else
 			{
-				*mOut << " >> " << codeExpr(aNode, part->expr);
+				if (part->expr.type()->is(Type::Boolean))
+				{
+					*mOut << aStream << skipSpaces << " >> std::boolalpha  >> " << codeExpr(aNode, part->expr) << " >> std::noboolalpha;" << end();
+				}
+				else
+				{
+					*mOut << aStream << skipSpaces << " >> " << codeExpr(aNode, part->expr) << ";" << end();
+				}
 			}
       break;
     case ByteCode::SepComma:
-			*mOut << " >> std::skipws";
-      break;
     case ByteCode::SepConcat:
-			*mOut << " >> std::noskipws";
+			lastSeperator = part->code;
       break;
     case ByteCode::End:
-			*mOut << ";" << end();
-			if (part->bool1)
+			if (part->bool1 && curInputType == InputType::Normal)
 			{
 				*mOut << "(" << aStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');" << end();
 			}

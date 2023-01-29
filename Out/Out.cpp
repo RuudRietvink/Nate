@@ -33,12 +33,24 @@ int main(int argc, char** argv)
 	{
 #line 553
 		string_t s = {};
+#line 553
+		string_t t = {};
 		std::shared_ptr<std::istream> nate__reader = (in)->E_me__stream_();
 #line 554
-*nate__reader >> s;
-(*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-#line 555
+std::getline(*nate__reader, s);
 		*output << (s); *output << std::endl; 
+		*output << (t); *output << std::endl; 
+*nate__reader >> s;
+std::getline(*nate__reader >> std::ws, t);
+#line 558
+		*output << (s); *output << std::endl; 
+		*output << (t); *output << std::endl; 
+*nate__reader >> s;
+*nate__reader >> std::ws >> t;
+(*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+#line 561
+		*output << (s); *output << std::endl; 
+		*output << (t); *output << std::endl; 
 #line 552
 	}
 }

@@ -25,6 +25,7 @@ struct Location
 
 enum class ByteCode
 {
+	None,
 	Code,
 	Program,
 	Expr,
@@ -107,6 +108,7 @@ struct TreeNode
 	DefinePtr defyne;
 	bool bool1 = false;
 	std::string string;
+	InputType inputType = InputType::Normal;
 };
 
 using TreeNodePtr = std::shared_ptr<TreeNode>;

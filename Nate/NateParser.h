@@ -133,7 +133,7 @@ public:
 										 const yy::parser::location_type& aLocation);
 	void doEndDefine(const yy::parser::location_type& aLocation);
   void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doRead(const Expr& aValue, const yy::parser::location_type& aLocation);	
+	void doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation);	
 	void doStartScope(const yy::parser::location_type& aLocation);
 	void doEndScope(const yy::parser::location_type& aLocation);
 	void doCodeInclude(const yy::parser::location_type& aLocation);	

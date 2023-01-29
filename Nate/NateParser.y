@@ -77,6 +77,8 @@
 %token INPUT "input"
 %token WRITE "write"
 %token READ "read"
+%token LINE "line"
+%token ALL "all"
 %token IS "is"
 %token AS "as"
 %token OF "of"
@@ -132,6 +134,7 @@
 %type <Expr>					           expr-word;
 %type <std::string>              string;
 %type <Expr>                     write-sink;
+%type <InputType>                input-type;
 %type <Expr>                     read-source;
 %type <bool>                     output-list;
 %type <bool>                     output-part-list;
@@ -903,12 +906,21 @@ write-sink:
   ;
     
 read-statement:
-	  READ read-source COL
-      { nate.doRead($[read-source], @READ); }
+	  READ input-type read-source COL
+      { nate.doRead($[input-type], $[read-source], @READ); }
 	  input-list
 		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
   ;
   
+input-type:
+    %empty
+      { $$ = InputType::Normal; }
+  | LINE
+      { $$ = InputType::Line; }
+  | ALL
+      { $$ = InputType::All; }
+  ;
+
 read-source:
     %empty
 		  { $$ = Expr(); }

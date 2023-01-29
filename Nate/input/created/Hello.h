@@ -21,11 +21,11 @@ public:
 #line 11
 	virtual string_t ls_E_O_me__E_text_(const string_t& world) = 0;
 public:
-	virtual Greetable::Greet greet_get() const = 0;
-	virtual const Greetable::Greet& greet_set(const Greetable::Greet& value) = 0;
-public:
 	virtual int32_t prop_greetable_get() const = 0;
 	virtual const int32_t prop_greetable_set(const int32_t value) = 0;
+public:
+	virtual Greetable::Greet greet_get() const = 0;
+	virtual const Greetable::Greet& greet_set(const Greetable::Greet& value) = 0;
 };
 
 #line 13
@@ -58,6 +58,20 @@ private:
 #line 26
 	string_t ls_E_O_me__E_text_(const string_t& world) override;
 private:
+	int32_t age = {};
+public:
+	virtual int32_t age_get() const;
+private:
+	int32_t prop_greetable = {};
+public:
+	int32_t prop_greetable_get() const override;
+	const int32_t prop_greetable_set(const int32_t value) override;
+private:
+	int32_t prop_hi = {};
+public:
+	virtual int32_t prop_hi_get() const;
+	virtual const int32_t prop_hi_set(const int32_t value);
+private:
 	Greet greet = {};
 public:
 	Greetable::Greet greet_get() const override;
@@ -67,20 +81,6 @@ private:
 public:
 	virtual Hi::Datum datum_get() const;
 	virtual const Hi::Datum& datum_set(const Hi::Datum& value);
-private:
-	int32_t prop_greetable = {};
-public:
-	int32_t prop_greetable_get() const override;
-	const int32_t prop_greetable_set(const int32_t value) override;
-private:
-	int32_t age = {};
-public:
-	virtual int32_t age_get() const;
-private:
-	int32_t prop_hi = {};
-public:
-	virtual int32_t prop_hi_get() const;
-	virtual const int32_t prop_hi_set(const int32_t value);
 };
 
 #line 26
@@ -119,19 +119,19 @@ private:
 #line 45
 	string_t ls_E_O_me__E_text_(const string_t& world) override;
 private:
-	string_t name = {};
+	string_t address = {};
 public:
-	virtual string_t name_get() const;
-	virtual const string_t& name_set(const string_t& value);
+	virtual string_t address_get() const;
+	virtual const string_t& address_set(const string_t& value);
 private:
 	string_t prop_hello = {};
 public:
 	virtual string_t prop_hello_get() const;
 	virtual const string_t& prop_hello_set(const string_t& value);
 private:
-	string_t address = {};
+	string_t name = {};
 public:
-	virtual string_t address_get() const;
-	virtual const string_t& address_set(const string_t& value);
+	virtual string_t name_get() const;
+	virtual const string_t& name_set(const string_t& value);
 };
 

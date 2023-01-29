@@ -550,6 +550,13 @@ program:
   var in is File-Input := new File-Input
   open in from file "d:\\uit"
   if in is opened:		
-    var s is text
-    read from in: s
+    var s, t is text
+    read line from in: s
     output s
+    output t
+    read line: s,t
+    output s
+    output t
+    read: s,t
+    output s
+    output t

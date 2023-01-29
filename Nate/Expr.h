@@ -8,6 +8,13 @@
 #include <ostream>
 #include <memory>
 
+enum InputType
+{
+	Normal,
+	Line,
+	All,
+};
+
 class Expr;
 typedef std::shared_ptr<Expr> ExprPtr;
 class Identifier;

@@ -497,9 +497,10 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 	}
 }
 
-void NateParser::doRead(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation)
 {
   TreeNode* node = addStat(ByteCode::Read, aValue, aLocation);
+	node->inputType = aInputType;
 	IdentifierPtr reader = getIdentifier("nate__reader");
 
 	if (aValue.isEmpty())
