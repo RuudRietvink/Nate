@@ -1,0 +1,11 @@
+
+///////////////////////////////////////////////
+// Array
+///////////////////////////////////////////////
+  
+code:
+  #include <vector>
+  
+implement object Array of T:
+  var vector is {{code std::vector<T> }}
+  

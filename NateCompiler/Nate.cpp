@@ -28,7 +28,8 @@ int main()
 	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core");
 	parse("BaseObject.ns", "created\\BaseObject.cpp", NateParser::FileType::ObjectImpl);
 	parse("File-Input.ns", "created\\File-Input.cpp", NateParser::FileType::ObjectImpl);
+	//parse("Array.ns", "created\\Array.cpp", NateParser::FileType::ObjectImpl);
 	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input");
-	parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
+	//parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
 	return parse("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in", "C:\\Users\\ruud\\source\\repos\\Nate\\Out\\Out.cpp");
 }

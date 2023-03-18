@@ -42,7 +42,7 @@ bool File_Input::E_me__is_ok_() const
 bool File_Input::E_me__is_opened_() const
 {
 #line 24
-	return _impl->stream->is_open();
+	return _impl->stream&& code _impl->stream->is_open();
 }
 
 #line 26

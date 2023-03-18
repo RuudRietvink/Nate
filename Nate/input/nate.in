@@ -9,6 +9,7 @@ import IFile*/
 
 import Math
 import File-Input
+//import Array
 
 import Hello
 
@@ -547,6 +548,7 @@ program:
   var hello is Hello := new Hello;
   */
   
+  /*
   var in is File-Input := new File-Input
   open in from file "d:\\uit"
   if in is opened:		
@@ -560,3 +562,15 @@ program:
     read: s,t
     output s
     output t
+  */
+
+  // 12 17
+  var xCount := 37;
+  var yCount := 18 + 3;
+  var lat := yCount * 1.73
+  var cosi := cos (lat / 180 *pi)
+  var step := (90 / xCount) / cosi
+  var ind := 0
+  output lat, cosi, step, xCount, yCount
+  loop for var lon := 0.0 to 180.0 step step:
+    output ind#inc, lat&",",-lon

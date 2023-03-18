@@ -21,7 +21,7 @@ implement object File-Input:
     return {{code _impl->$stream && _impl->$stream->good() }} is boolean
 
   implement ${me} \is opened is boolean:
-    return {{code _impl->$stream->is_open() }} is boolean
+    return {{code _impl->$stream && code _impl->$stream->is_open() }} is boolean
 
   implement open \u ${me as out} from file \u ${file is text}:
     {{code _impl->$stream.reset(new std::ifstream($file, std::ios::in)) }}

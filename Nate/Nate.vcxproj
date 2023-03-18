@@ -244,8 +244,11 @@
     <ClCompile Include="WithFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\Array.nd" />
+    <None Include="core\Array.ns" />
     <None Include="core\BaseObject.ns" />
     <None Include="core\Complex.ns" />
+    <None Include="core\Container.nd" />
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
     <None Include="core\Data-input.ns" />

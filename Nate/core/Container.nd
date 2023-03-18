@@ -1,0 +1,9 @@
+
+///////////////////////////////////////////////
+// Container
+///////////////////////////////////////////////
+  
+declare role Container:
+    define size \u of ${me} is int-32;
+    define clear ${me},
+           empty ${me};

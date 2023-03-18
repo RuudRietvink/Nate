@@ -1,0 +1,10 @@
+
+///////////////////////////////////////////////
+// Array
+///////////////////////////////////////////////
+  
+import Container
+
+declare object Array of T implements Container:
+  declare add ${element is T} to ${me},
+          append ${element is T} to ${me};

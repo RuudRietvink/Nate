@@ -213,6 +213,15 @@
     <None Include="core\BaseObject.ns">
       <Filter>Source Files\Core</Filter>
     </None>
+    <None Include="core\Array.nd">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Array.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Container.nd">
+      <Filter>Source Files\Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lex.yy.h">
