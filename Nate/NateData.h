@@ -2,26 +2,9 @@
 
 #include "Expr.h"
 #include "Define.h"
-#include "NateParser.tab.h"
+#include "Location.h"
 
 #include <memory>
-
-struct Location
-{
-	Location()
-	{}
-
-	Location(const yy::parser::location_type& aLocation, const std::string& aCurFile)
-		: filename(aLocation.begin.filename != nullptr ? *aLocation.begin.filename : aCurFile),
-		  beginLine(aLocation.begin.line),
-		  beginColumn(aLocation.end.column)
-	{
-	}
-
-	std::string filename;
-	int beginLine = -1;
-	int beginColumn = -1;
-};
 
 enum class ByteCode
 {

@@ -21,6 +21,7 @@
 #include "Scope.h"
 #include "Record.h"
 #include "Object.h"
+#include "Stat.h"
 
 namespace yy
 {
@@ -124,7 +125,11 @@ public:
 	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
 	void doEnd(bool aEnd, const yy::parser::location_type& aLocation);
 	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doOutputStart(const yy::parser::location_type& aLocation);
+	void doOutputComma(const yy::parser::location_type& aLocation);
+	void doOutputConcat(const yy::parser::location_type& aLocation);
 	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation);
 	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 
 	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);
@@ -245,6 +250,8 @@ private:
 	void popTypesHolder();
 	void pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder);
 	void popDefinesHolder();
+	void pushStatsHolder(const Stat::SPtr& aStatsHolder);
+	void popStatsHolder();
 	
 
 	struct Match
@@ -281,6 +288,10 @@ private:
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
+
+	Location location(const yy::parser::location_type& aLocation);
+
+	Stat::SPtr addStatement(const Stat::SPtr& stat);
 		
 	
 	TreeNode*									  mCurNode = nullptr;
@@ -297,6 +308,8 @@ private:
 	std::list<ScopePtr>         mScopes;
 	std::list<ScopePtr>         mOldScopes;
 	std::list<CodePtr>          mCodes;
+	Stat::List                  mStats;
+	std::list<Stat::SPtr>       mStatHolders;                 
 	bool												mDefineDecl = false;
 	std::list<int>              mLoopWhileCounts;
 	std::set<std::string>       mWantsUnary;

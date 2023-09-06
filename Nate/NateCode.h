@@ -2,39 +2,53 @@
 
 #include "NateData.h"
 #include "Object.h"
+#include "ICodeVisitor.h"
+#include "StatProgram.h"
+#include "StatDeclareLocal.h"
+#include "StatAssign.h"
+#include "StatOutput.h"
+#include "StatExpr.h"
 
 #include <ostream>
 
 class NateParser;
 
-class NateCode
+class NateCode : public ICodeVisitor
 {
 public:
   NateCode(std::ostream& aOut, NateParser* aParser);
-  void code(const TreeNodePtr& aStat);
+  void codeStats(const std::list<Stat::SPtr>& aStats);
   void codeNested(const TreeNodePtr& aStat);
   void codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out = std::cout);
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="aStat"></param>
+  void visit(const StatProgram& aStat) override;
+  void visit(const StatDeclareLocal& aStat) override;
+  void visit(const StatAssign& aStat) override;
+  void visit(const StatExpr& aStat) override;
+  void visit(const StatOutput& aStat) override;
+  void visit(const StatOutputComma& aStat) override;
+  void visit(const StatOutputConcat& aStat) override;
+  void visit(const StatOutputEnd& aStat) override;
+  void visit(const StatOutputExpr& aStat) override;
 
 private:
   std::string in(int extra = 0);
   void printLineNr(const Location& aLocation);
 	char end();
-  void codeProgram(const TreeNodePtr& aNode);
 	void codeData(const TreeNodePtr& aNode);
-  void codeOutput(const std::string& aStream, const TreeNodePtr& aNode);
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
-	void codeOutput(const TreeNodePtr& aNode, const Expr& aValue);
-	void codeOutputEnd(bool aAddEnd = true);
 	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
-	std::string codeExpr(const TreeNodePtr& aNode, const Expr& aValue);
+	std::string codeExpr(const Expr& aValue);
 	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
 	void codeDeclIdentifier(const TreeNodePtr& aNode, 
 													bool aExtern,
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	void codeAssign(const TreeNodePtr& aNode);
 	void codeIfThen(const TreeNodePtr& aNode);
 	void codeIf(const TreeNodePtr& aNode);
 	void codeElseIf(const TreeNodePtr& aNode);

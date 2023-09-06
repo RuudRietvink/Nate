@@ -25,10 +25,10 @@ int main()
     setvbuf(stdout, nullptr, _IOFBF, 1000);
     setvbuf(stderr, nullptr, _IOFBF, 1000);
 
-	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core");
-	parse("BaseObject.ns", "created\\BaseObject.cpp", NateParser::FileType::ObjectImpl);
-	parse("File-Input.ns", "created\\File-Input.cpp", NateParser::FileType::ObjectImpl);
-	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input");
-	parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
-	return parse("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in", "C:\\Users\\ruud\\source\\repos\\Nate\\Out\\Out.cpp");
+	//(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core");
+	//parse("BaseObject.ns", "created\\BaseObject.cpp", NateParser::FileType::ObjectImpl);
+	//parse("File-Input.ns", "created\\File-Input.cpp", NateParser::FileType::ObjectImpl);
+	//(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input");
+	//parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
+	return parse("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in2", "C:\\Users\\ruud\\source\\repos\\Nate\\Out\\Out.cpp");
 }

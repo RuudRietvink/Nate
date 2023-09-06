@@ -879,9 +879,9 @@ data-list:
 
 output-statement:
 	  OUTPUT 
-		  { nate.addStat(ByteCode::StdOutput, @OUTPUT); }
+		  { nate.doOutputStart(@OUTPUT); }
 	  output-list
-		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
+		  { nate.doOutputEnd($[output-list], @[output-list]); }
   ;
   
 error-statement:

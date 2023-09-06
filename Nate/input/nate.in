@@ -9,6 +9,7 @@ import IFile*/
 
 import Math
 import File-Input
+//import Array
 
 import Hello
 
@@ -547,6 +548,7 @@ program:
   var hello is Hello := new Hello;
   */
   
+  /*
   var in is File-Input := new File-Input
   open in from file "d:\\uit"
   if in is opened:		
@@ -560,3 +562,15 @@ program:
     read: s,t
     output s
     output t
+  */
+
+  // 16 + 3
+  const cirHeight := 53
+  const xCount := 24
+  const yCount := 25 + 13
+  const lat := yCount * (90.0 / cirHeight)
+  var step := 90.0 / xCount
+  var ind := 0
+  output lat, step, xCount, yCount
+  loop for var lon := 0.0 to 360.0 step step:
+    output ind#inc, -lat&",", lon if lon <= 180.0 else -(360.0 - lon)

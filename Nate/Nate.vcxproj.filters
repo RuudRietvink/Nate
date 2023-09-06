@@ -26,6 +26,9 @@
     <Filter Include="Source Files\Core\created">
       <UniqueIdentifier>{ed76b20c-983a-4450-9730-6b1ae382f8a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Structs\Stats">
+      <UniqueIdentifier>{9c02cdbd-66bf-4536-ae2c-cacc9e87b1b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lex.yy.cpp">
@@ -136,6 +139,27 @@
     <ClCompile Include="core\created\Input.cpp">
       <Filter>Source Files\Core\created</Filter>
     </ClCompile>
+    <ClCompile Include="Stats\Stat.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatProgram.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatExpr.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatAssign.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatDeclareLocal.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Location.cpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatOutput.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -212,6 +236,9 @@
     </None>
     <None Include="core\BaseObject.ns">
       <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="input\nate.in2">
+      <Filter>Source Files\Input</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -290,7 +317,6 @@
     <ClInclude Include="NateData.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="NateCode.h" />
     <ClInclude Include="core\created\BaseObject.h">
       <Filter>Source Files\Core\created</Filter>
     </ClInclude>
@@ -299,6 +325,36 @@
     </ClInclude>
     <ClInclude Include="core\created\Input.h">
       <Filter>Source Files\Core\created</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\location.hpp">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\Stat.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatProgram.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\ICodeVisitor.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatExpr.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatAssign.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatDeclareLocal.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Location.h">
+      <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatOutput.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="NateCode.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

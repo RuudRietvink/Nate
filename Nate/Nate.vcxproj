@@ -79,7 +79,7 @@
       <PreprocessorDefinitions>OS_WIN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;..\MathParser;..\utf8</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;Stats;.;..\MathParser;..\utf8</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,7 +106,7 @@
       <PreprocessorDefinitions>OS_WIN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;..\MathParser;..\utf8</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;Stats;.;..\MathParser;..\utf8</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>OS_WIN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;..\MathParser;..\utf8</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;Stats;.;..\MathParser;..\utf8</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -166,7 +166,7 @@
       <PreprocessorDefinitions>OS_WIN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;..\MathParser;..\utf8</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ruud\Reflex\include;Stats;.;..\MathParser;..\utf8</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -231,6 +231,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="lex.yy.cpp" />
+    <ClCompile Include="Location.cpp" />
     <ClCompile Include="NateCode.cpp" />
     <ClCompile Include="NateFunctions.cpp" />
     <ClCompile Include="NateParser.cpp" />
@@ -239,6 +240,12 @@
     <ClCompile Include="Record.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="parser.cpp" />
+    <ClCompile Include="Stats\Stat.cpp" />
+    <ClCompile Include="Stats\StatAssign.cpp" />
+    <ClCompile Include="Stats\StatDeclareLocal.cpp" />
+    <ClCompile Include="Stats\StatExpr.cpp" />
+    <ClCompile Include="Stats\StatOutput.cpp" />
+    <ClCompile Include="Stats\StatProgram.cpp" />
     <ClCompile Include="Type.cpp" />
     <ClCompile Include="Method.cpp" />
     <ClCompile Include="WithFlags.cpp" />
@@ -267,6 +274,7 @@
     <None Include="input\Hello.ns" />
     <None Include="input\nate.define" />
     <None Include="input\nate.import" />
+    <None Include="input\nate.in2" />
     <None Include="input\nateSong.in" />
     <CustomBuild Include="NateLexer.l">
       <FileType>Document</FileType>
@@ -353,6 +361,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="lex.yy.h" />
+    <ClInclude Include="Location.h" />
     <ClInclude Include="location.hpp" />
     <ClInclude Include="NateCode.h" />
     <ClInclude Include="NateData.h" />
@@ -363,6 +372,14 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="Record.h" />
     <ClInclude Include="Scope.h" />
+    <ClInclude Include="Stats\ICodeVisitor.h" />
+    <ClInclude Include="Stats\location.hpp" />
+    <ClInclude Include="Stats\Stat.h" />
+    <ClInclude Include="Stats\StatAssign.h" />
+    <ClInclude Include="Stats\StatDeclareLocal.h" />
+    <ClInclude Include="Stats\StatExpr.h" />
+    <ClInclude Include="Stats\StatOutput.h" />
+    <ClInclude Include="Stats\StatProgram.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="Method.h" />
     <ClInclude Include="WithFlags.h" />

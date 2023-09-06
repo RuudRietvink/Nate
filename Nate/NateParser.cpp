@@ -2,6 +2,9 @@
 #include "NateParserMath.h"
 #include "NateCode.h"
 #include "core/Core.h"
+#include "StatProgram.h"
+#include "StatDeclareLocal.h"
+#include "StatAssign.h"
 #include "lex.yy.h"
 #include <algorithm>
 #include <inttypes.h>
@@ -28,6 +31,25 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 }
 
 NateParser::~NateParser() = default;
+
+Location NateParser::location(const yy::parser::location_type& aLocation)
+{
+	return Location(aLocation, mLexer->currentFile());
+}
+
+Stat::SPtr NateParser::addStatement(const Stat::SPtr& stat)
+{
+	if (mStatHolders.empty())
+	{
+	  mStats.push_back(stat);
+	}
+	else
+	{
+	  mStatHolders.back()->addStat(stat);
+	}
+
+	return stat;
+}
 
 TreeNode* NateParser::curNode()
 { 
@@ -179,7 +201,7 @@ int NateParser::code()
 	int result = 0;
 
 	NateCode coder(*mOut, this);
-	coder.codeNested(data.stats);
+	coder.codeStats(mStats);
 
 	if (mLexer->debug())
 	{
@@ -211,11 +233,12 @@ void NateParser::parseFile(const std::string& aFilename)
 void NateParser::startProgram(const yy::parser::location_type& aLocation)
 {
 	pushScope(std::make_shared<Scope>("main", IIdentifiersHolder::ScopeFlag::Local));
-  addStat(ByteCode::Program, aLocation);
+	pushStatsHolder(addStatement(std::make_shared<StatProgram>(location(aLocation))));
 }
 
 void NateParser::endProgram(const yy::parser::location_type& aLocation)
 {
+	popStatsHolder();
 	popScope();
 }
 
@@ -251,7 +274,8 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 			error("cannot cast '" + copy.text() + "' of type " + copy.type()->name() + " to type " + exprType->name());
 		}
 	}
-
+	
+  addStatement(std::make_shared<StatAssign>(Location(aLocation, mLexer->currentFile()), aExpressions, aValue));
   TreeNode* node = add(ByteCode::Assign, aLocation);
   node->expr = copy;
   node->exprList = aExpressions;
@@ -533,11 +557,32 @@ void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::pars
 	}
 }
 
+void NateParser::doOutputStart(const yy::parser::location_type& aLocation)
+{
+	pushStatsHolder(addStatement(std::make_shared<StatOutput>(location(aLocation))));
+}
+
+void NateParser::doOutputComma(const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatOutputComma>(location(aLocation)));
+}
+
+void NateParser::doOutputConcat(const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatOutputConcat>(location(aLocation)));
+}
+
+void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatOutputEnd>(location(aLocation), aEnd));
+	popStatsHolder();
+}
+
 void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
   if (aValue.type() && !aValue.type()->empty())
   {
-    add(ByteCode::Expr, aValue, aLocation);
+	  addStatement(std::make_shared<StatOutputExpr>(location(aLocation), aValue));
   }
   else
   {
@@ -851,6 +896,16 @@ void NateParser::pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder)
 void NateParser::popDefinesHolder()
 {
 	mDefinesHolders.pop_front();
+}
+
+void NateParser::pushStatsHolder(const Stat::SPtr& aStatsHolder)
+{
+	mStatHolders.push_back(aStatsHolder);
+}
+
+void NateParser::popStatsHolder()
+{
+	mStatHolders.pop_back();
 }
 
 void NateParser::pushScope(const ScopePtr& aScope)
@@ -2214,6 +2269,7 @@ void NateParser::declareLocalIdentifiers(
 		//	error("Expected constant expression.");
 		//}
 
+		addStatement(std::make_shared<StatDeclareLocal>(Location(aLocation, mLexer->currentFile()), id, initValue));
 		TreeNode* node = add(ByteCode::LocalVar, aLocation);
 		node->id = id;
 		node->bool1 = initializeVariables;
