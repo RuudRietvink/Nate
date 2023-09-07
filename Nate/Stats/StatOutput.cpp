@@ -1,6 +1,6 @@
 #include "StatOutput.h"
 #include "StatExpr.h"
-
+#include "ICodeVisitor.h"
 
 StatOutput::StatOutput(const Location& aLocation)
   : Stat(aLocation)

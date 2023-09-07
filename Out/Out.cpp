@@ -17,5 +17,23 @@ int main(int argc, char** argv)
 #line 12
 	int32_t cnt = 2;
 	cnt = 3;
-	*output << "Hello, world!" << std::endl; 
+	if (cnt == 3)
+	{
+#line 15
+		*output << "Hello, world!" << std::endl; 
+		cnt = 4;
+	}
+	if (cnt != 3)
+	{
+#line 19
+		float x = static_cast<float>(3.14);
+		*output << (x); *output << (x); *output << " " << (x); *output << std::endl; 
+	}
+#line 21
+	else
+	{
+#line 22
+		int32_t x = 3;
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
+	}
 }

@@ -3,11 +3,6 @@
 #include "NateData.h"
 #include "Object.h"
 #include "ICodeVisitor.h"
-#include "StatProgram.h"
-#include "StatDeclareLocal.h"
-#include "StatAssign.h"
-#include "StatOutput.h"
-#include "StatExpr.h"
 
 #include <ostream>
 
@@ -19,6 +14,7 @@ public:
   NateCode(std::ostream& aOut, NateParser* aParser);
   void codeStats(const std::list<Stat::SPtr>& aStats);
   void codeNested(const TreeNodePtr& aStat);
+  void codeCompound(const Stat& aStat);
   void codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out = std::cout);
   /// <summary>
   /// 
@@ -27,6 +23,8 @@ public:
   void visit(const StatProgram& aStat) override;
   void visit(const StatDeclareLocal& aStat) override;
   void visit(const StatAssign& aStat) override;
+  void visit(const StatIf& aStat) override;
+  void visit(const StatElse& aStat) override;
   void visit(const StatExpr& aStat) override;
   void visit(const StatOutput& aStat) override;
   void visit(const StatOutputComma& aStat) override;

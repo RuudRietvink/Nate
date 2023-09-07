@@ -1,5 +1,5 @@
 #include "StatProgram.h"
-
+#include "ICodeVisitor.h"
 
 StatProgram::StatProgram(const Location& aLocation)
   : Stat(aLocation)

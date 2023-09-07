@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ICodeVisitor.h"
 #include "Location.h"
 
 #include <list>
 #include <memory>
+
+class ICodeVisitor;
 
 class Stat
 {

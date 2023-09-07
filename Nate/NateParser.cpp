@@ -290,16 +290,15 @@ void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLoca
 
 	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
 
-	// join ElseIf and If
-	if (mCurNode->code == ByteCode::ElseIf && mCurNode->expr.isEmpty())
+	//// join ElseIf and If
+	//if (mCurNode->code == ByteCode::ElseIf && mCurNode->expr.isEmpty())
+	//{
+	//	mCurNode->expr = aValue;
+	//	mCurNode->location = Location(aLocation, mLexer->currentFile());
+	//}
+	//else
 	{
-		mCurNode->expr = aValue;
-		mCurNode->location = Location(aLocation, mLexer->currentFile());
-	}
-	else
-	{
-		addStat(ByteCode::IfThen, aValue, aLocation);
-		addStat(ByteCode::If, aValue, aLocation);
+		pushStatsHolder(addStatement(std::make_shared<StatIf>(location(aLocation), aValue)));
 	}
 }
 
@@ -312,17 +311,16 @@ void NateParser::doElseIf(const yy::parser::location_type& aLocation)
 
 void NateParser::doElse(const yy::parser::location_type& aLocation)
 {
-	up();
 	popScope();
 	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
-	addStat(ByteCode::Else, aLocation);
+	popStatsHolder();
+  pushStatsHolder(addStatement(std::make_shared<StatElse>(location(aLocation))));
 }
 
 void NateParser::doEndIf(const yy::parser::location_type& aLocation)
 {
-	up();
-	up();
 	popScope();
+	popStatsHolder();
 }
 
 void NateParser::doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation)

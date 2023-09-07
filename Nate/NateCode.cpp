@@ -115,6 +115,16 @@ void NateCode::codeNested(const TreeNodePtr& aStat)
 		//code(stat);
 	}
 }
+
+void NateCode::codeCompound(const Stat& aStat)
+{
+	*mOut << in() << "{" << end();
+	++mIndent;
+	codeStats(aStat.getCompound());
+	--mIndent;
+	*mOut << in() << "}" << end();
+}
+
 void NateCode::visit(const StatProgram& aStat)
 {
 	*mOut << in() << "#define NOMINMAX" << end();
@@ -123,15 +133,16 @@ void NateCode::visit(const StatProgram& aStat)
 	printLineNr(aStat.getLocation());
 
 	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
-	*mOut << in(1) << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
-	*mOut << in(1) << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
-	*mOut << in(1) << "input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
-	*mOut << in(1) << "SetConsoleOutputCP(65001);" << end();
-	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
-
 	++mIndent;
+	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
+	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
+	*mOut << in() << "input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
+	*mOut << in() << "SetConsoleOutputCP(65001);" << end();
+	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
+	
 	codeStats(aStat.getCompound());
-	*mOut << in(-1) << "}" << end();
+	--mIndent;
+	*mOut << in() << "}" << end();
 }
 
 void NateCode::visit(const StatDeclareLocal& aStat)
@@ -179,6 +190,24 @@ void NateCode::visit(const StatAssign& aStat)
 	}
 
 	*mOut << aStat.getValue().code() << endPars << ";" << end();
+}
+
+void NateCode::visit(const StatIf& aStat)
+{
+	printLineNr(aStat.getLocation());
+
+	*mOut << in() << "if (" << codeExpr(aStat.getExpr()) << ")" << end();
+	
+	codeCompound(aStat);
+}
+
+void NateCode::visit(const StatElse& aStat)
+{
+	printLineNr(aStat.getLocation());
+
+	*mOut << in() << "else" << end();
+	
+	codeCompound(aStat);
 }
 
 void NateCode::visit(const StatExpr& aStat)

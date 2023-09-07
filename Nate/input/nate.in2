@@ -11,4 +11,13 @@
 program:
   var cnt := 2;
   cnt := 3;
-  output "Hello, world!"
+  if cnt = 3:
+    output "Hello, world!"
+    cnt := 4;
+
+  if cnt != 3:
+    var x is float-32 := 3.14;
+    output x&x,x;
+  else:
+    var x := 3;
+    output x,x+1

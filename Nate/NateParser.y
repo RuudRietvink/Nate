@@ -956,9 +956,9 @@ output-part:
 
 output-sep:
 	  COMMA
-		  { nate.add(ByteCode::SepComma, @COMMA); }
+		  { nate.doOutputComma(@COMMA); }
 	| CONCAT
-		  { nate.add(ByteCode::SepConcat, @CONCAT); }
+		  { nate.doOutputConcat(@CONCAT); }
   ;
 
 input-statement:

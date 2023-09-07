@@ -243,7 +243,9 @@
     <ClCompile Include="Stats\Stat.cpp" />
     <ClCompile Include="Stats\StatAssign.cpp" />
     <ClCompile Include="Stats\StatDeclareLocal.cpp" />
+    <ClCompile Include="Stats\StatElse.cpp" />
     <ClCompile Include="Stats\StatExpr.cpp" />
+    <ClCompile Include="Stats\StatIf.cpp" />
     <ClCompile Include="Stats\StatOutput.cpp" />
     <ClCompile Include="Stats\StatProgram.cpp" />
     <ClCompile Include="Type.cpp" />
@@ -377,7 +379,9 @@
     <ClInclude Include="Stats\Stat.h" />
     <ClInclude Include="Stats\StatAssign.h" />
     <ClInclude Include="Stats\StatDeclareLocal.h" />
+    <ClInclude Include="Stats\StatElse.h" />
     <ClInclude Include="Stats\StatExpr.h" />
+    <ClInclude Include="Stats\StatIf.h" />
     <ClInclude Include="Stats\StatOutput.h" />
     <ClInclude Include="Stats\StatProgram.h" />
     <ClInclude Include="Type.h" />

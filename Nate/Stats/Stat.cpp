@@ -1,4 +1,5 @@
 #include "Stat.h"
+#include "ICodeVisitor.h"
 
 Stat::Stat(const Location& aLocation)
   : mLocation(aLocation)

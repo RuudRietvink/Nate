@@ -1,5 +1,5 @@
 #include "StatDeclareLocal.h"
-
+#include "ICodeVisitor.h"
 
 StatDeclareLocal::StatDeclareLocal(const Location& aLocation, const IdentifierPtr& aIdentifier, const Expr& aValue)
   : Stat(aLocation),
