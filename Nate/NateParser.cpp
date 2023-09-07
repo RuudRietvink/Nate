@@ -289,24 +289,15 @@ void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLoca
 	}
 
 	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
-
-	//// join ElseIf and If
-	//if (mCurNode->code == ByteCode::ElseIf && mCurNode->expr.isEmpty())
-	//{
-	//	mCurNode->expr = aValue;
-	//	mCurNode->location = Location(aLocation, mLexer->currentFile());
-	//}
-	//else
-	{
-		pushStatsHolder(addStatement(std::make_shared<StatIf>(location(aLocation), aValue)));
-	}
+	pushStatsHolder(addStatement(std::make_shared<StatIf>(location(aLocation), aValue)));
 }
 
-void NateParser::doElseIf(const yy::parser::location_type& aLocation)
+void NateParser::doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
-	up();
 	popScope();
-	addStat(ByteCode::ElseIf, aLocation);
+	popStatsHolder();
+	pushScope(std::make_shared<Scope>("elseif", IIdentifiersHolder::ScopeFlag::Local));
+	pushStatsHolder(addStatement(std::make_shared<StatElseIf>(location(aLocation), aValue)));
 }
 
 void NateParser::doElse(const yy::parser::location_type& aLocation)

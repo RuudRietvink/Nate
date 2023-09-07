@@ -1001,13 +1001,17 @@ input-sep:
 		  { nate.add(ByteCode::SepConcat, @CONCAT); }
   ;
 
-if-statement:
+if-start:
 	  IF expr col
       { 
         nate.data.ifExpr.push($expr);
         nate.data.ifId.push(nate.uniqueName());
         nate.data.ifLocation.push(@expr);
       }
+  ;
+
+if-statement:
+    if-start
     if-rest
       { 
         nate.data.ifExpr.pop(); 
@@ -1032,9 +1036,13 @@ if-then:
 else:
 	  %empty
 		  { nate.doEndIf(@else); }
-  | ELSE 
-	  	{ nate.doElseIf(@ELSE); }
-		if-statement
+  | ELSE if-start
+	  begin 
+		  { nate.doElseIf(nate.data.ifExpr.top(), nate.data.ifLocation.top()); }
+		  statement-list
+      { nate.data.ifExpr.pop(); nate.data.ifId.pop(); nate.data.ifLocation.pop(); }
+	  end
+	  else
   | ELSE col 
 		  { nate.doElse(@ELSE); }
     begin

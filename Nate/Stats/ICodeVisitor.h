@@ -6,6 +6,7 @@
 #include "StatAssign.h"
 #include "StatOutput.h"
 #include "StatIf.h"
+#include "StatElseIf.h"
 #include "StatElse.h"
 #include "StatExpr.h"
 
@@ -17,6 +18,7 @@ public:
   virtual void visit(const StatAssign& aStat) = 0;
   virtual void visit(const StatExpr& aStat) = 0;
   virtual void visit(const StatIf& aStat) = 0;
+  virtual void visit(const StatElseIf& aStat) = 0;
   virtual void visit(const StatElse& aStat) = 0;
   virtual void visit(const StatOutput& aStat) = 0;
   virtual void visit(const StatOutputComma& aStat) = 0;

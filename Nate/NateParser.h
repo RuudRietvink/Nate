@@ -100,7 +100,7 @@ public:
 	void endProgram(const yy::parser::location_type& aLocation);
 	void doAssign(const std::vector<Expr>& aExpressions, const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doIf(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doElseIf(const yy::parser::location_type& aLocation);
+	void doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doElse(const yy::parser::location_type& aLocation);
 	void doEndIf(const yy::parser::location_type& aLocation);
 	void doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);

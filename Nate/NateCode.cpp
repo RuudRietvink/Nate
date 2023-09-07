@@ -201,6 +201,15 @@ void NateCode::visit(const StatIf& aStat)
 	codeCompound(aStat);
 }
 
+void NateCode::visit(const StatElseIf& aStat)
+{
+	printLineNr(aStat.getLocation());
+
+	*mOut << in() << "else if (" << codeExpr(aStat.getExpr()) << ")" << end();
+	
+	codeCompound(aStat);
+}
+
 void NateCode::visit(const StatElse& aStat)
 {
 	printLineNr(aStat.getLocation());

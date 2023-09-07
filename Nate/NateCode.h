@@ -24,6 +24,7 @@ public:
   void visit(const StatDeclareLocal& aStat) override;
   void visit(const StatAssign& aStat) override;
   void visit(const StatIf& aStat) override;
+  void visit(const StatElseIf& aStat) override;
   void visit(const StatElse& aStat) override;
   void visit(const StatExpr& aStat) override;
   void visit(const StatOutput& aStat) override;
