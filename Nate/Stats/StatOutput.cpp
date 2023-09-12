@@ -11,44 +11,44 @@ void StatOutput::accept(ICodeVisitor* aVisitor) const
   aVisitor->visit(*this);
 }
 
-StatOutputComma::StatOutputComma(const Location& aLocation)
+StatOutput::Comma::Comma(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatOutputComma::accept(ICodeVisitor* aVisitor) const
+void StatOutput::Comma::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
 }
 
-StatOutputConcat::StatOutputConcat(const Location& aLocation)
+StatOutput::Concat::Concat(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatOutputConcat::accept(ICodeVisitor* aVisitor) const
+void StatOutput::Concat::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
 }
 
-StatOutputEnd::StatOutputEnd(const Location& aLocation, bool aEndOfLine)
+StatOutput::End::End(const Location& aLocation, bool aEndOfLine)
   : Stat(aLocation),
     mEndOfLine(aEndOfLine)
 {}
 
-bool StatOutputEnd::getEndOfLine() const
+bool StatOutput::End::getEndOfLine() const
 {
   return mEndOfLine;
 }
 
-void StatOutputEnd::accept(ICodeVisitor* aVisitor) const
+void StatOutput::End::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
 }
 
-StatOutputExpr::StatOutputExpr(const Location& aLocation, const Expr& aExpr)
+StatOutput::Expr::Expr(const Location& aLocation, const ::Expr& aExpr)
   : StatExpr(aLocation, aExpr)
 {}
 
-void StatOutputExpr::accept(ICodeVisitor* aVisitor) const
+void StatOutput::Expr::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
 }

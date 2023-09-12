@@ -1,4 +1,6 @@
 import Math
+import Text
+
 // √⌊⌋⌈⌉|⏐
 // ⏨ю
 // ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
@@ -9,55 +11,85 @@ import Math
 // ①②③④
 
 program:
-  var cnt := 2;
-  cnt := 3;
+  var cnt := 2
+  cnt := 3
+
+  loop:
+    var cnt := 2
+    while cnt != 2:
+    cnt := 3
+    
+  loop while cnt != 3:
+    var cnt := 2
+    cnt := 3
+    
+  loop for var item in "abcd⅑⅛⅐efg":
+    output item
+
+  loop for var lop := 1 to 10 while lop != 20:
+    var cnt := 2
+    output lop * cnt
+    
+  loop for var lop := 1 to 10 step 2 while lop != 20:
+    var cnt := 2
+    output lop * cnt
+    
+  loop for var lop := 10 down-to 1:
+    var cnt := 2
+    output lop * cnt
+    
+  loop for var lop := 10 down-to 1 step 2:
+    var cnt := 2 
+  while lop != 20:
+    output lop * cnt
+
   if cnt = 3:
     output "Hello, world!"
-    cnt := 4;
+    cnt := 4
 
   if cnt != 3:
-    var x is float-32 := 3.14;
-    output x&x,x;
+    var x is float-32 := 3.14
+    output x&x,x&
   else:
-    var x := 3;
+    var x := 3
     output x,x+1
 
   if cnt < 3:
-    var x is float-64 := 6,28;
-    output x^x;
+    var x is float-64 := 6,28
+    output x^x
   else if false:
-    var x := 3;
+    var x := 3
     output x,x+1
 
   if cnt < 3:
-    var x is float-64 := 6,28;
-    output x^x;
+    var x is float-64 := 6,28
+    output x^x
   else if false:
-    var x := 3;
+    var x := 3
     output x,x+1
   else if true:
-    var x := 3;
+    var x := 3
     output "Hello, world!"
 
   if cnt < 3:
-    var x is float-64 := 6,28;
-    output x^x;
+    var x is float-64 := 6,28
+    output x^x
   else if false:
-    var x := 3;
+    var x := 3
     output x,x+1
   else:
-    var x := 3;
+    var x := 3
     output "Hello, world!"
     
   if cnt < 3:
-    var x is float-64 := 6,28;
-    output x^x;
+    var x is float-64 := 6,28
+    output x^x
   else if false:
-    var x := 3;
+    var x := 3
     output x,x+1
   else if true:
-    var x := 3;
+    var x := 3
     output "Hello, world!"
   else:
-    var y := 3;
+    var y := 3
     output "Bye, world!"

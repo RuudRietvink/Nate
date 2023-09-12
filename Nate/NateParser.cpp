@@ -365,7 +365,7 @@ void NateParser::doInitLoop(const yy::parser::location_type& aLocation)
 
 void NateParser::doStartLoop(const yy::parser::location_type& aLocation)
 {
-	addStat(ByteCode::LoopStart, aLocation);
+	pushStatsHolder(addStatement(std::make_shared<StatLoop>(location(aLocation))));
 }
 
 void NateParser::doWhile(const Expr& aValue, const yy::parser::location_type& aLocation)
@@ -381,8 +381,8 @@ void NateParser::doWhile(const Expr& aValue, const yy::parser::location_type& aL
 	{
 		error("Expected boolean condition in while.");
 	}
-
-	add(ByteCode::While, aValue, aLocation);
+	
+	addStatement(std::make_shared<StatLoop::While>(location(aLocation), aValue));
 }
 
 void NateParser::doStartLoopForStep(const std::string& aId, 
@@ -399,13 +399,8 @@ void NateParser::doStartLoopForStep(const std::string& aId,
 
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 	addIdentifier(id);
-
-	TreeNode* node = addStat(ByteCode::LoopStartForStep, aLocation);
-	node->id = id;
-	node->bool1 = aDownTo;
-	node->expr = aStart;
-	node->expr2 = aEnd;
-	node->expr3 = aStep;
+	
+	pushStatsHolder(addStatement(std::make_shared<StatLoop::ForStep>(location(aLocation), id, aDownTo, aStart, aEnd, aStep)));
 }
 
 void NateParser::doStartLoopForRange(const std::string& aId, 
@@ -418,7 +413,7 @@ void NateParser::doStartLoopForRange(const std::string& aId,
 		TypePtr type = rangeType->typenameType();
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 		addIdentifier(id);
-	  addStat(ByteCode::LoopStartForRange, aRange, aLocation)->id = id;
+	  pushStatsHolder(addStatement(std::make_shared<StatLoop::ForRange>(location(aLocation), id, aRange)));
 	}
 	else
 	{
@@ -428,9 +423,9 @@ void NateParser::doStartLoopForRange(const std::string& aId,
 
 void NateParser::doEndLoop(const yy::parser::location_type& aLocation)
 {
-	up();
 	mLoopWhileCounts.pop_back();
 	popScope();
+	popStatsHolder();
 }
 
 void NateParser::doStartScope(const yy::parser::location_type& aLocation)
@@ -553,17 +548,17 @@ void NateParser::doOutputStart(const yy::parser::location_type& aLocation)
 
 void NateParser::doOutputComma(const yy::parser::location_type& aLocation)
 {
-	addStatement(std::make_shared<StatOutputComma>(location(aLocation)));
+	addStatement(std::make_shared<StatOutput::Comma>(location(aLocation)));
 }
 
 void NateParser::doOutputConcat(const yy::parser::location_type& aLocation)
 {
-	addStatement(std::make_shared<StatOutputConcat>(location(aLocation)));
+	addStatement(std::make_shared<StatOutput::Concat>(location(aLocation)));
 }
 
 void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation)
 {
-	addStatement(std::make_shared<StatOutputEnd>(location(aLocation), aEnd));
+	addStatement(std::make_shared<StatOutput::End>(location(aLocation), aEnd));
 	popStatsHolder();
 }
 
@@ -571,7 +566,7 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
 {
   if (aValue.type() && !aValue.type()->empty())
   {
-	  addStatement(std::make_shared<StatOutputExpr>(location(aLocation), aValue));
+	  addStatement(std::make_shared<StatOutput::Expr>(location(aLocation), aValue));
   }
   else
   {

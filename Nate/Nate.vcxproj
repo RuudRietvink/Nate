@@ -247,6 +247,7 @@
     <ClCompile Include="Stats\StatElseIf.cpp" />
     <ClCompile Include="Stats\StatExpr.cpp" />
     <ClCompile Include="Stats\StatIf.cpp" />
+    <ClCompile Include="Stats\StatLoop.cpp" />
     <ClCompile Include="Stats\StatOutput.cpp" />
     <ClCompile Include="Stats\StatProgram.cpp" />
     <ClCompile Include="Type.cpp" />
@@ -384,6 +385,7 @@
     <ClInclude Include="Stats\StatElseIf.h" />
     <ClInclude Include="Stats\StatExpr.h" />
     <ClInclude Include="Stats\StatIf.h" />
+    <ClInclude Include="Stats\StatLoop.h" />
     <ClInclude Include="Stats\StatOutput.h" />
     <ClInclude Include="Stats\StatProgram.h" />
     <ClInclude Include="Type.h" />

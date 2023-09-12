@@ -15,7 +15,6 @@ public:
   void codeStats(const std::list<Stat::SPtr>& aStats);
   void codeNested(const TreeNodePtr& aStat);
   void codeCompound(const Stat& aStat);
-  void codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out = std::cout);
   /// <summary>
   /// 
   /// </summary>
@@ -28,10 +27,14 @@ public:
   void visit(const StatElse& aStat) override;
   void visit(const StatExpr& aStat) override;
   void visit(const StatOutput& aStat) override;
-  void visit(const StatOutputComma& aStat) override;
-  void visit(const StatOutputConcat& aStat) override;
-  void visit(const StatOutputEnd& aStat) override;
-  void visit(const StatOutputExpr& aStat) override;
+  void visit(const StatOutput::Comma& aStat) override;
+  void visit(const StatOutput::Concat& aStat) override;
+  void visit(const StatOutput::End& aStat) override;
+  void visit(const StatOutput::Expr& aStat) override;
+  void visit(const StatLoop& aStat) override;
+  void visit(const StatLoop::While& aStat) override;
+  void visit(const StatLoop::ForStep& aStat) override;
+  void visit(const StatLoop::ForRange& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -48,10 +51,6 @@ private:
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	void codeIfThen(const TreeNodePtr& aNode);
-	void codeIf(const TreeNodePtr& aNode);
-	void codeElseIf(const TreeNodePtr& aNode);
-	void codeElse(const TreeNodePtr& aNode);
 	void codeIfIs(const TreeNodePtr& aNode);
 	bool codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool& firstIf);
 	void codeCaseIsListSwitch(const TreeNodePtr& aNode);
@@ -59,11 +58,6 @@ private:
 	void codeCaseIsIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool firstCond);
 	void codeCaseIsSwitch(const TreeNodePtr& aNode);
 	void codeElseIs(const TreeNodePtr& aNode);
-  void codeStartLoop(const TreeNodePtr& aNode);
-  void codeStartLoopForStep(const TreeNodePtr& aNode);
-  void codeStartLoopForRange(const TreeNodePtr& aNode);
-  void codeWhile(const TreeNodePtr& aNode);
-  void codeScope(const TreeNodePtr& aNode);
   void codeCodeInclude(const TreeNodePtr& aNode);
   void codeWrite(const TreeNodePtr& aNode);
   void codeRead(const TreeNodePtr& aNode);
@@ -96,8 +90,6 @@ private:
 	bool isConstIntScalar(const Expr& aExpr);
 	bool isNestedConstIntScalar(const TreeNodePtr& aNode);
 	bool isNestedNonConstIntScalar(const TreeNodePtr& aNode);
-
-	std::string codeDesc(const TreeNodePtr& aNode);
 
 	NateParser*                 mParser = nullptr;
   std::ostream*								mOut;

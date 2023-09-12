@@ -9,6 +9,7 @@
 #include "StatElseIf.h"
 #include "StatElse.h"
 #include "StatExpr.h"
+#include "StatLoop.h"
 
 class ICodeVisitor
 {
@@ -20,10 +21,14 @@ public:
   virtual void visit(const StatIf& aStat) = 0;
   virtual void visit(const StatElseIf& aStat) = 0;
   virtual void visit(const StatElse& aStat) = 0;
+  virtual void visit(const StatLoop& aStat) = 0;
+  virtual void visit(const StatLoop::While& aStat) = 0;
+  virtual void visit(const StatLoop::ForStep& aStat) = 0;
+  virtual void visit(const StatLoop::ForRange& aStat) = 0;
   virtual void visit(const StatOutput& aStat) = 0;
-  virtual void visit(const StatOutputComma& aStat) = 0;
-  virtual void visit(const StatOutputConcat& aStat) = 0;
-  virtual void visit(const StatOutputEnd& aStat) = 0;
-  virtual void visit(const StatOutputExpr& aStat) = 0;
+  virtual void visit(const StatOutput::Comma& aStat) = 0;
+  virtual void visit(const StatOutput::Concat& aStat) = 0;
+  virtual void visit(const StatOutput::End& aStat) = 0;
+  virtual void visit(const StatOutput::Expr& aStat) = 0;
 };
 

@@ -35,71 +35,6 @@ void NateCode::printLineNr(const Location& aLocation)
 	}
 }
 
-std::string NateCode::codeDesc(const TreeNodePtr& aNode)
-{
-	std::string result;
-	switch (aNode->code)
-	{
-	case ByteCode::Code: result = "Code"; mIndent = -1; break;
-	case ByteCode::Program: result = "Program"; break;
-	case ByteCode::Expr: result = "Expr " + aNode->expr.code(); break;
-	case ByteCode::Block: result = "Block"; break;
-	case ByteCode::StdOutput: result = "StdOutput"; break;
-	case ByteCode::StdError: result = "Error"; break;
-	case ByteCode::StdInput: result = "Input"; break;
-	case ByteCode::Read: result = "Read"; break;
-	case ByteCode::Write: result = "Write"; break;
-	case ByteCode::Data: result = "Data"; break;
-	case ByteCode::SepComma: result = "OutputSepComma"; break;
-	case ByteCode::SepConcat: result = "OutputSepConcat"; break;
-	case ByteCode::LocalVar: result = "LocalVar " + aNode->id->name() + " " + aNode->id->type()->codeType() + "=" + aNode->id->initValue().code(); break;
-	case ByteCode::Assign: result = "Assign"; break;
-	case ByteCode::IfThen: result = "IfThen"; break;
-	case ByteCode::If: result = "If"; break;
-	case ByteCode::Else: result = "Else"; break;
-	case ByteCode::ElseIf: result = "ElseIf"; break;
-	case ByteCode::IfIs: result = "IfIs"; break;
-	case ByteCode::CaseIsList: result = "CaseIsList"; break;
-	case ByteCode::CaseIs: result = "CaseIs"; break;
-	case ByteCode::ElseIs: result = "ElseIs"; break;
-	case ByteCode::LoopStart: result = "LoopStart"; break;
-	case ByteCode::LoopStartForStep: result = "LoopStartForStep"; break;
-	case ByteCode::LoopStartForRange: result = "LoopStartForRange"; break;
-	case ByteCode::While: result = "While"; break;
-	case ByteCode::Scope: result = "Scope"; break;
-	case ByteCode::CodeInclude: result = "CodeInclude"; break;
-	case ByteCode::Record: result = "Record"; break;
-	case ByteCode::Define: result = "Define"; break;
-	case ByteCode::Return: result = "Return"; break;
-	case ByteCode::DeclObject: result = "DeclObject"; break;
-	case ByteCode::DeclObjectDefine: result = "DeclObjectDefine"; break;
-	case ByteCode::ImplObject: result = "ImplObject"; break;
-	case ByteCode::Prop: result = "Prop"; break;
-	case ByteCode::ExprStat: result = "ExprStat " + aNode->expr.code(); break;
-	case ByteCode::End: result = aNode->bool1 ? "End" : ""; break;
-	default: result = "****"; break;
-	}
-
-	return result;
-}
-
-void NateCode::codeTreeDesc(const TreeNodePtr& aStat, std::ostream& out)
-{
-	std::string line = codeDesc(aStat);
-	if (!line.empty())
-	{
-		out << in() << line << std::endl;
-	}
-
-	++mIndent;
-  for (auto& stat : aStat->nested)
-  {
-		codeTreeDesc(stat, out);
-	}
-	--mIndent;
-}
-
-
 void NateCode::codeStats(const std::list<Stat::SPtr>& aStats)
 {
   for (auto& stat : aStats)
@@ -219,9 +154,77 @@ void NateCode::visit(const StatElse& aStat)
 	codeCompound(aStat);
 }
 
+void NateCode::visit(const StatLoop& aStat)
+{
+	printLineNr(aStat.getLocation());
+	*mOut << in() << "while (true)" << end();
+	codeCompound(aStat);
+}
+
+void NateCode::visit(const StatLoop::While& aStat)
+{
+	printLineNr(aStat.getLocation());
+	*mOut << in() << "if (!(" << codeExpr(aStat.getExpr()) << ")) break;" << end();
+}
+
+void NateCode::visit(const StatLoop::ForStep& aStat)
+{
+	printLineNr(aStat.getLocation());
+
+	*mOut << in() << "for (" << aStat.getId()->type()->codeType() << " " 
+			 << aStat.getId()->codeName() << "= " << codeExpr(aStat.getStart()) << ";"  
+			 << aStat.getId()->codeName() << (aStat.getDownTo() ? " >= " : "<=") << codeExpr(aStat.getEnd()) << "; "
+			 << aStat.getId()->codeName() << (aStat.getDownTo() ? " -= " : "+=") << codeExpr(aStat.getStep()) << ")" << end();
+	codeCompound(aStat);
+}
+
+void NateCode::visit(const StatLoop::ForRange& aStat)
+{
+	printLineNr(aStat.getLocation());
+
+	TypePtr rangeType = aStat.getRange().type();
+	auto range = mParser->uniqueName();
+	auto iter = mParser->uniqueName();
+	auto next = mParser->uniqueName();
+
+	std::string ref = aStat.getRange().is(Expr::Output) ? "&" : "";
+	std::string increment;
+
+	if (rangeType->isOfType("text"))
+	{
+		increment = iter + "=" + next;
+		*mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(aStat.getRange()) << ";" << end(); 
+		*mOut << in() << "auto " << next << " = " << range << ".cbegin();" << end();
+	}
+	else
+	{
+		increment = "++" + iter;
+		*mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(aStat.getRange()) << ";" << end(); 
+	}
+
+	*mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
+			 << iter << " != " << range << ".cend(); "
+			 << increment << ")" << end();
+
+	*mOut << in() << "{" << end();
+	++mIndent;
+	if (rangeType->isOfType("text"))
+	{
+		*mOut << in() << "uint32_t " << aStat.getId()->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << end();
+	}
+	else
+	{
+		*mOut << in() << "auto const& " << aStat.getId()->codeName() << " = *" << iter << ";" << end();
+	}
+	
+	codeStats(aStat.getCompound());
+	--mIndent;
+	*mOut << in() << "}" << end();
+}
+
 void NateCode::visit(const StatExpr& aStat)
 {
-		*mOut << " = " << codeExpr(aStat.getExpr());
+	*mOut << " = " << codeExpr(aStat.getExpr());
 }
 
 void NateCode::visit(const StatOutput& aStat)
@@ -239,17 +242,17 @@ void NateCode::visit(const StatOutput& aStat)
   }
 }
 
-void NateCode::visit(const StatOutputComma& aStat)
+void NateCode::visit(const StatOutput::Comma& aStat)
 {
 	codeOutput("\" \"");
 }
 
-void NateCode::visit(const StatOutputConcat& aStat)
+void NateCode::visit(const StatOutput::Concat& aStat)
 {
 	// nothing
 }
 
-void NateCode::visit(const StatOutputEnd& aStat)
+void NateCode::visit(const StatOutput::End& aStat)
 {
 	if (aStat.getEndOfLine())
 	{
@@ -266,7 +269,7 @@ void NateCode::visit(const StatOutputEnd& aStat)
 	mFirstOutput = true;
 }
 
-void NateCode::visit(const StatOutputExpr& aStat)
+void NateCode::visit(const StatOutput::Expr& aStat)
 {
 	const Expr& expr = aStat.getExpr();
 
@@ -300,79 +303,6 @@ void NateCode::visit(const StatOutputExpr& aStat)
 		}
 	}
 }
-
-//void NateCode::code(const Stat::SPtr& aStat)
-//{
-//  switch (aStat->code)
-//  {
-//  case ByteCode::StdError:
-//    codeOutput("*error", aStat);
-//    break;
-//  case ByteCode::StdInput:
-//    codeInput("*input", aStat);
-//    break;
-//  case ByteCode::Data:
-//    codeData(aStat);
-//    break;
-//  case ByteCode::Write:
-//    codeWrite(aStat);
-//    break;
-//  case ByteCode::Read:
-//    codeRead(aStat);
-//    break;
-//  case ByteCode::IfThen:
-//    codeIfThen(aStat);
-//    break;
-//  case ByteCode::IfIs:
-//    codeIfIs(aStat);
-//    break;
-//  case ByteCode::LoopStart:
-//    codeStartLoop(aStat);
-//    break;
-//  case ByteCode::LoopStartForStep:
-//    codeStartLoopForStep(aStat);
-//    break;
-//  case ByteCode::LoopStartForRange:
-//    codeStartLoopForRange(aStat);
-//    break;
-//  case ByteCode::While:
-//    codeWhile(aStat);
-//    break;
-//  case ByteCode::Scope:
-//    codeScope(aStat);
-//    break;
-//  case ByteCode::CodeInclude:
-//    codeCodeInclude(aStat);
-//    break;
-//  case ByteCode::Record:
-//    codeRecord(aStat);
-//    break;
-//  case ByteCode::Define:
-//		codeDefine(aStat);
-//    break;
-//  case ByteCode::Return:
-//    codeReturn(aStat);
-//    break;
-//  case ByteCode::DeclObject:
-//    codeDeclObject(aStat);
-//    break;
-//  case ByteCode::DeclObjectDefine:
-//    codeDeclObjectDefine(aStat);
-//    break;
-//  case ByteCode::ImplObject:
-//    codeImplObject(aStat);
-//    break;
-//  case ByteCode::Prop:
-//    codeProp(aStat);
-//    break;
-//  case ByteCode::ExprStat:
-//    codeExprStat(aStat);
-//    break;
-//	default:
-//		std::cerr << "Bad bytecode " << (int)aStat->code << std::endl;
-//		break;
-//  }
-//}
 
 char NateCode::end()
 {
@@ -600,61 +530,6 @@ std::string NateCode::codeExpr(/*const TreeNodePtr& aNode, */const Expr& aValue)
 	return result;
 }
 
-void NateCode::codeIfThen(const TreeNodePtr& aNode)
-{
-  for (auto& part : aNode->nested)
-  {
-    switch (part->code)
-    {
-    case ByteCode::If:
-      codeIf(part);
-      break;
-    case ByteCode::ElseIf:
-      codeElseIf(part);
-      break;
-    case ByteCode::Else:
-      codeElse(part);
-      break;
-		default:
-			std::cerr << "Bad Output bytecode " << (int)part->code << std::endl;
-			break;
-    }
-	}
-
-	--mIndent;
-	printLineNr(aNode->location);
-	*mOut << in() << "}" << end();
-}
-
-void NateCode::codeIf(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-
-	*mOut << in() << "if (" << codeExpr(/*aNode, */aNode->expr) << ")" << end() << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-}
-
-void NateCode::codeElseIf(const TreeNodePtr& aNode)
-{
-	--mIndent;
-	*mOut << in() << "}" << end();
-	printLineNr(aNode->location);
-	*mOut << in() << "else if (" << codeExpr(/*aNode, */aNode->expr) << ")" << end() << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-}
-
-void NateCode::codeElse(const TreeNodePtr& aNode)
-{
-	--mIndent;
-	*mOut << in() << "}" << end();
-	printLineNr(aNode->location);
-	*mOut << in() << "else" << end() << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-}
-
 bool NateCode::isConstIntScalar(const Expr& aExpr)
 {
   return (aExpr.is(Expr::ConstExpr) && aExpr.type()->is(Type::Scalar) &&
@@ -834,89 +709,6 @@ void NateCode::codeElseIs(const TreeNodePtr& aNode)
 	++mIndent;
 	codeNested(aNode);
 	--mIndent;
-}
-
-void NateCode::codeStartLoop(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << "while (true)" << end() << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-	--mIndent;
-	*mOut << in() << "}" << end();
-}
-
-void NateCode::codeStartLoopForStep(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-
-	*mOut << in() << "for (" << aNode->id->type()->codeType() << " " 
-			 << aNode->id->codeName() << "= " << codeExpr(/*aNode, */aNode->expr) << ";"  
-			 << aNode->id->name() << (aNode->bool1 ? " >= " : "<=") << codeExpr(/*aNode, */aNode->expr2) << "; "
-			 << aNode->id->name() << (aNode->bool1 ? " -= " : "+=") << codeExpr(/*aNode, */aNode->expr3) << ")" << end()
-		   << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-	--mIndent;
-	*mOut << in() << "}" << end();
-}
-
-void NateCode::codeStartLoopForRange(const TreeNodePtr& aNode)
-{
-	TypePtr rangeType = aNode->expr.type();
-	auto range = mParser->uniqueName();
-	auto iter = mParser->uniqueName();
-	auto next = mParser->uniqueName();
-
-	std::string ref = aNode->expr.is(Expr::Output) ? "&" : "";
-	std::string increment;
-
-	if (rangeType->isOfType("text"))
-	{
-		increment = iter + "=" + next;
-		*mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(/*aNode, */aNode->expr) << ";" << end(); 
-		*mOut << in() << "auto " << next << " = " << range << ".cbegin();" << end();
-	}
-	else
-	{
-		increment = "++" + iter;
-		*mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(/*aNode, */aNode->expr) << ";" << end(); 
-	}
-
-	*mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
-			 << iter << " != " << range << ".cend(); "
-			 << increment << ")" << end() << in() << "{" << end();
-
-	++mIndent;
-
-	if (rangeType->isOfType("text"))
-	{
-		*mOut << in() << "uint32_t " << aNode->id->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << end();
-	}
-	else
-	{
-		*mOut << in() << "auto const& " << aNode->id->codeName() << " = *" << iter << ";" << end();
-	}
-
-	codeNested(aNode);
-	--mIndent;
-	*mOut << in() << "}" << end();
-}
-
-void NateCode::codeWhile(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << "if (!(" << codeExpr(/*aNode, */aNode->expr) << ")) break;" << end();
-}
-
-void NateCode::codeScope(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << "{" << end();
-	++mIndent;
-	codeNested(aNode);
-	--mIndent;
-	*mOut << in() << "}" << end();
 }
 
 void NateCode::codeCodeInclude(const TreeNodePtr& aNode)
