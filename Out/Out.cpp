@@ -23,152 +23,227 @@ int main(int argc, char** argv)
 #line 14
 	int32_t cnt = 2;
 	cnt = 3;
-#line 17
-	while (true)
+#line 18
+	auto const tmp__0__ = cnt;
+#line 18
+	switch (tmp__0__)
 	{
 #line 18
+	case 10:
+	case 11:
+	{
+#line 20
+		*output << "case" << std::endl; 
+		break;
+	}
+#line 21
+	case 13:
+	{
+#line 22
+		*output << "case 13" << std::endl; 
+		break;
+	}
+	default:
+	{
+		*output << "else" << std::endl; 
+	}
+	break;
+	}
+#line 27
+	auto const tmp__1__ = cnt;
+#line 30
+	if ((tmp__1__ == cnt * 4))
+	{
+#line 31
+		*output << "hello" << std::endl; 
+	}
+#line 32
+	else if ((tmp__1__ == cnt + 4)
+#line 32
+
+					 || (tmp__1__ == cnt - 4))
+	{
+#line 34
+		*output << "hi" << std::endl; 
+		cnt = 2;
+	}
+	else
+	{
+#line 27
+		switch (tmp__1__)
+		{
+#line 27
+		case 10:
+		case 11:
+		{
+#line 29
+			*output << "case" << std::endl; 
+			break;
+		}
+		{
+#line 31
+			*output << "hello" << std::endl; 
+			break;
+		}
+		{
+#line 34
+			*output << "hi" << std::endl; 
+			cnt = 2;
+			break;
+		}
+		default:
+		{
+			*output << "else" << std::endl; 
+		}
+		break;
+		}
+	}
+#line 40
+	while (true)
+	{
+#line 41
 		int32_t cnt = 2;
 		if (!(cnt != 2)) break;
 		cnt = 3;
 	}
 	while (true)
 	{
-#line 22
+#line 45
 		if (!(cnt != 3)) break;
 		int32_t cnt = 2;
 		cnt = 3;
 	}
-	const std::string tmp__12__ = "abcd⅑⅛⅐efg";
-	auto tmp__14__ = tmp__12__.cbegin();
-	for (auto tmp__13__ = tmp__12__.cbegin(); tmp__13__ != tmp__12__.cend(); tmp__13__=tmp__14__)
+	const std::string tmp__2__ = "abcd⅑⅛⅐efg";
+	auto tmp__4__ = tmp__2__.cbegin();
+	for (auto tmp__3__ = tmp__2__.cbegin(); tmp__3__ != tmp__2__.cend(); tmp__3__=tmp__4__)
 	{
-		uint32_t item = utf8::next(tmp__14__,tmp__12__.cend());
-#line 27
+		uint32_t item = utf8::next(tmp__4__,tmp__2__.cend());
+#line 50
 		*output << (Core::toString(item)); *output << std::endl; 
 	}
 	for (int32_t lop= 1;lop<=10; lop+=1)
 	{
-#line 29
+#line 52
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 1;lop<=10; lop+=2)
 	{
-#line 33
+#line 56
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 1)
 	{
-#line 38
+#line 61
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 2)
 	{
-#line 42
+#line 65
 		int32_t cnt = 2;
 		if (!(lop != 20)) break;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	if (cnt == 3)
 	{
-#line 47
+#line 70
 		*output << "Hello, world!" << std::endl; 
 		cnt = 4;
 	}
 	if (cnt != 3)
 	{
-#line 51
+#line 74
 		float x = static_cast<float>(3.14);
 		*output << (x); *output << (x); *output << " " << (x); 
 	}
-#line 53
+#line 76
 	else
 	{
-#line 54
-		int32_t x = 3;
-		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 58
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))); *output << std::endl; 
-	}
-#line 60
-	else if (false)
-	{
-#line 61
-		int32_t x = 3;
-		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 65
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))); *output << std::endl; 
-	}
-#line 67
-	else if (false)
-	{
-#line 68
-		int32_t x = 3;
-		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
-	}
-#line 70
-	else if (true)
-	{
-#line 71
-		int32_t x = 3;
-		*output << "Hello, world!" << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 75
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))); *output << std::endl; 
-	}
 #line 77
-	else if (false)
-	{
-#line 78
 		int32_t x = 3;
 		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
-#line 80
-	else
+	if (cnt < 3)
 	{
 #line 81
-		int32_t x = 3;
-		*output << "Hello, world!" << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 85
 		double x = static_cast<double>(6);
 		*output << ((std::pow(x, x))); *output << std::endl; 
 	}
-#line 87
+#line 83
 	else if (false)
 	{
-#line 88
+#line 84
 		int32_t x = 3;
 		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
+	if (cnt < 3)
+	{
+#line 88
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))); *output << std::endl; 
+	}
 #line 90
-	else if (true)
+	else if (false)
 	{
 #line 91
 		int32_t x = 3;
-		*output << "Hello, world!" << std::endl; 
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
 #line 93
-	else
+	else if (true)
 	{
 #line 94
+		int32_t x = 3;
+		*output << "Hello, world!" << std::endl; 
+	}
+	if (cnt < 3)
+	{
+#line 98
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))); *output << std::endl; 
+	}
+#line 100
+	else if (false)
+	{
+#line 101
+		int32_t x = 3;
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
+	}
+#line 103
+	else
+	{
+#line 104
+		int32_t x = 3;
+		*output << "Hello, world!" << std::endl; 
+	}
+	if (cnt < 3)
+	{
+#line 108
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))); *output << std::endl; 
+	}
+#line 110
+	else if (false)
+	{
+#line 111
+		int32_t x = 3;
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
+	}
+#line 113
+	else if (true)
+	{
+#line 114
+		int32_t x = 3;
+		*output << "Hello, world!" << std::endl; 
+	}
+#line 116
+	else
+	{
+#line 117
 		int32_t y = 3;
 		*output << "Bye, world!" << std::endl; 
 	}

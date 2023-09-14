@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Stat.h"
-#include "StatExpr.h"
+#include "StatWithExpr.h"
 
 
 class StatOutput : public Stat
@@ -36,7 +36,7 @@ public:
     bool mEndOfLine;
   };
 
-  class Expr : public StatExpr
+  class Expr : public StatWithExpr
   {
   public:
     Expr(const Location& aLocation, const ::Expr& aExpr);

@@ -22,9 +22,10 @@ public:
   void visit(const StatProgram& aStat) override;
   void visit(const StatDeclareLocal& aStat) override;
   void visit(const StatAssign& aStat) override;
-  void visit(const StatIf& aStat) override;
-  void visit(const StatElseIf& aStat) override;
-  void visit(const StatElse& aStat) override;
+  void visit(const StatIfThen& aStat) override;
+  void visit(const StatIfThen::ElseIf& aStat) override;
+  void visit(const StatIfThen::Else& aStat) override;
+  void visit(const StatIfIs& aStat) override;
   void visit(const StatExpr& aStat) override;
   void visit(const StatOutput& aStat) override;
   void visit(const StatOutput::Comma& aStat) override;
@@ -51,13 +52,10 @@ private:
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	void codeIfIs(const TreeNodePtr& aNode);
-	bool codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool& firstIf);
-	void codeCaseIsListSwitch(const TreeNodePtr& aNode);
-	void codeSwitch(const TreeNodePtr& aNode, const TreeNodePtr& aElsePart);
-	void codeCaseIsIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool firstCond);
-	void codeCaseIsSwitch(const TreeNodePtr& aNode);
-	void codeElseIs(const TreeNodePtr& aNode);
+	bool codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool& firstIf);
+	void codeCaseIsListSwitch(const Stat& aStat);
+	void codeSwitch(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
+	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
   void codeWrite(const TreeNodePtr& aNode);
   void codeRead(const TreeNodePtr& aNode);
@@ -88,8 +86,8 @@ private:
 
 
 	bool isConstIntScalar(const Expr& aExpr);
-	bool isNestedConstIntScalar(const TreeNodePtr& aNode);
-	bool isNestedNonConstIntScalar(const TreeNodePtr& aNode);
+	bool isNestedConstIntScalar(const Stat& aStat);
+	bool isNestedNonConstIntScalar(const Stat& aStat);
 
 	NateParser*                 mParser = nullptr;
   std::ostream*								mOut;

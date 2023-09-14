@@ -95,7 +95,7 @@ void NateCode::visit(const StatDeclareLocal& aStat)
 
 		*mOut << aStat.getIdentifier()->type()->codeType() << " " << aStat.getIdentifier()->codeName();
 
-		*mOut << " = " << codeExpr(aStat.getValue());
+		*mOut << " = " << codeExpr(aStat.getExpr());
 	
 		*mOut << ";" << end();
 	}
@@ -124,10 +124,10 @@ void NateCode::visit(const StatAssign& aStat)
 		}
 	}
 
-	*mOut << aStat.getValue().code() << endPars << ";" << end();
+	*mOut << aStat.getExpr().code() << endPars << ";" << end();
 }
 
-void NateCode::visit(const StatIf& aStat)
+void NateCode::visit(const StatIfThen& aStat)
 {
 	printLineNr(aStat.getLocation());
 
@@ -136,7 +136,7 @@ void NateCode::visit(const StatIf& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatElseIf& aStat)
+void NateCode::visit(const StatIfThen::ElseIf& aStat)
 {
 	printLineNr(aStat.getLocation());
 
@@ -145,13 +145,66 @@ void NateCode::visit(const StatElseIf& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatElse& aStat)
+void NateCode::visit(const StatIfThen::Else& aStat)
 {
 	printLineNr(aStat.getLocation());
 
 	*mOut << in() << "else" << end();
 	
 	codeCompound(aStat);
+}
+
+void NateCode::visit(const StatIfIs& aStat)
+{
+	printLineNr(aStat.getLocation());
+	
+	bool firstIf = true;
+	bool usesIf = false;
+	bool usesSwitch = false;
+	Stat::SPtr elsePart;
+	
+	*mOut << in() << "auto const " << aStat.getId()->codeName() << " = " << codeExpr(aStat.getExpr()) << ";" << end();
+
+  for (auto& part : aStat.getCompound())
+  {
+		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
+    if (isList != nullptr)
+    {
+      bool needsIf = codeCaseIsListIf(*isList, aStat, firstIf);
+			usesIf = needsIf || usesIf;
+      bool needsSwitch = isNestedConstIntScalar(*part) && !part->getCompound().empty();
+			usesSwitch = needsSwitch || usesSwitch;
+    }
+		else
+		{
+			elsePart = part;
+		}
+  }
+
+	if (usesIf)
+	{
+		if (usesSwitch || elsePart)
+		{
+			*mOut << in() << "else" << end();
+			*mOut << in() << "{" << end();
+			if (usesSwitch)
+			{
+				++mIndent;
+				codeSwitch(aStat, elsePart);
+				--mIndent;
+			}
+			else
+			{
+				codeCompound(*elsePart);
+			}
+
+			*mOut << in() << "}" << end();
+		}
+	}
+	else if (usesSwitch)
+	{
+		codeSwitch(aStat, elsePart);
+	}
 }
 
 void NateCode::visit(const StatLoop& aStat)
@@ -536,94 +589,55 @@ bool NateCode::isConstIntScalar(const Expr& aExpr)
 		      !aExpr.type()->is(Type::Real));
 }
 
-bool NateCode::isNestedConstIntScalar(const TreeNodePtr& aNode)
+bool NateCode::isNestedConstIntScalar(const Stat& aStat)
 {
-	return std::all_of(aNode->nested.begin(), aNode->nested.end(),
-										[&](const TreeNodePtr& part) { return part->code != ByteCode::CaseIs || isConstIntScalar(part->expr); });
+	return std::any_of(aStat.getCompound().begin(), aStat.getCompound().end(),
+										[&](const Stat::SPtr& part) { const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+	                                          return is == nullptr || isConstIntScalar(is->getExpr()); });
 }
 
-bool NateCode::isNestedNonConstIntScalar(const TreeNodePtr& aNode)
+bool NateCode::isNestedNonConstIntScalar(const Stat& aStat)
 {
-	return std::any_of(aNode->nested.begin(), aNode->nested.end(),
-										[&](const TreeNodePtr& part) { return part->code == ByteCode::CaseIs && !isConstIntScalar(part->expr); });
+	return std::any_of(aStat.getCompound().begin(), aStat.getCompound().end(),
+										[&](const Stat::SPtr& part) { const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+	                                          return is != nullptr && !isConstIntScalar(is->getExpr()); });
 }
 
-void NateCode::codeIfIs(const TreeNodePtr& aNode)
-{
-	bool firstIf = true;
-	bool usesIf = false;
-	bool usesSwitch = false;
-	TreeNodePtr elsePart;
-	
-	printLineNr(aNode->location);
-	*mOut << in() << "auto const " << aNode->id->codeName() << " = " << codeExpr(/*aNode, */aNode->expr) << ";" << end();
 
-  for (auto& part : aNode->nested)
-  {
-    if (part->code == ByteCode::CaseIsList)
-    {
-      bool needsIf = codeCaseIsListIf(part, aNode, firstIf);
-			usesIf = needsIf || usesIf;
-      bool needsSwitch = isNestedConstIntScalar(part) && !part->nested.empty();
-			usesSwitch = needsSwitch || usesSwitch;
-    }
-		else
-		{
-			elsePart = part;
-		}
-  }
-
-	if (usesIf)
-	{
-		if (usesSwitch || elsePart)
-		{
-			*mOut << in() << "else" << end();
-			*mOut << in() << "{" << end();
-			if (usesSwitch)
-			{
-				++mIndent;
-				codeSwitch(aNode, elsePart);
-				--mIndent;
-			}
-			else
-			{
-				codeElseIs(elsePart);
-			}
-
-			*mOut << in() << "}" << end();
-		}
-	}
-	else if (usesSwitch)
-	{
-		codeSwitch(aNode, elsePart);
-	}
-}
-
-bool NateCode::codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool& firstIf)
+bool NateCode::codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool& firstIf)
 {
 	bool firstCond = true;
-	bool result = isNestedNonConstIntScalar(aNode);
+	bool result = isNestedNonConstIntScalar(aStat);
 
-	if (result && !aNode->nested.empty())
+	if (result && !aStat.getCompound().empty())
 	{
-	  printLineNr(aNode->location);
+	  printLineNr(aStat.getLocation());
 		*mOut << in() << (firstIf ? "if " : "else if ") << "(";
-		for (auto& part : aNode->nested)
+		for (const Stat::SPtr& part : aStat.getCompound())
 		{
-			if (part->code == ByteCode::CaseIs)
+			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+			if (is != nullptr)
 			{
-				codeCaseIsIf(part, aIfIsNode, firstCond);
+				if (!firstCond)
+				{
+					*mOut << end();
+					printLineNr(aStat.getLocation());
+					*mOut << end() << in(4) << " || ";
+				}
+
+				*mOut << "(" << aIfIsStat.getId()->codeName() << " == " << codeExpr(is->getExpr()) << ")";
 				firstCond = false;
 			}
 		}
 
 		*mOut << ")" << end() << in() << "{" << end();
 		++mIndent;
-		for (auto& part : aNode->nested)
+		for (const Stat::SPtr& part : aStat.getCompound())
 		{
-			if (part->code != ByteCode::CaseIs)
+			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+			if (is == nullptr)
 			{
-				//code(part);
+				part->accept(this);
 			}
 		}
 
@@ -636,79 +650,65 @@ bool NateCode::codeCaseIsListIf(const TreeNodePtr& aNode, const TreeNodePtr& aIf
 	return result;
 }
 
-void NateCode::codeCaseIsIf(const TreeNodePtr& aNode, const TreeNodePtr& aIfIsNode, bool firstCond)
+void NateCode::codeSwitch(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
 {
-	if (!firstCond)
-	{
-		*mOut << end();
-	  printLineNr(aNode->location);
-		*mOut << end() << in(4) << " || ";
-	}
-
-	*mOut << "(" << aIfIsNode->id->codeName() << " == " << codeExpr(/*aNode, */aNode->expr) << ")";
-}
-
-void NateCode::codeSwitch(const TreeNodePtr& aNode, const TreeNodePtr& aElsePart)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << "switch (" + aNode->id->codeName() << ")" << end();
+	printLineNr(aStat.getLocation());
+	*mOut << in() << "switch (" + aStat.getId()->codeName() << ")" << end();
 	*mOut << in() << "{" << end();
 	
-  for (auto& part : aNode->nested)
+	for (auto& part : aStat.getCompound())
   {
-    if (part->code == ByteCode::CaseIsList)
+		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
+		if (isList != nullptr)
     {
-      codeCaseIsListSwitch(part);
+      codeCaseIsListSwitch(*isList);
     }
   }
 	
-	*mOut << in() << "default:" << end();
-	*mOut << in() << "{" << end();
-	codeElseIs(aElsePart);
-	*mOut << in(1) << "break;" << end();
-	*mOut << in() << "}" << end();
+	if (aElsePart)
+	{
+		*mOut << in() << "default:" << end();
+		codeCompound(*aElsePart);
+		*mOut << in() << "break;" << end();
+	}
+
 	*mOut << in() << "}" << end();
 }
 
-void NateCode::codeCaseIsListSwitch(const TreeNodePtr& aNode)
+void NateCode::codeCaseIsListSwitch(const Stat& aStat)
 {
-	if (isNestedConstIntScalar(aNode) && !aNode->nested.empty())
+	if (isNestedConstIntScalar(aStat) && !aStat.getCompound().empty())
 	{
-		for (auto& part : aNode->nested)
+		for (auto& part : aStat.getCompound())
 		{
-			if (part->code == ByteCode::CaseIs && isConstIntScalar(part->expr))
+			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+			if (is != nullptr && isConstIntScalar(is->getExpr()))
 			{
-				codeCaseIsSwitch(part);
+				codeCaseIsSwitch(*is);
 			}
 		}
 
 		*mOut << in() << "{" << end();
 		++mIndent;
-		for (auto& part : aNode->nested)
+		for (auto& part : aStat.getCompound())
 		{
-			if (part->code != ByteCode::CaseIs)
+			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+			if (is == nullptr || isConstIntScalar(is->getExpr()))
 			{
-				//code(part);
+				part->accept(this);
 			}
 		}
-
+		
+		*mOut << in() << "break;" << end();
 		--mIndent;
-		*mOut << in(1) << "break;" << end();
 		*mOut << in() << "}" << end();
 	}
 }
 
-void NateCode::codeCaseIsSwitch(const TreeNodePtr& aNode)
+void NateCode::codeCaseIsSwitch(const StatIfIs::Is& aStat)
 {
-	printLineNr(aNode->location);
-	*mOut << in() << "case " << codeExpr(/*aNode, */aNode->expr) << ":" << end();
-}
-
-void NateCode::codeElseIs(const TreeNodePtr& aNode)
-{
-	++mIndent;
-	codeNested(aNode);
-	--mIndent;
+	printLineNr(aStat.getLocation());
+	*mOut << in() << "case " << codeExpr(aStat.getExpr()) << ":" << end();
 }
 
 void NateCode::codeCodeInclude(const TreeNodePtr& aNode)

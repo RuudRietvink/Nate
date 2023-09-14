@@ -4,10 +4,8 @@
 #include "StatDeclareLocal.h"
 #include "StatOutput.h"
 #include "StatAssign.h"
-#include "StatOutput.h"
-#include "StatIf.h"
-#include "StatElseIf.h"
-#include "StatElse.h"
+#include "StatIfThen.h"
+#include "StatIfIs.h"
 #include "StatExpr.h"
 #include "StatLoop.h"
 
@@ -18,9 +16,10 @@ public:
   virtual void visit(const StatDeclareLocal& aStat) = 0;
   virtual void visit(const StatAssign& aStat) = 0;
   virtual void visit(const StatExpr& aStat) = 0;
-  virtual void visit(const StatIf& aStat) = 0;
-  virtual void visit(const StatElseIf& aStat) = 0;
-  virtual void visit(const StatElse& aStat) = 0;
+  virtual void visit(const StatIfThen& aStat) = 0;
+  virtual void visit(const StatIfThen::ElseIf& aStat) = 0;
+  virtual void visit(const StatIfThen::Else& aStat) = 0;
+  virtual void visit(const StatIfIs& aStat) = 0;
   virtual void visit(const StatLoop& aStat) = 0;
   virtual void visit(const StatLoop::While& aStat) = 0;
   virtual void visit(const StatLoop::ForStep& aStat) = 0;

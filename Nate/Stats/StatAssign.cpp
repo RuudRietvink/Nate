@@ -2,9 +2,8 @@
 #include "ICodeVisitor.h"
 
 StatAssign::StatAssign(const Location& aLocation, const std::vector<Expr>& aIdentifiers, const Expr& aValue)
-  : Stat(aLocation),
-    mIdentifiers(aIdentifiers),
-    mValue(aValue)
+  : StatWithExpr(aLocation, aValue),
+    mIdentifiers(aIdentifiers)
 {}
 
 void StatAssign::accept(ICodeVisitor* aVisitor) const
@@ -15,9 +14,4 @@ void StatAssign::accept(ICodeVisitor* aVisitor) const
 const std::vector<Expr>& StatAssign::getIdentifiers() const
 {
   return mIdentifiers;
-}
-
-const Expr& StatAssign::getValue() const
-{
-  return mValue;
 }

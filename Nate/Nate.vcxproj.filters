@@ -160,16 +160,16 @@
     <ClCompile Include="Stats\StatOutput.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
-    <ClCompile Include="Stats\StatIf.cpp">
-      <Filter>Source Files\Structs\Stats</Filter>
-    </ClCompile>
-    <ClCompile Include="Stats\StatElse.cpp">
-      <Filter>Source Files\Structs\Stats</Filter>
-    </ClCompile>
-    <ClCompile Include="Stats\StatElseIf.cpp">
+    <ClCompile Include="Stats\StatIfThen.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
     <ClCompile Include="Stats\StatLoop.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatIfIs.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatWithExpr.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
   </ItemGroup>
@@ -368,16 +368,16 @@
     <ClInclude Include="NateCode.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stats\StatIf.h">
-      <Filter>Source Files\Structs\Stats</Filter>
-    </ClInclude>
-    <ClInclude Include="Stats\StatElse.h">
-      <Filter>Source Files\Structs\Stats</Filter>
-    </ClInclude>
-    <ClInclude Include="Stats\StatElseIf.h">
+    <ClInclude Include="Stats\StatIfThen.h">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Stats\StatLoop.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatIfIs.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatWithExpr.h">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
   </ItemGroup>

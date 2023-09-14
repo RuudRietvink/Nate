@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Stat.h"
-#include "StatExpr.h"
+#include "StatWithExpr.h"
 #include "Identifier.h"
 
-class StatAssign : public Stat
+class StatAssign : public StatWithExpr
 {
 public:
   StatAssign(const Location& aLocation, const std::vector<Expr>& aIdentifiers, const Expr& aValue);
@@ -13,10 +12,7 @@ public:
 
   const std::vector<Expr>& getIdentifiers() const;
 
-  const Expr& getValue() const;
-
 private:
   std::vector<Expr> mIdentifiers;
-  Expr              mValue;  
 };
 

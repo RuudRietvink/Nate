@@ -85,15 +85,16 @@ TreeNode* NateParser::add(ByteCode code, const Expr& expr, const yy::parser::loc
 	return result;
 }
 
-TreeNode* NateParser::up()
+void NateParser::up()
 { 
-	mCurNode = mCurNode->back;
-	if (mCurNode == nullptr)
+	if (mStatHolders.empty())
 	{
 		std::cerr << "oops";
 	}
-
-	return mCurNode;
+	else
+	{
+		popStatsHolder();
+	}
 }
 
 yy::Lexer* NateParser::getLexer()
@@ -289,7 +290,7 @@ void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLoca
 	}
 
 	pushScope(std::make_shared<Scope>("if", IIdentifiersHolder::ScopeFlag::Local));
-	pushStatsHolder(addStatement(std::make_shared<StatIf>(location(aLocation), aValue)));
+	pushStatsHolder(addStatement(std::make_shared<StatIfThen>(location(aLocation), aValue)));
 }
 
 void NateParser::doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation)
@@ -297,7 +298,7 @@ void NateParser::doElseIf(const Expr& aValue, const yy::parser::location_type& a
 	popScope();
 	popStatsHolder();
 	pushScope(std::make_shared<Scope>("elseif", IIdentifiersHolder::ScopeFlag::Local));
-	pushStatsHolder(addStatement(std::make_shared<StatElseIf>(location(aLocation), aValue)));
+	pushStatsHolder(addStatement(std::make_shared<StatIfThen::ElseIf>(location(aLocation), aValue)));
 }
 
 void NateParser::doElse(const yy::parser::location_type& aLocation)
@@ -305,7 +306,7 @@ void NateParser::doElse(const yy::parser::location_type& aLocation)
 	popScope();
 	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
 	popStatsHolder();
-  pushStatsHolder(addStatement(std::make_shared<StatElse>(location(aLocation))));
+  pushStatsHolder(addStatement(std::make_shared<StatIfThen::Else>(location(aLocation))));
 }
 
 void NateParser::doEndIf(const yy::parser::location_type& aLocation)
@@ -314,24 +315,21 @@ void NateParser::doEndIf(const yy::parser::location_type& aLocation)
 	popStatsHolder();
 }
 
-void NateParser::doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation)
+void NateParser::doIfIs(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
-	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), idName, aValue.type());
+	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), uniqueName(), aValue.type());
 	addIdentifier(id);
 	IfIs info;
 	info.id = id;
 	info.isSwitch = aValue.type()->is(Type::Scalar);
 	mIfIs.push(info);
-	
-
-  TreeNode* node = addStat(ByteCode::IfIs, aValue, aLocation);
-  node->id = id;
-	node->bool1 = aValue.type()->is(Type::Scalar);
+		
+  pushStatsHolder(addStatement(std::make_shared<StatIfIs>(location(aLocation), id, aValue)));
 }
 
 void NateParser::doCaseIsList(const yy::parser::location_type& aLocation)
 {
-  addStat(ByteCode::CaseIsList, aLocation);
+	pushStatsHolder(addStatement(std::make_shared<StatIfIs::IsList>(location(aLocation))));
 }
 
 void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation)
@@ -342,7 +340,7 @@ void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::par
 		error("Expected expression with same type as in IF");
 	}
 		
-  add(ByteCode::CaseIs, aValue, aLocation);
+	addStatement(std::make_shared<StatIfIs::Is>(location(aLocation), aValue));
 }
 
 void NateParser::doElseIs(const yy::parser::location_type& aLocation)
@@ -353,8 +351,7 @@ void NateParser::doElseIs(const yy::parser::location_type& aLocation)
 void NateParser::doEndIs(const yy::parser::location_type& aLocation)
 {
 	mIfIs.pop();
-	up();
-	up();
+	popStatsHolder();
 }
 
 void NateParser::doInitLoop(const yy::parser::location_type& aLocation)

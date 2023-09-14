@@ -1,16 +1,11 @@
 #pragma once
 
-#include "Stat.h"
+#include "StatWithExpr.h"
 #include "Expr.h"
 
-class StatExpr : public Stat
+class StatExpr : public StatWithExpr
 {
 public:
   StatExpr(const Location& aLocation, const Expr& aExpr);
-
-  const Expr& getExpr() const;
-
-private:
-  Expr mExpr;
 };
 

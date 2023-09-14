@@ -42,7 +42,6 @@ public:
 		std::string prevReadSource;
 		bool prevWasValue = false;
 		std::stack<Expr> ifExpr;
-		std::stack<std::string> ifId;
 		std::stack<yy::parser::location_type> ifLocation;
 		std::string forId;
 		std::list<CodePtr> curParsedCodes;
@@ -74,7 +73,7 @@ public:
 	TreeNode* addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
 	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
 	TreeNode* add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
-	TreeNode* up();
+	void up();
 
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 						 FileType aFileType = FileType::Normal);
@@ -103,7 +102,7 @@ public:
 	void doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doElse(const yy::parser::location_type& aLocation);
 	void doEndIf(const yy::parser::location_type& aLocation);
-	void doIfIs(const Expr& aValue, const std::string& idName, const yy::parser::location_type& aLocation);
+	void doIfIs(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doCaseIsList(const yy::parser::location_type& aLocation);
 	void doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
 	void doElseIs(const yy::parser::location_type& aLocation);

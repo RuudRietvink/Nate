@@ -45,7 +45,7 @@ void StatOutput::End::accept(ICodeVisitor* aVisitor) const
 }
 
 StatOutput::Expr::Expr(const Location& aLocation, const ::Expr& aExpr)
-  : StatExpr(aLocation, aExpr)
+  : StatWithExpr(aLocation, aExpr)
 {}
 
 void StatOutput::Expr::accept(ICodeVisitor* aVisitor) const

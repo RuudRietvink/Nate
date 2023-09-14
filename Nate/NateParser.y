@@ -1005,7 +1005,6 @@ if-start:
 	  IF expr col
       { 
         nate.data.ifExpr.push($expr);
-        nate.data.ifId.push(nate.uniqueName());
         nate.data.ifLocation.push(@expr);
       }
   ;
@@ -1015,7 +1014,6 @@ if-statement:
     if-rest
       { 
         nate.data.ifExpr.pop(); 
-        nate.data.ifId.pop(); 
         nate.data.ifLocation.pop(); 
       }
   ;
@@ -1040,7 +1038,7 @@ else:
 	  begin 
 		  { nate.doElseIf(nate.data.ifExpr.top(), nate.data.ifLocation.top()); }
 		  statement-list
-      { nate.data.ifExpr.pop(); nate.data.ifId.pop(); nate.data.ifLocation.pop(); }
+      { nate.data.ifExpr.pop(); nate.data.ifLocation.pop(); }
 	  end
 	  else
   | ELSE col 
@@ -1054,7 +1052,7 @@ else:
 if-is:
     IS 
 	  	{ 
-        nate.doIfIs(nate.data.ifExpr.top(), nate.data.ifId.top(), @IS);
+        nate.doIfIs(nate.data.ifExpr.top(), @IS);
         nate.doCaseIsList(@IS);
       }
     is-rest
@@ -1095,6 +1093,9 @@ is-part-block:
   
 is-else:
     %empty
+	  	{ 
+        nate.up();
+      }
   | ELSE col 
 	  	{ 
         nate.up();
