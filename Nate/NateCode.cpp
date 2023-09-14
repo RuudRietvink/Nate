@@ -164,46 +164,57 @@ void NateCode::visit(const StatIfIs& aStat)
 	Stat::SPtr elsePart;
 	
 	*mOut << in() << "auto const " << aStat.getId()->codeName() << " = " << codeExpr(aStat.getExpr()) << ";" << end();
-
+	
   for (auto& part : aStat.getCompound())
   {
 		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
     if (isList != nullptr)
     {
-      bool needsIf = codeCaseIsListIf(*isList, aStat, firstIf);
-			usesIf = needsIf || usesIf;
-      bool needsSwitch = isNestedConstIntScalar(*part) && !part->getCompound().empty();
-			usesSwitch = needsSwitch || usesSwitch;
-    }
+			if (!isList->getCompound().empty())
+			{
+				if (isNestedNonConstIntScalar(*isList))
+				{
+					usesIf = true;
+				}
+				else if (isNestedConstIntScalar(*isList))
+				{
+					usesSwitch = true;
+				}
+			}
+		}
 		else
 		{
-			elsePart = part;
+	    elsePart = part;
 		}
-  }
+	}
 
-	if (usesIf)
+	if (usesSwitch)
 	{
-		if (usesSwitch || elsePart)
+		codeIfIsSwitch(aStat);
+		if (elsePart)
 		{
-			*mOut << in() << "else" << end();
-			*mOut << in() << "{" << end();
-			if (usesSwitch)
+			*mOut << in() << "default:" << end();			
+
+			if (usesIf)
 			{
+				*mOut << in() << "{" << end();
 				++mIndent;
-				codeSwitch(aStat, elsePart);
+				codeIfIsIfs(aStat, elsePart);
 				--mIndent;
+			  *mOut << in() << "}" << end();
 			}
 			else
 			{
 				codeCompound(*elsePart);
 			}
-
-			*mOut << in() << "}" << end();
 		}
+		
+		*mOut << in() << "break;" << end();
+		*mOut << in() << "}" << end();
 	}
-	else if (usesSwitch)
+	else
 	{
-		codeSwitch(aStat, elsePart);
+		codeIfIsIfs(aStat, elsePart);
 	}
 }
 
@@ -604,53 +615,68 @@ bool NateCode::isNestedNonConstIntScalar(const Stat& aStat)
 }
 
 
-bool NateCode::codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool& firstIf)
+void NateCode::codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool firstIf)
 {
 	bool firstCond = true;
-	bool result = isNestedNonConstIntScalar(aStat);
 
-	if (result && !aStat.getCompound().empty())
+	printLineNr(aStat.getLocation());
+	*mOut << in() << (firstIf ? "if " : "else if ") << "(";
+
+	for (const Stat::SPtr& part : aStat.getCompound())
 	{
-	  printLineNr(aStat.getLocation());
-		*mOut << in() << (firstIf ? "if " : "else if ") << "(";
-		for (const Stat::SPtr& part : aStat.getCompound())
+		const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+		if (is != nullptr)
 		{
-			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
-			if (is != nullptr)
+			if (!firstCond)
 			{
-				if (!firstCond)
-				{
-					*mOut << end();
-					printLineNr(aStat.getLocation());
-					*mOut << end() << in(4) << " || ";
-				}
-
-				*mOut << "(" << aIfIsStat.getId()->codeName() << " == " << codeExpr(is->getExpr()) << ")";
-				firstCond = false;
+				*mOut << end();
+				printLineNr(aStat.getLocation());
+				*mOut << end() << in(4) << " || ";
 			}
+
+			*mOut << "(" << aIfIsStat.getId()->codeName() << " == " << codeExpr(is->getExpr()) << ")";
+			firstCond = false;
 		}
-
-		*mOut << ")" << end() << in() << "{" << end();
-		++mIndent;
-		for (const Stat::SPtr& part : aStat.getCompound())
-		{
-			const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
-			if (is == nullptr)
-			{
-				part->accept(this);
-			}
-		}
-
-		--mIndent;
-		*mOut << in() << "}" << end();
-
-		firstIf = false;
 	}
 
-	return result;
+	*mOut << ")" << end() << in() << "{" << end();
+	++mIndent;
+	for (const Stat::SPtr& part : aStat.getCompound())
+	{
+		const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+		if (is == nullptr)
+		{
+			part->accept(this);
+		}
+	}
+
+	--mIndent;
+	*mOut << in() << "}" << end();
 }
 
-void NateCode::codeSwitch(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
+void NateCode::codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
+{
+	bool firstIf = true;
+
+  for (auto& part : aStat.getCompound())
+  {
+		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
+
+	  if (isList != nullptr && isNestedNonConstIntScalar(*isList) && !isList->getCompound().empty())
+    {
+      codeCaseIsListIf(*isList, aStat, firstIf);
+		  firstIf = false;
+    }
+  }
+
+	if (aElsePart)
+	{
+		*mOut << in() << "else" << end();
+	  codeCompound(*aElsePart);
+	}
+}
+
+void NateCode::codeIfIsSwitch(const StatIfIs& aStat)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << "switch (" + aStat.getId()->codeName() << ")" << end();
@@ -664,15 +690,6 @@ void NateCode::codeSwitch(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
       codeCaseIsListSwitch(*isList);
     }
   }
-	
-	if (aElsePart)
-	{
-		*mOut << in() << "default:" << end();
-		codeCompound(*aElsePart);
-		*mOut << in() << "break;" << end();
-	}
-
-	*mOut << in() << "}" << end();
 }
 
 void NateCode::codeCaseIsListSwitch(const Stat& aStat)

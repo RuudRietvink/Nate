@@ -52,9 +52,10 @@ private:
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
-	bool codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool& firstIf);
+	void codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& aIfIsStat, bool firstIf);
 	void codeCaseIsListSwitch(const Stat& aStat);
-	void codeSwitch(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
+	void codeIfIsSwitch(const StatIfIs& aStat);
+	void codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
   void codeWrite(const TreeNodePtr& aNode);
