@@ -36,10 +36,10 @@ public:
     bool mEndOfLine;
   };
 
-  class Expr : public StatWithExpr
+  class Value : public StatWithExpr
   {
   public:
-    Expr(const Location& aLocation, const ::Expr& aExpr);
+    Value(const Location& aLocation, const Expr& aExpr);
 
     void accept(ICodeVisitor* aVisitor) const override;
   };

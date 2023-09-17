@@ -10,7 +10,7 @@ public:
   class While : public StatExpr
   {
   public:
-    While(const Location& aLocation, const ::Expr& aExpr);
+    While(const Location& aLocation, const Expr& aExpr);
 
     void accept(ICodeVisitor* aVisitor) const override;
   };

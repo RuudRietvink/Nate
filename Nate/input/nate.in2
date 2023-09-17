@@ -1,5 +1,6 @@
 import Math
 import Text
+import File-Output
 
 // √⌊⌋⌈⌉|⏐
 // ⏨ю
@@ -11,6 +12,25 @@ import Text
 // ①②③④
 
 program:
+  var out is file-output
+  var out2 is output := out
+  output "Before:", out is ok, out is opened
+  open out for writing to file "d:\\uit"
+  out2 := out
+  output
+  if out is opened:						              	
+    output "Inside:", out is ok, out is opened
+    write to out2: "Hello,planet",
+    write: 12,13&14&
+    write: 15
+    write to output: "Hi",
+    output "Hi",
+    write: "End"
+    write:
+    write to out2: "Hi there"
+    close out
+  output "After:", out is ok, out is opened
+
   var cnt := 2
   cnt := 3
   
@@ -39,25 +59,25 @@ program:
     cnt := 2
 
   if cnt:
-  is cnt * 4:
-    output "hello"
-  is cnt + 4:
-  is cnt - 4:
-    output "hi"
-    cnt := 2
-  else:
-    output "else"
+    is cnt * 4:
+      output "hello"
+    is cnt + 4:
+    is cnt - 4:
+      output "hi"
+      cnt := 2
+    else:
+      output "else"
     
   if cnt:
-  is 10:
-  is 11:
-    output "case"
-  is cnt * 4:
-    output "hello"
-  is cnt + 4:
-  is cnt - 4:
-    output "hi"
-    cnt := 2
+    is 10:
+    is 11:
+      output "case"
+    is cnt * 4:
+      output "hello"
+    is cnt + 4:
+    is cnt - 4:
+      output "hi"
+      cnt := 2
 
   if cnt:
   is 10:

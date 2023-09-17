@@ -439,8 +439,7 @@ void NateParser::doEndScope(const yy::parser::location_type& aLocation)
 
 void NateParser::doCodeInclude(const yy::parser::location_type& aLocation)
 {
-	TreeNode* node = add(ByteCode::CodeInclude, aLocation);
-	node->string = mCodes.back()->code();
+	addStatement(std::make_shared<StatCode>(location(aLocation), mCodes.back()->code()));
 	mCodes.pop_back();
 }
 
@@ -471,14 +470,13 @@ void NateParser::doEnd(bool aEnd, const yy::parser::location_type& aLocation)
 
 void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
-  TreeNode* node = addStat(ByteCode::Write, aValue, aLocation);
 	IdentifierPtr writer = getIdentifier("nate__writer");
 
 	if (aValue.isEmpty())
 	{
 		if (writer)
 		{
-			node->id = writer;
+	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, false)));
 		}
 		else
 		{
@@ -491,10 +489,12 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 		{
 			writer = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__writer", determineType("output"), aValue);
 			addIdentifier(writer);
-			node->bool1 = true;
+	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, true)));
 		}
-
-		node->id = writer;
+		else
+		{
+	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, false)));
+		}
 	}
 	else
 	{
@@ -563,7 +563,7 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
 {
   if (aValue.type() && !aValue.type()->empty())
   {
-	  addStatement(std::make_shared<StatOutput::Expr>(location(aLocation), aValue));
+	  addStatement(std::make_shared<StatOutput::Value>(location(aLocation), aValue));
   }
   else
   {

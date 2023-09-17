@@ -62,6 +62,7 @@ void NateCode::codeCompound(const Stat& aStat)
 
 void NateCode::visit(const StatProgram& aStat)
 {
+	*mOut << in() << "#undef NOMINMAX" << end();
 	*mOut << in() << "#define NOMINMAX" << end();
 	*mOut << in() << "#include <windows.h>" << end();
 
@@ -286,6 +287,12 @@ void NateCode::visit(const StatLoop::ForRange& aStat)
 	*mOut << in() << "}" << end();
 }
 
+void NateCode::visit(const StatCode& aStat)
+{
+	printLineNr(aStat.getLocation());
+	*mOut << in() << aStat.getCode() << end();
+}
+
 void NateCode::visit(const StatExpr& aStat)
 {
 	*mOut << " = " << codeExpr(aStat.getExpr());
@@ -293,17 +300,7 @@ void NateCode::visit(const StatExpr& aStat)
 
 void NateCode::visit(const StatOutput& aStat)
 {
-	printLineNr(aStat.getLocation());
-	mStream = "*output";
-	mFirstOutput = true;
-	mStartOutput = true;
-	mDataOutput = false;
-	mCachedOutput.clear();
-
-  for (auto& part : aStat.getCompound())
-  {
-		part->accept(this);
-  }
+	codeOutputStart(aStat, "*output");
 }
 
 void NateCode::visit(const StatOutput::Comma& aStat)
@@ -333,7 +330,7 @@ void NateCode::visit(const StatOutput::End& aStat)
 	mFirstOutput = true;
 }
 
-void NateCode::visit(const StatOutput::Expr& aStat)
+void NateCode::visit(const StatOutput::Value& aStat)
 {
 	const Expr& expr = aStat.getExpr();
 
@@ -368,6 +365,38 @@ void NateCode::visit(const StatOutput::Expr& aStat)
 	}
 }
 
+void NateCode::visit(const StatWrite& aStat)
+{
+	printLineNr(aStat.getLocation());
+	mDataOutput = false;
+
+	if (aStat.getCreateIt())
+	{
+    codeDeclIdentifier(false, aStat.getWriter(), true, aStat.getLocation());
+	}
+	else if (!aStat.getOutput().isEmpty())
+	{
+		*mOut << in() << aStat.getWriter()->codeName() << " = " << codeExpr(aStat.getOutput()) << ";" << end();
+	}
+
+	codeOutputStart(aStat, "*" + aStat.getWriter()->codeName());
+}
+
+void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput)
+{
+	printLineNr(aStat.getLocation());
+	mStream = aOutput;
+	mFirstOutput = true;
+	mStartOutput = true;
+	mDataOutput = false;
+	mCachedOutput.clear();
+
+  for (auto& part : aStat.getCompound())
+  {
+		part->accept(this);
+  }
+}
+
 char NateCode::end()
 {
 	++mPrevLine;
@@ -383,22 +412,6 @@ void NateCode::codeData(const TreeNodePtr& aNode)
 	//codeOutput(name, aNode);
 	*mOut << in() << "const " << aNode->id->type()->codeType() << " " << aNode->id->codeName() << "= " << name << ".str();" << end();
 
-}
-
-void NateCode::codeWrite(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	mDataOutput = false;
-	if (aNode->bool1)
-	{
-    //codeDeclIdentifier(aNode, false, aNode->id, true, aNode->location);
-	}
-	else if (!aNode->expr.isEmpty())
-	{
-		*mOut << in() << "nate__writer = " << codeExpr(/*aNode, */aNode->expr) << ";" << end();
-	}
-
-	//codeOutput("*nate__writer", aNode);
 }
 
 void NateCode::codeRead(const TreeNodePtr& aNode)
@@ -525,14 +538,13 @@ void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
 
 void NateCode::codeLocalVar(const TreeNodePtr& aNode, bool inImplObject)
 {
-	if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
-	{
-    codeDeclIdentifier(aNode, false, aNode->id, aNode->bool1, aNode->location);
-	}
+	//if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
+	//{
+ //   codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
+	//}
 }
 
-void NateCode::codeDeclIdentifier(const TreeNodePtr& aNode, 
-																	bool aExtern,
+void NateCode::codeDeclIdentifier(bool aExtern,
 																	const IdentifierPtr& aIdentifier,
 																	bool initializeVariables,
 																	const Location& aLocation)
@@ -555,7 +567,7 @@ void NateCode::codeDeclIdentifier(const TreeNodePtr& aNode,
 
 	if (initializeVariables)
 	{
-		*mOut << " = " << codeExpr(/*aNode, */aIdentifier->initValue());
+		*mOut << " = " << codeExpr(aIdentifier->initValue());
 	}
 	
 	*mOut << ";" << end();

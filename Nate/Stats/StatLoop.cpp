@@ -10,7 +10,7 @@ void StatLoop::accept(ICodeVisitor* aVisitor) const
   aVisitor->visit(*this);
 }
 
-StatLoop::While::While(const Location& aLocation, const ::Expr& aExpr)
+StatLoop::While::While(const Location& aLocation, const Expr& aExpr)
   : StatExpr(aLocation, aExpr)
 {}
 

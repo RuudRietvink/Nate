@@ -895,7 +895,7 @@ write-statement:
 	  WRITE write-sink COL
       { nate.doWrite($[write-sink], @WRITE); }
 	  output-list
-		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
+		  { nate.doOutputEnd($[output-list], @[output-list]);}
   ;
   
 write-sink:
@@ -1050,6 +1050,14 @@ else:
   ;
 
 if-is:
+    if-is-contents
+  |
+    begin
+      if-is-contents
+    end
+  ;
+
+if-is-contents:
     IS 
 	  	{ 
         nate.doIfIs(nate.data.ifExpr.top(), @IS);

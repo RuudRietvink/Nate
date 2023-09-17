@@ -172,6 +172,12 @@
     <ClCompile Include="Stats\StatWithExpr.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
+    <ClCompile Include="Stats\StatWrite.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatCode.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -378,6 +384,12 @@
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Stats\StatWithExpr.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatWrite.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatCode.h">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
   </ItemGroup>

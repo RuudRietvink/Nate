@@ -22,20 +22,22 @@ public:
   void visit(const StatProgram& aStat) override;
   void visit(const StatDeclareLocal& aStat) override;
   void visit(const StatAssign& aStat) override;
+  void visit(const StatExpr& aStat) override;
+  void visit(const StatCode& aStat) override;
   void visit(const StatIfThen& aStat) override;
   void visit(const StatIfThen::ElseIf& aStat) override;
   void visit(const StatIfThen::Else& aStat) override;
   void visit(const StatIfIs& aStat) override;
-  void visit(const StatExpr& aStat) override;
-  void visit(const StatOutput& aStat) override;
-  void visit(const StatOutput::Comma& aStat) override;
-  void visit(const StatOutput::Concat& aStat) override;
-  void visit(const StatOutput::End& aStat) override;
-  void visit(const StatOutput::Expr& aStat) override;
   void visit(const StatLoop& aStat) override;
   void visit(const StatLoop::While& aStat) override;
   void visit(const StatLoop::ForStep& aStat) override;
   void visit(const StatLoop::ForRange& aStat) override;
+  void visit(const StatOutput& aStat) override;
+  void visit(const StatOutput::Comma& aStat) override;
+  void visit(const StatOutput::Concat& aStat) override;
+  void visit(const StatOutput::End& aStat) override;
+  void visit(const StatOutput::Value& aStat) override;
+  void visit(const StatWrite& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -47,8 +49,7 @@ private:
 	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
 	std::string codeExpr(const Expr& aValue);
 	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
-	void codeDeclIdentifier(const TreeNodePtr& aNode, 
-													bool aExtern,
+	void codeDeclIdentifier(bool aExtern,
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
 													const Location& aLocation);
@@ -58,7 +59,7 @@ private:
 	void codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
-  void codeWrite(const TreeNodePtr& aNode);
+	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput);
   void codeRead(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);
