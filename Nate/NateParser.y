@@ -136,6 +136,7 @@
 %type <Expr>                     write-sink;
 %type <InputType>                input-type;
 %type <Expr>                     read-source;
+%type <bool>                     opt-eos;
 %type <bool>                     output-list;
 %type <bool>                     output-part-list;
 %type <bool>                     output-part-rest;
@@ -167,7 +168,9 @@ prog-statement:
   
 opt-eos:
     %empty
+      { $$ = false; }
   | EOS opt-eos
+      { $$ = true; }
   ;
 
 alias-statement:
@@ -867,14 +870,14 @@ data-statement:
     begin
       data-list
     end
-      { nate.up(); }
+      { nate.doDataEnd(); }
   ;
   
 data-list:
     output-list 
-		  { nate.doEnd($[output-list], @[output-list]); }
+		  { nate.doOutputEnd($[output-list], @[output-list], false); }
   | data-list opt-eos output-list 
-		  { nate.doEnd($[output-list], @[output-list]); }
+		  { nate.doOutputEnd($[output-list], @[output-list], false); }
   ;
 
 output-statement:

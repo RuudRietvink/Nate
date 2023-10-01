@@ -28,74 +28,90 @@ int main(int argc, char** argv)
 	input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
 	SetConsoleOutputCP(65001);
 #line 15
+	string_t hello = " world";
+#line 17
+	std::ostringstream data1_temp;
+#line 17
+	data1_temp << 1;data1_temp << " " << 2;data1_temp << " sdsddsaaa " << (hello);data1_temp << ((static_cast<int32_t>(hello.size())));data1_temp << std::endl;
+	data1_temp << 3;data1_temp << " " << 4;data1_temp << 5;data1_temp << " ";
+	data1_temp << 6;
+	data1_temp << 7;data1_temp << " " << 8;data1_temp << std::endl;
+	data1_temp << "hi " << ((4 * 5));data1_temp << std::endl;
+	const string_t data1= data1_temp.str();
+#line 24
+	std::ostringstream data2_temp;
+#line 24
+	data2_temp << 1;data2_temp << (data1);data2_temp << std::endl;
+	const string_t data2= data2_temp.str();
+#line 27
 	std::shared_ptr<std::ofstream> out = {};
 	std::shared_ptr<std::ostream> out2 = out;
 	*output << "Before: " << std::boolalpha ; *output << (((out && out->good()))); *output << " " << std::boolalpha ; *output << (((out && out->is_open()))); *output << std::endl; 
-#line 19
+#line 31
 	out2 = out;
 	*output << std::endl; 
 	if ((out && out->is_open()))
 	{
-#line 22
+#line 34
 		*output << "Inside: " << std::boolalpha ; *output << (((out && out->good()))); *output << " " << std::boolalpha ; *output << (((out && out->is_open()))); *output << std::endl; 
 		std::shared_ptr<std::ostream> nate__writer = out2;
-#line 23
+#line 35
 		*nate__writer << "Hello,planet "; 
 		*nate__writer << 12; *nate__writer << " " << 13; *nate__writer << 14; 
 		*nate__writer << 15; *nate__writer << std::endl; 
 		nate__writer = output;
-#line 26
+#line 38
 		*nate__writer << "Hi "; 
 		*output << "Hi "; 
 		*nate__writer << "End" << std::endl; 
 		*nate__writer << std::endl; 
 		nate__writer = out2;
-#line 30
+#line 42
 		*nate__writer << "Hi there" << std::endl; 
 	}
 	*output << "After: " << std::boolalpha ; *output << (((out && out->good()))); *output << " " << std::boolalpha ; *output << (((out && out->is_open()))); *output << std::endl; 
-#line 34
+#line 46
 	int32_t cnt = 2;
 	cnt = 3;
-#line 38
+#line 50
 	auto const tmp__0__ = cnt;
-#line 38
+#line 50
 	switch (tmp__0__)
 	{
-#line 38
+#line 50
 	case 10:
 	case 11:
 	{
-#line 40
+#line 52
 		*output << "case" << std::endl; 
 		break;
 	}
-#line 41
+#line 53
 	case 13:
 	{
-#line 42
+#line 54
 		*output << "case 13" << std::endl; 
 		break;
 	}
 	break;
 	}
-#line 45
+#line 57
 	auto const tmp__1__ = cnt;
-#line 45
+#line 57
 	switch (tmp__1__)
 	{
-#line 45
+#line 57
 	case 10:
 	case 11:
 	{
-#line 47
+#line 59
 		*output << "case" << std::endl; 
 		break;
 	}
-#line 48
+#line 60
 	case 13:
 	{
-#line 49
+#line 61
 		*output << "case 13" << std::endl; 
 		break;
 	}
@@ -105,39 +121,39 @@ int main(int argc, char** argv)
 	}
 	break;
 	}
-#line 54
+#line 66
 	auto const tmp__2__ = cnt;
-#line 54
+#line 66
 	if ((tmp__2__ == cnt * 4))
 	{
-#line 55
+#line 67
 		*output << "hello" << std::endl; 
 	}
-#line 56
+#line 68
 	else if ((tmp__2__ == cnt + 4)
-#line 56
+#line 68
 
 					 || (tmp__2__ == cnt - 4))
 	{
-#line 58
+#line 70
 		*output << "hi" << std::endl; 
 		cnt = 2;
 	}
-#line 62
+#line 74
 	auto const tmp__3__ = cnt;
-#line 62
+#line 74
 	if ((tmp__3__ == cnt * 4))
 	{
-#line 63
+#line 75
 		*output << "hello" << std::endl; 
 	}
-#line 64
+#line 76
 	else if ((tmp__3__ == cnt + 4)
-#line 64
+#line 76
 
 					 || (tmp__3__ == cnt - 4))
 	{
-#line 66
+#line 78
 		*output << "hi" << std::endl; 
 		cnt = 2;
 	}
@@ -145,71 +161,71 @@ int main(int argc, char** argv)
 	{
 		*output << "else" << std::endl; 
 	}
-#line 72
+#line 84
 	auto const tmp__4__ = cnt;
-#line 72
+#line 84
 	switch (tmp__4__)
 	{
-#line 72
+#line 84
 	case 10:
 	case 11:
 	{
-#line 74
+#line 86
 		*output << "case" << std::endl; 
 		break;
 	}
 	{
-#line 76
+#line 88
 		*output << "hello" << std::endl; 
 		break;
 	}
 	{
-#line 79
+#line 91
 		*output << "hi" << std::endl; 
 		cnt = 2;
 		break;
 	}
 	break;
 	}
-#line 83
+#line 95
 	auto const tmp__5__ = cnt;
-#line 83
+#line 95
 	switch (tmp__5__)
 	{
-#line 83
+#line 95
 	case 10:
 	case 11:
 	{
-#line 85
+#line 97
 		*output << "case" << std::endl; 
 		break;
 	}
 	{
-#line 87
+#line 99
 		*output << "hello" << std::endl; 
 		break;
 	}
 	{
-#line 90
+#line 102
 		*output << "hi" << std::endl; 
 		cnt = 2;
 		break;
 	}
 	default:
 	{
-#line 86
+#line 98
 		if ((tmp__5__ == cnt * 4))
 		{
-#line 87
+#line 99
 			*output << "hello" << std::endl; 
 		}
-#line 88
+#line 100
 		else if ((tmp__5__ == cnt + 4)
-#line 88
+#line 100
 
 						 || (tmp__5__ == cnt - 4))
 		{
-#line 90
+#line 102
 			*output << "hi" << std::endl; 
 			cnt = 2;
 		}
@@ -220,17 +236,17 @@ int main(int argc, char** argv)
 	}
 	break;
 	}
-#line 96
+#line 108
 	while (true)
 	{
-#line 97
+#line 109
 		int32_t cnt = 2;
 		if (!(cnt != 2)) break;
 		cnt = 3;
 	}
 	while (true)
 	{
-#line 101
+#line 113
 		if (!(cnt != 3)) break;
 		int32_t cnt = 2;
 		cnt = 3;
@@ -240,132 +256,132 @@ int main(int argc, char** argv)
 	for (auto tmp__7__ = tmp__6__.cbegin(); tmp__7__ != tmp__6__.cend(); tmp__7__=tmp__8__)
 	{
 		uint32_t item = utf8::next(tmp__8__,tmp__6__.cend());
-#line 106
+#line 118
 		*output << (Core::toString(item)); *output << std::endl; 
 	}
 	for (int32_t lop= 1;lop<=10; lop+=1)
 	{
-#line 108
+#line 120
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 1;lop<=10; lop+=2)
 	{
-#line 112
+#line 124
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 1)
 	{
-#line 117
+#line 129
 		int32_t cnt = 2;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 2)
 	{
-#line 121
+#line 133
 		int32_t cnt = 2;
 		if (!(lop != 20)) break;
 		*output << ((lop * cnt)); *output << std::endl; 
 	}
 	if (cnt == 3)
 	{
-#line 126
+#line 138
 		*output << "Hello, world!" << std::endl; 
 		cnt = 4;
 	}
 	if (cnt != 3)
 	{
-#line 130
+#line 142
 		float x = static_cast<float>(3.14);
 		*output << (x); *output << (x); *output << " " << (x); 
 	}
-#line 132
-	else
-	{
-#line 133
-		int32_t x = 3;
-		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 137
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))); *output << std::endl; 
-	}
-#line 139
-	else if (false)
-	{
-#line 140
-		int32_t x = 3;
-		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
-	}
-	if (cnt < 3)
-	{
 #line 144
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))); *output << std::endl; 
-	}
-#line 146
-	else if (false)
+	else
 	{
-#line 147
+#line 145
 		int32_t x = 3;
 		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
+	if (cnt < 3)
+	{
 #line 149
-	else if (true)
-	{
-#line 150
-		int32_t x = 3;
-		*output << "Hello, world!" << std::endl; 
-	}
-	if (cnt < 3)
-	{
-#line 154
 		double x = static_cast<double>(6);
 		*output << ((std::pow(x, x))); *output << std::endl; 
 	}
+#line 151
+	else if (false)
+	{
+#line 152
+		int32_t x = 3;
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
+	}
+	if (cnt < 3)
+	{
 #line 156
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))); *output << std::endl; 
+	}
+#line 158
 	else if (false)
 	{
-#line 157
+#line 159
 		int32_t x = 3;
 		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
-#line 159
-	else
+#line 161
+	else if (true)
 	{
-#line 160
+#line 162
 		int32_t x = 3;
 		*output << "Hello, world!" << std::endl; 
 	}
 	if (cnt < 3)
 	{
-#line 164
+#line 166
 		double x = static_cast<double>(6);
 		*output << ((std::pow(x, x))); *output << std::endl; 
 	}
-#line 166
+#line 168
 	else if (false)
 	{
-#line 167
+#line 169
 		int32_t x = 3;
 		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
 	}
-#line 169
-	else if (true)
+#line 171
+	else
 	{
-#line 170
+#line 172
 		int32_t x = 3;
 		*output << "Hello, world!" << std::endl; 
 	}
-#line 172
+	if (cnt < 3)
+	{
+#line 176
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))); *output << std::endl; 
+	}
+#line 178
+	else if (false)
+	{
+#line 179
+		int32_t x = 3;
+		*output << (x); *output << " " << ((x + 1)); *output << std::endl; 
+	}
+#line 181
+	else if (true)
+	{
+#line 182
+		int32_t x = 3;
+		*output << "Hello, world!" << std::endl; 
+	}
+#line 184
 	else
 	{
-#line 173
+#line 185
 		int32_t y = 3;
 		*output << "Bye, world!" << std::endl; 
 	}

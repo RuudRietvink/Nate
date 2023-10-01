@@ -32,6 +32,7 @@ public:
   void visit(const StatLoop::While& aStat) override;
   void visit(const StatLoop::ForStep& aStat) override;
   void visit(const StatLoop::ForRange& aStat) override;
+  void visit(const StatData& aStat) override;
   void visit(const StatOutput& aStat) override;
   void visit(const StatOutput::Comma& aStat) override;
   void visit(const StatOutput::Concat& aStat) override;
@@ -43,7 +44,6 @@ private:
   std::string in(int extra = 0);
   void printLineNr(const Location& aLocation);
 	char end();
-	void codeData(const TreeNodePtr& aNode);
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
 	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
@@ -59,7 +59,7 @@ private:
 	void codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
-	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput);
+	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
   void codeRead(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);

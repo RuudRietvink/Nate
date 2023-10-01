@@ -178,6 +178,9 @@
     <ClCompile Include="Stats\StatCode.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
+    <ClCompile Include="Stats\StatData.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -390,6 +393,9 @@
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Stats\StatCode.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatData.h">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
   </ItemGroup>

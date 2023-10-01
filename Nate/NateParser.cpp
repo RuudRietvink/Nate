@@ -453,13 +453,17 @@ std::string NateParser::in(int aOffset) const
 	return std::string(size, '\t');
 }
 
-
 void NateParser::doData(const std::string& aId, const yy::parser::location_type& aLocation)
 {
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
 	id->setFlag(Identifier::Const);
 	addIdentifier(id);
-	addStat(ByteCode::Data, aLocation)->id = id;
+	pushStatsHolder(addStatement(std::make_shared<StatData>(location(aLocation), id)));
+}
+
+void NateParser::doDataEnd()
+{
+	popStatsHolder();
 }
 
 void NateParser::doEnd(bool aEnd, const yy::parser::location_type& aLocation)
@@ -553,10 +557,13 @@ void NateParser::doOutputConcat(const yy::parser::location_type& aLocation)
 	addStatement(std::make_shared<StatOutput::Concat>(location(aLocation)));
 }
 
-void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder)
 {
 	addStatement(std::make_shared<StatOutput::End>(location(aLocation), aEnd));
-	popStatsHolder();
+	if (aPopStatsHolder)
+	{
+		popStatsHolder();
+	}
 }
 
 void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)

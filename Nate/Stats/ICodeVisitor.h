@@ -8,6 +8,7 @@
 #include "StatIfThen.h"
 #include "StatIfIs.h"
 #include "StatLoop.h"
+#include "StatData.h"
 #include "StatOutput.h"
 #include "StatWrite.h"
 
@@ -27,6 +28,7 @@ public:
   virtual void visit(const StatLoop::While& aStat) = 0;
   virtual void visit(const StatLoop::ForStep& aStat) = 0;
   virtual void visit(const StatLoop::ForRange& aStat) = 0;
+  virtual void visit(const StatData& aStat) = 0;
   virtual void visit(const StatOutput& aStat) = 0;
   virtual void visit(const StatOutput::Comma& aStat) = 0;
   virtual void visit(const StatOutput::Concat& aStat) = 0;

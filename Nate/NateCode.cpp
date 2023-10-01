@@ -368,7 +368,6 @@ void NateCode::visit(const StatOutput::Value& aStat)
 void NateCode::visit(const StatWrite& aStat)
 {
 	printLineNr(aStat.getLocation());
-	mDataOutput = false;
 
 	if (aStat.getCreateIt())
 	{
@@ -382,13 +381,23 @@ void NateCode::visit(const StatWrite& aStat)
 	codeOutputStart(aStat, "*" + aStat.getWriter()->codeName());
 }
 
-void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput)
+void NateCode::visit(const StatData& aStat)
+{
+	printLineNr(aStat.getLocation());
+	std::string name = aStat.getId()->codeName() + "_temp";
+	*mOut << in() << "std::ostringstream " << name << ";" << end();
+	codeOutputStart(aStat, name, true);
+	*mOut << in() << "const " << aStat.getId()->type()->codeType() << " " << aStat.getId()->codeName() << "= " << name << ".str();" << end();
+
+}
+
+void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput)
 {
 	printLineNr(aStat.getLocation());
 	mStream = aOutput;
 	mFirstOutput = true;
 	mStartOutput = true;
-	mDataOutput = false;
+	mDataOutput = aDataOutput;
 	mCachedOutput.clear();
 
   for (auto& part : aStat.getCompound())
@@ -401,17 +410,6 @@ char NateCode::end()
 {
 	++mPrevLine;
 	return '\n';
-}
-
-void NateCode::codeData(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	mDataOutput = true;
-	std::string name = aNode->id->codeName() + "_temp";
-	*mOut << in() << "std::ostringstream " << name << ";" << end();
-	//codeOutput(name, aNode);
-	*mOut << in() << "const " << aNode->id->type()->codeType() << " " << aNode->id->codeName() << "= " << name << ".str();" << end();
-
 }
 
 void NateCode::codeRead(const TreeNodePtr& aNode)
@@ -454,12 +452,12 @@ void NateCode::codeOutput(const std::string& aString)
 		if (!aString.empty())
 		{
 			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? "" : "; ");
+			*mOut << " << " << aString << (mDataOutput ? ";" : "; ");
 			mFirstOutput = true;
 		}
 		else
 		{
-			*mOut << (mDataOutput ? "" : "; ");
+			*mOut << (mDataOutput ? ";" : "; ");
 		}
 	}
 	else if (!mCachedOutput.empty())
@@ -475,7 +473,7 @@ void NateCode::codeOutput(const std::string& aString)
 		if (!aString.empty())
 		{
 			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? "" : "; ");
+			*mOut << " << " << aString << (mDataOutput ? ";" : "; ");
 			mFirstOutput = true;
 		}
 	}

@@ -122,13 +122,14 @@ public:
 											  	 const yy::parser::location_type& aLocation);
 	void doEndLoop(const yy::parser::location_type& aLocation);
 	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
+	void doDataEnd();
 	void doEnd(bool aEnd, const yy::parser::location_type& aLocation);
 	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doOutputStart(const yy::parser::location_type& aLocation);
 	void doOutputComma(const yy::parser::location_type& aLocation);
 	void doOutputConcat(const yy::parser::location_type& aLocation);
 	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation);
+	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder = true);
 	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 
 	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);

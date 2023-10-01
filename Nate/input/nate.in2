@@ -12,6 +12,18 @@ import File-Output
 // ①②③④
 
 program:
+  var hello := " world"
+
+  data data1:
+    1, 2, "sdsdds" & "aaa", hello & hello's length
+    3, 4&5,
+    6&
+    7, 8
+    "hi", 4 * 5
+    
+  data data2:
+    1 & data1
+
   var out is file-output
   var out2 is output := out
   output "Before:", out is ok, out is opened
