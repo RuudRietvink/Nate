@@ -889,9 +889,9 @@ output-statement:
   
 error-statement:
 	  ERROR 
-		  { nate.addStat(ByteCode::StdError, @ERROR); }
+		  { nate.doError(@ERROR); }
 	  output-list
-		  { nate.doEnd($[output-list], @[output-list]); nate.up(); }
+		  { nate.doOutputEnd($[output-list], @[output-list]); }
   ;
   
 write-statement:

@@ -38,6 +38,7 @@ public:
   void visit(const StatOutput::Concat& aStat) override;
   void visit(const StatOutput::End& aStat) override;
   void visit(const StatOutput::Value& aStat) override;
+  void visit(const StatError& aStat) override;
   void visit(const StatWrite& aStat) override;
 
 private:

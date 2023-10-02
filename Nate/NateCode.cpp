@@ -365,6 +365,11 @@ void NateCode::visit(const StatOutput::Value& aStat)
 	}
 }
 
+void NateCode::visit(const StatError& aStat)
+{
+	codeOutputStart(aStat, "*error");
+}
+
 void NateCode::visit(const StatWrite& aStat)
 {
 	printLineNr(aStat.getLocation());

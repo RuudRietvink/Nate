@@ -130,6 +130,7 @@ public:
 	void doOutputConcat(const yy::parser::location_type& aLocation);
 	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder = true);
+	void doError(const yy::parser::location_type& aLocation);
 	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 
 	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);

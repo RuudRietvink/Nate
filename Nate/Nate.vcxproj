@@ -245,6 +245,7 @@
     <ClCompile Include="Stats\StatCode.cpp" />
     <ClCompile Include="Stats\StatData.cpp" />
     <ClCompile Include="Stats\StatDeclareLocal.cpp" />
+    <ClCompile Include="Stats\StatError.cpp" />
     <ClCompile Include="Stats\StatExpr.cpp" />
     <ClCompile Include="Stats\StatIfIs.cpp" />
     <ClCompile Include="Stats\StatIfThen.cpp" />
@@ -386,6 +387,7 @@
     <ClInclude Include="Stats\StatCode.h" />
     <ClInclude Include="Stats\StatData.h" />
     <ClInclude Include="Stats\StatDeclareLocal.h" />
+    <ClInclude Include="Stats\StatError.h" />
     <ClInclude Include="Stats\StatExpr.h" />
     <ClInclude Include="Stats\StatIfIs.h" />
     <ClInclude Include="Stats\StatIfThen.h" />

@@ -10,6 +10,7 @@
 #include "StatLoop.h"
 #include "StatData.h"
 #include "StatOutput.h"
+#include "StatError.h"
 #include "StatWrite.h"
 
 class ICodeVisitor
@@ -34,6 +35,7 @@ public:
   virtual void visit(const StatOutput::Concat& aStat) = 0;
   virtual void visit(const StatOutput::End& aStat) = 0;
   virtual void visit(const StatOutput::Value& aStat) = 0;
+  virtual void visit(const StatError& aStat) = 0;
   virtual void visit(const StatWrite& aStat) = 0;
 };
 

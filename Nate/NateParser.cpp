@@ -578,6 +578,11 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
   }
 }
 
+void NateParser::doError(const yy::parser::location_type& aLocation)
+{
+	pushStatsHolder(addStatement(std::make_shared<StatError>(location(aLocation))));
+}
+
 void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
 {
 	if (aValue.is(Expr::Output) && !aValue.is(Expr::ConstExpr))
