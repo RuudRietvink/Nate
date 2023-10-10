@@ -38,8 +38,15 @@ public:
   void visit(const StatOutput::Concat& aStat) override;
   void visit(const StatOutput::End& aStat) override;
   void visit(const StatOutput::Value& aStat) override;
+  void visit(const StatInput& aStat) override;
+  void visit(const StatInput::Comma& aStat) override;
+  void visit(const StatInput::Concat& aStat) override;
+  void visit(const StatInput::End& aStat) override;
+  void visit(const StatInput::Value& aStat) override;
   void visit(const StatError& aStat) override;
   void visit(const StatWrite& aStat) override;
+  void visit(const StatRead& aStat) override;
+  void visit(const StatDefine& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -47,7 +54,7 @@ private:
 	char end();
 	void codeOutputNew();
 	void codeOutput(const std::string& aString);
-	void codeInput(const std::string& aString, const TreeNodePtr& aNode);
+	void codeInputStart(const StatInput& aStat, const std::string& aString, InputType inputType = InputType::Normal);
 	std::string codeExpr(const Expr& aValue);
 	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
 	void codeDeclIdentifier(bool aExtern,
@@ -61,7 +68,6 @@ private:
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
-  void codeRead(const TreeNodePtr& aNode);
   void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
@@ -99,6 +105,9 @@ private:
 	bool                        mDataOutput = false;
 	bool                        mFirstOutput = true;
 	bool                        mStartOutput = true;
+  InputType                   mCurInputType = InputType::Normal;
+  bool                        mLastInputComma = false;
+  bool                        mNextInputEnd = false;
 	std::string                 mStream;
 
 	int													mPrevLine = 0;

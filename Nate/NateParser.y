@@ -18,6 +18,7 @@
   #include "Expr.h"
   #include "Type.h"
   #include "core/Rational.h"
+  #include "NateData.h"
 }
 %parse-param { yy::Lexer& lexer } { NateParser& nate }
 %code{
@@ -134,7 +135,7 @@
 %type <Expr>					           expr-word;
 %type <std::string>              string;
 %type <Expr>                     write-sink;
-%type <InputType>                input-type;
+%type <InputType>     input-type;
 %type <Expr>                     read-source;
 %type <bool>                     opt-eos;
 %type <bool>                     output-list;
@@ -912,7 +913,7 @@ read-statement:
 	  READ input-type read-source COL
       { nate.doRead($[input-type], $[read-source], @READ); }
 	  input-list
-		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
+		  { nate.doInputEnd($[input-list], @[input-list]); }
   ;
   
 input-type:
@@ -966,9 +967,9 @@ output-sep:
 
 input-statement:
 	  INPUT 
-		  { nate.addStat(ByteCode::StdInput, @INPUT); }
+		  { nate.doInput(@INPUT); }
 	  input-list
-		  { nate.doEnd($[input-list], @[input-list]); nate.up(); }
+		  { nate.doInputEnd($[input-list], @[input-list]); }
   ;
 
 input-list:
@@ -999,9 +1000,9 @@ input-part:
 
 input-sep:
 	  COMMA
-		  { nate.add(ByteCode::SepComma, @COMMA); }
+		  { nate.doInputComma(@COMMA); }
 	| CONCAT
-		  { nate.add(ByteCode::SepConcat, @CONCAT); }
+		  { nate.doInputConcat(@CONCAT); }
   ;
 
 if-start:

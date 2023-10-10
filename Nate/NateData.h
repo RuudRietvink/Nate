@@ -6,6 +6,13 @@
 
 #include <memory>
 
+enum class InputType
+{
+	Normal,
+	Line,
+	All,
+};
+
 enum class ByteCode
 {
 	None,

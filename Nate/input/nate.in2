@@ -1,6 +1,7 @@
 import Math
 import Text
 import File-Output
+import Data-Input
 
 // √⌊⌋⌈⌉|⏐
 // ⏨ю
@@ -25,9 +26,18 @@ program:
     1 & data1
 
   error "Hello", hello
+  
+  var in is Data-Input
+  open in for reading from data data1
 
-  var out is file-output
-  var out2 is output := out
+  var x, y is int-32
+  var s is text;
+  read from in: x, y, s
+  output x,y
+  output s
+
+  var out is File-Output
+  var out2 is Output := out
   output "Before:", out is ok, out is opened
   open out for writing to file "d:\\uit"
   out2 := out

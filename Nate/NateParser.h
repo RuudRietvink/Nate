@@ -131,15 +131,18 @@ public:
 	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder = true);
 	void doError(const yy::parser::location_type& aLocation);
-	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
-
 	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);
 	void doEndRecord(const yy::parser::location_type& aLocation);
 	void doStartDefine(bool aIsDecl, bool aIsImpl,
 										 const yy::parser::location_type& aLocation);
 	void doEndDefine(const yy::parser::location_type& aLocation);
   void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation);	
+	void doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doInput(const yy::parser::location_type& aLocation);
+	void doInputComma(const yy::parser::location_type& aLocation);
+	void doInputConcat(const yy::parser::location_type& aLocation);
+	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void doInputEnd(bool aEnd, const yy::parser::location_type& aLocation);	
 	void doStartScope(const yy::parser::location_type& aLocation);
 	void doEndScope(const yy::parser::location_type& aLocation);
 	void doCodeInclude(const yy::parser::location_type& aLocation);	

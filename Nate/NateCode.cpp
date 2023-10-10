@@ -295,7 +295,8 @@ void NateCode::visit(const StatCode& aStat)
 
 void NateCode::visit(const StatExpr& aStat)
 {
-	*mOut << " = " << codeExpr(aStat.getExpr());
+	printLineNr(aStat.getLocation());
+	*mOut << in() << codeExpr(aStat.getExpr()) << ";" << end();
 }
 
 void NateCode::visit(const StatOutput& aStat)
@@ -365,6 +366,72 @@ void NateCode::visit(const StatOutput::Value& aStat)
 	}
 }
 
+void NateCode::visit(const StatInput& aStat)
+{
+	codeInputStart(aStat, "*input");
+}
+
+void NateCode::visit(const StatInput::Comma& aStat)
+{
+	mLastInputComma = true;
+}
+
+void NateCode::visit(const StatInput::Concat& aStat)
+{
+	mLastInputComma = false;
+}
+
+void NateCode::visit(const StatInput::End& aStat)
+{
+	if (aStat.getEndOfLine() && mCurInputType == InputType::Normal)
+	{
+		*mOut << in() << "(" << mStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');" << end();
+	}
+}
+
+void NateCode::visit(const StatInput::Value& aStat)
+{
+	InputType inputType = mCurInputType;
+	std::string skipSpaces = mLastInputComma ? " >> std::ws" : "";
+
+	if (!mNextInputEnd || !aStat.getExpr().type()->is(Type::Text)) {
+			inputType = InputType::Normal;			
+	}
+
+	if (inputType == InputType::Line)
+	{
+		*mOut << in() << "std::getline(" << mStream << skipSpaces << ", " << codeExpr(aStat.getExpr()) << ");" << end();
+	}
+	else if (inputType == InputType::All)
+	{
+	}
+	else
+	{
+		if (aStat.getExpr().type()->is(Type::Boolean))
+		{
+			*mOut << in() << mStream << skipSpaces << " >> std::boolalpha  >> " << codeExpr(aStat.getExpr()) << " >> std::noboolalpha;" << end();
+		}
+		else
+		{
+			*mOut << in() << mStream << skipSpaces << " >> " << codeExpr(aStat.getExpr()) << ";" << end();
+		}
+	}
+}
+
+void NateCode::visit(const StatRead& aStat)
+{
+	if (aStat.getCreateIt())
+	{
+    codeDeclIdentifier(false, aStat.getReader(), true, aStat.getLocation());
+	}
+	else if (!aStat.getInput().isEmpty())
+	{
+		*mOut << in() << aStat.getReader()->codeName() << " = " << codeExpr(aStat.getInput()) << ";" << end();
+	}
+
+	codeInputStart(aStat, "*" + aStat.getReader()->codeName(), aStat.getInputType());
+}
+
 void NateCode::visit(const StatError& aStat)
 {
 	codeOutputStart(aStat, "*error");
@@ -393,7 +460,10 @@ void NateCode::visit(const StatData& aStat)
 	*mOut << in() << "std::ostringstream " << name << ";" << end();
 	codeOutputStart(aStat, name, true);
 	*mOut << in() << "const " << aStat.getId()->type()->codeType() << " " << aStat.getId()->codeName() << "= " << name << ".str();" << end();
+}
 
+void NateCode::visit(const StatDefine& /*aStat*/)
+{
 }
 
 void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput)
@@ -415,21 +485,6 @@ char NateCode::end()
 {
 	++mPrevLine;
 	return '\n';
-}
-
-void NateCode::codeRead(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	if (aNode->bool1)
-	{
-    //codeDeclIdentifier(aNode, false, aNode->id, true, aNode->location);
-	}
-	else if (!aNode->expr.isEmpty())
-	{
-		*mOut << in() << "nate__reader = " << codeExpr(/*aNode, */aNode->expr) << ";" << end();
-	}
-
-	codeInput("*nate__reader", aNode);
 }
 
 void NateCode::codeOutputNew()
@@ -484,58 +539,18 @@ void NateCode::codeOutput(const std::string& aString)
 	}
 }
 
-void NateCode::codeInput(const std::string& aStream, const TreeNodePtr& aNode)
+void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
 {
-	printLineNr(aNode->location);
-	ByteCode lastSeperator = ByteCode::None;
-
-	for (auto iter = aNode->nested.cbegin(); iter != aNode->nested.cend(); ++iter)
-	{
-		auto const &part = *iter;
-		InputType curInputType = aNode->inputType;
-	  auto next = std::next(iter);
-		std::string skipSpaces = lastSeperator == ByteCode::SepComma ? " >> std::ws" : "";
-
-    switch (part->code)
-    {
-    case ByteCode::Expr:
-			if ((*next)->code != ByteCode::End || !part->expr.type()->is(Type::Text)) {
-					curInputType = InputType::Normal;			
-			}
-
-			if (curInputType == InputType::Line)
-			{
-				*mOut << "std::getline(" << aStream << skipSpaces << ", " << codeExpr(/*aNode, */part->expr) << ");" << end();
-			}
-			else if (curInputType == InputType::All)
-			{
-			}
-			else
-			{
-				if (part->expr.type()->is(Type::Boolean))
-				{
-					*mOut << aStream << skipSpaces << " >> std::boolalpha  >> " << codeExpr(/*aNode, */part->expr) << " >> std::noboolalpha;" << end();
-				}
-				else
-				{
-					*mOut << aStream << skipSpaces << " >> " << codeExpr(/*aNode, */part->expr) << ";" << end();
-				}
-			}
-      break;
-    case ByteCode::SepComma:
-    case ByteCode::SepConcat:
-			lastSeperator = part->code;
-      break;
-    case ByteCode::End:
-			if (part->bool1 && curInputType == InputType::Normal)
-			{
-				*mOut << "(" << aStream << ").ignore(std::numeric_limits<std::streamsize>::max(), '\\n');" << end();
-			}
-      break;
-		default:
-			std::cerr << "Bad Input bytecode " << (int)part->code << std::endl;
-			break;
-    }
+	printLineNr(aStat.getLocation());
+	mLastInputComma = false;
+	mCurInputType = inputType;
+	mStream = aStream;
+	
+	for (auto iter = aStat.getCompound().begin(); iter != aStat.getCompound().end(); ++iter)
+  {
+		auto next = std::next(iter);
+		mNextInputEnd = (next != aStat.getCompound().end() && dynamic_cast<StatInput::End*>(next->get()) != nullptr);
+		(*iter)->accept(this);
   }
 }
 

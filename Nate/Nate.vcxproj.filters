@@ -184,6 +184,15 @@
     <ClCompile Include="Stats\StatError.cpp">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClCompile>
+    <ClCompile Include="Stats\StatRead.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatInput.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats\StatDefine.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -402,6 +411,15 @@
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Stats\StatError.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatRead.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatInput.h">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatDefine.h">
       <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
   </ItemGroup>

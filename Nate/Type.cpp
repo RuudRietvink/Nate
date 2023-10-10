@@ -164,31 +164,31 @@ void Type::setType(const std::string& aName)
 		setFlag(List, true);
 		mCodeType = "std::list";
 	}
-	else if (aName == "output")
+	else if (aName == "Output")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::ostream";
 	}
-	else if (aName == "file-output")
+	else if (aName == "File-Output")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::ofstream";
 	}
-	else if (aName == "input-stream")
+	else if (aName == "Input")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::istream";
 	}
-	else if (aName == "file-input-stream")
+	else if (aName == "File-Input")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);
 		mCodeType = "std::ifstream";
 	}
-	else if (aName == "data-input")
+	else if (aName == "Data-Input")
 	{
 		setFlag(Abstract, false);
 		setFlag(NeedsRef, true);

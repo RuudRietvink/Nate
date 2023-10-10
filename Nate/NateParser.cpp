@@ -136,10 +136,10 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("char", getType("any")));
 	getType("text")->setTypenameType(getType("char"));
 
-	addType(std::make_shared<Type>("output", getType("object")));
-	addType(std::make_shared<Type>("file-output", getType("output")));
-	addType(std::make_shared<Type>("input-stream", getType("object")));
-	addType(std::make_shared<Type>("data-input-stream", getType("input-stream")));
+	addType(std::make_shared<Type>("Output", getType("object")));
+	addType(std::make_shared<Type>("File-Output", getType("Output")));
+	addType(std::make_shared<Type>("Input", getType("object")));
+	addType(std::make_shared<Type>("Data-Input", getType("Input")));
 }
 
 void NateParser::initOutput()
@@ -175,15 +175,15 @@ int NateParser::parse()
 
 	if (mFileType == FileType::Normal)
 	{
-		declareLocalIdentifiers(false, { "output" }, getType("output"), {}, false, mDummyLocation);
-		declareLocalIdentifiers(false, { "error" }, getType("output"), {}, false, mDummyLocation);
-		declareLocalIdentifiers(false, { "input" }, getType("input-stream"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "output" }, getType("Output"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "error" }, getType("Output"), {}, false, mDummyLocation);
+		declareLocalIdentifiers(false, { "input" }, getType("Input"), {}, false, mDummyLocation);
 	}
 	else
 	{	
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("output")));
-		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("input-stream")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "output", getType("Output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "error", getType("Output")));
+		addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "input", getType("Input")));
 	}
 
 	if (mFileType != FileType::ObjectDecl)
@@ -487,11 +487,11 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 			error("Need to specify where to write to");
 		}
 	}
-	else if (aValue.type()->isOfType("output"))
+	else if (aValue.type()->isOfType("Output"))
 	{
 		if (!writer)
 		{
-			writer = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__writer", determineType("output"), aValue);
+			writer = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__writer", determineType("Output"), aValue);
 			addIdentifier(writer);
 	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, true)));
 		}
@@ -503,42 +503,6 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 	else
 	{
 		error("Cannot write to type: " + aValue.type()->name());
-	}
-}
-
-void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation)
-{
-  TreeNode* node = addStat(ByteCode::Read, aValue, aLocation);
-	node->inputType = aInputType;
-	IdentifierPtr reader = getIdentifier("nate__reader");
-
-	if (aValue.isEmpty())
-	{
-		if (reader)
-		{
-			node->id = reader;
-		}
-		else
-		{
-			error("Need to specify where to read from");
-		}
-	}
-	else if (aValue.type()->isOfType("Input"))
-	{
-		if (!reader)
-		{
-			Expr init = aValue;
-			init.setCode("(" + aValue.code() + ")->E_me__stream_()");
-			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("input-stream"), init);
-			addIdentifier(reader);
-			node->bool1 = true;
-		}
-
-		node->id = reader;
-	}
-	else
-	{
-		error("Cannot read from type: " + aValue.type()->name());
 	}
 }
 
@@ -578,6 +542,61 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
   }
 }
 
+void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation)
+{
+	IdentifierPtr reader = getIdentifier("nate__reader");
+
+	if (aValue.isEmpty())
+	{
+		if (reader)
+		{
+	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, false)));
+		}
+		else
+		{
+			error("Need to specify where to read from");
+		}
+	}
+	else if (aValue.type()->isOfType("Input"))
+	{
+		if (!reader)
+		{
+			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("Input"), aValue);
+			addIdentifier(reader);
+	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, true)));
+		}
+		else
+		{
+	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, false)));
+		}
+	}
+	else
+	{
+		error("Cannot read from type: " + aValue.type()->name());
+	}
+}
+
+void NateParser::doInput(const yy::parser::location_type& aLocation)
+{
+	pushStatsHolder(addStatement(std::make_shared<StatInput>(location(aLocation))));
+}
+
+void NateParser::doInputComma(const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatInput::Comma>(location(aLocation)));
+}
+
+void NateParser::doInputConcat(const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatInput::Concat>(location(aLocation)));
+}
+
+void NateParser::doInputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+{
+	addStatement(std::make_shared<StatInput::End>(location(aLocation), aEnd));
+	popStatsHolder();
+}
+
 void NateParser::doError(const yy::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatError>(location(aLocation))));
@@ -587,8 +606,7 @@ void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type
 {
 	if (aValue.is(Expr::Output) && !aValue.is(Expr::ConstExpr))
 	{
-		TreeNode* node = add(ByteCode::Expr, aValue, aLocation);
-		node->bool1 = (aValue.type() && aValue.type()->is(Type::Boolean));
+	  addStatement(std::make_shared<StatInput::Value>(location(aLocation), aValue));
 	}
 	else
 	{
@@ -1390,7 +1408,7 @@ void NateParser::doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aP
 
 void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)
 {
-	add(ByteCode::ExprStat, aExpr, aLocation);
+  addStatement(std::make_shared<StatExpr>(Location(aLocation, mLexer->currentFile()), aExpr));
 }
 
 void NateParser::addArgWord(const std::string& aWord)
@@ -2263,9 +2281,6 @@ void NateParser::declareLocalIdentifiers(
 		//}
 
 		addStatement(std::make_shared<StatDeclareLocal>(Location(aLocation, mLexer->currentFile()), id, initValue));
-		TreeNode* node = add(ByteCode::LocalVar, aLocation);
-		node->id = id;
-		node->bool1 = initializeVariables;
 	}
 }
 
