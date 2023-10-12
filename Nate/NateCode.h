@@ -15,6 +15,7 @@ public:
   void codeStats(const std::list<Stat::SPtr>& aStats);
   void codeNested(const TreeNodePtr& aStat);
   void codeCompound(const Stat& aStat);
+  void codeBlock(const Stat& aStat);
   /// <summary>
   /// 
   /// </summary>
@@ -52,7 +53,6 @@ private:
   std::string in(int extra = 0);
   void printLineNr(const Location& aLocation);
 	char end();
-	void codeOutputNew();
 	void codeOutput(const std::string& aString);
 	void codeInputStart(const StatInput& aStat, const std::string& aString, InputType inputType = InputType::Normal);
 	std::string codeExpr(const Expr& aValue);
@@ -103,8 +103,6 @@ private:
   int													mIndent = 0;
 	std::string                 mCachedOutput;
 	bool                        mDataOutput = false;
-	bool                        mFirstOutput = true;
-	bool                        mStartOutput = true;
   InputType                   mCurInputType = InputType::Normal;
   bool                        mLastInputComma = false;
   bool                        mNextInputEnd = false;

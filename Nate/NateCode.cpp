@@ -60,6 +60,15 @@ void NateCode::codeCompound(const Stat& aStat)
 	*mOut << in() << "}" << end();
 }
 
+void NateCode::codeBlock(const Stat& aStat)
+{
+	*mOut << in() << "{" << end();
+	++mIndent;
+	aStat.accept(this);
+	--mIndent;
+	*mOut << in() << "}" << end();
+}
+
 void NateCode::visit(const StatProgram& aStat)
 {
 	*mOut << in() << "#undef NOMINMAX" << end();
@@ -206,11 +215,12 @@ void NateCode::visit(const StatIfIs& aStat)
 			}
 			else
 			{
-				codeCompound(*elsePart);
+				codeBlock(*elsePart);
 			}
+
+			*mOut << in() << "break;" << end();
 		}
 		
-		*mOut << in() << "break;" << end();
 		*mOut << in() << "}" << end();
 	}
 	else
@@ -318,17 +328,12 @@ void NateCode::visit(const StatOutput::End& aStat)
 {
 	if (aStat.getEndOfLine())
 	{
-		codeOutputNew();
 		codeOutput("std::endl");
 	}
 	else
 	{
 		codeOutput("");
 	}
-
-	*mOut << end();
-	mStartOutput = true;
-	mFirstOutput = true;
 }
 
 void NateCode::visit(const StatOutput::Value& aStat)
@@ -362,6 +367,57 @@ void NateCode::visit(const StatOutput::Value& aStat)
 			{
 				codeOutput("(" + codeExpr(expr) + ")");
 			}
+		}
+	}
+}
+
+void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput)
+{
+	printLineNr(aStat.getLocation());
+	mStream = aOutput;
+	mDataOutput = aDataOutput;
+	mCachedOutput.clear();
+	
+	*mOut << in() << mStream;
+
+  for (auto& part : aStat.getCompound())
+  {
+		part->accept(this);
+  }
+
+	*mOut << ";" << end();
+}
+
+char NateCode::end()
+{
+	++mPrevLine;
+	return '\n';
+}
+
+void NateCode::codeOutput(const std::string& aString)
+{
+	if ((!mCachedOutput.empty()) && aString[0] != '"')
+	{
+		*mOut << " << \"" << mCachedOutput << "\"";
+		mCachedOutput.clear();
+		if (!aString.empty())
+		{
+			*mOut << " << " << aString;
+		}
+	}
+	else if (!mCachedOutput.empty())
+	{
+		mCachedOutput += unquote(aString);
+	}
+	else if (aString[0] == '"')
+	{
+		mCachedOutput = unquote(aString);
+	}
+	else
+	{
+		if (!aString.empty())
+		{
+			*mOut << " << " << aString;
 		}
 	}
 }
@@ -464,79 +520,6 @@ void NateCode::visit(const StatData& aStat)
 
 void NateCode::visit(const StatDefine& /*aStat*/)
 {
-}
-
-void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput)
-{
-	printLineNr(aStat.getLocation());
-	mStream = aOutput;
-	mFirstOutput = true;
-	mStartOutput = true;
-	mDataOutput = aDataOutput;
-	mCachedOutput.clear();
-
-  for (auto& part : aStat.getCompound())
-  {
-		part->accept(this);
-  }
-}
-
-char NateCode::end()
-{
-	++mPrevLine;
-	return '\n';
-}
-
-void NateCode::codeOutputNew()
-{
-	if (mFirstOutput)
-	{
-		if (mStartOutput)
-		{
-			*mOut << in();
-	    mStartOutput = false;
-		}
-
-		*mOut << mStream;
-		mFirstOutput = false;
-	}
-}
-
-void NateCode::codeOutput(const std::string& aString)
-{
-	if ((!mCachedOutput.empty()) && aString[0] != '"')
-	{
-		codeOutputNew();
-		*mOut << " << \"" << mCachedOutput << "\"";
-		mCachedOutput.clear();
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? ";" : "; ");
-			mFirstOutput = true;
-		}
-		else
-		{
-			*mOut << (mDataOutput ? ";" : "; ");
-		}
-	}
-	else if (!mCachedOutput.empty())
-	{
-		mCachedOutput += unquote(aString);
-	}
-	else if (aString[0] == '"')
-	{
-		mCachedOutput = unquote(aString);
-	}
-	else
-	{
-		if (!aString.empty())
-		{
-			codeOutputNew();
-			*mOut << " << " << aString << (mDataOutput ? ";" : "; ");
-			mFirstOutput = true;
-		}
-	}
 }
 
 void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
@@ -702,7 +685,7 @@ void NateCode::codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
 	if (aElsePart)
 	{
 		*mOut << in() << "else" << end();
-	  codeCompound(*aElsePart);
+		codeBlock(*aElsePart);
 	}
 }
 
@@ -746,9 +729,9 @@ void NateCode::codeCaseIsListSwitch(const Stat& aStat)
 			}
 		}
 		
-		*mOut << in() << "break;" << end();
 		--mIndent;
 		*mOut << in() << "}" << end();
+		*mOut << in() << "break;" << end();
 	}
 }
 

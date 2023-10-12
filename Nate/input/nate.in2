@@ -33,7 +33,8 @@ program:
   var x, y is int-32
   var s is text;
   read from in: x, y, s
-  output x,y
+  output x,y,
+  output "hi", "there"&
   output s
 
   var out is File-Output

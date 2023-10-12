@@ -323,8 +323,6 @@ private:
 	std::ostream*               mOut = nullptr;
 	std::string                 mCachedOutput;
 	bool                        mDataOutput = false;
-	bool                        mFirstOutput = true;
-	bool                        mStartOutput = true;
 	std::string                 mStream;
 	std::string                 mLastReadStream;
 	std::map<std::string, std::string> mAliases;
