@@ -550,7 +550,11 @@ void NateCode::visit(const StatRecord& aStat)
 	}
 
 	*mOut << in() << "{}" << end();
-	codeStats(aStat.getCompound());
+	for (auto& id : aStat.getRecord()->identifiers().get())
+	{
+    codeDeclIdentifier(false, id, false, aStat.getLocation());
+	}
+
 	--mIndent;
 	*mOut << in() << "};" << end() << end();
 }

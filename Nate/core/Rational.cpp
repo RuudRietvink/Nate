@@ -113,7 +113,7 @@ bool Rational::convertFromString(const std::string& aString)
 			{
 				auto prev = string.iter();
 				ok = Core::numberFrom(string, Core::superDigits, mNumerator);
-				if (prev != string.iter() && string && *string == '/')
+				if (prev != string.iter() && (*string == '/' || *string == 0x2044 /*'⁄'*/))
 				{
 					++string;
 					ok = Core::numberFrom(string, Core::subDigits, mDenominator);

@@ -5,7 +5,7 @@ std::shared_ptr<std::ostream> output = {};
 std::shared_ptr<std::ostream> error = {};
 #line 1
 std::shared_ptr<std::istream> input = {};
-#line 27 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Math.ns"
+#line 27 ""
 #define NOMINMAX
 #include <windows.h>
 #include <cmath>
@@ -15,21 +15,21 @@ const double pi = 3.14159265358979323;
 const double tau = 6.283185307179586;
 #line 36
 const double e = 2.718281828459045;
-#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Output.ns"
+#line 8
 #include <fstream>
-#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Data-Input.ns"
+#line 8
 #include <sstream>
-#line 12 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Complex.ns"
+#line 12
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
 #include <complex>
 #line 16
 const double i = 1;
-#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Rational.ns"
+#line 6
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Rational.h"
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
-#line 17 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in2"
+#line 17
 int main(int argc, char** argv)
 {
 	output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
@@ -43,14 +43,17 @@ int main(int argc, char** argv)
 		Rec()
 			: fld1(3)
 			, fld2()
-			, fld3((Complex<double>(1, (2 * i))) - 3)
-			, fld4(Rational(0,3,4))
+			, fld3(Complex<double>(1, (2 * i)))
+			, fld4(Rational(0,11,152) + Rational(0,11,152))
 		{}
-#line 20
-		int32_t fld1 = 3;
-		string_t fld2 = {};
-		Complex<double> fld3 = (Complex<double>(1, (2 * i))) - 3;
-		Rational fld4 = Rational(0,3,4);
+#line 19
+		int32_t fld1;
+#line 19
+		string_t fld2;
+#line 19
+		Complex<double> fld3;
+#line 19
+		Rational fld4;
 	};
 
 #line 25

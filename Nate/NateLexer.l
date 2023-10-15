@@ -274,7 +274,7 @@ oct             [0][oO][0-7]+
 hex             [0][xX][0-9a-fA-F]+
 number          {decimal}|{binary}|{oct}|{hex}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
-rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+/[₀₁₂₃₄₅₆₇₈₉]+))
+rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+[/⁄][₀₁₂₃₄₅₆₇₈₉]+))
 string          ["][^"]*[""]
 
 %%
@@ -285,9 +285,7 @@ string          ["][^"]*[""]
 <^CODE,^INCLUDE_CODE>\h+     s();// ignore
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
-<*>{
 <^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^INBRACKETS>\n  return yy::parser::make_EOS(location());
-}
 
 // *** comments
 (?^^\h*"//".*\n) s();// eat //-comments that start a line without affecting indent stops
@@ -295,19 +293,21 @@ string          ["][^"]*[""]
 \h*"/*"\k?     s();
                if (commentNested == 0) pushState(COMMENT);
                ++commentNested;                  // allow nesting /*-comments
-
 }
+//////////////////////////
 
 <*,^COMMENT,^ARGS,^INBRACKETS>{
 ^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
 ^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
 \j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
 }
+//////////////////////////
 
 <COMMENT>{
 "*/"           if (--commentNested == 0) popState(); 
 [^*/]*|.|\n    // ignore all content in comments
 }
+//////////////////////////
 
 "*/"           nate->error("*/ without matching /*");
 
@@ -319,6 +319,7 @@ string          ["][^"]*[""]
                   return yy::parser::make_WORD("^", location());
 }
 }
+//////////////////////////
 
 include\h*\".*\"  s(); includeFile();
 
@@ -329,10 +330,12 @@ include\h*\".*\"  s(); includeFile();
 \bwhile\b     |
 (?^^\h+/while\b)	return yy::parser::make_WHILE(location());
 }
+//////////////////////////
 
 <DEFINE>{
 \breturn\b	  return yy::parser::make_RETURN(location());
 }
+//////////////////////////
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
 ":="			    return yy::parser::make_ASSIGN(location());
@@ -351,6 +354,7 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
 {oper}				return yy::parser::make_WORD(str(), location());
 }
+//////////////////////////
 
 <FOR_EXPR>{
 \bto\b		    return yy::parser::make_TO(location());
@@ -359,6 +363,7 @@ include\h*\".*\"  s(); includeFile();
 \bwhile\b 	  return yy::parser::make_WHILE(location());
 \bin\b 	      return yy::parser::make_IN(location());
 }
+//////////////////////////
 
 <SUPERSCRIPT_EXPR>{
 {superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
@@ -372,6 +377,7 @@ include\h*\".*\"  s(); includeFile();
 \n            stopSuperscript(); return yy::parser::make_EOS(location());
 [^\h]         stopSuperscript();
 }
+//////////////////////////
 
 <ARGS>{
 \bis\b			  return yy::parser::make_IS(location());
@@ -392,12 +398,14 @@ include\h*\".*\"  s(); includeFile();
 "{{"          return yy::parser::make_START_SPEC(location());
 \h*\k?        // ignore
 }
+//////////////////////////
 
 <INCLUDE_CODE>{
 [^\h\n][^\n]*\n      return yy::parser::make_WORD(str(), location());
 ^[\h]+        // ignore
 \n            // ignore
 }
+//////////////////////////
 
 <CODE>{
 {string}    	return yy::parser::make_WORD(str(), location());
@@ -407,6 +415,7 @@ include\h*\".*\"  s(); includeFile();
 [\h]+         return yy::parser::make_WORD(str(), location());
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 }
+//////////////////////////
 
 <INBRACKETS>{
 "}}"          return yy::parser::make_END_SPEC(location());
@@ -415,6 +424,7 @@ include\h*\".*\"  s(); includeFile();
 [$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
 \n            return yy::parser::make_WORD(str(), location());
 }
+//////////////////////////
 
 <DECL_TYPE>{
 \bof\b		    return yy::parser::make_OF(location());
@@ -422,10 +432,12 @@ include\h*\".*\"  s(); includeFile();
 "{{"          return yy::parser::make_START_SPEC(location());
 {word}	  		return yy::parser::make_WORD(str(), location());
 }
+//////////////////////////
 
 <FOR_VAR_DECL>{
 \bin\b 	      return yy::parser::make_IN(location());
 }
+//////////////////////////
 
 <VAR_DECL,FOR_VAR_DECL>{
 \bis\b		    return yy::parser::make_IS(location());
@@ -436,6 +448,7 @@ include\h*\".*\"  s(); includeFile();
 ":"				    return yy::parser::make_COL(location());
 . 				    return yy::parser::make_BADTOKEN(location());
 }
+//////////////////////////
 
 \bprogram\b		return yy::parser::make_PROGRAM(location());
 \bscope\b	  	return yy::parser::make_SCOPE(location());

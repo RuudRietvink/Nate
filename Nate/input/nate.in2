@@ -19,8 +19,8 @@ program:
   record Rec:
     var fld1 := 3
     var fld2 is text
-    var fld3 is complex := 1 + 2i-3
-    var fld4 is rational := ¾
+    var fld3 is complex := 1 + 2i
+    var fld4 is rational := ³³/₄₅₆ + ³³⁄₄₅₆;
 
   var rec is Rec
   output rec's fld2
