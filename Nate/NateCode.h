@@ -48,6 +48,7 @@ public:
   void visit(const StatWrite& aStat) override;
   void visit(const StatRead& aStat) override;
   void visit(const StatDefine& aStat) override;
+  void visit(const StatRecord& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -68,7 +69,6 @@ private:
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
-  void codeRecord(const TreeNodePtr& aNode);
   void codeDefine(const TreeNodePtr& aNode);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");

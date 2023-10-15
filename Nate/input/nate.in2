@@ -2,6 +2,8 @@ import Math
 import Text
 import File-Output
 import Data-Input
+import Complex
+import Rational
 
 // √⌊⌋⌈⌉|⏐
 // ⏨ю
@@ -14,6 +16,14 @@ import Data-Input
 
 program:
   var hello := " world"
+  record Rec:
+    var fld1 := 3
+    var fld2 is text
+    var fld3 is complex := 1 + 2i-3
+    var fld4 is rational := ¾
+
+  var rec is Rec
+  output rec's fld2
 
   data data1:
     1, 2, "sdsdds" & "aaa", hello & hello's length
@@ -33,7 +43,7 @@ program:
   var x, y is int-32
   var s is text;
   read from in: x, y, s
-  output x,y,
+  output x,y, xy, ex
   output "hi", "there"&
   output s
 

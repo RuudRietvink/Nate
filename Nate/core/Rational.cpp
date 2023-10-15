@@ -81,18 +81,20 @@ bool Rational::convertFromString(const std::string& aString)
 	mWhole = 0;
 	mNumerator = 0;
 	mDenominator = 1;
+	std::string::const_iterator start = aString.begin();
 
-	Core::Utf8 string(aString);
-
-	mNegative = *string == '-';
+	mNegative = start != aString.end() && *start == '-';
 	if (mNegative)
 	{
-		++string;
+		++start;
 	}
+
+	std::string zeroPreprended = "0" + std::string(start, aString.end());
+	Core::Utf8 string(zeroPreprended);
 
 	ok = Core::numberFrom(string, mWhole);
 
-	if (string.iter() == string.end() || ok)
+	if (string.iter() == string.end() || ok || string.iter() == string.begin())
 	{
 		if (string)
 		{

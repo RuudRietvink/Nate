@@ -626,13 +626,13 @@ void NateParser::doStartRecord(const std::string& anId, const yy::parser::locati
   data.curRecord.push(record);
 	addType(record, record->name());
 	pushIdentifiersHolder(record);
-  addStat(ByteCode::Record, aLocation)->type = record;
+	pushStatsHolder(addStatement(std::make_shared<StatRecord>(location(aLocation), record)));
 }
 
 void NateParser::doEndRecord(const yy::parser::location_type& aLocation)
 {
 	popIdentifiersHolder();
-	up();
+	popStatsHolder();
 }
 
 void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
@@ -1571,25 +1571,16 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 	{
 		auto iter = name.cbegin();
 		bool ok = true;
-		bool first = true;
 
-		while (iter != name.cend() && ok)
+		if (iter != name.cend() && ok)
 		{
 			auto next = iter;
 			utf8::next(next, name.cend());
-			IdentifierPtr newId = getIdentifier(alias(std::string(iter, next)));
-			id = newId;
-			if (!id)
+			pos = utf8::distance(iter, next);
+			if (pos != 1 || *iter != 'i' || next == name.cend())
 			{
-				ok = false;
+				id = getIdentifier(alias(std::string(iter, next)));
 			}
-			else if (first)
-			{
-				pos = utf8::distance(iter, next);
-				first = false;
-			}
-			
-			utf8::next(iter, name.cend());
 		}
 	}
 

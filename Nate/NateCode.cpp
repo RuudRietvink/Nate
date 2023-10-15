@@ -518,6 +518,43 @@ void NateCode::visit(const StatData& aStat)
 	*mOut << in() << "const " << aStat.getId()->type()->codeType() << " " << aStat.getId()->codeName() << "= " << name << ".str();" << end();
 }
 
+void NateCode::visit(const StatRecord& aStat)
+{
+	printLineNr(aStat.getLocation());
+	
+	*mOut << in() << "struct " << aStat.getRecord()->codeType() << end() << in() << "{" << end();
+	++mIndent;
+	*mOut << in() << aStat.getRecord()->codeType() << "()" << end();
+	bool first = true;
+
+	for (auto& id : aStat.getRecord()->identifiers().get())
+	{
+		if (first)
+		{
+			*mOut << in(1) << ": ";
+			first = false;
+		}
+		else
+		{
+			*mOut << in(1) << ", ";
+		}
+
+		*mOut << id->codeName() << "(";
+
+		if (!id->initValue().is(Expr::Default))
+		{
+			*mOut << codeExpr(id->initValue());
+		}
+
+		*mOut << ")" << end();
+	}
+
+	*mOut << in() << "{}" << end();
+	codeStats(aStat.getCompound());
+	--mIndent;
+	*mOut << in() << "};" << end() << end();
+}
+
 void NateCode::visit(const StatDefine& /*aStat*/)
 {
 }
@@ -745,43 +782,6 @@ void NateCode::codeCodeInclude(const TreeNodePtr& aNode)
 {
 	printLineNr(aNode->location);
 	*mOut << in() << aNode->string << end();
-}
-
-void NateCode::codeRecord(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	RecordPtr record = std::dynamic_pointer_cast<Record>(aNode->type);
-	
-	*mOut << in() << "struct " << record->codeType() << end() << in() << "{" << end();
-	++mIndent;
-	*mOut << in() << record->codeType() << "()" << end();
-	bool first = true;
-
-	for (auto& id : record->identifiers().get())
-	{
-		if (first)
-		{
-			*mOut << in(1) << ": ";
-			first = false;
-		}
-		else
-		{
-			*mOut << in(1) << ", ";
-		}
-
-		*mOut << id->codeName() << "(";
-
-		if (!id->initValue().is(Expr::Default))
-		{
-			*mOut << codeExpr(/*aNode, */id->initValue());
-		}
-		*mOut << ")" << end();
-	}
-
-	*mOut << in() << "{}" << end();
-	codeNested(aNode);
-	--mIndent;
-	*mOut << in() << "};" << end() << end();
 }
 
 void NateCode::codeDefine(const TreeNodePtr& aNode)
