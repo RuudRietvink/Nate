@@ -14,16 +14,20 @@ import Rational
 // ‾―─‗  
 // ①②③④
 
+define why so ${serious is text}:
+  output "why so", serious
+
 program:
   var hello := " world"
+  why so "serious"
   record Rec:
     var fld1 := 3
     var fld2 is text
-    var fld3 is complex := 1 + 2i
-    var fld4 is rational := ³³/₄₅₆ + ³³⁄₄₅₆;
+    var fld3 := 1 + 2i
+    var fld4 := ³³/₄₅₆ + ⁸⁄₄₅₆;
 
   var rec is Rec
-  output rec's fld2
+  output rec's fld1, rec's fld4
 
   data data1:
     1, 2, "sdsdds" & "aaa", hello & hello's length

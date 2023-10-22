@@ -1323,10 +1323,12 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 		{
 			error("Not allowed keyword: final");
 		}
-
-		TreeNode* node = addStat(ByteCode::Define, aLocation);
-		node->defyne = curDefine();
-		node->bool1 = aIsDecl;
+		
+		auto stat = addStatement(std::make_shared<StatDefine>(Location(aLocation, mLexer->currentFile()), curDefine(), aIsDecl));
+		if (!aIsDecl)
+		{
+			pushStatsHolder(stat);
+		}
 	}
 
 	curDefine()->createCodeCall();
@@ -1336,7 +1338,7 @@ void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
 	popDefineScope();
-	up();
+	popStatsHolder();
 }
 
 DefinePtr NateParser::curDefine() { return mCurDefine; }

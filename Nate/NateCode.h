@@ -69,7 +69,6 @@ private:
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
   void codeCodeInclude(const TreeNodePtr& aNode);
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
-  void codeDefine(const TreeNodePtr& aNode);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
   void codeReturn(const TreeNodePtr& aNode);
@@ -89,7 +88,6 @@ private:
 	void codeDeclareProperty(const ObjectPtr& aObject,
 												 	 const IdentifierPtr& aId,
 													 const Location& aLocation);
-	void codeExprStat(const TreeNodePtr& aNode);
 	void codeImplObjectVariables(const TreeNodePtr& aNode);
 	void codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl);
 

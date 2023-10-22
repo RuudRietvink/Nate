@@ -559,9 +559,45 @@ void NateCode::visit(const StatRecord& aStat)
 	*mOut << in() << "};" << end() << end();
 }
 
-void NateCode::visit(const StatDefine& /*aStat*/)
+void NateCode::visit(const StatDefine& aStat)
 {
+	printLineNr(aStat.getLocation());
+	DefinePtr defyne = aStat.getDefine();
+	
+	if (defyne->isObjectMethod())
+	{				
+		//if (aStat.isDecl())
+		//{
+		//	*mOut << in(-) << createCodeDecl(defyne, toCodeName(aNode->object->name())) << end() <<
+		//		       in(-1) << "{" << end();
+		//}
+		//else
+		//{				
+		//	*mOut << in() << (defyne->isStatic() ? "static " : "") <<
+		//			              createCodeDecl(defyne) << end() << 
+		//		       in() << "{" << end();
+		//}
+
+		//++mIndent;
+		//codeNested(aNode);
+		//--mIndent;
+		//*mOut << in() << "}" << end() << end();
+	}
+	else
+	{
+		*mOut << in() << createCodeDecl(defyne, "");
+		if (aStat.isDecl())
+		{
+			*mOut << ";" << end();
+		}
+		else
+		{
+			*mOut << end();
+			codeCompound(aStat);
+		}
+	}
 }
+
 
 void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
 {
@@ -788,51 +824,6 @@ void NateCode::codeCodeInclude(const TreeNodePtr& aNode)
 	*mOut << in() << aNode->string << end();
 }
 
-void NateCode::codeDefine(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	DefinePtr defyne = aNode->defyne;
-	
-	if (defyne->isObjectMethod())
-	{				
-		bool defineDecl = aNode->bool1;
-		if (defineDecl)
-		{
-			*mOut << in(-1) << createCodeDecl(defyne, toCodeName(aNode->object->name())) << end() <<
-				       in(-1) << "{" << end();
-		}
-		else
-		{				
-			*mOut << in() << (defyne->isStatic() ? "static " : "") <<
-					              createCodeDecl(defyne) << end() << 
-				       in() << "{" << end();
-		}
-
-		++mIndent;
-		codeNested(aNode);
-		--mIndent;
-		*mOut << in() << "}" << end() << end();
-	}
-	else
-	{
-		bool isDecl = aNode->bool1;
-		createCodeDecl(defyne, "");
-		if (isDecl)
-		{
-			*mOut << ";" << end();
-		}
-		else
-		{
-			*mOut << end() << in() << "{" << end();
-			++mIndent;
-			codeNested(aNode);
-			--mIndent;
-			*mOut << in() << "}" << end() << end();
-		}
-	}
-}
-
-
 std::string NateCode::createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName)
 {
 	std::ostringstream out;
@@ -1055,7 +1046,7 @@ void NateCode::codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl)
 	
 			if (defyne->isObjectMethod() && inImpl != part->bool1)
 			{				
-				codeDefine(part);
+				//codeDefine(part);
 			}
       break;
 		}
@@ -1190,10 +1181,4 @@ void NateCode::codeDeclareProperty(const ObjectPtr& aObject,
 			        ? " override" : "";
 		*mOut << in() << startKeys << codePropHeader(aObject, false, aId, Object::PropType::Set) << endKeys << abstractKey << ";" << end();
 	}
-}
-
-void NateCode::codeExprStat(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << codeExpr(/*aNode, */aNode->expr) << ";" << end();
 }
