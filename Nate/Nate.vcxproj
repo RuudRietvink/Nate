@@ -256,6 +256,7 @@
     <ClCompile Include="Stats\StatProgram.cpp" />
     <ClCompile Include="Stats\StatRead.cpp" />
     <ClCompile Include="Stats\StatRecord.cpp" />
+    <ClCompile Include="Stats\StatReturn.cpp" />
     <ClCompile Include="Stats\StatWithExpr.cpp" />
     <ClCompile Include="Stats\StatWrite.cpp" />
     <ClCompile Include="Type.cpp" />
@@ -402,6 +403,7 @@
     <ClInclude Include="Stats\StatProgram.h" />
     <ClInclude Include="Stats\StatRead.h" />
     <ClInclude Include="Stats\StatRecord.h" />
+    <ClInclude Include="Stats\StatReturn.h" />
     <ClInclude Include="Stats\StatWithExpr.h" />
     <ClInclude Include="Stats\StatWrite.h" />
     <ClInclude Include="Type.h" />

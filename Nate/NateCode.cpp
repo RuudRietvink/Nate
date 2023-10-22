@@ -598,6 +598,11 @@ void NateCode::visit(const StatDefine& aStat)
 	}
 }
 
+void NateCode::visit(const StatReturn& aStat)
+{
+	printLineNr(aStat.getLocation());
+	*mOut << in() << "return " << codeExpr(aStat.getExpr()) << ";" << end();
+}
 
 void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
 {
@@ -896,12 +901,6 @@ std::string NateCode::createCodeDeclArgs(const DefinePtr& aDefine, const std::ve
 	out << ")";
 
 	return out.str();
-}
-
-void NateCode::codeReturn(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << "return " << codeExpr(/*aNode, */aNode->expr) << ";" << end();
 }
 
 void NateCode::codeDeclObject(const TreeNodePtr& aNode)

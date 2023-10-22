@@ -14,12 +14,13 @@ import Rational
 // ‾―─‗  
 // ①②③④
 
-define why so ${serious is text}:
+define why so ${serious is text} is boolean:
   output "why so", serious
+  return false
 
 program:
   var hello := " world"
-  why so "serious"
+  output why so "serious"
   record Rec:
     var fld1 := 3
     var fld2 is text

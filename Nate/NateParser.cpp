@@ -646,7 +646,7 @@ void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& a
 		error("Incompatible return type");
 	}
 
-	add(ByteCode::Return, aValue, aLocation);
+	addStatement(std::make_shared<StatReturn>(location(aLocation), aValue));
 }
 
 void NateParser::doDeclObject(const yy::parser::location_type& aLocation)

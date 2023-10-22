@@ -16,6 +16,7 @@
 #include "StatRead.h"
 #include "StatDefine.h"
 #include "StatRecord.h"
+#include "StatReturn.h"
 
 class ICodeVisitor
 {
@@ -49,5 +50,6 @@ public:
   virtual void visit(const StatInput::Value& aStat) = 0;
   virtual void visit(const StatDefine& aStat) = 0;
   virtual void visit(const StatRecord& aStat) = 0;
+  virtual void visit(const StatReturn& aStat) = 0;
 };
 

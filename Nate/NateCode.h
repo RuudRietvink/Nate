@@ -49,6 +49,7 @@ public:
   void visit(const StatRead& aStat) override;
   void visit(const StatDefine& aStat) override;
   void visit(const StatRecord& aStat) override;
+  void visit(const StatReturn& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -71,7 +72,6 @@ private:
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
-  void codeReturn(const TreeNodePtr& aNode);
   void codeDeclObject(const TreeNodePtr& aNode);
 	void codeObjectBases(const ObjectPtr& aObject);
 	void codeDeclObjectDefine(const TreeNodePtr& aNode);
