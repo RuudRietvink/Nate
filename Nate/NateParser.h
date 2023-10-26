@@ -135,6 +135,7 @@ public:
 	void doEndRecord(const yy::parser::location_type& aLocation);
 	void doStartDefine(bool aIsDecl, bool aIsImpl,
 										 const yy::parser::location_type& aLocation);
+	void doEndDeclDefine(const yy::parser::location_type& aLocation);
 	void doEndDefine(const yy::parser::location_type& aLocation);
   void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation);
@@ -152,8 +153,7 @@ public:
 	void doEndImplObject();
 	void doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
 							const yy::parser::location_type& aLocation);
-	void doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-								 const yy::parser::location_type& aLocation);
+	void doEndProp(const yy::parser::location_type& aLocation);
   void doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
 
 
@@ -218,7 +218,7 @@ public:
 
 	void addDefine(bool aInObject);
 	void deleteCurDefine();
-	DefinePtr curDefine();
+	DefinePtr curDefine() const;
 
 	MethodPtr curMethod();
 	void addArgWord(const std::string& aWord);

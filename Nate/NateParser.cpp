@@ -653,8 +653,7 @@ void NateParser::doDeclObject(const yy::parser::location_type& aLocation)
 {	
 	addObject(data.object);
   checkObject(curObject());
-	TreeNode* node = addStat(ByteCode::DeclObject, aLocation);
-	node->object = curObject();
+	pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), true)));
 }
 
 void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
@@ -667,7 +666,7 @@ void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
 
   data.inObject = false;
 	endObject();
-	up();
+	popStatsHolder();
 }
 
 void NateParser::doImplObject(const yy::parser::location_type& aLocation)
@@ -685,6 +684,7 @@ void NateParser::doImplObject(const yy::parser::location_type& aLocation)
           
     checkObject(curObject());
 		addStat(ByteCode::ImplObject, aLocation)->object = curObject();
+		pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), false)));
   }
   else
   {
@@ -694,7 +694,7 @@ void NateParser::doImplObject(const yy::parser::location_type& aLocation)
 		}
 		
     startObject(objectDecl);
-		addStat(ByteCode::ImplObject, aLocation)->object = objectDecl;
+		pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), objectDecl, false)));
   }
 }
 
@@ -702,7 +702,7 @@ void NateParser::doImplObject(const yy::parser::location_type& aLocation)
 void NateParser::doEndImplObject()
 {
 	endImplementObject();
-	up();
+	popStatsHolder();
 }
 
 std::string NateParser::makeTempDir()
@@ -1267,19 +1267,13 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 				}
 
 				defineDecl->setFlag(Method::Defined);
-				TreeNode* node = addStat(ByteCode::Define, aLocation);
-				node->defyne = defineDecl;
-				node->bool1 = true;
-				node->object = curObject();
+				pushStatsHolder(addStatement(std::make_shared<StatDefine>(location(aLocation), defineDecl, false /*aImpOnly*/, false /*aIsDecl*/)));
 			}
 			else
 			{
 				curDefine()->setFlag(Method::Defined);
 				curDefine()->setFlag(Method::Undeclared);
-				TreeNode* node = addStat(ByteCode::Define, aLocation);
-				node->defyne = curDefine();
-				node->bool1 = false;
-				node->object = curObject();
+				pushStatsHolder(addStatement(std::make_shared<StatDefine>(location(aLocation), curDefine(), true /*aImpOnly*/, false /*aIsDecl*/)));
 			}
 		}
 		else
@@ -1293,11 +1287,8 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 				}
 				curDefine()->setFlag(Method::Overriden);
 			}
-
-			TreeNode* node = addStat(ByteCode::DeclObjectDefine, aLocation);
-			node->defyne = curDefine();
-			node->object = curObject();
-			node->bool1 = aIsDecl;
+			
+		  addStatement(std::make_shared<StatDefine>(location(aLocation), curDefine(), false /*aImpOnly*/, true /*aIsDecl*/));
 		}
 
 		if (curDefine()->isStatic())
@@ -1324,7 +1315,7 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 			error("Not allowed keyword: final");
 		}
 		
-		auto stat = addStatement(std::make_shared<StatDefine>(Location(aLocation, mLexer->currentFile()), curDefine(), aIsDecl));
+		auto stat = addStatement(std::make_shared<StatDefine>(Location(aLocation, mLexer->currentFile()), curDefine(), false /*aImpOnly*/, aIsDecl));
 		if (!aIsDecl)
 		{
 			pushStatsHolder(stat);
@@ -1334,6 +1325,12 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 	curDefine()->createCodeCall();
 }
 
+void NateParser::doEndDeclDefine(const yy::parser::location_type& aLocation)
+{
+	mCurDefine.reset();
+	popDefineScope();
+}
+
 void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
@@ -1341,7 +1338,7 @@ void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
 	popStatsHolder();
 }
 
-DefinePtr NateParser::curDefine() { return mCurDefine; }
+DefinePtr NateParser::curDefine() const { return mCurDefine; }
 
 void NateParser::declareProperties(const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
@@ -1387,25 +1384,19 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 	addDefine(true);
 	curDefine()->setType(aIdentifier->type());
 	mDefineDecl = false;
-	bool getter = true;
 	if (aPropType != Object::PropType::Get)
 	{
-		getter = false;
 		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
 		addIdentifier(value);
 	}
-
-	TreeNode* node = addStat(ByteCode::Prop, aLocation);
-	node->bool1 = getter;
-	node->id = aIdentifier;
-	node->object = curObject();
+	
+	pushStatsHolder(addStatement(std::make_shared<StatProperty>(location(aLocation), aIdentifier, curObject(), aPropType)));
 }
 
-void NateParser::doEndProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-													 const yy::parser::location_type& aLocation)
+void NateParser::doEndProp(const yy::parser::location_type& aLocation)
 {
-	doEndDefine(aLocation);
 	deleteCurDefine();
+	popStatsHolder();
 }
 
 void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)
@@ -1656,7 +1647,7 @@ bool NateParser::checkProperty(std::ostringstream& error, const ExprNodesCIter& 
 			IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
 			if (holder)
 			{
-				if (holder != curObject())
+				if (holder != curObject() && (!curDefine() || curDefine()->object() != curObject()))
 				{
 					error << "Use me's reference when using base object property: " << id->name();
 					ok = false;

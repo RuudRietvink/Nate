@@ -50,6 +50,8 @@ public:
   void visit(const StatDefine& aStat) override;
   void visit(const StatRecord& aStat) override;
   void visit(const StatReturn& aStat) override;
+  void visit(const StatObject& aStat) override;
+  void visit(const StatProperty& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -72,10 +74,8 @@ private:
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
-  void codeDeclObject(const TreeNodePtr& aNode);
 	void codeObjectBases(const ObjectPtr& aObject);
 	void codeDeclObjectDefine(const TreeNodePtr& aNode);
-  void codeImplObject(const TreeNodePtr& aNode);
   void codeProp(const TreeNodePtr& aNode);
 	std::string codePropHeader(const ObjectPtr& aObject,
 														 bool aAddObjectName,
@@ -88,8 +88,8 @@ private:
 	void codeDeclareProperty(const ObjectPtr& aObject,
 												 	 const IdentifierPtr& aId,
 													 const Location& aLocation);
-	void codeImplObjectVariables(const TreeNodePtr& aNode);
-	void codeImplObjectNested(const TreeNodePtr& aNode, bool inImpl);
+	void codeImplObjectVariables(const StatObject& aStat);
+	void codeImplObjectNested(const StatObject& aStat, bool inImpl);
 
 
 	bool isConstIntScalar(const Expr& aExpr);

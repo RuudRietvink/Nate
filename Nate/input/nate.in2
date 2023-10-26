@@ -14,9 +14,49 @@ import Rational
 // ‾―─‗  
 // ①②③④
 
+declare object Hi:
+  record Datum:
+    var fun is text
+    var count is int-32
+
+  property age is int-32 as readonly
+  property datum is Datum
+  property prop-hi is int-32
+  
+  declare new Hi2 is Hi
+  declare ${me is Hi} ${world is text} is text
+
+
+implement object Hi:
+  property age:
+    get:
+      return age
+     
+  property prop-hi is int-32:
+    set:
+      prop-hi := value
+      return prop-hi
+
+  define yo is text:
+    return "Hi"
+
+  define ${me as out} ${world is text} is text:
+    prop-hi := -3 + prop-hi
+    return "ls " + yo
+
+  implement new Hi2 is Hi:
+    return constructed object
+    
+  implement ${me is Hi} ${world is text} is text:
+    return yo + " " + prop-hi + " " + $world
+
+
+
 define why so ${serious is text} is boolean:
   output "why so", serious
   return false
+
+
 
 program:
   var hello := " world"
@@ -81,7 +121,7 @@ program:
   is 13:
     output "case 13"
     
-  if cnt:
+  if cnt + 1:
   is 10:
   is 11:
     output "case"
@@ -90,7 +130,7 @@ program:
   else:
     output "else"
     
-  if cnt:
+  if cnt + 2:
   is cnt * 4:
     output "hello"
   is cnt + 4:
@@ -98,7 +138,7 @@ program:
     output "hi"
     cnt := 2
 
-  if cnt:
+  if cnt + 3:
     is cnt * 4:
       output "hello"
     is cnt + 4:
@@ -108,7 +148,7 @@ program:
     else:
       output "else"
     
-  if cnt:
+  if cnt + 4:
     is 10:
     is 11:
       output "case"
@@ -119,7 +159,7 @@ program:
       output "hi"
       cnt := 2
 
-  if cnt:
+  if cnt + 5:
   is 10:
   is 11:
     output "case"

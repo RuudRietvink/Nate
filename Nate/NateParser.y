@@ -330,7 +330,7 @@ declare-object-content-statement:
 			{ 
 			  lexer.popState();
 			  nate.doStartDefine(true, false/*aIsImpl*/, @[define-decl]);
-        nate.doEndDefine(@[define-decl]);
+        nate.doEndDeclDefine(@[define-decl]);
       }
   | EOS
   ;
@@ -621,11 +621,9 @@ property-declare-statement:
 property-define-statement:
 	  PROP 
 		  { lexer.pushState(Lexer::VAR_DECL); }
-    id COL
-      { 
-		    lexer.popState(); 
-      }
-    optional-is-type opt-flag-list
+    id
+      { lexer.popState(); }
+    optional-is-type opt-flag-list COL
       {
         nate.data.propId = nate.getImplObjectPropertyIdentifier($id, $[optional-is-type], $[opt-flag-list], @PROP);
       }
@@ -656,7 +654,7 @@ property-get-code:
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.doEndProp(nate.data.propId, Object::PropType::Get, @end);
+			  nate.doEndProp(@end);
 		  }
   ;
   
@@ -671,7 +669,7 @@ property-set-code:
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.doEndProp(nate.data.propId, Object::PropType::Set, @end);
+			  nate.doEndProp(@end);
 		  }
   ;
   

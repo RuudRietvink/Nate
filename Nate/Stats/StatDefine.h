@@ -6,9 +6,11 @@
 class StatDefine : public Stat
 {
 public:
-  StatDefine(const Location& aLocation, const DefinePtr& aDefine, bool aIsDecl);
+  StatDefine(const Location& aLocation, const DefinePtr& aDefine, bool aImpOnly, bool aIsDecl);
 
   const DefinePtr& getDefine() const;
+
+  bool isImpOnly() const;
 
   bool isDecl() const;
 
@@ -16,6 +18,7 @@ public:
 
 private:
   DefinePtr mDefine;
+  bool mImpOnly;
   bool mIsDecl;
 };
 
