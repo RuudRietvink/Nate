@@ -1357,8 +1357,41 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 	}
 }
 
-void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-										    const yy::parser::location_type& aLocation)
+ IdentifierPtr NateParser::doProp(const std::string& aName,
+						          						const TypePtr& optType,const std::vector<std::string>& flags,const yy::parser::location_type& aLocation)
+{
+	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
+	if (!result)
+	{
+		if (optType->empty())
+		{
+			error("Undeclared property requires type");
+		}
+
+		declareProperties({ aName }, optType, flags, aLocation);
+		result = getIdentifier(aName, curIdentifiersHolder().get());
+	}
+	else
+	{
+		if (!optType->empty())
+		{
+			error("Redefinition of type of property");
+		}
+		else if (!flags.empty())
+		{
+			error("Redefinition of flags of property");
+		}
+	}
+				
+	return result;
+}
+
+void NateParser::doEndProp(const yy::parser::location_type& aLocation)
+{
+}
+
+void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+										          const yy::parser::location_type& aLocation)
 {
 	const std::string method = aPropType == Object::PropType::Get ? "get" : "set";
 
@@ -1389,14 +1422,12 @@ void NateParser::doProp(const IdentifierPtr& aIdentifier, Object::PropType aProp
 		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
 		addIdentifier(value);
 	}
-	
-	pushStatsHolder(addStatement(std::make_shared<StatProperty>(location(aLocation), aIdentifier, curObject(), aPropType)));
 }
 
-void NateParser::doEndProp(const yy::parser::location_type& aLocation)
+void NateParser::doEndPropDefine(const yy::parser::location_type& aLocation)
 {
 	deleteCurDefine();
-	popStatsHolder();
+	popIdentifiersHolder();
 }
 
 void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)
@@ -1657,42 +1688,6 @@ bool NateParser::checkProperty(std::ostringstream& error, const ExprNodesCIter& 
 	}
 	
 	return ok;
-}
-
-IdentifierPtr NateParser::getImplObjectPropertyIdentifier(const std::string& aName, 
-																													const TypePtr& optType,
-																												  const std::vector<std::string>& flags,
-																													const yy::parser::location_type& aLocation)
-{
-	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
-	if (!result)
-	{
-		if (optType->empty())
-		{
-			error("Undeclared property requires type");
-		}
-
-		declareProperties({ aName }, optType, flags, aLocation);
-		result = getIdentifier(aName, curIdentifiersHolder().get());
-	}
-	else
-	{
-		if (!optType->empty())
-		{
-			error("Redefinition of type of property");
-		}
-		else if (!flags.empty())
-		{
-			error("Redefinition of flags of property");
-		}
-	}
-
-	if (!curObject()->hasProp(result))
-	{
-		result->setFlag(Identifier::Undeclared);
-	}
-
-	return result;
 }
 
 void NateParser::addIdentifier(const IdentifierPtr& aIdentifier)

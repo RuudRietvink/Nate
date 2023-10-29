@@ -37,7 +37,7 @@ private:
 	class __impl;
 	__impl* _impl;
 	friend class __impl;
-	public:
+public:
 #line 18
 	struct Datum
 	{
@@ -55,6 +55,10 @@ private:
 	std::shared_ptr<Hi> new_Hi2_();
 	string_t E_me__E_text_(const string_t& world) const;
 private:
+	int32_t age = {};
+public:
+	virtual int32_t age_get() const;
+private:
 	Datum datum = {};
 public:
 	virtual Hi::Datum datum_get() const;
@@ -64,15 +68,6 @@ private:
 public:
 	virtual int32_t prop_hi_get() const;
 	virtual const int32_t prop_hi_set(const int32_t value);
-private:
-	int32_t prop_hi = {};
-public:
-	virtual int32_t prop_hi_get() const;
-	virtual const int32_t prop_hi_set(const int32_t value);
-private:
-	int32_t age = {};
-public:
-	virtual int32_t age_get() const;
 };
 
 #line 30
@@ -81,62 +76,52 @@ class Hi::__impl
 private:
 	friend class Hi;
 	Hi* me;
+#line 31
+	string_t local = {};
 public:
 	__impl(Hi* aMe) : me(aMe) {}
-#line 47
-	static std::shared_ptr<Hi> new_Hi2_()
+#line 42
+	static string_t yo_()
 	{
-#line 48
-		return std::make_shared<Hi>();
+#line 43
+		return "Hi";
 	}
-	string_t E_me__E_text_(const string_t& world) const
+	string_t E_O_me__E_text_(const string_t& world)
 	{
-#line 51
-		return ((((__impl::yo_()) + " ") + (std::to_string(prop_hi))) + " ") + world;
+#line 46
+		int32_t loc = (-3) + me->prop_hi;
+		return "ls " + (__impl::yo_());
 	}
 };
 
 Hi::Hi()
 	: _impl(new __impl(this)) {}
 Hi::~Hi() { delete _impl; }
-#line 32
-#line 36
-#line 40
-static string_t yo_();
-{
-#line 41
-	return "Hi";
-}
-virtual string_t E_O_me__E_text_(const string_t& world);
-{
-#line 44
-	prop_hi = (-3) + me->prop_hi;
-	return "ls " + (__impl::yo_());
-}
+#line 49
+static std::shared_ptr<Hi> new_Hi2_();
+#line 52
+virtual string_t E_me__E_text_(const string_t& world) const;
 Hi::Datum Hi::datum_get() const { return datum; }
 const Hi::Datum& Hi::datum_set(const Hi::Datum& value) { return datum = value; }
 int32_t Hi::prop_hi_get() const { return prop_hi; }
-const int32_t Hi::prop_hi_set(const int32_t value) { return prop_hi = value; }
-int32_t Hi::prop_hi_get() const { return prop_hi; }
-const int32_t Hi::prop_hi_set(const int32_t value) { return prop_hi = value; }
-#line 55
+#line 57
 bool why_so_E_text_(const string_t& serious)
 {
-#line 56
+#line 58
 	*output << "why so " << (serious) << std::endl;
 	return false;
 }
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
-#line 61
+#line 63
 int main(int argc, char** argv)
 {
 	output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
 	error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});
 	input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
 	SetConsoleOutputCP(65001);
-#line 62
+#line 64
 	string_t hello = " world";
 	*output << std::boolalpha  << ((why_so_E_text_("serious"))) << std::endl;
 	struct Rec
@@ -147,50 +132,50 @@ int main(int argc, char** argv)
 			, fld3(Complex<double>(1, (2 * i)))
 			, fld4(Rational(0,11,152) + Rational(0,1,57))
 		{}
-#line 64
+#line 66
 		int32_t fld1;
-#line 64
+#line 66
 		string_t fld2;
-#line 64
+#line 66
 		Complex<double> fld3;
-#line 64
+#line 66
 		Rational fld4;
 	};
 
-#line 70
+#line 72
 	Rec rec = {};
 	*output << ((rec . fld1)) << " " << ((rec . fld4)) << std::endl;
-#line 73
+#line 75
 	std::ostringstream data1_temp;
-#line 73
+#line 75
 	data1_temp << 1 << " " << 2 << " sdsddsaaa " << (hello) << ((static_cast<int32_t>(hello.size()))) << std::endl << 3 << " " << 4 << 5 << " " << 6 << 7 << " " << 8 << std::endl << "hi " << ((4 * 5)) << std::endl;
 	const string_t data1= data1_temp.str();
-#line 80
+#line 82
 	std::ostringstream data2_temp;
-#line 80
+#line 82
 	data2_temp << 1 << (data1) << std::endl;
 	const string_t data2= data2_temp.str();
-#line 83
-	*error << "Hello " << (hello) << std::endl;
 #line 85
+	*error << "Hello " << (hello) << std::endl;
+#line 87
 	std::shared_ptr<std::istringstream> in = {};
 	in.reset(new std::istringstream(data1));
-#line 88
+#line 90
 	int32_t x = {};
-#line 88
+#line 90
 	int32_t y = {};
 	string_t s = {};
 	std::shared_ptr<std::istream> nate__reader = in;
-#line 90
+#line 92
 	*nate__reader >> x;
 	*nate__reader >> std::ws >> y;
 	*nate__reader >> std::ws >> s;
 	(*nate__reader).ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-#line 91
+#line 93
 	*output << (x) << " " << (y) << " " << ((x * y)) << " " << ((e * x)) << std::endl;
 	*output << "hi there";
 	*output << (s) << std::endl;
-#line 95
+#line 97
 	std::shared_ptr<std::ofstream> out = {};
 	std::shared_ptr<std::ostream> out2 = out;
 	*output << "Before: " << std::boolalpha  << (((out && out->good()))) << " " << std::boolalpha  << (((out && out->is_open()))) << std::endl;
@@ -199,204 +184,204 @@ int main(int argc, char** argv)
 	*output << std::endl;
 	if ((out && out->is_open()))
 	{
-#line 102
+#line 104
 		*output << "Inside: " << std::boolalpha  << (((out && out->good()))) << " " << std::boolalpha  << (((out && out->is_open()))) << std::endl;
 		std::shared_ptr<std::ostream> nate__writer = out2;
-#line 103
+#line 105
 		*nate__writer << "Hello,planet ";
 		*nate__writer << 12 << " " << 13 << 14;
 		*nate__writer << 15 << std::endl;
 		nate__writer = output;
-#line 106
+#line 108
 		*nate__writer << "Hi ";
 		*output << "Hi ";
 		*nate__writer << "End" << std::endl;
 		*nate__writer << std::endl;
 		nate__writer = out2;
-#line 110
+#line 112
 		*nate__writer << "Hi there" << std::endl;
 		if (out) out->close();
 	}
-#line 112
-	*output << "After: " << std::boolalpha  << (((out && out->good()))) << " " << std::boolalpha  << (((out && out->is_open()))) << std::endl;
 #line 114
+	*output << "After: " << std::boolalpha  << (((out && out->good()))) << " " << std::boolalpha  << (((out && out->is_open()))) << std::endl;
+#line 116
 	int32_t cnt = 2;
 	cnt = 3;
-#line 118
+#line 120
 	auto const tmp__0__ = cnt;
-#line 118
+#line 120
 	switch (tmp__0__)
 	{
-#line 118
+#line 120
 	case 10:
 	case 11:
 	{
-#line 120
+#line 122
 		*output << "case" << std::endl;
 	}
 	break;
-#line 121
+#line 123
 	case 13:
 	{
-#line 122
+#line 124
 		*output << "case 13" << std::endl;
 	}
 	break;
 	}
-#line 125
+#line 127
 	auto const tmp__1__ = cnt + 1;
-#line 125
+#line 127
 	switch (tmp__1__)
 	{
-#line 125
+#line 127
 	case 10:
 	case 11:
 	{
-#line 127
+#line 129
 		*output << "case" << std::endl;
 	}
 	break;
-#line 128
+#line 130
 	case 13:
 	{
-#line 129
+#line 131
 		*output << "case 13" << std::endl;
 	}
 	break;
 	default:
 	{
-#line 131
+#line 133
 		*output << "else" << std::endl;
 	}
 	break;
 	}
-#line 134
+#line 136
 	auto const tmp__2__ = cnt + 2;
-#line 134
+#line 136
 	if ((tmp__2__ == cnt * 4))
 	{
-#line 135
+#line 137
 		*output << "hello" << std::endl;
 	}
-#line 136
+#line 138
 	else if ((tmp__2__ == cnt + 4)
-#line 136
+#line 138
 
 					 || (tmp__2__ == cnt - 4))
 	{
-#line 138
+#line 140
 		*output << "hi" << std::endl;
 		cnt = 2;
 	}
-#line 142
+#line 144
 	auto const tmp__3__ = cnt + 3;
-#line 142
+#line 144
 	if ((tmp__3__ == cnt * 4))
 	{
-#line 143
+#line 145
 		*output << "hello" << std::endl;
 	}
-#line 144
+#line 146
 	else if ((tmp__3__ == cnt + 4)
-#line 144
+#line 146
 
 					 || (tmp__3__ == cnt - 4))
 	{
-#line 146
+#line 148
 		*output << "hi" << std::endl;
 		cnt = 2;
 	}
 	else
 	{
-#line 149
+#line 151
 		*output << "else" << std::endl;
 	}
-#line 152
+#line 154
 	auto const tmp__4__ = cnt + 4;
-#line 152
+#line 154
 	switch (tmp__4__)
 	{
-#line 152
+#line 154
 	case 10:
 	case 11:
 	{
-#line 154
+#line 156
 		*output << "case" << std::endl;
 	}
 	break;
 	{
-#line 156
+#line 158
 		*output << "hello" << std::endl;
 	}
 	break;
 	{
-#line 159
+#line 161
 		*output << "hi" << std::endl;
 		cnt = 2;
 	}
 	break;
 	}
-#line 163
+#line 165
 	auto const tmp__5__ = cnt + 5;
-#line 163
+#line 165
 	switch (tmp__5__)
 	{
-#line 163
+#line 165
 	case 10:
 	case 11:
 	{
-#line 165
+#line 167
 		*output << "case" << std::endl;
 	}
 	break;
 	{
-#line 167
+#line 169
 		*output << "hello" << std::endl;
 	}
 	break;
 	{
-#line 170
+#line 172
 		*output << "hi" << std::endl;
 		cnt = 2;
 	}
 	break;
 	default:
 	{
-#line 166
+#line 168
 		if ((tmp__5__ == cnt * 4))
 		{
-#line 167
+#line 169
 			*output << "hello" << std::endl;
 		}
-#line 168
+#line 170
 		else if ((tmp__5__ == cnt + 4)
-#line 168
+#line 170
 
 						 || (tmp__5__ == cnt - 4))
 		{
-#line 170
+#line 172
 			*output << "hi" << std::endl;
 			cnt = 2;
 		}
 		else
 		{
-#line 173
+#line 175
 			*output << "else" << std::endl;
 		}
 	}
 	break;
 	}
-#line 176
+#line 178
 	while (true)
 	{
-#line 177
+#line 179
 		int32_t cnt = 2;
 		if (!(cnt != 2)) break;
 		cnt = 3;
 	}
 	while (true)
 	{
-#line 181
+#line 183
 		if (!(cnt != 3)) break;
 		int32_t cnt = 2;
 		cnt = 3;
@@ -406,132 +391,132 @@ int main(int argc, char** argv)
 	for (auto tmp__7__ = tmp__6__.cbegin(); tmp__7__ != tmp__6__.cend(); tmp__7__=tmp__8__)
 	{
 		uint32_t item = utf8::next(tmp__8__,tmp__6__.cend());
-#line 186
+#line 188
 		*output << (Core::toString(item)) << std::endl;
 	}
 	for (int32_t lop= 1;lop<=10; lop+=1)
 	{
-#line 188
+#line 190
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)) << std::endl;
 	}
 	for (int32_t lop= 1;lop<=10; lop+=2)
 	{
-#line 192
+#line 194
 		if (!(lop != 20)) break;
 		int32_t cnt = 2;
 		*output << ((lop * cnt)) << std::endl;
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 1)
 	{
-#line 197
+#line 199
 		int32_t cnt = 2;
 		*output << ((lop * cnt)) << std::endl;
 	}
 	for (int32_t lop= 10;lop >= 1; lop -= 2)
 	{
-#line 201
+#line 203
 		int32_t cnt = 2;
 		if (!(lop != 20)) break;
 		*output << ((lop * cnt)) << std::endl;
 	}
 	if (cnt == 3)
 	{
-#line 206
+#line 208
 		*output << "Hello, world!" << std::endl;
 		cnt = 4;
 	}
 	if (cnt != 3)
 	{
-#line 210
+#line 212
 		float x = static_cast<float>(3.14);
 		*output << (x) << (x) << " " << (x);
 	}
-#line 212
+#line 214
 	else
 	{
-#line 213
+#line 215
 		int32_t x = 3;
 		*output << (x) << " " << ((x + 1)) << std::endl;
 	}
 	if (cnt < 3)
 	{
-#line 217
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))) << std::endl;
-	}
 #line 219
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))) << std::endl;
+	}
+#line 221
 	else if (false)
 	{
-#line 220
+#line 222
 		int32_t x = 3;
 		*output << (x) << " " << ((x + 1)) << std::endl;
 	}
 	if (cnt < 3)
 	{
-#line 224
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))) << std::endl;
-	}
 #line 226
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))) << std::endl;
+	}
+#line 228
 	else if (false)
 	{
-#line 227
-		int32_t x = 3;
-		*output << (x) << " " << ((x + 1)) << std::endl;
-	}
 #line 229
+		int32_t x = 3;
+		*output << (x) << " " << ((x + 1)) << std::endl;
+	}
+#line 231
 	else if (true)
 	{
-#line 230
+#line 232
 		int32_t x = 3;
 		*output << "Hello, world!" << std::endl;
 	}
 	if (cnt < 3)
 	{
-#line 234
-		double x = static_cast<double>(6);
-		*output << ((std::pow(x, x))) << std::endl;
-	}
 #line 236
+		double x = static_cast<double>(6);
+		*output << ((std::pow(x, x))) << std::endl;
+	}
+#line 238
 	else if (false)
 	{
-#line 237
+#line 239
 		int32_t x = 3;
 		*output << (x) << " " << ((x + 1)) << std::endl;
 	}
-#line 239
+#line 241
 	else
 	{
-#line 240
+#line 242
 		int32_t x = 3;
 		*output << "Hello, world!" << std::endl;
 	}
 	if (cnt < 3)
 	{
-#line 244
+#line 246
 		double x = static_cast<double>(6);
 		*output << ((std::pow(x, x))) << std::endl;
 	}
-#line 246
+#line 248
 	else if (false)
 	{
-#line 247
+#line 249
 		int32_t x = 3;
 		*output << (x) << " " << ((x + 1)) << std::endl;
 	}
-#line 249
+#line 251
 	else if (true)
 	{
-#line 250
+#line 252
 		int32_t x = 3;
 		*output << "Hello, world!" << std::endl;
 	}
-#line 252
+#line 254
 	else
 	{
-#line 253
+#line 255
 		int32_t y = 3;
 		*output << "Bye, world!" << std::endl;
 	}

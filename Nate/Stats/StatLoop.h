@@ -12,7 +12,7 @@ public:
   public:
     While(const Location& aLocation, const Expr& aExpr);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
   };
   
   class ForStep : public Stat
@@ -22,7 +22,7 @@ public:
 						bool aDownTo,
 						const Expr& aStart, const Expr& aEnd, const Expr& aStep);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
     
     const IdentifierPtr& getId() const;
     bool                 getDownTo() const;
@@ -43,7 +43,7 @@ public:
   public:
     ForRange(const Location& aLocation, const IdentifierPtr& aId, const Expr& aRange);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
     
     const IdentifierPtr& getId() const;
 		const Expr&          getRange() const;
@@ -55,5 +55,5 @@ public:
 
   StatLoop(const Location& aLocation);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
 };

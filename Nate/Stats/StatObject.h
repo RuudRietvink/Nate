@@ -12,7 +12,7 @@ public:
 
   bool isDecl() const;
 
-  void accept(ICodeVisitor* aVisitor) const override;
+  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
 
 private:
   ObjectPtr mObject;

@@ -8,7 +8,7 @@ class StatRead : public StatInput
 public:
   StatRead(const Location& aLocation, InputType aInputType, const IdentifierPtr& aReader, const Expr& aInput, bool aCreateIt);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
   
   const IdentifierPtr& getReader() const;
 

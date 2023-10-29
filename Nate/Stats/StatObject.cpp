@@ -7,9 +7,9 @@ StatObject::StatObject(const Location& aLocation, const ObjectPtr& aObject, bool
     mIsDecl(aIsDecl)
 {}
 
-void StatObject::accept(ICodeVisitor* aVisitor) const
+void StatObject::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }
 
 const ObjectPtr& StatObject::getObject() const

@@ -4,6 +4,7 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 
 class ICodeVisitor;
 
@@ -15,7 +16,7 @@ public:
   using List = std::list<SPtr>;
   Stat(const Location& aLocation);
 
-  virtual void accept(ICodeVisitor* aVisitor) const = 0;
+  virtual void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags = { false }) const = 0;
 
   SPtr addStat(const SPtr& aStat);
 

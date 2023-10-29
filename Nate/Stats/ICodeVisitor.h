@@ -18,42 +18,40 @@
 #include "StatRecord.h"
 #include "StatReturn.h"
 #include "StatObject.h"
-#include "StatProperty.h"
 
 class ICodeVisitor
 {
 public:
-  virtual void visit(const StatProgram& aStat) = 0;
-  virtual void visit(const StatDeclareLocal& aStat) = 0;
-  virtual void visit(const StatAssign& aStat) = 0;
-  virtual void visit(const StatExpr& aStat) = 0;
-  virtual void visit(const StatCode& aStat) = 0;
-  virtual void visit(const StatIfThen& aStat) = 0;
-  virtual void visit(const StatIfThen::ElseIf& aStat) = 0;
-  virtual void visit(const StatIfThen::Else& aStat) = 0;
-  virtual void visit(const StatIfIs& aStat) = 0;
-  virtual void visit(const StatLoop& aStat) = 0;
-  virtual void visit(const StatLoop::While& aStat) = 0;
-  virtual void visit(const StatLoop::ForStep& aStat) = 0;
-  virtual void visit(const StatLoop::ForRange& aStat) = 0;
-  virtual void visit(const StatData& aStat) = 0;
-  virtual void visit(const StatOutput& aStat) = 0;
-  virtual void visit(const StatOutput::Comma& aStat) = 0;
-  virtual void visit(const StatOutput::Concat& aStat) = 0;
-  virtual void visit(const StatOutput::End& aStat) = 0;
-  virtual void visit(const StatOutput::Value& aStat) = 0;
-  virtual void visit(const StatError& aStat) = 0;
-  virtual void visit(const StatWrite& aStat) = 0;
-  virtual void visit(const StatRead& aStat) = 0;
-  virtual void visit(const StatInput& aStat) = 0;
-  virtual void visit(const StatInput::Comma& aStat) = 0;
-  virtual void visit(const StatInput::Concat& aStat) = 0;
-  virtual void visit(const StatInput::End& aStat) = 0;
-  virtual void visit(const StatInput::Value& aStat) = 0;
-  virtual void visit(const StatDefine& aStat) = 0;
-  virtual void visit(const StatRecord& aStat) = 0;
-  virtual void visit(const StatReturn& aStat) = 0;
-  virtual void visit(const StatObject& aStat) = 0;
-  virtual void visit(const StatProperty& aStat) = 0;
+  virtual void visit(const StatProgram& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatDeclareLocal& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatAssign& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatExpr& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatCode& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatIfThen& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatIfThen::ElseIf& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatIfThen::Else& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatIfIs& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatLoop& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatLoop::While& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatLoop::ForStep& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatLoop::ForRange& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatData& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatOutput& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatOutput::Comma& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatOutput::Concat& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatOutput::End& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatOutput::Value& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatError& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatWrite& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatRead& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatInput& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatInput::Comma& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatInput::Concat& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatInput::End& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatInput::Value& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatDefine& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatRecord& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatReturn& aStat, const std::vector<bool>& aFlags) = 0;
+  virtual void visit(const StatObject& aStat, const std::vector<bool>& aFlags) = 0;
 };
 

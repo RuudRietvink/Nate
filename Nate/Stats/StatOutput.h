@@ -12,7 +12,7 @@ public:
   public:
     Comma(const Location& aLocation);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
   };
 
   class Concat : public Stat
@@ -20,7 +20,7 @@ public:
   public:
     Concat(const Location& aLocation);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
   };
 
   class End : public Stat
@@ -28,7 +28,7 @@ public:
   public:
     End(const Location& aLocation, bool aEndOfLine);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
 
     bool getEndOfLine() const;
 
@@ -41,10 +41,10 @@ public:
   public:
     Value(const Location& aLocation, const Expr& aExpr);
 
-    void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
   };
 
   StatOutput(const Location& aLocation);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
 };

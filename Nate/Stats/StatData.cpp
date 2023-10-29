@@ -11,7 +11,7 @@ const IdentifierPtr& StatData::getId() const
   return mId;
 }
 
-void StatData::accept(ICodeVisitor* aVisitor) const
+void StatData::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }

@@ -622,15 +622,20 @@ property-define-statement:
 	  PROP 
 		  { lexer.pushState(Lexer::VAR_DECL); }
     id
-      { lexer.popState(); }
+      { 
+        lexer.popState();
+      }
     optional-is-type opt-flag-list COL
       {
-        nate.data.propId = nate.getImplObjectPropertyIdentifier($id, $[optional-is-type], $[opt-flag-list], @PROP);
+			  nate.data.propId = nate.doProp($id, $[optional-is-type], $[opt-flag-list], @COL);
       }
 	  begin
       property-get-set-list
     end
-      { nate.data.propId = IdentifierPtr(); }
+      { 
+			  nate.doEndProp(@end);
+        nate.data.propId = IdentifierPtr();
+      }
   ;
 
 property-get-set-list:
@@ -647,14 +652,14 @@ property-get-code:
     GET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.doProp(nate.data.propId, Object::PropType::Get, @COL);
+			  nate.doPropDefine(nate.data.propId, Object::PropType::Get, @COL);
 		  }
 	  begin
 		  statement-list
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.doEndProp(@end);
+			  nate.doEndPropDefine(@end);
 		  }
   ;
   
@@ -662,14 +667,14 @@ property-set-code:
     SET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.doProp(nate.data.propId, Object::PropType::Set, @COL);
+			  nate.doPropDefine(nate.data.propId, Object::PropType::Set, @COL);
 		  }
 	  begin
 		  statement-list
 	  end
 		  { 
 			  lexer.popState(); 
-			  nate.doEndProp(@end);
+			  nate.doEndPropDefine(@end);
 		  }
   ;
   

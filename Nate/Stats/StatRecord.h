@@ -10,7 +10,7 @@ public:
 
   const RecordPtr& getRecord() const;
 
-  void accept(ICodeVisitor* aVisitor) const override;
+  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
 
 private:
   RecordPtr mRecord;

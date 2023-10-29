@@ -69,7 +69,7 @@ void NateCode::codeBlock(const Stat& aStat)
 	*mOut << in() << "}" << end();
 }
 
-void NateCode::visit(const StatProgram& aStat)
+void NateCode::visit(const StatProgram& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	*mOut << in() << "#undef NOMINMAX" << end();
 	*mOut << in() << "#define NOMINMAX" << end();
@@ -90,9 +90,9 @@ void NateCode::visit(const StatProgram& aStat)
 	*mOut << in() << "}" << end();
 }
 
-void NateCode::visit(const StatDeclareLocal& aStat)
+void NateCode::visit(const StatDeclareLocal& aStat, const std::vector<bool>& /*aFlags*/)
 {
-	if (!aStat.getIdentifier()->is(Identifier::ObjectImpl))
+	//if (!aStat.getIdentifier()->is(Identifier::ObjectImpl))
 	{
 		printLineNr(aStat.getLocation());
 
@@ -111,7 +111,7 @@ void NateCode::visit(const StatDeclareLocal& aStat)
 	}
 }
 
-void NateCode::visit(const StatAssign& aStat)
+void NateCode::visit(const StatAssign& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	std::string endPars;
 
@@ -137,7 +137,7 @@ void NateCode::visit(const StatAssign& aStat)
 	*mOut << aStat.getExpr().code() << endPars << ";" << end();
 }
 
-void NateCode::visit(const StatIfThen& aStat)
+void NateCode::visit(const StatIfThen& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -146,7 +146,7 @@ void NateCode::visit(const StatIfThen& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatIfThen::ElseIf& aStat)
+void NateCode::visit(const StatIfThen::ElseIf& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -155,7 +155,7 @@ void NateCode::visit(const StatIfThen::ElseIf& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatIfThen::Else& aStat)
+void NateCode::visit(const StatIfThen::Else& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -164,7 +164,7 @@ void NateCode::visit(const StatIfThen::Else& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatIfIs& aStat)
+void NateCode::visit(const StatIfIs& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	
@@ -229,20 +229,20 @@ void NateCode::visit(const StatIfIs& aStat)
 	}
 }
 
-void NateCode::visit(const StatLoop& aStat)
+void NateCode::visit(const StatLoop& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << "while (true)" << end();
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatLoop::While& aStat)
+void NateCode::visit(const StatLoop::While& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << "if (!(" << codeExpr(aStat.getExpr()) << ")) break;" << end();
 }
 
-void NateCode::visit(const StatLoop::ForStep& aStat)
+void NateCode::visit(const StatLoop::ForStep& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -253,7 +253,7 @@ void NateCode::visit(const StatLoop::ForStep& aStat)
 	codeCompound(aStat);
 }
 
-void NateCode::visit(const StatLoop::ForRange& aStat)
+void NateCode::visit(const StatLoop::ForRange& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -297,34 +297,34 @@ void NateCode::visit(const StatLoop::ForRange& aStat)
 	*mOut << in() << "}" << end();
 }
 
-void NateCode::visit(const StatCode& aStat)
+void NateCode::visit(const StatCode& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << aStat.getCode() << end();
 }
 
-void NateCode::visit(const StatExpr& aStat)
+void NateCode::visit(const StatExpr& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << codeExpr(aStat.getExpr()) << ";" << end();
 }
 
-void NateCode::visit(const StatOutput& aStat)
+void NateCode::visit(const StatOutput& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	codeOutputStart(aStat, "*output");
 }
 
-void NateCode::visit(const StatOutput::Comma& aStat)
+void NateCode::visit(const StatOutput::Comma& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	codeOutput("\" \"");
 }
 
-void NateCode::visit(const StatOutput::Concat& aStat)
+void NateCode::visit(const StatOutput::Concat& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	// nothing
 }
 
-void NateCode::visit(const StatOutput::End& aStat)
+void NateCode::visit(const StatOutput::End& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	if (aStat.getEndOfLine())
 	{
@@ -336,7 +336,7 @@ void NateCode::visit(const StatOutput::End& aStat)
 	}
 }
 
-void NateCode::visit(const StatOutput::Value& aStat)
+void NateCode::visit(const StatOutput::Value& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	const Expr& expr = aStat.getExpr();
 
@@ -422,22 +422,22 @@ void NateCode::codeOutput(const std::string& aString)
 	}
 }
 
-void NateCode::visit(const StatInput& aStat)
+void NateCode::visit(const StatInput& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	codeInputStart(aStat, "*input");
 }
 
-void NateCode::visit(const StatInput::Comma& aStat)
+void NateCode::visit(const StatInput::Comma& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	mLastInputComma = true;
 }
 
-void NateCode::visit(const StatInput::Concat& aStat)
+void NateCode::visit(const StatInput::Concat& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	mLastInputComma = false;
 }
 
-void NateCode::visit(const StatInput::End& aStat)
+void NateCode::visit(const StatInput::End& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	if (aStat.getEndOfLine() && mCurInputType == InputType::Normal)
 	{
@@ -445,7 +445,7 @@ void NateCode::visit(const StatInput::End& aStat)
 	}
 }
 
-void NateCode::visit(const StatInput::Value& aStat)
+void NateCode::visit(const StatInput::Value& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	InputType inputType = mCurInputType;
 	std::string skipSpaces = mLastInputComma ? " >> std::ws" : "";
@@ -474,7 +474,7 @@ void NateCode::visit(const StatInput::Value& aStat)
 	}
 }
 
-void NateCode::visit(const StatRead& aStat)
+void NateCode::visit(const StatRead& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	if (aStat.getCreateIt())
 	{
@@ -488,12 +488,12 @@ void NateCode::visit(const StatRead& aStat)
 	codeInputStart(aStat, "*" + aStat.getReader()->codeName(), aStat.getInputType());
 }
 
-void NateCode::visit(const StatError& aStat)
+void NateCode::visit(const StatError& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	codeOutputStart(aStat, "*error");
 }
 
-void NateCode::visit(const StatWrite& aStat)
+void NateCode::visit(const StatWrite& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -509,7 +509,7 @@ void NateCode::visit(const StatWrite& aStat)
 	codeOutputStart(aStat, "*" + aStat.getWriter()->codeName());
 }
 
-void NateCode::visit(const StatData& aStat)
+void NateCode::visit(const StatData& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	std::string name = aStat.getId()->codeName() + "_temp";
@@ -518,7 +518,7 @@ void NateCode::visit(const StatData& aStat)
 	*mOut << in() << "const " << aStat.getId()->type()->codeType() << " " << aStat.getId()->codeName() << "= " << name << ".str();" << end();
 }
 
-void NateCode::visit(const StatRecord& aStat)
+void NateCode::visit(const StatRecord& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	
@@ -559,7 +559,7 @@ void NateCode::visit(const StatRecord& aStat)
 	*mOut << in() << "};" << end() << end();
 }
 
-void NateCode::visit(const StatDefine& aStat)
+void NateCode::visit(const StatDefine& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 
@@ -573,7 +573,7 @@ void NateCode::visit(const StatDefine& aStat)
 		}
 		else
 		{				
-			if (aStat.isImpOnly())
+			if (!aStat.isImpOnly())
 			{
 				const char* startKeys = defyne->is(Method::Final) || defyne->is(Method::Overriden)
 																? "" : "virtual ";
@@ -588,9 +588,9 @@ void NateCode::visit(const StatDefine& aStat)
 			{
 				*mOut << in() << (defyne->isStatic() ? "static " : "") <<
 													createCodeDecl(defyne) << end();
-			}
 
-			codeCompound(aStat);
+				codeCompound(aStat);
+			}
 		}
 	}
 	else
@@ -608,13 +608,13 @@ void NateCode::visit(const StatDefine& aStat)
 	}
 }
 
-void NateCode::visit(const StatReturn& aStat)
+void NateCode::visit(const StatReturn& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << "return " << codeExpr(aStat.getExpr()) << ";" << end();
 }
 
-void NateCode::visit(const StatObject& aStat)
+void NateCode::visit(const StatObject& aStat, const std::vector<bool>& /*aFlags*/)
 {
 	printLineNr(aStat.getLocation());
 	
@@ -643,7 +643,7 @@ void NateCode::visit(const StatObject& aStat)
 			*mOut << in() << "class __impl;"  << end();
 			*mOut << in() << "__impl* _impl;"  << end();
 			*mOut << in() << "friend class __impl;"  << end();
-			*mOut << in() << "public:" << end();
+			*mOut << in(-1) << "public:" << end();
 		}
 		
 		codeStats(aStat.getCompound());
@@ -694,11 +694,6 @@ void NateCode::visit(const StatObject& aStat)
 	}
 }
 
-void NateCode::visit(const StatProperty& aStat)
-{
-	printLineNr(aStat.getLocation());
-}
-
 void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
 {
 	printLineNr(aStat.getLocation());
@@ -710,16 +705,16 @@ void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream
   {
 		auto next = std::next(iter);
 		mNextInputEnd = (next != aStat.getCompound().end() && dynamic_cast<StatInput::End*>(next->get()) != nullptr);
-		(*iter)->accept(this);
+		(*iter)->accept(this, { false });
   }
 }
 
 void NateCode::codeLocalVar(const TreeNodePtr& aNode, bool inImplObject)
 {
-	//if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
-	//{
- //   codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
-	//}
+	if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
+	{
+    codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
+	}
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,
@@ -836,7 +831,7 @@ void NateCode::codeCaseIsListIf(const StatIfIs::IsList& aStat, const StatIfIs& a
 		const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
 		if (is == nullptr)
 		{
-			part->accept(this);
+			part->accept(this, { false });
 		}
 	}
 
@@ -1052,17 +1047,9 @@ void NateCode::codeImplObjectNested(const StatObject& aStat, bool inImpl)
 		StatDefine* defyne = dynamic_cast<StatDefine*>(stat.get());
 		if (defyne != nullptr)
 		{
-			if (defyne->getDefine()->isObjectMethod() && inImpl != defyne->isImpOnly())
+			if (defyne->getDefine()->isObjectMethod() && inImpl == defyne->isImpOnly())
 			{				
-				defyne->accept(this);
-			}
-		}
-		else
-		{
-			StatProperty* prop = dynamic_cast<StatProperty*>(stat.get());
-			if (prop != nullptr && !inImpl)
-			{				
-				prop->accept(this);
+				defyne->accept(this, { false });
 			}
 		}
 	}

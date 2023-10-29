@@ -29,7 +29,7 @@ bool StatRead::getCreateIt() const
   return mCreateIt;
 }
 
-void StatRead::accept(ICodeVisitor* aVisitor) const
+void StatRead::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }

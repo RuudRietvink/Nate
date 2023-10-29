@@ -20,19 +20,21 @@ declare object Hi:
     var count is int-32
 
   property age is int-32 as readonly
-  property datum is Datum
   property prop-hi is int-32
+  property datum is Datum
   
   declare new Hi2 is Hi
   declare ${me is Hi} ${world is text} is text
 
 
 implement object Hi:
+  var local is text
+
   property age:
     get:
       return age
      
-  property prop-hi is int-32:
+  property prop-hi:
     set:
       prop-hi := value
       return prop-hi
@@ -41,7 +43,7 @@ implement object Hi:
     return "Hi"
 
   define ${me as out} ${world is text} is text:
-    prop-hi := -3 + prop-hi
+    var loc := -3 + prop-hi
     return "ls " + yo
 
   implement new Hi2 is Hi:

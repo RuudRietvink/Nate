@@ -5,18 +5,18 @@ StatLoop::StatLoop(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatLoop::accept(ICodeVisitor* aVisitor) const
+void StatLoop::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }
 
 StatLoop::While::While(const Location& aLocation, const Expr& aExpr)
   : StatExpr(aLocation, aExpr)
 {}
 
-void StatLoop::While::accept(ICodeVisitor* aVisitor) const
+void StatLoop::While::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }
 
 StatLoop::ForStep::ForStep(const Location& aLocation, const IdentifierPtr& aId, 
@@ -55,9 +55,9 @@ const Expr& StatLoop::ForStep::getStep() const
   return mStep;
 }
 
-void StatLoop::ForStep::accept(ICodeVisitor* aVisitor) const
+void StatLoop::ForStep::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }
 
 StatLoop::ForRange::ForRange(const Location& aLocation, const IdentifierPtr& aId, const Expr& aRange)
@@ -76,7 +76,7 @@ const Expr& StatLoop::ForRange::getRange() const
   return mRange;
 }
 
-void StatLoop::ForRange::accept(ICodeVisitor* aVisitor) const
+void StatLoop::ForRange::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }

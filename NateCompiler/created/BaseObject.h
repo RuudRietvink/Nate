@@ -10,7 +10,7 @@ private:
 	class __impl;
 	__impl* _impl;
 	friend class __impl;
-	public:
+public:
 #line 3
 	void initialize_E_O_me__();
 };

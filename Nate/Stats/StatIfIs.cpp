@@ -6,9 +6,9 @@ StatIfIs::StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Ex
     mId(aId)
 {}
 
-void StatIfIs::accept(ICodeVisitor* aVisitor) const
+void StatIfIs::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
 {
-  aVisitor->visit(*this);
+  aVisitor->visit(*this, aFlags);
 }
 
 const IdentifierPtr& StatIfIs::getId() const
@@ -20,7 +20,7 @@ StatIfIs::IsList::IsList(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatIfIs::IsList::accept(ICodeVisitor* /*aVisitor*/) const
+void StatIfIs::IsList::accept(ICodeVisitor* /*aVisitor*/, const std::vector<bool>& aFlags) const
 {
 }
 
@@ -28,6 +28,6 @@ StatIfIs::Is::Is(const Location& aLocation, const Expr& aExpr)
   : StatWithExpr(aLocation, aExpr)
 {}
 
-void StatIfIs::Is::accept(ICodeVisitor* /*aVisitor*/) const
+void StatIfIs::Is::accept(ICodeVisitor* /*aVisitor*/, const std::vector<bool>& aFlags) const
 {
 }

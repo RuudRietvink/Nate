@@ -151,9 +151,13 @@ public:
 	void doEndDeclObject(const yy::parser::location_type& aLocation);
 	void doImplObject(const yy::parser::location_type& aLocation);
 	void doEndImplObject();
-	void doProp(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
-							const yy::parser::location_type& aLocation);
+	IdentifierPtr doProp(const std::string& aName, 
+										   const TypePtr& optType, const std::vector<std::string>& flags,
+											 const yy::parser::location_type& aLocation);
 	void doEndProp(const yy::parser::location_type& aLocation);
+	void doPropDefine(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+							const yy::parser::location_type& aLocation);
+	void doEndPropDefine(const yy::parser::location_type& aLocation);
   void doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
 
 
@@ -182,9 +186,6 @@ public:
   bool checkProperty(std::ostringstream& error, const ExprNodesCIter& nodeIter) const;
 	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
-	IdentifierPtr getImplObjectPropertyIdentifier(const std::string& aName, const TypePtr& optType,
-												                        const std::vector<std::string>& flags,
-																								const yy::parser::location_type& aLocation);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
 	std::string uniqueName() const;
