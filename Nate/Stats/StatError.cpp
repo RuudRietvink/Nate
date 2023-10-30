@@ -6,7 +6,7 @@ StatError::StatError(const Location& aLocation)
 {}
 
 
-void StatError::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatError::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }

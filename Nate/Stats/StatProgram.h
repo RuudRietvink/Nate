@@ -7,6 +7,6 @@ class StatProgram : public Stat
 public:
   StatProgram(const Location& aLocation);
 
-  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
+  void accept(ICodeVisitor* aVisitor) const override;
 };
 

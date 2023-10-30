@@ -9,7 +9,7 @@ public:
 
   const std::string& getCode() const;
 
-  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
+  void accept(ICodeVisitor* aVisitor) const override;
 
 private:
   std::string mCode;

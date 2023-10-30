@@ -1010,7 +1010,7 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::par
 			for (auto& propMethod : base->propertyMethods())
 			{
 				auto const& propId = propMethod.first;
-				if (curObject()->getPropState(propId, Object::PropType::Get).state == Object::PropState::State::Unknown)
+				if (curObject()->getPropState(propId, Property::PropType::Get).state == Object::PropState::State::Unknown)
 				{
 					IdentifierPtr id = getIdentifier(propId->name(), curIdentifiersHolder().get());
 					if (!id || !id->isProperty())
@@ -1232,7 +1232,12 @@ void NateParser::addInbracketsStatWord(const std::string& aWord,
 
 void NateParser::addDefine(bool aInObject)
 {
-	curDefinesHolder()->defines().add(DefinePtr(new Define()));
+	addGivenDefine(DefinePtr(new Define()), aInObject);
+}
+
+void NateParser::addGivenDefine(const DefinePtr& aDefine, bool aInObject)
+{
+	curDefinesHolder()->defines().add(aDefine);
 	mCurDefine = curDefinesHolder()->defines().get().back();
 	pushDefineScope(std::make_shared<Scope>("define", IIdentifiersHolder::ScopeFlag::Local));
 	mMethodType = MethodType::Define;
@@ -1357,11 +1362,12 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 	}
 }
 
- IdentifierPtr NateParser::doProp(const std::string& aName,
-						          						const TypePtr& optType,const std::vector<std::string>& flags,const yy::parser::location_type& aLocation)
+IdentifierPtr NateParser::doProp(const std::string& aName,
+						          					const TypePtr& optType,const std::vector<std::string>& flags,const yy::parser::location_type& aLocation)
 {
 	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
-	if (!result)
+	bool declared = (bool)result;
+	if (!declared)
 	{
 		if (optType->empty())
 		{
@@ -1383,19 +1389,23 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 		}
 	}
 				
+	pushStatsHolder(addStatement(std::make_shared<StatProperty>(location(aLocation), result, curObject(), !declared)));
+
 	return result;
 }
 
 void NateParser::doEndProp(const yy::parser::location_type& aLocation)
 {
+	popStatsHolder();
 }
 
-void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
 										          const yy::parser::location_type& aLocation)
 {
-	const std::string method = aPropType == Object::PropType::Get ? "get" : "set";
+	const std::string method = aPropType == Property::PropType::Get ? "get" : "set";
 
-	if (!curObject()->isPropDeclared(aIdentifier, aPropType) && !aIdentifier->is(Identifier::Undeclared))
+	bool isDeclared = curObject()->isPropDeclared(aIdentifier, aPropType);
+	if (!isDeclared && !aIdentifier->is(Identifier::Undeclared))
 	{
 	  error("Undeclared " + method + " method for property: " + aIdentifier->name());
 	}
@@ -1405,19 +1415,25 @@ void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Object::PropType
 	  error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
-	if (aIdentifier->is(Identifier::ReadOnly) && aPropType != Object::PropType::Get)
+	if (aIdentifier->is(Identifier::ReadOnly) && aPropType != Property::PropType::Get)
 	{
 		error("Defined " + method + " method for readonly property: " + aIdentifier->name());
 	}
 
 	Object::PropState propState = curObject()->getPropState(aIdentifier, aPropType);
 	propState.state = Object::PropState::State::Defined;
-	curObject()->setPropState(aIdentifier, aPropType, propState);
+	curObject()->setPropState(aIdentifier, aPropType, propState); 
 	
-	addDefine(true);
+	PropertyPtr property{new Property()};
+	property->setPropType(aPropType);
+
+	addGivenDefine(property, true);
 	curDefine()->setType(aIdentifier->type());
+	StatProperty* statProperty = dynamic_cast<StatProperty*>(mStatHolders.back().get());
+	statProperty->setProperty(aPropType, property);
+	pushStatsHolder(addStatement(std::make_shared<StatDefine>(location(aLocation), curDefine(), !isDeclared, false)));
 	mDefineDecl = false;
-	if (aPropType != Object::PropType::Get)
+	if (aPropType != Property::PropType::Get)
 	{
 		IdentifierPtr value = std::make_shared<Identifier>(curIdentifiersHolder(), "value", aIdentifier->type());
 		addIdentifier(value);
@@ -1428,6 +1444,7 @@ void NateParser::doEndPropDefine(const yy::parser::location_type& aLocation)
 {
 	deleteCurDefine();
 	popIdentifiersHolder();
+	popStatsHolder();
 }
 
 void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)

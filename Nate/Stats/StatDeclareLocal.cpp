@@ -6,9 +6,9 @@ StatDeclareLocal::StatDeclareLocal(const Location& aLocation, const IdentifierPt
     mIdentifier(aIdentifier)
 {}
 
-void StatDeclareLocal::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatDeclareLocal::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 const IdentifierPtr& StatDeclareLocal::getIdentifier() const

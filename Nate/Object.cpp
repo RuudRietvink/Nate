@@ -72,11 +72,11 @@ void Object::addProp(const IdentifierPtr& anId, const yy::parser::location_type&
 	PropData prop;
 	prop.location = aLocation;
 	prop.filename = filename;
-	prop.states[(int)PropType::Get] = PropState{ PropState::State::Declared, false };
-	prop.states[(int)PropType::Set] = PropState{ (anId->is(Identifier::ReadOnly) 
-		                                            ? PropState::State::Unknown
-																					 		  : PropState::State::Declared), false };
-	for (auto propType : { PropType::Get, PropType::Set })	
+	prop.states[(int)Property::PropType::Get] = PropState{ PropState::State::Declared, false };
+	prop.states[(int)Property::PropType::Set] = PropState{ (anId->is(Identifier::ReadOnly) 
+																													? PropState::State::Unknown
+																					 								: PropState::State::Declared), false };
+	for (auto propType : { Property::PropType::Get, Property::PropType::Set })	
 	{
 		if (basesIsPropDeclared(anId, propType))
 		{
@@ -94,7 +94,7 @@ bool Object::hasProp(const IdentifierPtr& anId) const
 				    != mPropertyMethods.cend();
 }
 
-Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aPropType) const
+Object::PropState Object::getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const
 {
 	PropState result = PropState { PropState::State::Unknown, false };
 
@@ -108,17 +108,17 @@ Object::PropState Object::getPropState(const IdentifierPtr& anId, PropType aProp
 	return result;
 }
 
-void Object::setPropState(const IdentifierPtr& anId, PropType aPropType, PropState aPropState)
+void Object::setPropState(const IdentifierPtr& anId, Property::PropType aPropType, PropState aPropState)
 {
 	mPropertyMethods[anId].states[(int)aPropType] = aPropState;
 }
 
-bool Object::isPropDeclared(const IdentifierPtr& anId, PropType aPropType) const
+bool Object::isPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const
 {
 	return getPropState(anId, aPropType).state != PropState::State::Unknown;
 }
 
-bool Object::basesIsPropDeclared(const IdentifierPtr& anId, PropType aPropType) const
+bool Object::basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
@@ -126,7 +126,7 @@ bool Object::basesIsPropDeclared(const IdentifierPtr& anId, PropType aPropType) 
 										          aBase->basesIsPropDeclared(anId, aPropType); } );
 }
 
-bool Object::isPropDefined(const IdentifierPtr& anId, PropType aPropType) const
+bool Object::isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const
 {
 	return getPropState(anId, aPropType).state == PropState::State::Defined;
 }

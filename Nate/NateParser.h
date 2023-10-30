@@ -16,7 +16,7 @@
 #include "MathParser.h"
 #include "NateParser.tab.h"
 #include "Code.h"
-#include "Define.h"
+#include "Property.h"
 #include "Identifier.h"
 #include "Scope.h"
 #include "Record.h"
@@ -155,7 +155,7 @@ public:
 										   const TypePtr& optType, const std::vector<std::string>& flags,
 											 const yy::parser::location_type& aLocation);
 	void doEndProp(const yy::parser::location_type& aLocation);
-	void doPropDefine(const IdentifierPtr& aIdentifier, Object::PropType aPropType,
+	void doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
 							const yy::parser::location_type& aLocation);
 	void doEndPropDefine(const yy::parser::location_type& aLocation);
   void doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
@@ -218,6 +218,7 @@ public:
 	CodePtr getCode(const CodePtr& aCode);
 
 	void addDefine(bool aInObject);
+	void addGivenDefine(const DefinePtr& aDefine, bool aInObject);
 	void deleteCurDefine();
 	DefinePtr curDefine() const;
 

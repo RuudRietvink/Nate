@@ -8,9 +8,9 @@ StatDefine::StatDefine(const Location& aLocation, const DefinePtr& aDefine, bool
     mIsDecl(aIsDecl)
 {}
 
-void StatDefine::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatDefine::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 const DefinePtr& StatDefine::getDefine() const

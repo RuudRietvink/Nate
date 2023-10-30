@@ -12,6 +12,6 @@ private:
 	friend class __impl;
 public:
 #line 3
-	void initialize_E_O_me__();
+	virtual void initialize_E_O_me__();
 };
 

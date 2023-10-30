@@ -9,7 +9,7 @@ class StatDeclareLocal : public StatWithExpr
 public:
   StatDeclareLocal(const Location& aLocation, const IdentifierPtr& aIdentifier, const Expr& aValue);
   
-  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
+  void accept(ICodeVisitor* aVisitor) const override;
 
   const IdentifierPtr& getIdentifier() const;
 

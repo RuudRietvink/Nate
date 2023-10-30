@@ -13,44 +13,44 @@ class NateCode : public ICodeVisitor
 public:
   NateCode(std::ostream& aOut, NateParser* aParser);
   void codeStats(const std::list<Stat::SPtr>& aStats);
-  void codeNested(const TreeNodePtr& aStat);
   void codeCompound(const Stat& aStat);
   void codeBlock(const Stat& aStat);
   /// <summary>
   /// 
   /// </summary>
   /// <param name="aStat"></param>
-  void visit(const StatProgram& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatDeclareLocal& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatAssign& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatExpr& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatCode& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatIfThen& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatIfThen::ElseIf& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatIfThen::Else& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatIfIs& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatLoop& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatLoop::While& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatLoop::ForStep& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatLoop::ForRange& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatData& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatOutput& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatOutput::Comma& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatOutput::Concat& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatOutput::End& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatOutput::Value& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatInput& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatInput::Comma& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatInput::Concat& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatInput::End& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatInput::Value& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatError& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatWrite& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatRead& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatDefine& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatRecord& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatReturn& aStat, const std::vector<bool>& aFlags) override;
-  void visit(const StatObject& aStat, const std::vector<bool>& aFlags) override;
+  void visit(const StatProgram& aStat) override;
+  void visit(const StatDeclareLocal& aStat) override;
+  void visit(const StatAssign& aStat) override;
+  void visit(const StatExpr& aStat) override;
+  void visit(const StatCode& aStat) override;
+  void visit(const StatIfThen& aStat) override;
+  void visit(const StatIfThen::ElseIf& aStat) override;
+  void visit(const StatIfThen::Else& aStat) override;
+  void visit(const StatIfIs& aStat) override;
+  void visit(const StatLoop& aStat) override;
+  void visit(const StatLoop::While& aStat) override;
+  void visit(const StatLoop::ForStep& aStat) override;
+  void visit(const StatLoop::ForRange& aStat) override;
+  void visit(const StatData& aStat) override;
+  void visit(const StatOutput& aStat) override;
+  void visit(const StatOutput::Comma& aStat) override;
+  void visit(const StatOutput::Concat& aStat) override;
+  void visit(const StatOutput::End& aStat) override;
+  void visit(const StatOutput::Value& aStat) override;
+  void visit(const StatInput& aStat) override;
+  void visit(const StatInput::Comma& aStat) override;
+  void visit(const StatInput::Concat& aStat) override;
+  void visit(const StatInput::End& aStat) override;
+  void visit(const StatInput::Value& aStat) override;
+  void visit(const StatError& aStat) override;
+  void visit(const StatWrite& aStat) override;
+  void visit(const StatRead& aStat) override;
+  void visit(const StatDefine& aStat) override;
+  void visit(const StatRecord& aStat) override;
+  void visit(const StatReturn& aStat) override;
+  void visit(const StatObject& aStat) override;
+  void visit(const StatProperty& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -75,13 +75,13 @@ private:
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
 	void codeObjectBases(const ObjectPtr& aObject);
 	void codeDeclObjectDefine(const TreeNodePtr& aNode);
-  void codeProp(const TreeNodePtr& aNode);
 	std::string codePropHeader(const ObjectPtr& aObject,
 														 bool aAddObjectName,
 												 	 	 const IdentifierPtr& aId, 
-													 	 Object::PropType aPropType);
+													 	 Property::PropType aPropType);
 	void codeDefaultPropertyImpl(const ObjectPtr& aObject,
-															 const IdentifierPtr& propId);
+															 const IdentifierPtr& propId,
+                               const Object::PropData& propdata);
 	void codeDefaultProperties(const ObjectPtr& aObject);
 	void codeDeclProperties(const ObjectPtr& aObject);
 	void codeDeclareProperty(const ObjectPtr& aObject,

@@ -39,18 +39,21 @@ implement object Hi:
       prop-hi := value
       return prop-hi
 
+  define yoh ${me} is text:
+    return "Hi " + local
+    
   define yo is text:
     return "Hi"
 
   define ${me as out} ${world is text} is text:
     var loc := -3 + prop-hi
-    return "ls " + yo
+    return "ls " + yo + local
 
   implement new Hi2 is Hi:
     return constructed object
     
   implement ${me is Hi} ${world is text} is text:
-    return yo + " " + prop-hi + " " + $world
+    return yo + " " + prop-hi + " " + $world + local
 
 
 

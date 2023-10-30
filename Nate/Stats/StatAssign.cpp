@@ -6,9 +6,9 @@ StatAssign::StatAssign(const Location& aLocation, const std::vector<Expr>& aIden
     mIdentifiers(aIdentifiers)
 {}
 
-void StatAssign::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatAssign::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 const std::vector<Expr>& StatAssign::getIdentifiers() const

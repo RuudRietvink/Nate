@@ -7,7 +7,7 @@ class StatWrite : public StatOutput
 public:
   StatWrite(const Location& aLocation, const IdentifierPtr& aWriter, const Expr& aOutput, bool aCreateIt);
 
-  void accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const override;
+  void accept(ICodeVisitor* aVisitor) const override;
 
   const IdentifierPtr& getWriter() const;
   

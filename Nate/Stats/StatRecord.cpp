@@ -6,9 +6,9 @@ StatRecord::StatRecord(const Location& aLocation, const RecordPtr& aRecord)
     mRecord(aRecord)
 {}
 
-void StatRecord::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatRecord::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 const RecordPtr& StatRecord::getRecord() const

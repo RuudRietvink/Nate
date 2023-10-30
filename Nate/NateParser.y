@@ -652,7 +652,7 @@ property-get-code:
     GET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.doPropDefine(nate.data.propId, Object::PropType::Get, @COL);
+			  nate.doPropDefine(nate.data.propId, Property::PropType::Get, @COL);
 		  }
 	  begin
 		  statement-list
@@ -667,7 +667,7 @@ property-set-code:
     SET COL
 		  { 
 			  lexer.pushState(Lexer::DEFINE);
-			  nate.doPropDefine(nate.data.propId, Object::PropType::Set, @COL);
+			  nate.doPropDefine(nate.data.propId, Property::PropType::Set, @COL);
 		  }
 	  begin
 		  statement-list

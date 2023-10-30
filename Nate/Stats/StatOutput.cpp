@@ -6,27 +6,27 @@ StatOutput::StatOutput(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatOutput::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatOutput::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 StatOutput::Comma::Comma(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatOutput::Comma::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatOutput::Comma::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 StatOutput::Concat::Concat(const Location& aLocation)
   : Stat(aLocation)
 {}
 
-void StatOutput::Concat::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatOutput::Concat::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 StatOutput::End::End(const Location& aLocation, bool aEndOfLine)
@@ -39,16 +39,16 @@ bool StatOutput::End::getEndOfLine() const
   return mEndOfLine;
 }
 
-void StatOutput::End::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatOutput::End::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
 
 StatOutput::Value::Value(const Location& aLocation, const Expr& aExpr)
   : StatWithExpr(aLocation, aExpr)
 {}
 
-void StatOutput::Value::accept(ICodeVisitor* aVisitor, const std::vector<bool>& aFlags) const
+void StatOutput::Value::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this, aFlags);
+  aVisitor->visit(*this);
 }
