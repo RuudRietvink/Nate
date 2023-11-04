@@ -51,52 +51,6 @@ Stat::SPtr NateParser::addStatement(const Stat::SPtr& stat)
 	return stat;
 }
 
-TreeNode* NateParser::curNode()
-{ 
-	return mCurNode;
-}
-
-TreeNode* NateParser::addStat(ByteCode code, const yy::parser::location_type& aLocation) 
-{ 
-	mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
-	mCurNode->defyne = curDefine();
-	return mCurNode;
-}
-
-TreeNode* NateParser::addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation) 
-{ 
-	mCurNode = mCurNode->add(code, Location(aLocation, mLexer->currentFile()), mCurNode);
-	mCurNode->expr = expr;
-	mCurNode->defyne = curDefine();
-	return mCurNode;
-}
-	
-TreeNode* NateParser::add(ByteCode code, const yy::parser::location_type& aLocation)
-{ 
-	TreeNode* result = mCurNode->add(code, Location(aLocation, mLexer->currentFile()));
-	result->defyne = curDefine();
-	return result;
-}
-
-TreeNode* NateParser::add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation)
-{ 
-	TreeNode* result = mCurNode->add(code, expr, Location(aLocation, mLexer->currentFile()));
-	result->defyne = curDefine();
-	return result;
-}
-
-void NateParser::up()
-{ 
-	if (mStatHolders.empty())
-	{
-		std::cerr << "oops";
-	}
-	else
-	{
-		popStatsHolder();
-	}
-}
-
 yy::Lexer* NateParser::getLexer()
 {
 	return mLexer.get();
@@ -169,9 +123,6 @@ int NateParser::parse()
 	{
 		std::cerr << "Seperate parsing: " << mFileName << std::endl;
 	}
-
-	data.stats = std::make_shared<TreeNode>(ByteCode::Code);
-	mCurNode = data.stats.get();
 
 	if (mFileType == FileType::Normal)
 	{
@@ -277,9 +228,6 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 	}
 	
   addStatement(std::make_shared<StatAssign>(Location(aLocation, mLexer->currentFile()), aExpressions, aValue));
-  TreeNode* node = add(ByteCode::Assign, aLocation);
-  node->expr = copy;
-  node->exprList = aExpressions;
 }
 
 void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLocation)
@@ -345,7 +293,7 @@ void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::par
 
 void NateParser::doElseIs(const yy::parser::location_type& aLocation)
 {
-  addStat(ByteCode::ElseIs, aLocation);
+  pushStatsHolder(addStatement(std::make_shared<StatIfIs::Else>(location(aLocation))));
 }
 
 void NateParser::doEndIs(const yy::parser::location_type& aLocation)
@@ -427,14 +375,14 @@ void NateParser::doEndLoop(const yy::parser::location_type& aLocation)
 
 void NateParser::doStartScope(const yy::parser::location_type& aLocation)
 {
+	pushStatsHolder(addStatement(std::make_shared<StatScope>(location(aLocation))));
 	pushScope(std::make_shared<Scope>("scope", IIdentifiersHolder::ScopeFlag::Local));
-	addStat(ByteCode::Scope, aLocation);
 }
 
 void NateParser::doEndScope(const yy::parser::location_type& aLocation)
 {
 	popScope();
-	up();
+	popStatsHolder();
 }
 
 void NateParser::doCodeInclude(const yy::parser::location_type& aLocation)
@@ -464,12 +412,6 @@ void NateParser::doData(const std::string& aId, const yy::parser::location_type&
 void NateParser::doDataEnd()
 {
 	popStatsHolder();
-}
-
-void NateParser::doEnd(bool aEnd, const yy::parser::location_type& aLocation)
-{
-	TreeNode* node = add(ByteCode::End, aLocation);
-	node->bool1 = aEnd;
 }
 
 void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aLocation)
@@ -683,7 +625,6 @@ void NateParser::doImplObject(const yy::parser::location_type& aLocation)
     curObject()->setFlag(Type::ObjectImpl);
           
     checkObject(curObject());
-		addStat(ByteCode::ImplObject, aLocation)->object = curObject();
 		pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), false)));
   }
   else
@@ -1045,10 +986,7 @@ void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser
 						{
 							DefinePtr newDefine = aObject->defines().add(DefinePtr(new Define(*baseMethod)));
 							newDefine->setFlag(Method::Overriden);
-							TreeNode* node = add(ByteCode::DeclObjectDefine, aLocation);
-							node->defyne = newDefine;
-							node->object = aObject;
-							node->bool1 = true;
+							addStatement(std::make_shared<StatDefine>(location(aLocation), newDefine, false /*aImpOnly*/, true /*aIsDecl*/));
 						}
 					}
 				}

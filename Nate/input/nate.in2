@@ -87,34 +87,36 @@ program:
 
   error "Hello", hello
   
-  var in is Data-Input
-  open in for reading from data data1
 
-  var x, y is int-32
-  var s is text;
-  read from in: x, y, s
-  output x,y, xy, ex
-  output "hi", "there"&
-  output s
-
-  var out is File-Output
-  var out2 is Output := out
-  output "Before:", out is ok, out is opened
-  open out for writing to file "d:\\uit"
-  out2 := out
-  output
-  if out is opened:						              	
-    output "Inside:", out is ok, out is opened
-    write to out2: "Hello,planet",
-    write: 12,13&14&
-    write: 15
-    write to output: "Hi",
-    output "Hi",
-    write: "End"
-    write:
-    write to out2: "Hi there"
-    close out
-  output "After:", out is ok, out is opened
+  scope:
+    var in is Data-Input
+    open in for reading from data data1
+    var x, y is int-32
+    var s is text;
+    read from in: x, y, s
+    output x,y, xy, ex
+    output "hi", "there"&
+    output s
+    
+  scope:
+    var out is File-Output
+    var out2 is Output := out
+    output "Before:", out is ok, out is opened
+    open out for writing to file "d:\\uit"
+    out2 := out
+    output
+    if out is opened:						              	
+      output "Inside:", out is ok, out is opened
+      write to out2: "Hello,planet",
+      write: 12,13&14&
+      write: 15
+      write to output: "Hi",
+      output "Hi",
+      write: "End"
+      write:
+      write to out2: "Hi there"
+      close out
+    output "After:", out is ok, out is opened
 
   var cnt := 2
   cnt := 3
@@ -133,7 +135,9 @@ program:
   is 13:
     output "case 13"
   else:
-    output "else"
+    scope:
+      output "else"
+    output "default"
     
   if cnt + 2:
   is cnt * 4:

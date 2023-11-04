@@ -1101,7 +1101,7 @@ is-part-block:
       statement-list 
     end
       { 
-        nate.up();
+        nate.popStatsHolder();
         nate.doCaseIsList(@end);
       }
   ;
@@ -1109,16 +1109,19 @@ is-part-block:
 is-else:
     %empty
 	  	{ 
-        nate.up();
+        nate.popStatsHolder();
       }
   | ELSE col 
 	  	{ 
-        nate.up();
+        nate.popStatsHolder();
         nate.doElseIs(@ELSE);
       }
     begin 
       statement-list 
     end
+	  	{ 
+        nate.popStatsHolder();
+      }
   ;
 
 loop-statement:

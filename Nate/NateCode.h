@@ -19,38 +19,40 @@ public:
   /// 
   /// </summary>
   /// <param name="aStat"></param>
-  void visit(const StatProgram& aStat) override;
-  void visit(const StatDeclareLocal& aStat) override;
   void visit(const StatAssign& aStat) override;
-  void visit(const StatExpr& aStat) override;
   void visit(const StatCode& aStat) override;
+  void visit(const StatData& aStat) override;
+  void visit(const StatDeclareLocal& aStat) override;
+  void visit(const StatDefine& aStat) override;
+  void visit(const StatError& aStat) override;
+  void visit(const StatExpr& aStat) override;
+  void visit(const StatIfIs& aStat) override;
+  void visit(const StatIfIs::Else& aStat) override;
   void visit(const StatIfThen& aStat) override;
   void visit(const StatIfThen::ElseIf& aStat) override;
   void visit(const StatIfThen::Else& aStat) override;
-  void visit(const StatIfIs& aStat) override;
-  void visit(const StatLoop& aStat) override;
-  void visit(const StatLoop::While& aStat) override;
-  void visit(const StatLoop::ForStep& aStat) override;
-  void visit(const StatLoop::ForRange& aStat) override;
-  void visit(const StatData& aStat) override;
-  void visit(const StatOutput& aStat) override;
-  void visit(const StatOutput::Comma& aStat) override;
-  void visit(const StatOutput::Concat& aStat) override;
-  void visit(const StatOutput::End& aStat) override;
-  void visit(const StatOutput::Value& aStat) override;
   void visit(const StatInput& aStat) override;
   void visit(const StatInput::Comma& aStat) override;
   void visit(const StatInput::Concat& aStat) override;
   void visit(const StatInput::End& aStat) override;
   void visit(const StatInput::Value& aStat) override;
-  void visit(const StatError& aStat) override;
-  void visit(const StatWrite& aStat) override;
+  void visit(const StatLoop& aStat) override;
+  void visit(const StatLoop::ForRange& aStat) override;
+  void visit(const StatLoop::ForStep& aStat) override;
+  void visit(const StatLoop::While& aStat) override;
+  void visit(const StatObject& aStat) override;
+  void visit(const StatOutput& aStat) override;
+  void visit(const StatOutput::Comma& aStat) override;
+  void visit(const StatOutput::Concat& aStat) override;
+  void visit(const StatOutput::End& aStat) override;
+  void visit(const StatOutput::Value& aStat) override;
+  void visit(const StatProgram& aStat) override;
+  void visit(const StatProperty& aStat) override;
   void visit(const StatRead& aStat) override;
-  void visit(const StatDefine& aStat) override;
   void visit(const StatRecord& aStat) override;
   void visit(const StatReturn& aStat) override;
-  void visit(const StatObject& aStat) override;
-  void visit(const StatProperty& aStat) override;
+  void visit(const StatScope& aStat) override;
+  void visit(const StatWrite& aStat) override;
 
 private:
   std::string in(int extra = 0);
@@ -59,7 +61,6 @@ private:
 	void codeOutput(const std::string& aString);
 	void codeInputStart(const StatInput& aStat, const std::string& aString, InputType inputType = InputType::Normal);
 	std::string codeExpr(const Expr& aValue);
-	void codeLocalVar(const TreeNodePtr& aNode, bool inImplObject = false);
 	void codeDeclIdentifier(bool aExtern,
 													const IdentifierPtr& aIdentifier,
 													bool initializeVariables,
@@ -69,12 +70,10 @@ private:
 	void codeIfIsSwitch(const StatIfIs& aStat);
 	void codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart);
 	void codeCaseIsSwitch(const StatIfIs::Is& aStat);
-  void codeCodeInclude(const TreeNodePtr& aNode);
 	void codeOutputStart(const StatOutput& aStat, const std::string& aOutput, bool aDataOutput = false);
 	std::string createCodeDeclArgs(const DefinePtr& aDefine, const std::vector<Arg>& aArgs);
 	std::string createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName = "");
 	void codeObjectBases(const ObjectPtr& aObject);
-	void codeDeclObjectDefine(const TreeNodePtr& aNode);
 	std::string codePropHeader(const ObjectPtr& aObject,
 														 bool aAddObjectName,
 												 	 	 const IdentifierPtr& aId, 

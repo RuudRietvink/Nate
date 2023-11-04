@@ -54,8 +54,6 @@ public:
 		WithFlags* flagsHolder = nullptr;
 		ObjectPtr object;
 		std::string inBracketsCode;
-
-		TreeNodePtr stats;
 	};
 
 
@@ -67,13 +65,6 @@ public:
 	};
 	
 	ParseData data;
-
-	TreeNode* curNode();
-	TreeNode* addStat(ByteCode code, const yy::parser::location_type& aLocation);
-	TreeNode* addStat(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
-	TreeNode* add(ByteCode code, const yy::parser::location_type& aLocation);
-	TreeNode* add(ByteCode code, const Expr& expr, const yy::parser::location_type& aLocation);
-	void up();
 
 	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 						 FileType aFileType = FileType::Normal);
@@ -92,6 +83,7 @@ public:
 	bool isLeftMonomial(const std::string& aWord) const;
 	void addWantsUnary(const std::string& aWord);
 	bool wantsUnary(const std::string& aWord) const;
+	void popStatsHolder();
 	
 	yy::Lexer* getLexer();
 
@@ -123,7 +115,6 @@ public:
 	void doEndLoop(const yy::parser::location_type& aLocation);
 	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
 	void doDataEnd();
-	void doEnd(bool aEnd, const yy::parser::location_type& aLocation);
 	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
 	void doOutputStart(const yy::parser::location_type& aLocation);
 	void doOutputComma(const yy::parser::location_type& aLocation);
@@ -257,7 +248,6 @@ private:
 	void pushDefinesHolder(const IDefinesHolderPtr& aDefinesHolder);
 	void popDefinesHolder();
 	void pushStatsHolder(const Stat::SPtr& aStatsHolder);
-	void popStatsHolder();
 	
 
 	struct Match
@@ -300,7 +290,6 @@ private:
 	Stat::SPtr addStatement(const Stat::SPtr& stat);
 		
 	
-	TreeNode*									  mCurNode = nullptr;
 	std::unique_ptr<yy::Lexer>	mLexer;
 	std::unique_ptr<yy::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;

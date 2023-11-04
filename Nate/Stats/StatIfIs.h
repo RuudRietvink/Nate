@@ -21,6 +21,14 @@ public:
   
     void accept(ICodeVisitor* aVisitor) const override;
   };
+  
+  class Else : public Stat
+  {
+  public:
+    Else(const Location& aLocation);
+  
+    void accept(ICodeVisitor* aVisitor) const override;
+  };
 
   StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Expr& aExpr);
   

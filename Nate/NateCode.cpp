@@ -222,6 +222,11 @@ void NateCode::visit(const StatIfIs& aStat)
 	}
 }
 
+void NateCode::visit(const StatIfIs::Else& aStat)
+{
+	codeStats(aStat.getCompound());
+}
+
 void NateCode::visit(const StatLoop& aStat)
 {
 	printLineNr(aStat.getLocation());
@@ -617,6 +622,12 @@ void NateCode::visit(const StatReturn& aStat)
 	*mOut << in() << "return " << codeExpr(aStat.getExpr()) << ";" << end();
 }
 
+void NateCode::visit(const StatScope& aStat)
+{
+	printLineNr(aStat.getLocation());
+	codeCompound(aStat);
+}
+
 void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream, InputType inputType)
 {
 	printLineNr(aStat.getLocation());
@@ -630,14 +641,6 @@ void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream
 		mNextInputEnd = (next != aStat.getCompound().end() && dynamic_cast<StatInput::End*>(next->get()) != nullptr);
 		(*iter)->accept(this);
   }
-}
-
-void NateCode::codeLocalVar(const TreeNodePtr& aNode, bool inImplObject)
-{
-	if (!aNode->id->is(Identifier::ObjectImpl) || inImplObject)
-	{
-    codeDeclIdentifier(false, aNode->id, aNode->bool1, aNode->location);
-	}
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,
@@ -669,7 +672,7 @@ void NateCode::codeDeclIdentifier(bool aExtern,
 	*mOut << ";" << end();
 }
 
-std::string NateCode::codeExpr(/*const TreeNodePtr& aNode, */const Expr& aValue)
+std::string NateCode::codeExpr(const Expr& aValue)
 {
 	std::string result = aValue.code();
 	if (aValue.is(Expr::Identifier) && !aValue.is(Expr::Property))
@@ -680,21 +683,6 @@ std::string NateCode::codeExpr(/*const TreeNodePtr& aNode, */const Expr& aValue)
 			if (id->isObjectMe())
 			{
 				result = "std::dynamic_pointer_cast<" + toCodeName(id->type()->name()) + ">(shared_from_this())";
-			}
-			else
-			{
-				IIdentifiersHolderPtr holder = id->identifiersHolder().lock();
-				if (holder)
-				{
-					if (holder->scopeFlag() == IIdentifiersHolder::ScopeFlag::ObjectImpl)
-					{
-					/*	if (aNode->defyne && !aNode->defyne->is(Define::Undeclared) && 
-								!aNode->defyne->object()->is(Type::ObjectImpl))
-						{
-							result = "_impl->" + result;
-						}*/
-					}
-				}
 			}
 		}
 	}
@@ -834,12 +822,6 @@ void NateCode::codeCaseIsSwitch(const StatIfIs::Is& aStat)
 {
 	printLineNr(aStat.getLocation());
 	*mOut << in() << "case " << codeExpr(aStat.getExpr()) << ":" << end();
-}
-
-void NateCode::codeCodeInclude(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-	*mOut << in() << aNode->string << end();
 }
 
 std::string NateCode::createCodeDecl(const DefinePtr& aDefine, const std::string& aObjectName)
@@ -1138,21 +1120,6 @@ void NateCode::codeObjectBases(const ObjectPtr& aObject)
 			first = false;
 		}
 	}
-}
-
-void NateCode::codeDeclObjectDefine(const TreeNodePtr& aNode)
-{
-	printLineNr(aNode->location);
-
-	DefinePtr defyne = aNode->defyne;
-	const char* startKeys = defyne->is(Method::Final) || defyne->is(Method::Overriden)
-												  ? "" : "virtual ";
-	const char* endKeys = defyne->is(Method::Overriden)
-												? " override" : "";
-	const char* abstract = aNode->object->isRole()
-												 ? " = 0" : "";
-	*mOut << in() << (defyne->isStatic() ? "static " : startKeys) << 
-									  createCodeDecl(defyne) << endKeys << abstract << ";" << end();
 }
 
 void NateCode::codeImplObjectVariables(const StatObject& aStat)

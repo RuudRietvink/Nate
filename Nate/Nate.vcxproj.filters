@@ -208,6 +208,9 @@
     <ClCompile Include="Property.cpp">
       <Filter>Source Files\Structs</Filter>
     </ClCompile>
+    <ClCompile Include="Stats\StatScope.cpp">
+      <Filter>Source Files\Structs\Stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\core.ns">
@@ -451,6 +454,9 @@
     </ClInclude>
     <ClInclude Include="Property.h">
       <Filter>Source Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats\StatScope.h">
+      <Filter>Source Files\Structs\Stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

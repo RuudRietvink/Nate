@@ -24,6 +24,15 @@ void StatIfIs::IsList::accept(ICodeVisitor* /*aVisitor*/) const
 {
 }
 
+StatIfIs::Else::Else(const Location& aLocation)
+  : Stat(aLocation)
+{}
+
+void StatIfIs::Else::accept(ICodeVisitor* aVisitor) const
+{
+  aVisitor->visit(*this);
+}
+
 StatIfIs::Is::Is(const Location& aLocation, const Expr& aExpr)
   : StatWithExpr(aLocation, aExpr)
 {}
