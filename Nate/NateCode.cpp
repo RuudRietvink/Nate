@@ -1114,10 +1114,13 @@ void NateCode::codeObjectBases(const ObjectPtr& aObject)
 		bool first = true;
 		for (auto const& base : aObject->getBases())
 		{
-			*mOut << (first ? ": public " : ", public ") << 
-						   (base->isRole() ? "virtual " : "") <<
-				       toCodeName(base->name());
-			first = false;
+			if (!base->is(Type::NoCode))
+			{
+				*mOut << (first ? ": public " : ", public ") << 
+								 (base->isRole() ? "virtual " : "") <<
+								 toCodeName(base->name());
+				first = false;
+			}
 		}
 	}
 }

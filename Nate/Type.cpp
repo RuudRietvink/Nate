@@ -355,6 +355,7 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::Unknown)) aStream << ",Unknown";
 	if (is(Type::Scalar)) aStream << ",Scalar";
 	if (is(Type::Abstract)) aStream << ",Abstract";
+	if (is(Type::NoCode)) aStream << ",NoCode";
 	if (is(Type::SingleNr)) aStream << ",SingleNr";
 	if (is(Type::Object)) aStream << ",Object";
 	if (is(Type::ObjectImpl)) aStream << ",ObjectImpl";

@@ -278,7 +278,7 @@
     <None Include="core\File-Output.ns" />
     <None Include="core\File.nd" />
     <None Include="core\IFile.nd" />
-    <None Include="core\Input.nd" />
+    <None Include="core\Stream-Input.nd" />
     <None Include="core\Random.ns" />
     <None Include="core\Rational.ns" />
     <None Include="core\List.ns" />

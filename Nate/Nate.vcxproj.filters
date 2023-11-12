@@ -282,7 +282,7 @@
     <None Include="core\File-Input.nd">
       <Filter>Source Files\Core</Filter>
     </None>
-    <None Include="core\Input.nd">
+    <None Include="core\Stream-Input.nd">
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="core\BaseObject.ns">

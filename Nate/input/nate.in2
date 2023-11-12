@@ -1,5 +1,6 @@
 import Math
 import Text
+import File-Input
 import File-Output
 import Data-Input
 import Complex
@@ -117,6 +118,17 @@ program:
       write to out2: "Hi there"
       close out
     output "After:", out is ok, out is opened
+    
+  scope:
+    var in := new File-Input
+    open in from file "d:\\uit"
+    output
+    if in is opened:						              	
+      output "Inside:", in is ok, in is opened
+      var text is text
+      read line from in: text
+      close in
+    output "After:", in is ok, in is opened
 
   var cnt := 2
   cnt := 3

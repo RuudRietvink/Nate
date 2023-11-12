@@ -94,6 +94,13 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("File-Output", getType("Output")));
 	addType(std::make_shared<Type>("Input", getType("object")));
 	addType(std::make_shared<Type>("Data-Input", getType("Input")));
+	auto input = std::make_shared<Object>("InputRole", getType("Input"));
+  input->setFlag(Type::Abstract, true);
+  input->setFlag(Type::Unknown, false);
+  input->setFlag(Type::NoCode, true);
+  input->setIsRole(true);
+	addObject(input);
+	endObject();
 }
 
 void NateParser::initOutput()
@@ -501,15 +508,22 @@ void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::pars
 	}
 	else if (aValue.type()->isOfType("Input"))
 	{
+		// TODO
+		Expr stream(aValue);
+		if (aValue.type()->isOfType("InputRole"))
+		{
+			stream.code() = "(" + aValue.code() + ")->E_me__stream_()";
+		}
+
 		if (!reader)
 		{
-			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("Input"), aValue);
+			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("Input"), stream);
 			addIdentifier(reader);
-	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, true)));
+	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, stream, true)));
 		}
 		else
 		{
-	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, false)));
+	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, stream, false)));
 		}
 	}
 	else

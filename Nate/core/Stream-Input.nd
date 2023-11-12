@@ -1,8 +1,8 @@
 
 ///////////////////////////////////////////////
-// Input
+// Stream-Input
 ///////////////////////////////////////////////
   
-role Input:
+role Stream-Input as InputRole:
   declare ${me} \is ok is boolean
   declare ${me} stream is {{ code std::shared_ptr<std::istream> }}

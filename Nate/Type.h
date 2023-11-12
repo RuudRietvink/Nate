@@ -69,6 +69,7 @@ public:
 	static const size_t Template   =19;
 	static const size_t Object     =20;
 	static const size_t ObjectImpl =21;
+	static const size_t NoCode     =22;
 	
 private:
 	void setBaseType(const TypePtr& aType);
