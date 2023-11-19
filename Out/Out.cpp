@@ -1,5 +1,5 @@
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\NateCompiler\created\File-Input.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\created\File-Input.h"
 #line 1 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in2"
 std::shared_ptr<std::ostream> output = {};
 #line 1

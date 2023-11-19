@@ -1000,6 +1000,7 @@ void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser
 						{
 							DefinePtr newDefine = aObject->defines().add(DefinePtr(new Define(*baseMethod)));
 							newDefine->setFlag(Method::Overriden);
+							newDefine->setObject(aObject);
 							addStatement(std::make_shared<StatDefine>(location(aLocation), newDefine, false /*aImpOnly*/, true /*aIsDecl*/));
 						}
 					}

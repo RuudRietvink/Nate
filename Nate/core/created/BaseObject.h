@@ -1,6 +1,6 @@
 #pragma once
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#line 2 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\BaseObject.nd"
+#line 2
 class BaseObject: public std::enable_shared_from_this<BaseObject>
 {
 public:
@@ -10,7 +10,7 @@ private:
 	class __impl;
 	__impl* _impl;
 	friend class __impl;
-	public:
+public:
 #line 3
 	virtual void initialize_E_O_me__();
 };

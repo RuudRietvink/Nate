@@ -1,9 +1,9 @@
 #pragma once
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\created\Input.h"
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\created\Stream-Input.h"
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\created\BaseObject.h"
-#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Input.nd"
-class File_Input: public virtual Input, public BaseObject
+#line 8
+class File_Input: public virtual Stream_Input, public BaseObject
 {
 public:
 	virtual ~File_Input();
@@ -12,7 +12,7 @@ private:
 	class __impl;
 	__impl* _impl;
 	friend class __impl;
-	public:
+public:
 #line 9
 	static std::shared_ptr<File_Input> new_File_Input_();
 	virtual void open_E_O_me__from_file_E_text_(const string_t& file);

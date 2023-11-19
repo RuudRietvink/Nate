@@ -88,6 +88,8 @@ private:
 													 const Location& aLocation);
 	void codeImplObjectVariables(const StatObject& aStat);
 	void codeImplObjectNested(const StatObject& aStat, bool inImpl);
+  
+  void codeDefine(const StatDefine& aStat, const ObjectPtr& aObject = ObjectPtr());
 
 
 	bool isConstIntScalar(const Expr& aExpr);

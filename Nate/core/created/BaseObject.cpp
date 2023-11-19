@@ -1,6 +1,6 @@
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\created\BaseObject.h"
-#line 3 "BaseObject.ns"
+#line 3
 class BaseObject::__impl
 {
 private:
@@ -17,4 +17,3 @@ BaseObject::~BaseObject() { delete _impl; }
 void BaseObject::initialize_E_O_me__()
 {
 }
-

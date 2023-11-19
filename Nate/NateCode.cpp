@@ -559,9 +559,15 @@ void NateCode::visit(const StatRecord& aStat)
 
 void NateCode::visit(const StatDefine& aStat)
 {
+	codeDefine(aStat);
+}
+
+void NateCode::codeDefine(const StatDefine& aStat, const ObjectPtr& aObject)
+{
 	printLineNr(aStat.getLocation());
 
 	DefinePtr defyne = aStat.getDefine();
+	ObjectPtr object = aObject ? aObject : defyne->object();
 	
 	if (defyne->isObjectMethod())
 	{		
@@ -587,16 +593,15 @@ void NateCode::visit(const StatDefine& aStat)
 																? "" : "virtual ";
 				const char* endKeys = defyne->is(Method::Overriden)
 															? " override" : "";
-				const char* abstract = aStat.getDefine()->object()->isRole()
+				const char* abstract = object->isRole()
 																? " = 0" : "";
 				*mOut << in() << (defyne->isStatic() ? "static " : startKeys) << 
 													createCodeDecl(defyne) << endKeys << abstract << ";" << end();
 			}
 			else
 			{
-				auto name = toCodeName(defyne->object()->name());
 				*mOut << in() << (defyne->isStatic() && aStat.isImpOnly() ? "static " : "") <<
-													createCodeDecl(defyne, name) << end();
+													createCodeDecl(defyne, toCodeName(object->name())) << end();
 
 				codeCompound(aStat);
 			}
@@ -1145,7 +1150,7 @@ void NateCode::codeImplObjectNested(const StatObject& aStat, bool inImpl)
 		{
 			if (defyne->getDefine()->isObjectMethod() && inImpl == defyne->isImpOnly())
 			{				
-				defyne->accept(this);
+				codeDefine(*defyne, inImpl ? ObjectPtr() : aStat.getObject());
 			}
 		}
 		else
