@@ -283,6 +283,36 @@ xz
   EXPECT_STREQ("(x*pow(z, pow(z, pow(55, x - pow(2, exp(pow(e, 5)))))))", parser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestPowerSuper6)
+{
+  ss << R"zzz(
+  xz⁵⁵
+)zzz";
+
+  EXPECT_STREQ("(x*pow(z, 55))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestPowerSuper7)
+{
+  ss << R"zzz(
+        z
+  x * ⁵⁵
+)zzz";
+
+  // ERROR 55 superscript only for exponents!!!!!
+  EXPECT_STREQ("pow(55, z)x*", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestPowerSuper8)
+{
+  ss << R"zzz(
+         z
+  x * z⁵⁵
+)zzz";
+
+  EXPECT_STREQ("x * pow(z, pow(55, z))", parser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestSquareRoot1)
 {  
   ss.clear();

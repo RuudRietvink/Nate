@@ -294,10 +294,32 @@ void MathParser::printDebugMath(const Math& aMath, const std::string& aText) con
 
 void MathParser::printMath(const Math& aMath, const std::string& aText) const
 {
-	std::cerr <<"--------------------------" << std::endl;
-	std::cerr << aText << std::endl;
+	if (!aText.empty())
+	{
+		std::cerr <<"--------------------------" << std::endl;
+		std::cerr << aText << std::endl;
+	}
+
+
+	bool first = true;
+	size_t y = 0;
+
 	for (auto& row : aMath.matrix)
 	{
+		if (first)
+		{
+			first = false;
+			std::cerr << ' ';
+			for (size_t x = 0; x < row.size(); ++x)
+			{
+				std::cerr << x % 10;
+			}
+	
+			std::cerr << '\n';
+		}
+		
+		std::cerr << y++ % 10;
+
 		for (auto& col : row)
 		{
 			if (!col.hasSubMatrix())
@@ -306,16 +328,18 @@ void MathParser::printMath(const Math& aMath, const std::string& aText) const
 			}
 			else if (col.isSubMatrix())
 			{
-				std::cerr << "@";
+				std::cerr << (col.isSuperscript() ?  "$" : "@");
 			}
 			else if (col.hasSubMatrix())
 			{
-				std::cerr << "_";
+				std::cerr << (col.isSuperscript() ?  "#" : "_");
 			}
 		}
 
-		std::cerr << std::endl;
+		std::cerr << '\n';
 	}
+		
+	std::cerr << std::endl;
 }
 
 bool MathParser::needsParens(const Math& aMath) const
@@ -522,11 +546,11 @@ void MathParser::doMathParentheses(Math& aMath)
 					Position rightPos = Position{ rightLowerParenthesis->x - 1, rightLowerParenthesis->y };
 					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
 					
-					printDebugMath(sub, __FUNCTION__);
+					//printDebugMath(sub, __FUNCTION__);
 					doMathParsing(sub);
 					embedSubMath(aMath, sub, Oper::Parentheses, Area{ *leftUpperParenthesis, *rightLowerParenthesis });
 
-					printDebugMath(aMath, __FUNCTION__);
+					//printDebugMath(aMath, __FUNCTION__);
 					doMathParsing(aMath);
 				}
 				else
@@ -544,7 +568,7 @@ void MathParser::doMathParentheses(Math& aMath)
 			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎠ or ⎟ below ⎞");
 		}
 	}
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathFractionBar(Math& aMath)
@@ -564,7 +588,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
 			Area areaNumerator = Area{ *leftUpperPosition, rightPos };
 			subNumerator = getSubMath(aMath, areaNumerator);
-			printDebugMath(subNumerator, __FUNCTION__);
+			//printDebugMath(subNumerator, __FUNCTION__);
 
 			OptPosition leftLowerPosition = findUntilDown(aMath, midHorizontalBar, HORIZONTAL_BAR);
 			if (leftLowerPosition)
@@ -574,7 +598,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				rightPos = Position{ rightHorizontalBar->x, leftLowerPosition->y };
 				Area areaDenomenator = Area{ leftPos, rightPos };
 				subDenomenator = getSubMath(aMath, areaDenomenator);
-				printDebugMath(subDenomenator, __FUNCTION__);
+				//printDebugMath(subDenomenator, __FUNCTION__);
 		
 				doMathParsing(subNumerator);
 				doMathParsing(subDenomenator);
@@ -595,7 +619,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				error(mathPos(aMath, *leftHorizontalBar), "expected some expression above division bar");
 		}
 	}
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathSquareRoot(Math& aMath)
@@ -618,12 +642,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			
 			Position rightPos = Position{ lastRootBar->x, squareRoot->y };
 			Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-			printDebugMath(sub, __FUNCTION__);
+			//printDebugMath(sub, __FUNCTION__);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
 			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos });
 			
-			printDebugMath(aMath, __FUNCTION__);
+			//printDebugMath(aMath, __FUNCTION__);
 			doMathParsing(aMath);
 		}
 		else
@@ -633,12 +657,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			if (symbol)
 			{
 				Math sub = getSubMath(aMath, *symbol);
-				printDebugMath(sub, __FUNCTION__);
+				//printDebugMath(sub, __FUNCTION__);
 			  doMathParsing(sub);
 				embedSubMath(aMath, sub, Oper::SquareRoot, *symbol);
 				spaceMath(aMath, Area{ *squareRoot, *squareRoot });
 				
-				printDebugMath(aMath, __FUNCTION__);
+				//printDebugMath(aMath, __FUNCTION__);
 			  doMathParsing(aMath);
 			}
 			else
@@ -647,35 +671,36 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			}
 		}
 	}
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathPower(Math& aMath)
 {
-  auto [isSuperscriptBase, isSuperscriptExp, expArea, baseArea] = findPower(aMath);
+  auto [powerFound, isSuperscriptBase, isSuperscriptExp, expArea, baseArea] = findPower(aMath);
 
-	if (expArea)
+	if (powerFound)
 	{
-		Math exp = getSubMath(aMath, *expArea);
-		printDebugMath(exp, __FUNCTION__);
+		//printDebugMath(aMath, __FUNCTION__);
+		Math exp = getSubMath(aMath, expArea);
+		//printDebugMath(exp);
 		Math base = getSubMath(aMath, baseArea);
-		printDebugMath(base, __FUNCTION__);
+		//printDebugMath(base);
 		doMathParsing(exp);
 		doMathParsing(base);
 		
 		if (isSuperscriptBase)
 		{
 			spaceMath(aMath, baseArea);
-			baseArea.lowerRight = expArea->lowerRight;
-			baseArea.upperLeft.y = expArea->upperLeft.y;
+			baseArea.lowerRight = expArea.lowerRight;
+			baseArea.upperLeft.y = expArea.upperLeft.y;
 		}
-		else if (isSuperscriptExp && baseArea.lowerRight.y == expArea->lowerRight.y)
+		else if (isSuperscriptExp && baseArea.lowerRight.y == expArea.lowerRight.y)
 		{
-			baseArea.lowerRight = expArea->lowerRight;
+			baseArea.lowerRight = expArea.lowerRight;
 		}
 		else
 		{
-			spaceMath(aMath, *expArea);
+			spaceMath(aMath, expArea);
 		}
 
 		bool area1 = baseArea.upperLeft.x == baseArea.lowerRight.x && baseArea.upperLeft.y == baseArea.lowerRight.y;
@@ -698,10 +723,10 @@ void MathParser::doMathPower(Math& aMath)
 			embedSubMath(aMath, base, exp, Oper::Power, baseArea);
 		}
 		
-		printDebugMath(aMath, __FUNCTION__);
+		//printDebugMath(aMath);
 		doMathParsing(aMath);
 	}
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathVariablesNumbers(Math& aMath)
@@ -738,7 +763,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 		}
 	}
 		
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathMonomial(Math& aMath)
@@ -783,7 +808,7 @@ void MathParser::doMathMonomial(Math& aMath)
 						  embedSubMath(aMath, left, right, Oper::Monomial, area);
 						}
 
-						printDebugMath(aMath, __FUNCTION__);
+						//printDebugMath(aMath, __FUNCTION__);
 					}
 					else
 					{
@@ -799,7 +824,7 @@ void MathParser::doMathMonomial(Math& aMath)
 			}
 		}
 	}
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper)
@@ -820,10 +845,10 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 					{
 						Math right = getSubMath(aMath, *rightArea);
 						rightArea->upperLeft.x = x;
-						printDebugMath(right, __FUNCTION__);
+						//printDebugMath(right, __FUNCTION__);
 						doMathParsing(right);
 						embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
-						printDebugMath(aMath, __FUNCTION__);
+						//printDebugMath(aMath, __FUNCTION__);
 					}
 				}
 			}
@@ -848,13 +873,13 @@ void MathParser::doMathOperator(Math& aMath, int aOperChar, Oper aOper)
 					{
 						Math left = getSubMath(aMath, *leftArea);
 						Math right = getSubMath(aMath, *rightArea);
-						printDebugMath(left, __FUNCTION__);
+						//printDebugMath(left, __FUNCTION__);
 						doMathParsing(left);
-						printDebugMath(right, __FUNCTION__);
+						//printDebugMath(right, __FUNCTION__);
 						doMathParsing(right);
 						Area area = join(*leftArea, *rightArea);
 						embedSubMath(aMath, left, right, aOper, area);
-						printDebugMath(aMath, __FUNCTION__);
+						//printDebugMath(aMath, __FUNCTION__);
 					}
 				}
 				else
@@ -959,7 +984,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 		}
 	}
 		
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathSimpleParentheses(Math& aMath)
@@ -1037,7 +1062,7 @@ void MathParser::doMathSimpleParentheses(Math& aMath)
 		}
 	}
 
-	printDebugMath(aMath, __FUNCTION__);
+	//printDebugMath(aMath, __FUNCTION__);
 }
 
 bool MathParser::isPartOfNumber(uint32_t kar) const
@@ -1259,9 +1284,8 @@ MathParser::OptArea MathParser::getSymbol(
 	{
 		if (aMath.hasSubMatrix(y, x))
 		{
-		  isSuperScript = aMath.isSuperscript(y, x);
-
 			result = aMath.matrix[y][x].getArea(x, y);
+		  isSuperScript = aMath.isSuperscript(y, x) || (result && aMath.isSuperscript(y, result->upperLeft.x));
 		}
 	}
 	
@@ -1321,7 +1345,7 @@ uint32_t MathParser::getSuperscript(uint32_t aKar) const
 	return 0;
 }
 
-std::tuple<bool, bool, MathParser::OptArea, MathParser::Area> MathParser::findPower(
+std::tuple<bool, bool, bool, MathParser::Area, MathParser::Area> MathParser::findPower(
 				Math& aMath) const
 {
 	for (int y = 0; y < aMath.height() - 1; ++y)
@@ -1335,7 +1359,7 @@ std::tuple<bool, bool, MathParser::OptArea, MathParser::Area> MathParser::findPo
 				auto [isSuperscript, baseArea] = getRightToLeftSymbol(aMath, Position{ expArea.upperLeft.x - 1, expArea.lowerRight.y + 1 });
 				if (baseArea)
 				{
-					return std::make_tuple(isSuperscript, false, expArea, *baseArea);
+					return std::make_tuple(true, isSuperscript, false, expArea, *baseArea);
 				}
 			}
 		}
@@ -1350,13 +1374,13 @@ std::tuple<bool, bool, MathParser::OptArea, MathParser::Area> MathParser::findPo
 				auto [isSuperscriptBase, baseArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y });
 				if (baseArea)
 				{
-					return std::make_tuple(isSuperscriptBase, true, aMath.matrix[y][x].getArea(x, y), *baseArea);
+					return std::make_tuple(true, isSuperscriptBase, true, aMath.matrix[y][x].getArea(x, y), *baseArea);
 				}
 			}
 		}
 	}
 	
-	return std::make_tuple(false, false, std::nullopt, Area{});
+	return std::make_tuple(false, false, false, Area{}, Area{});
 }
 
 MathParser::OptPosition MathParser::findAnyOf(

@@ -136,7 +136,9 @@ public:
 
 		MathValue(uint32_t aValue)
 			: value(aValue),
-		    oper(Oper::Number){}
+		    oper(Oper::Number),
+		    size{0, 0}
+		{}
 		
 		MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize)
 			: value(SUBMATRIX), 
@@ -303,7 +305,7 @@ private:
 										  const Position& aStartExponent) const;
 	Area join(const Area& aLeftArea, const Area& aRightArea) const;
 	Area totalArea(const Math& aMath, const Area& aArea) const;
-	std::tuple<bool, bool, OptArea, Area> findPower(Math& aMath) const;
+	std::tuple<bool, bool, bool, Area, Area> findPower(Math& aMath) const;
 	bool isSymbolSuffix(uint32_t aKar) const;
 	uint32_t getSuperscript(uint32_t aKar) const;
 	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;

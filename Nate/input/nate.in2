@@ -181,13 +181,11 @@ program:
       cnt := 2
 
   if cnt + 5:
-  is 10:
-  is 11:
+  is 10: is 11:
     output "case"
   is cnt * 4:
     output "hello"
-  is cnt + 4:
-  is cnt - 4:
+  is cnt + 4: is cnt - 4:
     output "hi"
     cnt := 2
   else:
