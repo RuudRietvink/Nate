@@ -811,25 +811,25 @@ TEST_F(TestMathParser, TestFormula4)
 TEST_F(TestMathParser, TestFormula5)
 {  
   ss << R"zzz( 
-      z=                                              (x/2.4)
+                                                      (x/2.4)
           ⎛              x - 3.3⎞              ⎛  1  ⎞
           ⎜⎛  _         ⎞       ⎟              ⎜ ――― ⎟
           ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
           ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
           ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
-       x ∗⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
+   z= x ∗ ⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
           ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
           ⎜⎜        x   ⎟       ⎟
           ⎜⎜ ―――――――――――⎟       ⎟
           ⎝⎝    42E5÷a  ⎠       ⎠
 )zzz";
 
-  EXPECT_STREQ("z=x * (pow(((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / (1.3 + ((sqrt(x - 2)) / x)))) / ((42E5 / a)))), x - 3.3) + exp(pow(32, z))) * "
+  EXPECT_STREQ("z = x * (pow(((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / (1.3 + ((sqrt(x - 2)) / x)))) / ((42E5 / a)))), x - 3.3) + exp(pow(32, z))) * "
                "pow(sqrt((sqrt(pow(x, 3) - 4))), pow(((1 / (x + z))), ((x / 2.4)))) * "
                "-pow(0.E4, -42.5E+3 + pow(x, pow((z - 5), pow(3, pow(55, 4)))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula6)
+TEST_F(TestMathParser, TestAssignment1)
 {  
   ss << R"zzz( 
                    _________
@@ -842,7 +842,7 @@ TEST_F(TestMathParser, TestFormula6)
   EXPECT_STREQ("var = z = ((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula7)
+TEST_F(TestMathParser, TestAssignment2)
 {  
   ss << R"zzz( 
                 _________
