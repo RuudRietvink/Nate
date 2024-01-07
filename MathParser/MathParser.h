@@ -13,6 +13,7 @@
 #include <tuple>
 #include <map>
 #include <memory>
+#include <tuple>
 
 class MathParser
 {
@@ -121,7 +122,8 @@ public:
 		Number,
 		Monomial,
 		UnaryMinus,
-		UnaryPlus
+		UnaryPlus,
+		Assignment
 	};
 	
 	struct MathValue
@@ -252,13 +254,15 @@ private:
 	void doMathSimpleParentheses(Math& aMath);
 	void doMathSimpleOperators(Math& aMath);
 	void doMathVariablesNumbers(Math& aMath);
-
+	
 	void doMathMonomial(Math& aMath);
 	void doMathParentheses(Math& aMath);
 	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
-	void doMathOperator(Math& aMath, int aOperChar, Oper aOper);
+	void doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper);
+	void doMathUpLeftOperator(Math& aMath, int aOperChar, Oper aOper);
+	void doMathOperator(Math& aMath, Oper aOper, int x, int y);
 	void doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper);
 
 	OptPosition findAny(const Math& aMath, 
@@ -284,12 +288,15 @@ private:
 																	const Position& aLeftLowerPosition,
 																	uint32_t aInbetweenChar,
 																	uint32_t aSearchChar) const;
-	OptPosition findUntilUp(const Math& aMath, 
+	OptPosition findTopOfFraction(const Math& aMath, 
 													const Position& aLowerPosition,
-													uint32_t aSearchChar) const;
-	OptPosition findUntilDown(const Math& aMath, 
+													int aRightX) const;
+	OptPosition findBottomOfFraction(const Math& aMath, 
 												  	const Position& aUpperPosition,
-												  	uint32_t aSearchChar) const;
+													  int aRightX) const;
+	std::tuple<bool, bool> isFractionBar(const Math& aMath, 
+																		   const Position& aPosition,
+																			 int aRightX) const;
 	
 	bool isBlank(uint32_t kar) const;
 	bool isEmpty(uint32_t kar) const;

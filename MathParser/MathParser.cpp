@@ -106,6 +106,11 @@ std::string MathParser::doMath(Math& aMath)
 
 ////////////////////////// protected /////////////////////////////////
 
+void MathParser::printDebugMath(const Math& aMath, const std::string& aText) const
+{
+	printMath(aMath, aText);
+}
+
 void MathParser::error(const Position& aPosition, const std::string& aError) const
 {
 	std::cerr << "(" << aPosition.y << "," << aPosition.x << "): " << aError << std::endl;
@@ -189,6 +194,11 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	case Oper::Monomial:
 	{
 		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
+		break;
+	}
+	case Oper::Assignment:
+	{
+		ss << mathString(aMathLeft) << " = " << mathString(aMathRight);
 		break;
 	}
 	case Oper::Nested:
@@ -287,11 +297,6 @@ void MathParser::fillUpMath(Math& aMath) const
 	}
 }
 	
-void MathParser::printDebugMath(const Math& aMath, const std::string& aText) const
-{
-	//printMath(aMath, aText);
-}
-
 void MathParser::printMath(const Math& aMath, const std::string& aText) const
 {
 	if (!aText.empty())
@@ -518,10 +523,11 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathMonomial(aMath);
 	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
 	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
-	doMathOperator(aMath, operatorMultiply(), Oper::Multiplication);
-	doMathOperator(aMath, operatorDivide(), Oper::Division);
-	doMathOperator(aMath, '+', Oper::Addition);
-	doMathOperator(aMath, '-', Oper::Subtraction);
+	doMathDownRightOperator(aMath, operatorMultiply(), Oper::Multiplication);
+	doMathDownRightOperator(aMath, operatorDivide(), Oper::Division);
+	doMathDownRightOperator(aMath, '+', Oper::Addition);
+	doMathDownRightOperator(aMath, '-', Oper::Subtraction);
+	doMathUpLeftOperator(aMath, '=', Oper::Assignment);
 }
 
 void MathParser::doMathParentheses(Math& aMath)
@@ -576,21 +582,21 @@ void MathParser::doMathFractionBar(Math& aMath)
 	OptPosition leftHorizontalBar = findAny(aMath, HORIZONTAL_BAR);
 	if (leftHorizontalBar)
 	{
+		printDebugMath(aMath, __FUNCTION__);
 		OptPosition rightHorizontalBar = findRepeatingRight(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
 
 		Math subNumerator;
 		Math subDenomenator;
-		Position midHorizontalBar{ (rightHorizontalBar->x + leftHorizontalBar->x) / 2, leftHorizontalBar->y };
-		OptPosition leftUpperPosition = findUntilUp(aMath, midHorizontalBar, HORIZONTAL_BAR);
+		OptPosition leftUpperPosition = findTopOfFraction(aMath, *leftHorizontalBar, rightHorizontalBar->x);
 		if (leftUpperPosition)
 		{
 			leftUpperPosition->x = leftHorizontalBar->x;
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
 			Area areaNumerator = Area{ *leftUpperPosition, rightPos };
 			subNumerator = getSubMath(aMath, areaNumerator);
-			//printDebugMath(subNumerator, __FUNCTION__);
+			printDebugMath(subNumerator);
 
-			OptPosition leftLowerPosition = findUntilDown(aMath, midHorizontalBar, HORIZONTAL_BAR);
+			OptPosition leftLowerPosition = findBottomOfFraction(aMath, *leftHorizontalBar, rightHorizontalBar->x);
 			if (leftLowerPosition)
 			{
 			  leftLowerPosition->x = leftHorizontalBar->x;
@@ -598,7 +604,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				rightPos = Position{ rightHorizontalBar->x, leftLowerPosition->y };
 				Area areaDenomenator = Area{ leftPos, rightPos };
 				subDenomenator = getSubMath(aMath, areaDenomenator);
-				//printDebugMath(subDenomenator, __FUNCTION__);
+				printDebugMath(subDenomenator);
 		
 				doMathParsing(subNumerator);
 				doMathParsing(subDenomenator);
@@ -606,7 +612,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				Area area = join(areaNumerator, areaDenomenator);
 				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, area);
 				
-				printDebugMath(aMath, __FUNCTION__);
+				printDebugMath(aMath);
 				doMathParsing(aMath);
 			}
 			else
@@ -618,8 +624,8 @@ void MathParser::doMathFractionBar(Math& aMath)
 		{
 				error(mathPos(aMath, *leftHorizontalBar), "expected some expression above division bar");
 		}
+		printDebugMath(aMath);
 	}
-	//printDebugMath(aMath, __FUNCTION__);
 }
 
 void MathParser::doMathSquareRoot(Math& aMath)
@@ -856,7 +862,7 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 	}
 }
 
-void MathParser::doMathOperator(Math& aMath, int aOperChar, Oper aOper)
+void MathParser::doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
@@ -865,29 +871,49 @@ void MathParser::doMathOperator(Math& aMath, int aOperChar, Oper aOper)
 			uint32_t kar = aMath(y, x);
 			if (kar == aOperChar)
 			{
-				auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
-				if (leftArea)
-				{
-					auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
-					if (rightArea)
-					{
-						Math left = getSubMath(aMath, *leftArea);
-						Math right = getSubMath(aMath, *rightArea);
-						//printDebugMath(left, __FUNCTION__);
-						doMathParsing(left);
-						//printDebugMath(right, __FUNCTION__);
-						doMathParsing(right);
-						Area area = join(*leftArea, *rightArea);
-						embedSubMath(aMath, left, right, aOper, area);
-						//printDebugMath(aMath, __FUNCTION__);
-					}
-				}
-				else
-				{
-					error(Position{ x, y }, "Unmatched operator");
-				}
+				doMathOperator(aMath, aOper, x, y);
 			}
 		}
+	}
+}
+
+void MathParser::doMathUpLeftOperator(Math& aMath, int aOperChar, Oper aOper)
+{
+	for (int y = aMath.height() - 1; y >= 0; --y)
+	{
+		for (int x = aMath.width() - 1; x >= 0; --x)
+		{
+			uint32_t kar = aMath(y, x);
+			if (kar == aOperChar)
+			{
+				doMathOperator(aMath, aOper, x, y);
+			}
+		}
+	}
+}
+
+void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
+{
+	auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
+	if (leftArea)
+	{
+		auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
+		if (rightArea)
+		{
+			Math left = getSubMath(aMath, *leftArea);
+			Math right = getSubMath(aMath, *rightArea);
+			//printDebugMath(left, __FUNCTION__);
+			doMathParsing(left);
+			//printDebugMath(right, __FUNCTION__);
+			doMathParsing(right);
+			Area area = join(*leftArea, *rightArea);
+			embedSubMath(aMath, left, right, aOper, area);
+			//printDebugMath(aMath, __FUNCTION__);
+		}
+	}
+	else
+	{
+		error(Position{ x, y }, "Unmatched operator");
 	}
 }
 
@@ -1584,28 +1610,37 @@ MathParser::OptPosition MathParser::findDiagonalRightUp(
 	return std::nullopt;
 }
 
-MathParser::OptPosition MathParser::findUntilUp(
+std::tuple<bool, bool> MathParser::isFractionBar(
+				const Math& aMath, 
+				const Position& aPosition,
+				int aRightX) const
+{
+	bool isBlank = true;
+	bool isBar = true;
+	for (int x = aPosition.x; (isBlank || isBar) && x <= aRightX; ++x)
+	{
+		uint32_t kar = aMath(aPosition.y, x);
+		isBar = isBar && (kar == HORIZONTAL_BAR);
+		isBlank = isBlank && (kar == ' ');
+	}
+
+	return std::make_tuple(isBar, isBlank);
+}
+
+MathParser::OptPosition MathParser::findTopOfFraction(
 				const Math& aMath, 
 				const Position& aLowerPosition,
-				uint32_t aSearchChar) const
+				int aRightX) const
 {
 	OptPosition result;
-
-	int x = aLowerPosition.x;
-
+	
 	for (int y = aLowerPosition.y - 1; !result && y >= 0; --y)
 	{
-		uint32_t kar = aMath(y, x);
-		if (kar == aSearchChar)
+		auto position = Position{ aLowerPosition.x, y };
+		auto [isBar, isBlank] = isFractionBar(aMath, position, aRightX);
+		if (isBar || isBlank)
 		{
-			if (y < aLowerPosition.y - 1)
-			{
-				result = Position{ x, y + 1 };
-			}
-			else
-			{
-				break;
-			}
+			result = Position{ aLowerPosition.x, y + 1 };
 		}
 	}
 
@@ -1613,35 +1648,32 @@ MathParser::OptPosition MathParser::findUntilUp(
 	{
 		if (aLowerPosition.y > 0)
 		{
-			result = Position{ x, 1 };
+			result = Position{ aLowerPosition.x, 1 };
 		}
+	}
+
+	if (result && result->y == aLowerPosition.y)
+	{
+	  result = std::nullopt;
 	}
 
 	return result;
 }
 
-MathParser::OptPosition MathParser::findUntilDown(
+MathParser::OptPosition MathParser::findBottomOfFraction(
 				const Math& aMath, 
 				const Position& aUpperPosition,
-				uint32_t aSearchChar) const
+				int aRightX) const
 {
 	OptPosition result;
 
-	int x = aUpperPosition.x;
-
 	for (int y = aUpperPosition.y + 1; !result && y < aMath.height(); ++y)
 	{
-		uint32_t kar = aMath(y, x);
-		if (kar == aSearchChar)
+		auto position = Position{ aUpperPosition.x, y };
+		auto [isBar, isBlank] = isFractionBar(aMath, position, aRightX);
+		if (isBar || isBlank)
 		{
-			if (y > aUpperPosition.y + 1)
-			{
-				result = Position{ x, y - 1 };
-			}
-			else
-			{
-				break;
-			}
+			result = Position{ aUpperPosition.x, y - 1 };
 		}
 	}
 
@@ -1650,8 +1682,13 @@ MathParser::OptPosition MathParser::findUntilDown(
 	{
 		if (aUpperPosition.y < aMath.height() - 1)
 		{
-			result = Position{ x, aMath.height() - 2 };
+			result = Position{ aUpperPosition.x, aMath.height() - 2 };
 		}
+	}
+	
+	if (result && result->y == aUpperPosition.y)
+	{
+	  result = std::nullopt;
 	}
 
 	return result;
