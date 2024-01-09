@@ -111,6 +111,10 @@ public:
 		Unknown,
 		Nested,
 		Parentheses,
+		Brackets,
+		Absolute,
+		Floor,
+		Ceiling,
 		Division,
 		SquareRoot,
 		Power,
@@ -251,7 +255,7 @@ private:
 								 const Area& aArea);
 	
 	void doMathSuperscript(Math& aMath);
-	void doMathSimpleParentheses(Math& aMath);
+	void doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc);
 	void doMathSimpleOperators(Math& aMath);
 	void doMathVariablesNumbers(Math& aMath);
 	

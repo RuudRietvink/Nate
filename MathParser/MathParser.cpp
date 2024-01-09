@@ -10,25 +10,43 @@
 #include <clocale>
 
 namespace {
+	
+//   _
+// √╱  ― ⌊⌋⌈⌉|⏐⎛⎞⎝⎠⎜⎟
+// ⏨ю
+// ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
+// ₀₁₂₃₄₅₆₇₈₉ ₊₋₍₎ₐₑₒₓ
+// ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
+// πτ𝑖⋅÷⁄×⇑⇓
 
-	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK  = 0x239B; // ⎛
-	const uint32_t LEFT_PARENTHESIS_EXTENSION   = 0x239C; // ⎜
-	const uint32_t LEFT_PARENTHESIS_LOWER_HOOK  = 0x239D; // ⎝
-	const uint32_t RIGHT_PARENTHESIS_UPPER_HOOK = 0x239E; // ⎞
-	const uint32_t RIGHT_PARENTHESIS_EXTENSION  = 0x239F; // ⎟
-	const uint32_t RIGHT_PARENTHESIS_LOWER_HOOK = 0x23A0; // ⎠
-	const uint32_t HORIZONTAL_BAR               = 0x2015; // ―
-	const uint32_t ROOT_BAR                     = 0x005F; //   _
-	const uint32_t ROOT_DIAGONAL                = 0x2571; //  ╱
-	const uint32_t SQUARE_ROOT                  = 0x221A; // √
-  const uint32_t E                            = 0x1D452;// 𝑒
-  const uint32_t MULTIPLY_X                   = 0x00D7; // ×
-  const uint32_t MULTIPLY_STAR                = 0x2217; // ∗
-  const uint32_t MULTIPLY_DOT                 = 0x22C5; // ⋅
-	const uint32_t DIVIDE_SLASH                 = 0x002F; // /
-	const uint32_t DIVIDE_SIGN                  = 0x00F7; // ÷
-	const uint32_t SUPER_OPEN                   = 0x207D; // ⁽
-	const uint32_t SUPER_CLOSE                  = 0x207E; // ⁾
+	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
+	const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
+	const uint32_t LEFT_PARENTHESIS_LOWER_HOOK				= 0x239D; // ⎝
+	const uint32_t RIGHT_PARENTHESIS_UPPER_HOOK				= 0x239E; // ⎞
+	const uint32_t RIGHT_PARENTHESIS_EXTENSION				= 0x239F; // ⎟
+	const uint32_t RIGHT_PARENTHESIS_LOWER_HOOK				= 0x23A0; // ⎠
+	const uint32_t LEFT_CEILING												= 0x2308; // ⌈
+	const uint32_t RIGHT_CEILING											= 0x2309; // ⌉
+	const uint32_t LEFT_FLOOR													= 0x230A; // ⌊
+	const uint32_t RIGHT_FLOOR												= 0x230B; // ⌋
+	const uint32_t LEFT_SQUARE_BRACKET_UPPER_CORNER		= 0x23A1; // ⎡
+	const uint32_t LEFT_SQUARE_BRACKET_EXTENSION  		= 0x23A2; // ⎢
+	const uint32_t LEFT_SQUARE_BRACKET_LOWER_CORNER		= 0x23A3; // ⎣
+	const uint32_t RIGHT_SQUARE_BRACKET_UPPER_CORNER	= 0x23A4; // ⎤
+	const uint32_t RIGHT_SQUARE_BRACKET_EXTENSION   	= 0x23A5; // ⎥
+	const uint32_t RIGHT_SQUARE_BRACKET_LOWER_CORNER	= 0x23A6; // ⎦
+	const uint32_t HORIZONTAL_BAR											= 0x2015; // ―
+	const uint32_t ROOT_BAR														= 0x005F; //   _
+	const uint32_t ROOT_DIAGONAL											= 0x2571; //  ╱
+	const uint32_t SQUARE_ROOT												= 0x221A; // √
+  const uint32_t E																	= 0x1D452;// 𝑒
+  const uint32_t MULTIPLY_X													= 0x00D7; // ×
+  const uint32_t MULTIPLY_STAR											= 0x2217; // ∗
+  const uint32_t MULTIPLY_DOT												= 0x22C5; // ⋅
+	const uint32_t DIVIDE_SLASH												= 0x002F; // /
+	const uint32_t DIVIDE_SIGN												= 0x00F7; // ÷
+	const uint32_t SUPER_OPEN													= 0x207D; // ⁽
+	const uint32_t SUPER_CLOSE												= 0x207E; // ⁾
 
 
 	template< class charT >
@@ -134,6 +152,21 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 		}
 		break;
 	}
+	case Oper::Brackets:
+	{
+		ss << "[" << mathString(aMathLeft) << "]";
+		break;
+	}
+	case Oper::Ceiling:
+	{
+		ss << "ceil(" << mathString(aMathLeft) << ")";
+		break;
+	}
+	case Oper::Floor:
+	{
+		ss << "floor(" << mathString(aMathLeft) << ")";
+		break;
+	}
 	case Oper::Multiplication:
 	{
 		ss << mathString(aMathLeft) << " * " << mathString(aMathRight);
@@ -193,7 +226,14 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Monomial:
 	{
-		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
+		if (aMathRight.matrix[1][1].oper == Oper::Brackets)
+		{
+			ss << mathString(aMathLeft) << mathString(aMathRight);
+		}
+		else
+		{
+			ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
+		}
 		break;
 	}
 	case Oper::Assignment:
@@ -510,7 +550,10 @@ void MathParser::doStartMathParsing(Math& aMath)
 void MathParser::doPrepareMathParsing(Math& aMath)
 {
 	doMathVariablesNumbers(aMath);
-	doMathSimpleParentheses(aMath);
+	doMathSimpleMatching(aMath, '(',          ')',           Oper::Parentheses, "parentheses");
+	doMathSimpleMatching(aMath, '[',          ']',           Oper::Brackets,    "brackets");
+	doMathSimpleMatching(aMath, LEFT_CEILING, RIGHT_CEILING, Oper::Floor,       "floor delimiters");
+	doMathSimpleMatching(aMath, LEFT_FLOOR,   RIGHT_FLOOR,   Oper::Ceiling,      "ceiling delimiters");
 	doMathParsing(aMath);
 }
 
@@ -1013,7 +1056,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 	//printDebugMath(aMath, __FUNCTION__);
 }
 
-void MathParser::doMathSimpleParentheses(Math& aMath)
+void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
@@ -1022,26 +1065,22 @@ void MathParser::doMathSimpleParentheses(Math& aMath)
 		for (int x = 0; x < aMath.width(); ++x)
 		{
 			uint32_t kar = aMath(y, x);
-			if (kar == '(' || kar == '[')
+			if (kar == left)
 			{
 				std::vector<uint32_t> prevParens;
 				int startX = x;
 				for (;x < aMath.width(); ++x)
 				{
 					kar = aMath(y, x);
-					if (kar == '(')
+					if (kar == left)
 					{
-						prevParens.push_back(')');
+						prevParens.push_back(right);
 					}
-					else if (kar == '[')
-					{
-						prevParens.push_back(']');
-					}
-					else if (kar == ')' || kar == ']')
+					else if (kar == right)
 					{
 						if (prevParens.empty() || prevParens.back() != kar)
 						{
-							error(Position{ x, y }, "unbalanced parentheses/brackets");
+							error(Position{ x, y }, std::string("unbalanced ") + desc);
 						}
 						else
 						{
@@ -1077,13 +1116,13 @@ void MathParser::doMathSimpleParentheses(Math& aMath)
 		
 				if (!prevParens.empty())
 				{
-					error(Position{ x, y }, "unbalanced parentheses/brackets");
+					error(Position{ x, y }, std::string("unbalanced ") + desc);
 				}
 				
 				Area area{ Position{ startX, upY }, Position{ x, downY } };
 				Math parens = getSubMath(aMath, Area{ Position{ startX + 1, upY }, Position{ x - 1, downY } });
 				doPrepareMathParsing(parens);
-				embedSubMath(aMath, parens, Oper::Parentheses, area);
+				embedSubMath(aMath, parens, oper, area);
 			}
 		}
 	}

@@ -123,6 +123,33 @@ TEST_F(TestMathParser, TestSimple6)
   EXPECT_STREQ("((1 / x) + ((2 / H₂O)) + (pow(x, 2) - z_π)) * 3", parser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestSimple7)
+{  
+  ss << R"zzz(
+ - (x₂[z-1]- z)
+)zzz";
+
+  EXPECT_STREQ("-(x₂[z - 1] - z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple8)
+{  
+  ss << R"zzz(
+ - (⌊z-1⌋- z)
+)zzz";
+
+  EXPECT_STREQ("-(ceil(z - 1) - z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple9)
+{  
+  ss << R"zzz(
+ - (⌈⌊z⌋-1⌉- z)
+)zzz";
+
+  EXPECT_STREQ("-(floor(ceil(z) - 1) - z)", parser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestPower1)
 {  
   ss << R"zzz(
