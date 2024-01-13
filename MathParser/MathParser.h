@@ -302,6 +302,7 @@ private:
 																		   const Position& aPosition,
 																			 int aRightX) const;
 	
+	bool isOperator(uint32_t kar) const;
 	bool isBlank(uint32_t kar) const;
 	bool isEmpty(uint32_t kar) const;
 	bool badSomething(uint32_t kar) const;

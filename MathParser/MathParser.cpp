@@ -167,6 +167,11 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 		ss << "floor(" << mathString(aMathLeft) << ")";
 		break;
 	}
+	case Oper::Absolute:
+	{
+		ss << "abs(" << mathString(aMathLeft) << ")";
+		break;
+	}
 	case Oper::Multiplication:
 	{
 		ss << mathString(aMathLeft) << " * " << mathString(aMathRight);
@@ -552,6 +557,7 @@ void MathParser::doPrepareMathParsing(Math& aMath)
 	doMathVariablesNumbers(aMath);
 	doMathSimpleMatching(aMath, '(',          ')',           Oper::Parentheses, "parentheses");
 	doMathSimpleMatching(aMath, '[',          ']',           Oper::Brackets,    "brackets");
+	doMathSimpleMatching(aMath, '|',          '|',           Oper::Absolute,    "vertical bars");
 	doMathSimpleMatching(aMath, LEFT_CEILING, RIGHT_CEILING, Oper::Floor,       "floor delimiters");
 	doMathSimpleMatching(aMath, LEFT_FLOOR,   RIGHT_FLOOR,   Oper::Ceiling,      "ceiling delimiters");
 	doMathParsing(aMath);
@@ -969,12 +975,14 @@ void MathParser::doMathSimpleOperators(Math& aMath)
 			uint32_t kar = aMath(y, x);
 			if (kar == MULTIPLY_DOT ||
 					kar == MULTIPLY_STAR ||
-					kar == MULTIPLY_X)
+					kar == MULTIPLY_X ||
+					kar == '*')
 			{
 				kar = operatorMultiply();
 			}
 			else if (kar == DIVIDE_SIGN ||
-					     kar == DIVIDE_SLASH )
+					     kar == DIVIDE_SLASH ||
+							 kar == '/')
 			{
 				kar = operatorDivide();
 			}
@@ -1069,12 +1077,39 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 			{
 				std::vector<uint32_t> prevParens;
 				int startX = x;
+				bool lastOperator = false;
+				bool lastOpen = true;
+				prevParens.push_back(right);
+				++x;
+
 				for (;x < aMath.width(); ++x)
 				{
 					kar = aMath(y, x);
 					if (kar == left)
 					{
-						prevParens.push_back(right);
+						if (left == right)
+						{
+							if (lastOperator || lastOpen)
+							{
+								prevParens.push_back(right);
+							}
+							else
+							{
+								if (prevParens.empty())
+								{
+									error(Position{ x, y }, std::string("unbalanced ") + desc);
+								}
+								else
+								{
+									prevParens.pop_back();
+								}
+							}
+						}
+						else
+						{
+							prevParens.push_back(right);
+							lastOpen = true;
+						}
 					}
 					else if (kar == right)
 					{
@@ -1089,6 +1124,17 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 					}
 					else 
 					{
+						if (isOperator(kar))
+						{
+							lastOperator = true;
+							lastOpen = false;
+						}
+						else if (!isBlank(kar))
+						{
+							lastOperator = false;
+							lastOpen = false;
+						}
+
 						if (y > 0)
 						{
 							uint32_t upKar = aMath(y-1, x);
@@ -1118,11 +1164,17 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 				{
 					error(Position{ x, y }, std::string("unbalanced ") + desc);
 				}
-				
-				Area area{ Position{ startX, upY }, Position{ x, downY } };
-				Math parens = getSubMath(aMath, Area{ Position{ startX + 1, upY }, Position{ x - 1, downY } });
-				doPrepareMathParsing(parens);
-				embedSubMath(aMath, parens, oper, area);
+				else
+				{				
+					Area area{ Position{ startX, upY }, Position{ x, downY } };
+					Math parens = getSubMath(aMath, Area{ Position{ startX + 1, upY }, Position{ x - 1, downY } });
+					doPrepareMathParsing(parens);
+					embedSubMath(aMath, parens, oper, area);
+				}
+			}
+			else if (kar == right)
+			{
+				error(Position{ x, y }, std::string("unbalanced ") + desc);
 			}
 		}
 	}
@@ -1242,6 +1294,14 @@ MathParser::Area MathParser::totalArea(const Math& aMath, const Area& aArea) con
 		}
 	}
 	return result;
+}
+
+bool MathParser::isOperator(uint32_t kar) const
+{
+	return kar == operatorDivide() || 
+		     kar == operatorMultiply() ||
+		     kar == '+' || 
+		     kar == '-';
 }
 
 bool MathParser::isBlank(uint32_t kar) const

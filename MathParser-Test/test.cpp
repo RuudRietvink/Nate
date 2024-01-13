@@ -64,7 +64,7 @@ TEST_F(TestMathParser, TestAddVariable)
   parser.addVariable("I");
 }
 
-TEST_F(TestMathParser, TestSimple1)
+TEST_F(TestMathParser, TestSimple01)
 {  
   ss << R"zzz(
  - x+2*-var/+2.3
@@ -73,7 +73,7 @@ TEST_F(TestMathParser, TestSimple1)
   EXPECT_STREQ("-x + ((2 * -var) / (+2.3))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple2)
+TEST_F(TestMathParser, TestSimple02)
 {  
   ss << R"zzz(
  - (x₂- z)
@@ -82,7 +82,7 @@ TEST_F(TestMathParser, TestSimple2)
   EXPECT_STREQ("-(x₂ - z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple3)
+TEST_F(TestMathParser, TestSimple03)
 {  
   ss << R"zzz(
 (43.3E-5+4)
@@ -91,7 +91,7 @@ TEST_F(TestMathParser, TestSimple3)
   EXPECT_STREQ("(43.3E-5 + 4)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple4)
+TEST_F(TestMathParser, TestSimple04)
 {  
   ss << R"zzz(
   2
@@ -101,7 +101,7 @@ TEST_F(TestMathParser, TestSimple4)
   EXPECT_STREQ("(pow(x, 2))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple5)
+TEST_F(TestMathParser, TestSimple05)
 {  
   ss << R"zzz(
  1
@@ -112,7 +112,7 @@ TEST_F(TestMathParser, TestSimple5)
   EXPECT_STREQ("((1 / x) + 2) * 3", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple6)
+TEST_F(TestMathParser, TestSimple06)
 {  
   ss << R"zzz(
  1              2
@@ -123,7 +123,7 @@ TEST_F(TestMathParser, TestSimple6)
   EXPECT_STREQ("((1 / x) + ((2 / H₂O)) + (pow(x, 2) - z_π)) * 3", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple7)
+TEST_F(TestMathParser, TestSimple07)
 {  
   ss << R"zzz(
  - (x₂[z-1]- z)
@@ -132,7 +132,7 @@ TEST_F(TestMathParser, TestSimple7)
   EXPECT_STREQ("-(x₂[z - 1] - z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple8)
+TEST_F(TestMathParser, TestSimple08)
 {  
   ss << R"zzz(
  - (⌊z-1⌋- z)
@@ -141,7 +141,7 @@ TEST_F(TestMathParser, TestSimple8)
   EXPECT_STREQ("-(ceil(z - 1) - z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSimple9)
+TEST_F(TestMathParser, TestSimple09)
 {  
   ss << R"zzz(
  - (⌈⌊z⌋-1⌉- z)
@@ -150,6 +150,78 @@ TEST_F(TestMathParser, TestSimple9)
   EXPECT_STREQ("-(floor(ceil(z) - 1) - z)", parser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestSimple10)
+{  
+  ss << R"zzz(
+   |x|
+)zzz";
+
+  EXPECT_STREQ("abs(x)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple11)
+{  
+  ss << R"zzz(
+   ||x||
+)zzz";
+
+  EXPECT_STREQ("abs(abs(x))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple12)
+{  
+  ss << R"zzz(
+   | |x| |
+)zzz";
+
+  EXPECT_STREQ("abs(abs(x))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple13)
+{  
+  ss << R"zzz(
+   |x + 1 | * | z-2|
+)zzz";
+
+  EXPECT_STREQ("abs(x + 1) * abs(z - 2)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple14)
+{  
+  ss << R"zzz(
+   |-|x-1| * |z||
+)zzz";
+
+  EXPECT_STREQ("abs(-abs(x - 1) * abs(z))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple15)
+{  
+  ss << R"zzz(
+   x|z|x
+)zzz";
+
+  EXPECT_STREQ("((x*abs(z))*x)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple16)
+{  
+  ss << R"zzz(
+   |-|x+ |-z *|-2 /|(x+1)|||||
+)zzz";
+
+  EXPECT_STREQ("abs(-abs(x + abs(-z * abs(((-2) / (abs((x + 1))))))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestSimple17)
+{  
+  ss << R"zzz(
+   x|z
+)zzz";
+  
+  EXPECT_CALL(parser, error(_, "unbalanced vertical bars"));
+  EXPECT_STREQ("x|z", parser.doMath(ss).c_str());
+}
 TEST_F(TestMathParser, TestPower1)
 {  
   ss << R"zzz(
