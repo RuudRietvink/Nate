@@ -222,7 +222,7 @@ TEST_F(TestMathParser, TestSimple17)
   EXPECT_CALL(parser, error(_, "unbalanced vertical bars"));
   EXPECT_STREQ("x|z", parser.doMath(ss).c_str());
 }
-TEST_F(TestMathParser, TestPower1)
+TEST_F(TestMathParser, TestPower01)
 {  
   ss << R"zzz(
   2
@@ -233,7 +233,7 @@ TEST_F(TestMathParser, TestPower1)
   
 }
 
-TEST_F(TestMathParser, TestPower2)
+TEST_F(TestMathParser, TestPower02)
 {  
   ss << R"zzz(
      2
@@ -244,7 +244,7 @@ TEST_F(TestMathParser, TestPower2)
   
 }
 
-TEST_F(TestMathParser, TestPower3)
+TEST_F(TestMathParser, TestPower03)
 {  
   ss << R"zzz(
   2.5
@@ -255,7 +255,7 @@ TEST_F(TestMathParser, TestPower3)
 
 }
 
-TEST_F(TestMathParser, TestPower4)
+TEST_F(TestMathParser, TestPower04)
 {  
   ss << R"zzz(
   var - 3
@@ -266,7 +266,7 @@ TEST_F(TestMathParser, TestPower4)
   
 }
 
-TEST_F(TestMathParser, TestPower5)
+TEST_F(TestMathParser, TestPower05)
 {  
   ss << R"zzz(
   -(x - 3) * 4
@@ -277,7 +277,7 @@ TEST_F(TestMathParser, TestPower5)
 
 }
 
-TEST_F(TestMathParser, TestPower6)
+TEST_F(TestMathParser, TestPower06)
 {  
   ss << R"zzz(
         -(x - 3) * 4
@@ -288,7 +288,7 @@ TEST_F(TestMathParser, TestPower6)
   
 }
 
-TEST_F(TestMathParser, TestPower7)
+TEST_F(TestMathParser, TestPower07)
 {  
   ss << R"zzz(
    3
@@ -299,7 +299,7 @@ TEST_F(TestMathParser, TestPower7)
   EXPECT_STREQ("pow(x, pow(2, 3))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPower8)
+TEST_F(TestMathParser, TestPower08)
 {  
   ss << R"zzz(
   2.5
@@ -309,7 +309,7 @@ TEST_F(TestMathParser, TestPower8)
   EXPECT_STREQ("pow(x, 2.5) + 3", parser.doMath(ss).c_str());
   }
 
-TEST_F(TestMathParser, TestExponential1)
+TEST_F(TestMathParser, TestExponential01)
 {  
   ss << R"zzz(
   x
@@ -319,7 +319,7 @@ TEST_F(TestMathParser, TestExponential1)
   EXPECT_STREQ("exp(x)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestExponential2)
+TEST_F(TestMathParser, TestExponential02)
 {  
   ss << R"zzz(
   x
@@ -330,7 +330,7 @@ TEST_F(TestMathParser, TestExponential2)
   EXPECT_STREQ("exp(exp(x))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper1)
+TEST_F(TestMathParser, TestPowerSuper01)
 {
   ss << R"zzz(
 x²
@@ -340,7 +340,7 @@ x²
   
 }
 
-TEST_F(TestMathParser, TestPowerSuper2)
+TEST_F(TestMathParser, TestPowerSuper02)
 {
   ss << R"zzz(
 xᶻ⁻⁵
@@ -350,7 +350,7 @@ xᶻ⁻⁵
   
 }
 
-TEST_F(TestMathParser, TestPowerSuper3)
+TEST_F(TestMathParser, TestPowerSuper03)
 {
   ss << R"zzz(
 x⁽ᶻ ⁻ ⁵⁾
@@ -359,7 +359,7 @@ x⁽ᶻ ⁻ ⁵⁾
   EXPECT_STREQ("pow(x, (z - 5))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper4)
+TEST_F(TestMathParser, TestPowerSuper04)
 {
   ss << R"zzz(
   x
@@ -369,7 +369,7 @@ TEST_F(TestMathParser, TestPowerSuper4)
   EXPECT_STREQ("pow(55, x)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper5)
+TEST_F(TestMathParser, TestPowerSuper05)
 {
   ss << R"zzz(
            e⁵
@@ -382,7 +382,7 @@ xz
   EXPECT_STREQ("(x*pow(z, pow(z, pow(55, x - pow(2, exp(pow(e, 5)))))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper6)
+TEST_F(TestMathParser, TestPowerSuper06)
 {
   ss << R"zzz(
   xz⁵⁵
@@ -391,7 +391,7 @@ TEST_F(TestMathParser, TestPowerSuper6)
   EXPECT_STREQ("(x*pow(z, 55))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper7)
+TEST_F(TestMathParser, TestPowerSuper07)
 {
   ss << R"zzz(
         z
@@ -402,7 +402,7 @@ TEST_F(TestMathParser, TestPowerSuper7)
   EXPECT_STREQ("pow(55, z)x*", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestPowerSuper8)
+TEST_F(TestMathParser, TestPowerSuper08)
 {
   ss << R"zzz(
          z
@@ -412,7 +412,7 @@ TEST_F(TestMathParser, TestPowerSuper8)
   EXPECT_STREQ("x * pow(z, pow(55, z))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot1)
+TEST_F(TestMathParser, TestSquareRoot01)
 {  
   ss.clear();
   ss << R"zzz(
@@ -422,7 +422,7 @@ TEST_F(TestMathParser, TestSquareRoot1)
   EXPECT_STREQ("sqrt(4)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot2)
+TEST_F(TestMathParser, TestSquareRoot02)
 {  
   ss << R"zzz(
 √43.3E-5
@@ -431,7 +431,7 @@ TEST_F(TestMathParser, TestSquareRoot2)
   EXPECT_STREQ("sqrt(43.3E-5)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot3)
+TEST_F(TestMathParser, TestSquareRoot03)
 {  
   ss << R"zzz(
 √43.3E-5+4
@@ -440,7 +440,7 @@ TEST_F(TestMathParser, TestSquareRoot3)
   EXPECT_STREQ("sqrt(43.3E-5) + 4", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot4)
+TEST_F(TestMathParser, TestSquareRoot04)
 {  
   ss << R"zzz(
  _________
@@ -450,7 +450,7 @@ TEST_F(TestMathParser, TestSquareRoot4)
   EXPECT_STREQ("sqrt(43.3E-5 + 4)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot5)
+TEST_F(TestMathParser, TestSquareRoot05)
 {  
   ss << R"zzz(
  _________
@@ -460,7 +460,7 @@ TEST_F(TestMathParser, TestSquareRoot5)
   EXPECT_STREQ("sqrt(43 + 42.1)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot6)
+TEST_F(TestMathParser, TestSquareRoot06)
 {  
   ss << R"zzz(
   ___
@@ -471,7 +471,7 @@ TEST_F(TestMathParser, TestSquareRoot6)
   EXPECT_STREQ("sqrt(pow(4, x - z))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot7)
+TEST_F(TestMathParser, TestSquareRoot07)
 {  
   ss << R"zzz(
   ___
@@ -482,7 +482,7 @@ TEST_F(TestMathParser, TestSquareRoot7)
   EXPECT_STREQ("sqrt(pow(4, x - z)) + 3", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot8)
+TEST_F(TestMathParser, TestSquareRoot08)
 {  
   ss << R"zzz(
   ___________
@@ -493,7 +493,7 @@ TEST_F(TestMathParser, TestSquareRoot8)
   EXPECT_STREQ("sqrt((pow(4, x - z)) + 3)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestSquareRoot9)
+TEST_F(TestMathParser, TestSquareRoot09)
 {  
   ss << R"zzz(
   ___________
@@ -537,7 +537,7 @@ TEST_F(TestMathParser, TestSquareRoot12)
   EXPECT_STREQ("sqrt(((1 / (x + z))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide1)
+TEST_F(TestMathParser, TestDivide01)
 {  
   ss << R"zzz(
  1
@@ -548,7 +548,7 @@ TEST_F(TestMathParser, TestDivide1)
   EXPECT_STREQ("(1 / x)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide2)
+TEST_F(TestMathParser, TestDivide02)
 {  
   ss << R"zzz(
  1+x
@@ -559,7 +559,7 @@ TEST_F(TestMathParser, TestDivide2)
   EXPECT_STREQ("((1 + x) / (x + 1))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide3)
+TEST_F(TestMathParser, TestDivide03)
 {  
   ss << R"zzz(
   1+x
@@ -570,7 +570,7 @@ TEST_F(TestMathParser, TestDivide3)
   EXPECT_STREQ("((1 + x) / (x - 1))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide4)
+TEST_F(TestMathParser, TestDivide04)
 {  
   ss << R"zzz(
 ⎛  1  ⎞
@@ -581,7 +581,7 @@ TEST_F(TestMathParser, TestDivide4)
   EXPECT_STREQ("((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide5)
+TEST_F(TestMathParser, TestDivide05)
 {  
   ss << R"zzz(
     1+x
@@ -594,7 +594,7 @@ TEST_F(TestMathParser, TestDivide5)
   EXPECT_STREQ("((((1 + x) / z)) / (x - 1))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide6)
+TEST_F(TestMathParser, TestDivide06)
 {  
   ss << R"zzz(
       x-1
@@ -607,7 +607,7 @@ TEST_F(TestMathParser, TestDivide6)
   EXPECT_STREQ("((x - 1) / (((1 + x) / z)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide7)
+TEST_F(TestMathParser, TestDivide07)
 {  
   ss << R"zzz(
       x-1
@@ -622,7 +622,7 @@ TEST_F(TestMathParser, TestDivide7)
   EXPECT_STREQ("((((x - 1) / (((1 + x) / z)))) / ((x * x)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestDivide8)
+TEST_F(TestMathParser, TestDivide08)
 {  
   ss << R"zzz(
       x-1
@@ -637,7 +637,7 @@ TEST_F(TestMathParser, TestDivide8)
   EXPECT_STREQ("((x - 1) / (((((1 + x) / z)) / ((x * x)))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens1)
+TEST_F(TestMathParser, TestParens01)
 {  
   ss << R"zzz(
 ⎛  1  ⎞
@@ -648,7 +648,7 @@ TEST_F(TestMathParser, TestParens1)
   EXPECT_STREQ("((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens2)
+TEST_F(TestMathParser, TestParens02)
 {  
   ss << R"zzz(
 1 + ⎛  1  ⎞
@@ -659,7 +659,7 @@ TEST_F(TestMathParser, TestParens2)
   EXPECT_STREQ("1 + ((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens3)
+TEST_F(TestMathParser, TestParens03)
 {  
   ss << R"zzz(
     ⎛  1  ⎞
@@ -670,7 +670,7 @@ TEST_F(TestMathParser, TestParens3)
   EXPECT_STREQ("1 + ((1 / (x + z)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens4)
+TEST_F(TestMathParser, TestParens04)
 {  
   ss << R"zzz(
     ⎛  1  ⎞  + 1
@@ -681,7 +681,7 @@ TEST_F(TestMathParser, TestParens4)
   EXPECT_STREQ("((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens5)
+TEST_F(TestMathParser, TestParens05)
 {  
   ss << R"zzz(
     ⎛  1  ⎞
@@ -692,7 +692,7 @@ TEST_F(TestMathParser, TestParens5)
   EXPECT_STREQ("((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens6)
+TEST_F(TestMathParser, TestParens06)
 {  
   ss << R"zzz(
 1+  ⎛  1  ⎞
@@ -703,7 +703,7 @@ TEST_F(TestMathParser, TestParens6)
   EXPECT_STREQ("1 + ((1 / (x + z))) + 1", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens7)
+TEST_F(TestMathParser, TestParens07)
 {  
   ss << R"zzz(
          x
@@ -715,7 +715,7 @@ TEST_F(TestMathParser, TestParens7)
   EXPECT_STREQ("pow(((1 / (x + z))), x)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestParens8)
+TEST_F(TestMathParser, TestParens08)
 {  
   ss << R"zzz(
          x + 1
@@ -728,7 +728,7 @@ TEST_F(TestMathParser, TestParens8)
 }
 
 
-TEST_F(TestMathParser, TestParens9)
+TEST_F(TestMathParser, TestParens09)
 {  
   ss << R"zzz(
          
@@ -788,7 +788,18 @@ TEST_F(TestMathParser, TestParens12)
   EXPECT_STREQ("pow(3, pow(((z / (x + z))), pow((pow(x, 2)), exp(2))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial)
+TEST_F(TestMathParser, TestBrackets01)
+{  
+  ss << R"zzz(
+    ⎡  z  ⎤
+   x⎢ ――― ⎥ ← 3
+    ⎣ x+z ⎦
+)zzz";
+
+  EXPECT_STREQ("x[(z / (x + z))] = 3", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial01)
 {  
   ss << R"zzz(
 2z
@@ -797,7 +808,7 @@ TEST_F(TestMathParser, TestMonomial)
   EXPECT_STREQ("(2*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial2)
+TEST_F(TestMathParser, TestMonomial02)
 {  
   ss << R"zzz(
 xz
@@ -806,7 +817,7 @@ xz
   EXPECT_STREQ("(x*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial3)
+TEST_F(TestMathParser, TestMonomial03)
 {  
   ss << R"zzz(
 2xz
@@ -815,7 +826,7 @@ TEST_F(TestMathParser, TestMonomial3)
   EXPECT_STREQ("((2*x)*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial4)
+TEST_F(TestMathParser, TestMonomial04)
 {  
   ss << R"zzz(
 -2.3xz
@@ -824,7 +835,7 @@ TEST_F(TestMathParser, TestMonomial4)
   EXPECT_STREQ("-((2.3*x)*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial5)
+TEST_F(TestMathParser, TestMonomial05)
 {  
   ss << R"zzz(
 +2.3varxz
@@ -833,7 +844,7 @@ TEST_F(TestMathParser, TestMonomial5)
   EXPECT_STREQ("+(((2.3*var)*x)*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial6)
+TEST_F(TestMathParser, TestMonomial06)
 {  
   ss << R"zzz(
 x³⁴z
@@ -842,7 +853,7 @@ x³⁴z
   EXPECT_STREQ("(pow(x, 34)*z)", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestMonomial7)
+TEST_F(TestMathParser, TestMonomial07)
 {  
   ss << R"zzz(
  _
@@ -852,7 +863,7 @@ TEST_F(TestMathParser, TestMonomial7)
   EXPECT_STREQ("(sqrt(4)*pow(x, 2))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula)
+TEST_F(TestMathParser, TestFormula01)
 {  
   ss << R"zzz(
        _________
@@ -864,7 +875,7 @@ TEST_F(TestMathParser, TestFormula)
   EXPECT_STREQ("-b + sqrt(((pow(b, 2) - ((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula2)
+TEST_F(TestMathParser, TestFormula02)
 {  
   ss << R"zzz(
       _________
@@ -876,7 +887,7 @@ TEST_F(TestMathParser, TestFormula2)
   EXPECT_STREQ("-b + ((sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula3)
+TEST_F(TestMathParser, TestFormula03)
 {  
   ss << R"zzz(
       _________
@@ -888,7 +899,7 @@ TEST_F(TestMathParser, TestFormula3)
   EXPECT_STREQ("((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula4)
+TEST_F(TestMathParser, TestFormula04)
 {  
   ss << R"zzz(
           ⎛  _         ⎞
@@ -907,7 +918,7 @@ TEST_F(TestMathParser, TestFormula4)
                "((42E5 / a))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestFormula5)
+TEST_F(TestMathParser, TestFormula05)
 {  
   ss << R"zzz( 
                                                       (x/2.4)
@@ -916,7 +927,7 @@ TEST_F(TestMathParser, TestFormula5)
           ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
           ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
           ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
-   z= x ∗ ⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
+   z← x ← ⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
           ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
           ⎜⎜        x   ⎟       ⎟
           ⎜⎜ ―――――――――――⎟       ⎟
@@ -928,11 +939,11 @@ TEST_F(TestMathParser, TestFormula5)
                "-pow(0.E4, -42.5E+3 + pow(x, pow((z - 5), pow(3, pow(55, 4)))))", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestAssignment1)
+TEST_F(TestMathParser, TestAssignment01)
 {  
   ss << R"zzz( 
                    _________
-   var= z =  -b + √ b² - 4ac ;
+   var← z ←  -b + √ b² - 4ac ;
              ―――――――――――――――
                  2a    
         
@@ -941,11 +952,11 @@ TEST_F(TestMathParser, TestAssignment1)
   EXPECT_STREQ("var = z = ((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
 }
 
-TEST_F(TestMathParser, TestAssignment2)
+TEST_F(TestMathParser, TestAssignment02)
 {  
   ss << R"zzz( 
                 _________
-      z=  -b + √ b² - 4ac ;
+      z←  -b + √ b² - 4ac ;
           ―――――――――――――――
                 2a    
         

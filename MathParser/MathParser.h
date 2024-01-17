@@ -112,6 +112,7 @@ public:
 		Nested,
 		Parentheses,
 		Brackets,
+		Matrix,
 		Absolute,
 		Floor,
 		Ceiling,
@@ -261,11 +262,12 @@ private:
 	
 	void doMathMonomial(Math& aMath);
 	void doMathParentheses(Math& aMath);
+	void doMathBrackets(Math& aMath);
 	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
 	void doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper);
-	void doMathUpLeftOperator(Math& aMath, int aOperChar, Oper aOper);
+	void doMathUpLeftOperator(Math& aMath, uint32_t aOperChar, Oper aOper);
 	void doMathOperator(Math& aMath, Oper aOper, int x, int y);
 	void doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper);
 
@@ -279,8 +281,11 @@ private:
 	std::tuple<bool, OptArea> getRightToLeftSymbol(const Math& aMath, 
 																										 const Position& aRightPosition,
 																										 bool aAllowSpaces = false) const;
-	OptPosition findMatchingBigParens(const Math& aMath, 
-																 const Position& aLeftPosition) const;
+	OptPosition findMatchingBig(const Math& aMath, 
+														  const Position& aLeftPosition,
+															uint32_t aLeftChar,
+															uint32_t aRightChar,
+															const char* aDesc) const;
 	OptPosition findRepeatingRight(const Math& aMath, 
 																 const Position& aLeftPosition,
 																 uint32_t aSearchChar) const;

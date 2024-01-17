@@ -10,14 +10,13 @@
 #include <clocale>
 
 namespace {
-	
 //   _
 // √╱  ― ⌊⌋⌈⌉|⏐⎛⎞⎝⎠⎜⎟
 // ⏨ю
 // ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
 // ₀₁₂₃₄₅₆₇₈₉ ₊₋₍₎ₐₑₒₓ
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
-// πτ𝑖⋅÷⁄×⇑⇓
+// πτ𝑖⋅÷⁄×⇑⇓←
 
 	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
 	const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
@@ -47,6 +46,7 @@ namespace {
 	const uint32_t DIVIDE_SIGN												= 0x00F7; // ÷
 	const uint32_t SUPER_OPEN													= 0x207D; // ⁽
 	const uint32_t SUPER_CLOSE												= 0x207E; // ⁾
+	const uint32_t ASSIGNMENT 												= 0x2190; // ←
 
 
 	template< class charT >
@@ -566,6 +566,7 @@ void MathParser::doPrepareMathParsing(Math& aMath)
 void MathParser::doMathParsing(Math& aMath)
 {
 	doMathParentheses(aMath);
+	doMathBrackets(aMath);
 	doMathSquareRoot(aMath);
 	doMathFractionBar(aMath);
 	doMathPower(aMath);
@@ -576,7 +577,7 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathDownRightOperator(aMath, operatorDivide(), Oper::Division);
 	doMathDownRightOperator(aMath, '+', Oper::Addition);
 	doMathDownRightOperator(aMath, '-', Oper::Subtraction);
-	doMathUpLeftOperator(aMath, '=', Oper::Assignment);
+	doMathUpLeftOperator(aMath, ASSIGNMENT, Oper::Assignment);
 }
 
 void MathParser::doMathParentheses(Math& aMath)
@@ -584,7 +585,7 @@ void MathParser::doMathParentheses(Math& aMath)
 	OptPosition leftUpperParenthesis = findAny(aMath, LEFT_PARENTHESIS_UPPER_HOOK);
 	if (leftUpperParenthesis)
 	{
-		OptPosition rightUpperParenthesis = findMatchingBigParens(aMath, *leftUpperParenthesis);
+		OptPosition rightUpperParenthesis = findMatchingBig(aMath, *leftUpperParenthesis, LEFT_PARENTHESIS_UPPER_HOOK, RIGHT_PARENTHESIS_UPPER_HOOK, "parentheses");
 		if (rightUpperParenthesis)
 		{
 			OptPosition leftLowerParenthesis = findMatchingDown(aMath, *leftUpperParenthesis, 
@@ -610,17 +611,64 @@ void MathParser::doMathParentheses(Math& aMath)
 				}
 				else
 				{
-					error(mathPos(aMath, *rightUpperParenthesis), "missing matching ⎞ at the right of a ⎛");
+					error(mathPos(aMath, *rightUpperParenthesis), "missing matching ⎠ or ⎟ below ⎞");
 				}
 			}
 			else
 			{
-				error(mathPos(aMath, *leftLowerParenthesis), "missing matching ⎝ or ⎜ below ⎞");
+				error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎝ or ⎜ below ⎞");
 			}
 		}
 		else
 		{
-			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎠ or ⎟ below ⎞");
+			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎞ at the right of a ⎛");
+		}
+	}
+	//printDebugMath(aMath, __FUNCTION__);
+}
+
+void MathParser::doMathBrackets(Math& aMath)
+{
+	OptPosition leftUpperBracket = findAny(aMath, LEFT_SQUARE_BRACKET_UPPER_CORNER);
+	if (leftUpperBracket)
+	{
+		OptPosition rightUpperBracket = findMatchingBig(aMath, *leftUpperBracket, LEFT_SQUARE_BRACKET_UPPER_CORNER, RIGHT_SQUARE_BRACKET_UPPER_CORNER, "brackets");
+		if (rightUpperBracket)
+		{
+			OptPosition leftLowerBracket = findMatchingDown(aMath, *leftUpperBracket, 
+																											LEFT_SQUARE_BRACKET_EXTENSION,
+																											LEFT_SQUARE_BRACKET_LOWER_CORNER);
+			if (leftLowerBracket)
+			{
+				OptPosition rightLowerBracket = findMatchingDown(aMath, *rightUpperBracket, 
+																											   RIGHT_SQUARE_BRACKET_EXTENSION,
+																											   RIGHT_SQUARE_BRACKET_LOWER_CORNER);
+				if (rightLowerBracket)
+				{
+					Position leftPos = Position{ leftUpperBracket->x+1, leftUpperBracket->y };
+					Position rightPos = Position{ rightLowerBracket->x - 1, rightLowerBracket->y };
+					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
+					
+					//printDebugMath(sub, __FUNCTION__);
+					doMathParsing(sub);
+					embedSubMath(aMath, sub, Oper::Brackets, Area{ *leftUpperBracket, *rightLowerBracket });
+
+					//printDebugMath(aMath, __FUNCTION__);
+					doMathParsing(aMath);
+				}
+				else
+				{
+					error(mathPos(aMath, *rightUpperBracket), "missing matching ⎦ or ⎢ below ⎤");
+				}
+			}
+			else
+			{
+				error(mathPos(aMath, *leftUpperBracket), "missing matching ⎦ or ⎢ below ⎤");
+			}
+		}
+		else
+		{
+			error(mathPos(aMath, *leftUpperBracket), "missing matching ⎤ at the right of a ⎡");
 		}
 	}
 	//printDebugMath(aMath, __FUNCTION__);
@@ -926,7 +974,7 @@ void MathParser::doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper)
 	}
 }
 
-void MathParser::doMathUpLeftOperator(Math& aMath, int aOperChar, Oper aOper)
+void MathParser::doMathUpLeftOperator(Math& aMath, uint32_t aOperChar, Oper aOper)
 {
 	for (int y = aMath.height() - 1; y >= 0; --y)
 	{
@@ -1542,31 +1590,34 @@ MathParser::OptPosition MathParser::findAny(
 	return std::nullopt;
 }
 
-MathParser::OptPosition MathParser::findMatchingBigParens(
+MathParser::OptPosition MathParser::findMatchingBig(
 				const Math& aMath, 
-				const Position& aLeftPosition) const
+				const Position& aLeftPosition,
+				uint32_t aLeftChar,
+				uint32_t aRightChar,
+				const char* aDesc) const
 {
 	OptPosition result;
-	int parens = 1;
+	int nested = 1;
 
 	int x = aLeftPosition.x + 1;
 	int y = aLeftPosition.y;
 
-	for (; parens > 0 && x < aMath.width(); ++x)
+	for (; nested > 0 && x < aMath.width(); ++x)
 	{
-		if (aMath(y, x) == LEFT_PARENTHESIS_UPPER_HOOK)
+		if (aMath(y, x) == aLeftChar)
 		{
-			++parens;
+			++nested;
 		}
-		else if (aMath(y, x) == RIGHT_PARENTHESIS_UPPER_HOOK)
+		else if (aMath(y, x) == aRightChar)
 		{
-			--parens;
+			--nested;
 		}
 	}
 	
-	if (parens != 0)
+	if (nested != 0)
 	{
-		error(Position{ aLeftPosition.x, y }, "unbalanced parentheses");
+		error(Position{ aLeftPosition.x, y }, std::string("unbalanced ") + aDesc);
 	}
 
 	return Position{ x - 1, y };
