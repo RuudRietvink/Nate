@@ -8,9 +8,18 @@ using ::testing::_;
 
 class MockMathParser : public MathParser
 {
+public:      
+  MOCK_CONST_METHOD2(error, void(const Position&, const std::string&));
+};
+
+class ErrorMathParser : public MathParser
+{
 public:
       
-  MOCK_CONST_METHOD2(error, void(const Position&, const std::string&));
+  void error(const Position& aPosition, const std::string& aError) const override
+  {
+	  std::cerr << "(" << aPosition.y << "," << aPosition.x << "): " << aError << std::endl;
+  }
 };
 
 class TestMathParser : public ::testing::Test
@@ -22,22 +31,15 @@ class TestMathParser : public ::testing::Test
 
   TestMathParser()
   {
-    parser.addVariable("x");
-    parser.addVariable("x₂");
-    parser.addVariable("H₂O");
-    parser.addVariable("var");
-    parser.addVariable("z");
-    parser.addVariable("z_π");
-    parser.addVariable("a");
-    parser.addVariable("b");
-    parser.addVariable("c");
+    addVariables(parser);
+    addVariables(errorParser);
     ss.clear();
   }
 
   ~TestMathParser() override
   {
   }
-
+  
   void SetUp() override
   {
   }
@@ -46,8 +48,22 @@ class TestMathParser : public ::testing::Test
   {
   }
   
+  void addVariables(MathParser& aParser)
+  {
+    aParser.addVariable("x");
+    aParser.addVariable("x₂");
+    aParser.addVariable("H₂O");
+    aParser.addVariable("var");
+    aParser.addVariable("z");
+    aParser.addVariable("z_π");
+    aParser.addVariable("a");
+    aParser.addVariable("b");
+    aParser.addVariable("c");
+  }
+
   std::stringstream ss;
   MockMathParser parser;
+  ErrorMathParser errorParser;
 };
 
 TEST_F(TestMathParser, TestAddVariable)
@@ -791,12 +807,15 @@ TEST_F(TestMathParser, TestParens12)
 TEST_F(TestMathParser, TestBrackets01)
 {  
   ss << R"zzz(
-    ⎡  z  ⎤
-   x⎢ ――― ⎥ ← 3
-    ⎣ x+z ⎦
+    ⎛  z  ⎞
+    ⎜ x   ⎟
+  x[⎜ ――― ⎟] ← 3
+    ⎜  z  ⎟
+    ⎜ ――― ⎟
+    ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("x[(z / (x + z))] = 3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z)))] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial01)
@@ -927,7 +946,7 @@ TEST_F(TestMathParser, TestFormula05)
           ⎜⎜ √4x²-√(3/4)⎟       ⎟              ⎝ x+z ⎠                      4
           ⎜⎜ ―――――――――――⎟      z⎟    ⎛   ____ ⎞                          3⁵⁵
           ⎜⎜        ___ ⎟    32 ⎟    ⎜  ╱ 3   ⎟         -42.5E+3 + x⁽ᶻ⁻⁵⁾
-   z← x ← ⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
+   z← x * ⎜⎜       √x-2 ⎟ + e   ⎟ ⋅ √⎜ √ x -4 ⎟  × -0.E4
           ⎜⎜ 1.3 + ―――― ⎟       ⎟    ⎝        ⎠
           ⎜⎜        x   ⎟       ⎟
           ⎜⎜ ―――――――――――⎟       ⎟

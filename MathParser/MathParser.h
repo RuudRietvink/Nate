@@ -236,7 +236,7 @@ private:
 									 const Position& aPosition) const;
 	void fillUpMath(Math& aMath) const;
 	void printMath(const Math& aMath, const std::string& aText = "") const;
-	void printDebugMath(const Math& aMath, const std::string& aText = "") const;
+	void printDebugMath(bool print, const Math& aMath, const std::string& aText = "") const;
 	void doStartMathParsing(Math& aMath);
 	void doPrepareMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
@@ -310,14 +310,7 @@ private:
 	bool isOperator(uint32_t kar) const;
 	bool isBlank(uint32_t kar) const;
 	bool isEmpty(uint32_t kar) const;
-	bool badSomething(uint32_t kar) const;
 	bool badSomethingVertical(uint32_t kar) const;
-	OptPosition findSomethingLeft(const Math& aMath, 
-												        const Position& aLeftUpperPosition,
-															  const Position& aLeftLowerPosition) const;
-	OptPosition findSomethingRight(const Math& aMath, 
-												        const Position& aRightUpperPosition,
-															  const Position& aRightLowerPosition) const;
 	Area getEndExponent(const Math& aMath,
 										  const Position& aStartExponent) const;
 	Area join(const Area& aLeftArea, const Area& aRightArea) const;

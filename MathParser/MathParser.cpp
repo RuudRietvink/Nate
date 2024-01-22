@@ -116,17 +116,20 @@ std::string MathParser::doMath(Math& aMath)
 	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", MathValue::Type::Imaginary };
 
 	fillUpMath(aMath);
-	printDebugMath(aMath);
+	printDebugMath(false, aMath);
 	doStartMathParsing(aMath);
-	printDebugMath(aMath);
+	printDebugMath(false, aMath);
 	return mathString(aMath);
 }
 
 ////////////////////////// protected /////////////////////////////////
 
-void MathParser::printDebugMath(const Math& aMath, const std::string& aText) const
+void MathParser::printDebugMath(bool print, const Math& aMath, const std::string& aText) const
 {
-	printMath(aMath, aText);
+	if (print)
+	{
+		printMath(aMath, aText);
+	}
 }
 
 void MathParser::error(const Position& aPosition, const std::string& aError) const
@@ -555,11 +558,12 @@ void MathParser::doStartMathParsing(Math& aMath)
 void MathParser::doPrepareMathParsing(Math& aMath)
 {
 	doMathVariablesNumbers(aMath);
+	doMathParentheses(aMath);
 	doMathSimpleMatching(aMath, '(',          ')',           Oper::Parentheses, "parentheses");
 	doMathSimpleMatching(aMath, '[',          ']',           Oper::Brackets,    "brackets");
 	doMathSimpleMatching(aMath, '|',          '|',           Oper::Absolute,    "vertical bars");
 	doMathSimpleMatching(aMath, LEFT_CEILING, RIGHT_CEILING, Oper::Floor,       "floor delimiters");
-	doMathSimpleMatching(aMath, LEFT_FLOOR,   RIGHT_FLOOR,   Oper::Ceiling,      "ceiling delimiters");
+	doMathSimpleMatching(aMath, LEFT_FLOOR,   RIGHT_FLOOR,   Oper::Ceiling,     "ceiling delimiters");
 	doMathParsing(aMath);
 }
 
@@ -602,11 +606,11 @@ void MathParser::doMathParentheses(Math& aMath)
 					Position rightPos = Position{ rightLowerParenthesis->x - 1, rightLowerParenthesis->y };
 					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
 					
-					//printDebugMath(sub, __FUNCTION__);
+					printDebugMath(false, sub, __FUNCTION__);
 					doMathParsing(sub);
 					embedSubMath(aMath, sub, Oper::Parentheses, Area{ *leftUpperParenthesis, *rightLowerParenthesis });
 
-					//printDebugMath(aMath, __FUNCTION__);
+					printDebugMath(false, aMath, __FUNCTION__);
 					doMathParsing(aMath);
 				}
 				else
@@ -624,7 +628,7 @@ void MathParser::doMathParentheses(Math& aMath)
 			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎞ at the right of a ⎛");
 		}
 	}
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathBrackets(Math& aMath)
@@ -649,11 +653,11 @@ void MathParser::doMathBrackets(Math& aMath)
 					Position rightPos = Position{ rightLowerBracket->x - 1, rightLowerBracket->y };
 					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
 					
-					//printDebugMath(sub, __FUNCTION__);
+					printDebugMath(false, sub, __FUNCTION__);
 					doMathParsing(sub);
 					embedSubMath(aMath, sub, Oper::Brackets, Area{ *leftUpperBracket, *rightLowerBracket });
 
-					//printDebugMath(aMath, __FUNCTION__);
+					printDebugMath(false, aMath, __FUNCTION__);
 					doMathParsing(aMath);
 				}
 				else
@@ -671,7 +675,7 @@ void MathParser::doMathBrackets(Math& aMath)
 			error(mathPos(aMath, *leftUpperBracket), "missing matching ⎤ at the right of a ⎡");
 		}
 	}
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathFractionBar(Math& aMath)
@@ -679,7 +683,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 	OptPosition leftHorizontalBar = findAny(aMath, HORIZONTAL_BAR);
 	if (leftHorizontalBar)
 	{
-		printDebugMath(aMath, __FUNCTION__);
+		printDebugMath(false, aMath, __FUNCTION__);
 		OptPosition rightHorizontalBar = findRepeatingRight(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
 
 		Math subNumerator;
@@ -691,7 +695,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
 			Area areaNumerator = Area{ *leftUpperPosition, rightPos };
 			subNumerator = getSubMath(aMath, areaNumerator);
-			printDebugMath(subNumerator);
+			printDebugMath(false, subNumerator);
 
 			OptPosition leftLowerPosition = findBottomOfFraction(aMath, *leftHorizontalBar, rightHorizontalBar->x);
 			if (leftLowerPosition)
@@ -701,7 +705,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				rightPos = Position{ rightHorizontalBar->x, leftLowerPosition->y };
 				Area areaDenomenator = Area{ leftPos, rightPos };
 				subDenomenator = getSubMath(aMath, areaDenomenator);
-				printDebugMath(subDenomenator);
+				printDebugMath(false, subDenomenator);
 		
 				doMathParsing(subNumerator);
 				doMathParsing(subDenomenator);
@@ -709,7 +713,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				Area area = join(areaNumerator, areaDenomenator);
 				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, area);
 				
-				printDebugMath(aMath);
+				printDebugMath(false, aMath);
 				doMathParsing(aMath);
 			}
 			else
@@ -721,7 +725,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 		{
 				error(mathPos(aMath, *leftHorizontalBar), "expected some expression above division bar");
 		}
-		printDebugMath(aMath);
+		printDebugMath(false, aMath);
 	}
 }
 
@@ -745,12 +749,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			
 			Position rightPos = Position{ lastRootBar->x, squareRoot->y };
 			Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-			//printDebugMath(sub, __FUNCTION__);
+			printDebugMath(false, sub, __FUNCTION__);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
 			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos });
 			
-			//printDebugMath(aMath, __FUNCTION__);
+			printDebugMath(false, aMath, __FUNCTION__);
 			doMathParsing(aMath);
 		}
 		else
@@ -760,12 +764,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			if (symbol)
 			{
 				Math sub = getSubMath(aMath, *symbol);
-				//printDebugMath(sub, __FUNCTION__);
+				printDebugMath(false, sub, __FUNCTION__);
 			  doMathParsing(sub);
 				embedSubMath(aMath, sub, Oper::SquareRoot, *symbol);
 				spaceMath(aMath, Area{ *squareRoot, *squareRoot });
 				
-				//printDebugMath(aMath, __FUNCTION__);
+				printDebugMath(false, aMath, __FUNCTION__);
 			  doMathParsing(aMath);
 			}
 			else
@@ -774,7 +778,7 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			}
 		}
 	}
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathPower(Math& aMath)
@@ -783,11 +787,11 @@ void MathParser::doMathPower(Math& aMath)
 
 	if (powerFound)
 	{
-		//printDebugMath(aMath, __FUNCTION__);
+		printDebugMath(false, aMath, __FUNCTION__);
 		Math exp = getSubMath(aMath, expArea);
-		//printDebugMath(exp);
+		printDebugMath(false, exp);
 		Math base = getSubMath(aMath, baseArea);
-		//printDebugMath(base);
+		printDebugMath(false, base);
 		doMathParsing(exp);
 		doMathParsing(base);
 		
@@ -826,10 +830,10 @@ void MathParser::doMathPower(Math& aMath)
 			embedSubMath(aMath, base, exp, Oper::Power, baseArea);
 		}
 		
-		//printDebugMath(aMath);
+		printDebugMath(false, aMath);
 		doMathParsing(aMath);
 	}
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathVariablesNumbers(Math& aMath)
@@ -866,7 +870,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 		}
 	}
 		
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathMonomial(Math& aMath)
@@ -911,7 +915,7 @@ void MathParser::doMathMonomial(Math& aMath)
 						  embedSubMath(aMath, left, right, Oper::Monomial, area);
 						}
 
-						//printDebugMath(aMath, __FUNCTION__);
+						printDebugMath(false, aMath, __FUNCTION__);
 					}
 					else
 					{
@@ -927,7 +931,7 @@ void MathParser::doMathMonomial(Math& aMath)
 			}
 		}
 	}
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper)
@@ -948,10 +952,10 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 					{
 						Math right = getSubMath(aMath, *rightArea);
 						rightArea->upperLeft.x = x;
-						//printDebugMath(right, __FUNCTION__);
+						printDebugMath(false, right, __FUNCTION__);
 						doMathParsing(right);
 						embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
-						//printDebugMath(aMath, __FUNCTION__);
+						printDebugMath(false, aMath, __FUNCTION__);
 					}
 				}
 			}
@@ -999,13 +1003,13 @@ void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
 		{
 			Math left = getSubMath(aMath, *leftArea);
 			Math right = getSubMath(aMath, *rightArea);
-			//printDebugMath(left, __FUNCTION__);
+			printDebugMath(false, left, __FUNCTION__);
 			doMathParsing(left);
-			//printDebugMath(right, __FUNCTION__);
+			printDebugMath(false, right, __FUNCTION__);
 			doMathParsing(right);
 			Area area = join(*leftArea, *rightArea);
 			embedSubMath(aMath, left, right, aOper, area);
-			//printDebugMath(aMath, __FUNCTION__);
+			printDebugMath(false, aMath, __FUNCTION__);
 		}
 	}
 	else
@@ -1109,7 +1113,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 		}
 	}
 		
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc)
@@ -1183,21 +1187,25 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 							lastOpen = false;
 						}
 
-						if (y > 0)
+						for (int up = 1; y - up > 0; ++up)
 						{
-							uint32_t upKar = aMath(y-1, x);
+							uint32_t upKar = aMath(y - up, x);
 							if (!isBlank(upKar) && !badSomethingVertical(upKar))
 							{
-								upY = y - 1;
+								upY = y - up;
+							}
+							else
+							{
+								break;
 							}
 						}
-
-					  if (y < aMath.height() - 1)
+						
+						for (int down = 1; y + down < aMath.height() - 1; ++down)
 						{
-							uint32_t downKar = aMath(y+1, x);
+							uint32_t downKar = aMath(y + down, x);
 							if (!isBlank(downKar) && !badSomethingVertical(downKar))
 							{
-								downY = y + 1;
+								downY = y + down;
 							}
 						}
 					}
@@ -1227,7 +1235,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 		}
 	}
 
-	//printDebugMath(aMath, __FUNCTION__);
+	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 bool MathParser::isPartOfNumber(uint32_t kar) const
@@ -1673,63 +1681,6 @@ MathParser::OptPosition MathParser::findMatchingDown(
 bool MathParser::badSomethingVertical(uint32_t kar) const
 {
 	return (kar == HORIZONTAL_BAR || kar == ROOT_BAR);
-}
-
-bool MathParser::badSomething(uint32_t kar) const
-{
-	return (kar == ROOT_DIAGONAL);
-}
-
-MathParser::OptPosition MathParser::findSomethingLeft(
-				const Math& aMath, 
-				const Position& aLeftUpperPosition,
-				const Position& aLeftLowerPosition) const
-{
-	for (int x = aLeftUpperPosition.x - 1; x > 0 && x > aLeftUpperPosition.x - 4; --x)
-	{
-		for (int y = aLeftUpperPosition.y; y < aLeftLowerPosition.y; ++y)
-		{
-			if (badSomething(aMath(y, x)))
-			{
-				return std::nullopt;
-			}
-		}
-		for (int y = aLeftUpperPosition.y; y < aLeftLowerPosition.y; ++y)
-		{
-			if (aMath(y, x) != SPACE)
-			{
-				return Position{ x, y };
-			}
-		}
-	}
-
-	return std::nullopt;
-}
-
-MathParser::OptPosition MathParser::findSomethingRight(
-				const Math& aMath, 
-				const Position& aRightUpperPosition,
-				const Position& aRightLowerPosition) const
-{
-	for (int x = aRightUpperPosition.x + 1; x < aMath.width() && x <= aRightUpperPosition.x + 4; ++x)
-	{
-		for (int y = aRightUpperPosition.y; y < aRightLowerPosition.y; ++y)
-		{
-			if (badSomething(aMath(y, x)))
-			{
-				return std::nullopt;
-			}
-		}
-		for (int y = aRightUpperPosition.y; y < aRightLowerPosition.y; ++y)
-		{
-			if (aMath(y, x) != SPACE)
-			{
-				return Position{ x, y };
-			}
-		}
-	}
-
-	return std::nullopt;
 }
 
 MathParser::OptPosition MathParser::findDiagonalRightUp(
