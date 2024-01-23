@@ -124,6 +124,7 @@ public:
 		Addition,
 		Subtraction,
 		Symbol,
+		Constant,
 		Number,
 		Monomial,
 		UnaryMinus,
@@ -270,6 +271,8 @@ private:
 	void doMathUpLeftOperator(Math& aMath, uint32_t aOperChar, Oper aOper);
 	void doMathOperator(Math& aMath, Oper aOper, int x, int y);
 	void doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper);
+	OptArea findBigBlock(Math& aMath, const std::vector<uint32_t>& aLeftCodes,
+											const std::vector<uint32_t>& aRightCodes, const char* aDesc);
 
 	OptPosition findAny(const Math& aMath, 
 											uint32_t aSearchChar) const;
@@ -342,6 +345,7 @@ private:
 									int x,
 									int y) const;
 	void addSymbol(const Symbol& aSymbol);
+	std::string u2s(uint32_t aChar);
 
 	uint32_t mTabSize = 4;
 	std::map<std::string, Symbol> mSymbols;

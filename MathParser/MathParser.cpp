@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cctype>
 #include <clocale>
+#include <format>
 
 namespace {
 //   _
@@ -39,6 +40,7 @@ namespace {
 	const uint32_t ROOT_DIAGONAL											= 0x2571; //  ╱
 	const uint32_t SQUARE_ROOT												= 0x221A; // √
   const uint32_t E																	= 0x1D452;// 𝑒
+  const uint32_t PI																	= 0x03C0;// π
   const uint32_t MULTIPLY_X													= 0x00D7; // ×
   const uint32_t MULTIPLY_STAR											= 0x2217; // ∗
   const uint32_t MULTIPLY_DOT												= 0x22C5; // ⋅
@@ -48,15 +50,6 @@ namespace {
 	const uint32_t SUPER_CLOSE												= 0x207E; // ⁾
 	const uint32_t ASSIGNMENT 												= 0x2190; // ←
 
-
-	template< class charT >
-	bool isalpha( charT ch, const std::locale& loc ) {
-			return std::use_facet<std::ctype<charT>>(loc).is(std::ctype_base::alpha, ch);
-	}
-	template< class charT >
-	bool isdigit( charT ch, const std::locale& loc ) {
-			return std::use_facet<std::ctype<charT>>(loc).is(std::ctype_base::digit, ch);
-	}
 }
 
 ////////////////////////// public  /////////////////////////////////
@@ -134,7 +127,7 @@ void MathParser::printDebugMath(bool print, const Math& aMath, const std::string
 
 void MathParser::error(const Position& aPosition, const std::string& aError) const
 {
-	std::cerr << "(" << aPosition.y << "," << aPosition.x << "): " << aError << std::endl;
+	std::cerr << "(y:" << aPosition.y << ", x:" << aPosition.x << "): " << aError << std::endl;
 }
 
 std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const
@@ -289,6 +282,14 @@ bool MathParser::isNumber(const std::string& aInput) const
 ////////////////////////// private /////////////////////////////////
 
 std::locale MathParser::m_localeUtf8("en_US.UTF8");
+
+std::string MathParser::u2s(uint32_t aChar)
+{
+	std::string result;
+	auto back = std::back_insert_iterator<std::string>(result);
+	utf8::append(aChar, back);
+	return result;
+}
 
 std::string MathParser::popBack(const std::string& aInput) const
 {
@@ -584,98 +585,88 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathUpLeftOperator(aMath, ASSIGNMENT, Oper::Assignment);
 }
 
-void MathParser::doMathParentheses(Math& aMath)
+ MathParser::OptArea MathParser::findBigBlock(Math& aMath, const std::vector<uint32_t>& aLeftCodes,
+																						  const std::vector<uint32_t>& aRightCodes, const char* aDesc)
 {
-	OptPosition leftUpperParenthesis = findAny(aMath, LEFT_PARENTHESIS_UPPER_HOOK);
-	if (leftUpperParenthesis)
+	OptPosition leftUpper = findAny(aMath, aLeftCodes[0]);
+	if (leftUpper)
 	{
-		OptPosition rightUpperParenthesis = findMatchingBig(aMath, *leftUpperParenthesis, LEFT_PARENTHESIS_UPPER_HOOK, RIGHT_PARENTHESIS_UPPER_HOOK, "parentheses");
-		if (rightUpperParenthesis)
+		OptPosition rightUpper = findMatchingBig(aMath, *leftUpper, aLeftCodes[0], aRightCodes[0], aDesc);
+		if (rightUpper)
 		{
-			OptPosition leftLowerParenthesis = findMatchingDown(aMath, *leftUpperParenthesis, 
-																													LEFT_PARENTHESIS_EXTENSION,
-																													LEFT_PARENTHESIS_LOWER_HOOK);
-			if (leftLowerParenthesis)
+			OptPosition leftLower = findMatchingDown(aMath, *leftUpper, aLeftCodes[1], aLeftCodes[2]);
+			if (leftLower)
 			{
-				OptPosition rightLowerParenthesis = findMatchingDown(aMath, *rightUpperParenthesis, 
-																													 	 RIGHT_PARENTHESIS_EXTENSION,
-																														 RIGHT_PARENTHESIS_LOWER_HOOK);
-				if (rightLowerParenthesis)
+				OptPosition rightLower = findMatchingDown(aMath, *rightUpper, aRightCodes[1], aRightCodes[2]);
+				if (rightLower)
 				{
-					Position leftPos = Position{ leftUpperParenthesis->x+1, leftUpperParenthesis->y };
-					Position rightPos = Position{ rightLowerParenthesis->x - 1, rightLowerParenthesis->y };
-					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-					
-					printDebugMath(false, sub, __FUNCTION__);
-					doMathParsing(sub);
-					embedSubMath(aMath, sub, Oper::Parentheses, Area{ *leftUpperParenthesis, *rightLowerParenthesis });
-
-					printDebugMath(false, aMath, __FUNCTION__);
-					doMathParsing(aMath);
+					Position leftPos = Position{ leftUpper->x, leftUpper->y };
+					Position rightPos = Position{ rightLower->x, rightLower->y };
+					return Area{ leftPos, rightPos };
 				}
 				else
 				{
-					error(mathPos(aMath, *rightUpperParenthesis), "missing matching ⎠ or ⎟ below ⎞");
+					error(mathPos(aMath, *rightUpper), std::format("missing matching {} or {} below {}", 
+																												 u2s(aRightCodes[2]), u2s(aRightCodes[1]), u2s(aRightCodes[0])));
 				}
 			}
 			else
 			{
-				error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎝ or ⎜ below ⎞");
+				error(mathPos(aMath, *leftUpper), std::format("missing matching {} or {} below {}", 
+																											u2s(aLeftCodes[2]), u2s(aLeftCodes[1]), u2s(aLeftCodes[0])));
 			}
 		}
 		else
 		{
-			error(mathPos(aMath, *leftUpperParenthesis), "missing matching ⎞ at the right of a ⎛");
+			error(mathPos(aMath, *leftUpper), std::format("missing matching {} at the right of a {}", 
+																											u2s(aRightCodes[0]), u2s(aLeftCodes[0])));
 		}
 	}
-	printDebugMath(false, aMath, __FUNCTION__);
+
+	return std::nullopt;
+}
+
+
+void MathParser::doMathParentheses(Math& aMath)
+{
+	OptArea area = findBigBlock(aMath, { LEFT_PARENTHESIS_UPPER_HOOK, LEFT_PARENTHESIS_EXTENSION, LEFT_PARENTHESIS_LOWER_HOOK},
+															{ RIGHT_PARENTHESIS_UPPER_HOOK, RIGHT_PARENTHESIS_EXTENSION, RIGHT_PARENTHESIS_LOWER_HOOK},
+															"parentheses");
+
+	if (area)
+	{
+		Area subArea{ area->upperLeft.right(), area->lowerRight.left() };
+		Math sub = getSubMath(aMath, subArea);
+					
+		printDebugMath(true, sub, __FUNCTION__);
+		doMathParsing(sub);
+		embedSubMath(aMath, sub, Oper::Parentheses, *area);
+
+		printDebugMath(true, aMath, __FUNCTION__);
+		doMathParsing(aMath);
+		printDebugMath(false, aMath, __FUNCTION__);
+	}
 }
 
 void MathParser::doMathBrackets(Math& aMath)
 {
-	OptPosition leftUpperBracket = findAny(aMath, LEFT_SQUARE_BRACKET_UPPER_CORNER);
-	if (leftUpperBracket)
-	{
-		OptPosition rightUpperBracket = findMatchingBig(aMath, *leftUpperBracket, LEFT_SQUARE_BRACKET_UPPER_CORNER, RIGHT_SQUARE_BRACKET_UPPER_CORNER, "brackets");
-		if (rightUpperBracket)
-		{
-			OptPosition leftLowerBracket = findMatchingDown(aMath, *leftUpperBracket, 
-																											LEFT_SQUARE_BRACKET_EXTENSION,
-																											LEFT_SQUARE_BRACKET_LOWER_CORNER);
-			if (leftLowerBracket)
-			{
-				OptPosition rightLowerBracket = findMatchingDown(aMath, *rightUpperBracket, 
-																											   RIGHT_SQUARE_BRACKET_EXTENSION,
-																											   RIGHT_SQUARE_BRACKET_LOWER_CORNER);
-				if (rightLowerBracket)
-				{
-					Position leftPos = Position{ leftUpperBracket->x+1, leftUpperBracket->y };
-					Position rightPos = Position{ rightLowerBracket->x - 1, rightLowerBracket->y };
-					Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-					
-					printDebugMath(false, sub, __FUNCTION__);
-					doMathParsing(sub);
-					embedSubMath(aMath, sub, Oper::Brackets, Area{ *leftUpperBracket, *rightLowerBracket });
+	OptArea area = findBigBlock(aMath, { LEFT_SQUARE_BRACKET_UPPER_CORNER, LEFT_SQUARE_BRACKET_EXTENSION, LEFT_SQUARE_BRACKET_LOWER_CORNER},
+															{ RIGHT_SQUARE_BRACKET_UPPER_CORNER, RIGHT_SQUARE_BRACKET_EXTENSION, RIGHT_SQUARE_BRACKET_LOWER_CORNER},
+															"brackets");
 
-					printDebugMath(false, aMath, __FUNCTION__);
-					doMathParsing(aMath);
-				}
-				else
-				{
-					error(mathPos(aMath, *rightUpperBracket), "missing matching ⎦ or ⎢ below ⎤");
-				}
-			}
-			else
-			{
-				error(mathPos(aMath, *leftUpperBracket), "missing matching ⎦ or ⎢ below ⎤");
-			}
-		}
-		else
-		{
-			error(mathPos(aMath, *leftUpperBracket), "missing matching ⎤ at the right of a ⎡");
-		}
+	if (area)
+	{
+		Area subArea{ area->upperLeft.right(), area->lowerRight.left() };
+		Math sub = getSubMath(aMath, subArea);
+					
+		printDebugMath(true, sub, __FUNCTION__);
+		doMathParsing(sub);
+		embedSubMath(aMath, sub, Oper::Matrix, *area);
+
+		printDebugMath(true, aMath, __FUNCTION__);
+		doMathParsing(aMath);
+		printDebugMath(false, aMath, __FUNCTION__);
 	}
-	printDebugMath(false, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathFractionBar(Math& aMath)
@@ -855,7 +846,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 					embedSubMath(aMath, nbr, Oper::Number, Area{ startPos, endPos });
 				}
 			}
-			
+
 			if (endX < x && isVarStart(kar))
 			{
 				auto [endX, symbol] = parseVariable(aMath, x, y);
@@ -877,8 +868,8 @@ void MathParser::doMathMonomial(Math& aMath)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
-	int lastX = -1;
-	MathValue* lastMathValue = nullptr;
+		int lastX = -1;
+		MathValue* lastMathValue = nullptr;
 
 		for (int x = 0; x < aMath.width() - 1; ++x)
 		{
@@ -1014,7 +1005,8 @@ void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
 	}
 	else
 	{
-		error(Position{ x, y }, "Unmatched operator");
+		error(Position{ x, y }, std::format("Unmatched operator {}", static_cast<int>(aOper)));
+		error(Position{ x, y }, std::format("Unmatched operator {}", static_cast<int>(aOper)));
 	}
 }
 
@@ -1192,7 +1184,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 							uint32_t upKar = aMath(y - up, x);
 							if (!isBlank(upKar) && !badSomethingVertical(upKar))
 							{
-								upY = y - up;
+								upY = std::min(upY, y - up);
 							}
 							else
 							{
@@ -1205,7 +1197,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 							uint32_t downKar = aMath(y + down, x);
 							if (!isBlank(downKar) && !badSomethingVertical(downKar))
 							{
-								downY = y + down;
+								downY = std::max(downY, y + down);
 							}
 						}
 					}
@@ -1224,8 +1216,10 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 				{				
 					Area area{ Position{ startX, upY }, Position{ x, downY } };
 					Math parens = getSubMath(aMath, Area{ Position{ startX + 1, upY }, Position{ x - 1, downY } });
+				  printDebugMath(true, parens, __FUNCTION__);
 					doPrepareMathParsing(parens);
 					embedSubMath(aMath, parens, oper, area);
+				  printDebugMath(true, aMath, __FUNCTION__);
 				}
 			}
 			else if (kar == right)

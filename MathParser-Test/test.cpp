@@ -882,6 +882,14 @@ TEST_F(TestMathParser, TestMonomial07)
   EXPECT_STREQ("(sqrt(4)*pow(x, 2))", parser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestMonomial08)
+{  
+  ss << R"zzz(
+2πx
+)zzz";
+
+  EXPECT_STREQ("(2*z)", parser.doMath(ss).c_str());
+}
 TEST_F(TestMathParser, TestFormula01)
 {  
   ss << R"zzz(
