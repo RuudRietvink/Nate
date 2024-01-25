@@ -17,7 +17,7 @@ namespace {
 // ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
 // ₀₁₂₃₄₅₆₇₈₉ ₊₋₍₎ₐₑₒₓ
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
-// πτ𝑖⋅÷⁄×⇑⇓←
+// πτ𝑖𝑒⋅÷⁄×⇑⇓←
 
 	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
 	const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
@@ -59,14 +59,14 @@ void MathParser::setTabSize(uint32_t aTabSize)
 	mTabSize = aTabSize;
 }
 
-void MathParser::addVariable(const std::string& aName)
+void MathParser::addVariable(const std::string& aName, const std::string& aCodeName)
 {
-	addSymbol({ Symbol::Type::Variable, aName, MathValue::Type::Real });
+	addSymbol({ Symbol::Type::Variable, aName, aCodeName, MathValue::Type::Real });
 }
 
-void MathParser::addConstant(const std::string& aName, MathValue::Type aType)
+void MathParser::addConstant(const std::string& aName, const std::string& aCodeName, MathValue::Type aType)
 {
-	addSymbol({ Symbol::Type::Constant, aName, aType });
+	addSymbol({ Symbol::Type::Constant, aName, aCodeName, aType });
 }
 
 std::string MathParser::doMath(std::istream& aStream, int line)
@@ -104,9 +104,9 @@ std::string MathParser::doMath(std::istream& aStream, int line)
 
 std::string MathParser::doMath(Math& aMath)
 {
-	mSymbols["e"] = mSymbols["𝑒"] = Symbol{ Symbol::Type::Constant, "e", MathValue::Type::Real };
-	mSymbols["π"] = Symbol{ Symbol::Type::Constant, "π", MathValue::Type::Real };
-	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", MathValue::Type::Imaginary };
+	mSymbols["e"] = mSymbols["𝑒"] =                Symbol{ Symbol::Type::Constant, "e", "e", MathValue::Type::Real };
+	mSymbols["π"] = mSymbols["pi"] =               Symbol{ Symbol::Type::Constant, "pi", "pi", MathValue::Type::Real };
+	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", "i", MathValue::Type::Imaginary };
 
 	fillUpMath(aMath);
 	printDebugMath(false, aMath);
@@ -854,7 +854,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 				{
 					Position startPos{ x, y };
 					Position endPos{ endX, y };
-					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.name);
+					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.codeName);
 					embedSubMath(aMath, var, Oper::Symbol, Area{ startPos, endPos });
 				}
 			}
@@ -1274,7 +1274,7 @@ int MathParser::parseNumber(
 
 bool MathParser::isVarStart(uint32_t kar) const
 {
-	return isalpha(kar, m_localeUtf8);
+	return isalpha(kar, m_localeUtf8) || isSymbolGreek(kar);
 }
 
 bool MathParser::isVarNext(uint32_t kar) const
@@ -1471,6 +1471,11 @@ bool MathParser::isSymbolSuffix(uint32_t aKar) const
 {
 	return ((aKar >= 0x2080U && aKar <= 0x2089U) || // subscripts
 					(aKar >= 0x2090U && aKar <= 0x209CU));
+}
+
+bool MathParser::isSymbolGreek(uint32_t aKar) const
+{
+	return ((aKar >= 0x388U && aKar <= 0x3E1U));
 }
 
 MathParser::Area MathParser::getEndExponent(

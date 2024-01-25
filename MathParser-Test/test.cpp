@@ -50,15 +50,15 @@ class TestMathParser : public ::testing::Test
   
   void addVariables(MathParser& aParser)
   {
-    aParser.addVariable("x");
-    aParser.addVariable("x₂");
-    aParser.addVariable("H₂O");
-    aParser.addVariable("var");
-    aParser.addVariable("z");
-    aParser.addVariable("z_π");
-    aParser.addVariable("a");
-    aParser.addVariable("b");
-    aParser.addVariable("c");
+    aParser.addVariable("x", "x");
+    aParser.addVariable("x₂", "x_2");
+    aParser.addVariable("H₂O", "H2O");
+    aParser.addVariable("var", "var");
+    aParser.addVariable("z", "z");
+    aParser.addVariable("z_π", "z_pi");
+    aParser.addVariable("a", "a");
+    aParser.addVariable("b", "b");
+    aParser.addVariable("c", "c");
   }
 
   std::stringstream ss;
@@ -72,12 +72,12 @@ TEST_F(TestMathParser, TestAddVariable)
   EXPECT_CALL(parser, error(_, "Reserved name: j"));
   EXPECT_CALL(parser, error(_, "Reserved name: e"));
 
-  parser.addVariable("i");
-  parser.addVariable("j");
-  parser.addVariable("e");
-  parser.addVariable("E");
-  parser.addVariable("ij");
-  parser.addVariable("I");
+  parser.addVariable("i", "i");
+  parser.addVariable("j", "j");
+  parser.addVariable("e", "e");
+  parser.addVariable("E", "E");
+  parser.addVariable("ij", "ij");
+  parser.addVariable("I", "I");
 }
 
 TEST_F(TestMathParser, TestSimple01)
@@ -95,7 +95,7 @@ TEST_F(TestMathParser, TestSimple02)
  - (x₂- z)
 )zzz";
 
-  EXPECT_STREQ("-(x₂ - z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(x_2 - z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple03)
@@ -136,7 +136,7 @@ TEST_F(TestMathParser, TestSimple06)
  x
 )zzz";
 
-  EXPECT_STREQ("((1 / x) + ((2 / H₂O)) + (pow(x, 2) - z_π)) * 3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / x) + ((2 / H2O)) + (pow(x, 2) - z_pi)) * 3", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple07)
@@ -145,7 +145,7 @@ TEST_F(TestMathParser, TestSimple07)
  - (x₂[z-1]- z)
 )zzz";
 
-  EXPECT_STREQ("-(x₂[z - 1] - z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(x_2[z - 1] - z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple08)
@@ -888,7 +888,7 @@ TEST_F(TestMathParser, TestMonomial08)
 2πx
 )zzz";
 
-  EXPECT_STREQ("(2*z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((2*pi)*x)", parser.doMath(ss).c_str());
 }
 TEST_F(TestMathParser, TestFormula01)
 {  

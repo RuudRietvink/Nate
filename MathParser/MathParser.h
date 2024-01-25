@@ -202,17 +202,19 @@ public:
 		{
 			Variable,
 			Constant,
-			Number
+			Number,
+			Function
 		};
 
 		Type type = Type::Number;
 		std::string name;
+		std::string codeName;
 		MathValue::Type valueType = MathValue::Type::Real;
 	};
 	
 	MATHPARSER_API void setTabSize(uint32_t aTabSize);
-	MATHPARSER_API void addVariable(const std::string& aName);
-	MATHPARSER_API void addConstant(const std::string& aName, MathValue::Type aType);
+	MATHPARSER_API void addVariable(const std::string& aName, const std::string& aCodeName);
+	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aCodeName, MathValue::Type aType);
 	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
 	MATHPARSER_API std::string doMath(Math& aMath);
 	
@@ -320,6 +322,7 @@ private:
 	Area totalArea(const Math& aMath, const Area& aArea) const;
 	std::tuple<bool, bool, bool, Area, Area> findPower(Math& aMath) const;
 	bool isSymbolSuffix(uint32_t aKar) const;
+	bool isSymbolGreek(uint32_t aKar) const;
 	uint32_t getSuperscript(uint32_t aKar) const;
 	uint32_t optSuperscript(bool aCheckSuperScript, uint32_t aKar) const;
 
