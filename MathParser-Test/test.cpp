@@ -6,17 +6,17 @@
 
 using ::testing::_;
 
-class MockMathParser : public MathParser
+class MockMathParser : public nate::MathParser
 {
 public:      
-  MOCK_CONST_METHOD2(error, void(const Position&, const std::string&));
+  MOCK_CONST_METHOD2(error, void(const nate::InputPosition&, const std::string&));
 };
 
-class ErrorMathParser : public MathParser
+class ErrorMathParser : public nate::MathParser
 {
 public:
       
-  void error(const Position& aPosition, const std::string& aError) const override
+  void error(const nate::InputPosition& aPosition, const std::string& aError) const override
   {
 	  std::cerr << "(" << aPosition.y << "," << aPosition.x << "): " << aError << std::endl;
   }
@@ -48,7 +48,7 @@ class TestMathParser : public ::testing::Test
   {
   }
   
-  void addVariables(MathParser& aParser)
+  void addVariables(nate::MathParser& aParser)
   {
     aParser.addVariable("x", "x");
     aParser.addVariable("x₂", "x_2");

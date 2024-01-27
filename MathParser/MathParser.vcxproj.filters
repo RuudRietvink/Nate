@@ -18,9 +18,15 @@
     <ClInclude Include="MathParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MathTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MathParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MathTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

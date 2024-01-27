@@ -10,7 +10,8 @@
 #include <clocale>
 #include <format>
 
-namespace {
+namespace nate 
+{
 //   _
 // √╱  ― ⌊⌋⌈⌉|⏐⎛⎞⎝⎠⎜⎟
 // ⏨ю
@@ -19,39 +20,37 @@ namespace {
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
 // πτ𝑖𝑒⋅÷⁄×⇑⇓←
 
-	const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
-	const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
-	const uint32_t LEFT_PARENTHESIS_LOWER_HOOK				= 0x239D; // ⎝
-	const uint32_t RIGHT_PARENTHESIS_UPPER_HOOK				= 0x239E; // ⎞
-	const uint32_t RIGHT_PARENTHESIS_EXTENSION				= 0x239F; // ⎟
-	const uint32_t RIGHT_PARENTHESIS_LOWER_HOOK				= 0x23A0; // ⎠
-	const uint32_t LEFT_CEILING												= 0x2308; // ⌈
-	const uint32_t RIGHT_CEILING											= 0x2309; // ⌉
-	const uint32_t LEFT_FLOOR													= 0x230A; // ⌊
-	const uint32_t RIGHT_FLOOR												= 0x230B; // ⌋
-	const uint32_t LEFT_SQUARE_BRACKET_UPPER_CORNER		= 0x23A1; // ⎡
-	const uint32_t LEFT_SQUARE_BRACKET_EXTENSION  		= 0x23A2; // ⎢
-	const uint32_t LEFT_SQUARE_BRACKET_LOWER_CORNER		= 0x23A3; // ⎣
-	const uint32_t RIGHT_SQUARE_BRACKET_UPPER_CORNER	= 0x23A4; // ⎤
-	const uint32_t RIGHT_SQUARE_BRACKET_EXTENSION   	= 0x23A5; // ⎥
-	const uint32_t RIGHT_SQUARE_BRACKET_LOWER_CORNER	= 0x23A6; // ⎦
-	const uint32_t HORIZONTAL_BAR											= 0x2015; // ―
-	const uint32_t ROOT_BAR														= 0x005F; //   _
-	const uint32_t ROOT_DIAGONAL											= 0x2571; //  ╱
-	const uint32_t SQUARE_ROOT												= 0x221A; // √
-  const uint32_t E																	= 0x1D452;// 𝑒
-  const uint32_t PI																	= 0x03C0;// π
-  const uint32_t MULTIPLY_X													= 0x00D7; // ×
-  const uint32_t MULTIPLY_STAR											= 0x2217; // ∗
-  const uint32_t MULTIPLY_DOT												= 0x22C5; // ⋅
-	const uint32_t DIVIDE_SLASH												= 0x002F; // /
-	const uint32_t DIVIDE_SIGN												= 0x00F7; // ÷
-	const uint32_t SUPER_OPEN													= 0x207D; // ⁽
-	const uint32_t SUPER_CLOSE												= 0x207E; // ⁾
-	const uint32_t ASSIGNMENT 												= 0x2190; // ←
-
-}
-
+const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
+const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
+const uint32_t LEFT_PARENTHESIS_LOWER_HOOK				= 0x239D; // ⎝
+const uint32_t RIGHT_PARENTHESIS_UPPER_HOOK				= 0x239E; // ⎞
+const uint32_t RIGHT_PARENTHESIS_EXTENSION				= 0x239F; // ⎟
+const uint32_t RIGHT_PARENTHESIS_LOWER_HOOK				= 0x23A0; // ⎠
+const uint32_t LEFT_CEILING												= 0x2308; // ⌈
+const uint32_t RIGHT_CEILING											= 0x2309; // ⌉
+const uint32_t LEFT_FLOOR													= 0x230A; // ⌊
+const uint32_t RIGHT_FLOOR												= 0x230B; // ⌋
+const uint32_t LEFT_SQUARE_BRACKET_UPPER_CORNER		= 0x23A1; // ⎡
+const uint32_t LEFT_SQUARE_BRACKET_EXTENSION  		= 0x23A2; // ⎢
+const uint32_t LEFT_SQUARE_BRACKET_LOWER_CORNER		= 0x23A3; // ⎣
+const uint32_t RIGHT_SQUARE_BRACKET_UPPER_CORNER	= 0x23A4; // ⎤
+const uint32_t RIGHT_SQUARE_BRACKET_EXTENSION   	= 0x23A5; // ⎥
+const uint32_t RIGHT_SQUARE_BRACKET_LOWER_CORNER	= 0x23A6; // ⎦
+const uint32_t HORIZONTAL_BAR											= 0x2015; // ―
+const uint32_t ROOT_BAR														= 0x005F; //   _
+const uint32_t ROOT_DIAGONAL											= 0x2571; //  ╱
+const uint32_t SQUARE_ROOT												= 0x221A; // √
+const uint32_t E																	= 0x1D452;// 𝑒
+const uint32_t PI																	= 0x03C0;// π
+const uint32_t MULTIPLY_X													= 0x00D7; // ×
+const uint32_t MULTIPLY_STAR											= 0x2217; // ∗
+const uint32_t MULTIPLY_DOT												= 0x22C5; // ⋅
+const uint32_t DIVIDE_SLASH												= 0x002F; // /
+const uint32_t DIVIDE_SIGN												= 0x00F7; // ÷
+const uint32_t SUPER_OPEN													= 0x207D; // ⁽
+const uint32_t SUPER_CLOSE												= 0x207E; // ⁾
+const uint32_t ASSIGNMENT 												= 0x2190; // ←
+		
 ////////////////////////// public  /////////////////////////////////
 
 void MathParser::setTabSize(uint32_t aTabSize)
@@ -61,10 +60,10 @@ void MathParser::setTabSize(uint32_t aTabSize)
 
 void MathParser::addVariable(const std::string& aName, const std::string& aCodeName)
 {
-	addSymbol({ Symbol::Type::Variable, aName, aCodeName, MathValue::Type::Real });
+	addSymbol({ Symbol::Type::Variable, aName, aCodeName, NumberType::Real });
 }
 
-void MathParser::addConstant(const std::string& aName, const std::string& aCodeName, MathValue::Type aType)
+void MathParser::addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType)
 {
 	addSymbol({ Symbol::Type::Constant, aName, aCodeName, aType });
 }
@@ -104,9 +103,9 @@ std::string MathParser::doMath(std::istream& aStream, int line)
 
 std::string MathParser::doMath(Math& aMath)
 {
-	mSymbols["e"] = mSymbols["𝑒"] =                Symbol{ Symbol::Type::Constant, "e", "e", MathValue::Type::Real };
-	mSymbols["π"] = mSymbols["pi"] =               Symbol{ Symbol::Type::Constant, "pi", "pi", MathValue::Type::Real };
-	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", "i", MathValue::Type::Imaginary };
+	mSymbols["e"] = mSymbols["𝑒"] =                Symbol{ Symbol::Type::Constant, "e", "e", NumberType::Real };
+	mSymbols["π"] = mSymbols["pi"] =               Symbol{ Symbol::Type::Constant, "pi", "pi", NumberType::Real };
+	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", "i", NumberType::Imaginary };
 
 	fillUpMath(aMath);
 	printDebugMath(false, aMath);
@@ -125,7 +124,7 @@ void MathParser::printDebugMath(bool print, const Math& aMath, const std::string
 	}
 }
 
-void MathParser::error(const Position& aPosition, const std::string& aError) const
+void MathParser::error(const InputPosition& aPosition, const std::string& aError) const
 {
 	std::cerr << "(y:" << aPosition.y << ", x:" << aPosition.x << "): " << aError << std::endl;
 }
@@ -175,8 +174,8 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Division:
 	{
-		ss << "(" << code(Oper::Parentheses, aMathLeft) << " / "
-							<< code(Oper::Parentheses, aMathRight) << ")";
+		ss << "(" << code(Oper::Parentheses, aMathLeft, {}) << " / "
+							<< code(Oper::Parentheses, aMathRight, {}) << ")";
 		break;
 	}
 	case Oper::Addition:
@@ -267,7 +266,7 @@ bool MathParser::isSymbol(const std::string& aInput) const
 	return mSymbols.find(aInput) != mSymbols.end();
 }
 
-MathParser::Symbol MathParser::getSymbol(const std::string& aInput) const
+const Symbol& MathParser::getSymbol(const std::string& aInput) const
 {
 	return mSymbols.at(aInput);
 }
@@ -456,7 +455,7 @@ std::string MathParser::mathString(const Math& aMath) const
 	return ss.str();
 }
 
-MathParser::Math MathParser::createSubMath(
+Math MathParser::createSubMath(
 				const Math& aMath, 
 			  const Area& aArea, 
 				const std::string& aText) const
@@ -477,7 +476,7 @@ MathParser::Math MathParser::createSubMath(
 	return result;
 }
 
-MathParser::Math MathParser::getSubMath(
+Math MathParser::getSubMath(
 				const Math& aMath, 
 			  const Area& aArea) const
 {
@@ -499,7 +498,7 @@ MathParser::Math MathParser::getSubMath(
 	return result;
 }
 
-MathParser::MathValue* MathParser::embedSubMath(
+MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath, 
 				Oper aOper,
@@ -508,7 +507,7 @@ MathParser::MathValue* MathParser::embedSubMath(
 	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
 }
 
-MathParser::MathValue* MathParser::embedSubMath(
+MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
@@ -585,8 +584,8 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathUpLeftOperator(aMath, ASSIGNMENT, Oper::Assignment);
 }
 
- MathParser::OptArea MathParser::findBigBlock(Math& aMath, const std::vector<uint32_t>& aLeftCodes,
-																						  const std::vector<uint32_t>& aRightCodes, const char* aDesc)
+OptArea MathParser::findBigBlock(Math& aMath, const std::vector<uint32_t>& aLeftCodes,
+																const std::vector<uint32_t>& aRightCodes, const char* aDesc)
 {
 	OptPosition leftUpper = findAny(aMath, aLeftCodes[0]);
 	if (leftUpper)
@@ -885,20 +884,20 @@ void MathParser::doMathMonomial(Math& aMath)
 						Math left = getSubMath(aMath, leftArea);
 						Math right = getSubMath(aMath, rightArea);
 						Area area = join(leftArea, rightArea);
-						if (lastMathValue->type == MathValue::Type::Imaginary || rightMathValue->type == MathValue::Type::Imaginary)
+						if (lastMathValue->type == NumberType::Imaginary || rightMathValue->type == NumberType::Imaginary)
 						{
-						  if (lastMathValue->type == MathValue::Type::Imaginary && rightMathValue->type == MathValue::Type::Imaginary)
+						  if (lastMathValue->type == NumberType::Imaginary && rightMathValue->type == NumberType::Imaginary)
 							{
 								Math number = createSubMath(aMath, area, "-1");
 								embedSubMath(aMath, number, Oper::Number, area);
 							}
-							else if (lastMathValue->type == MathValue::Type::Imaginary)
+							else if (lastMathValue->type == NumberType::Imaginary)
 							{
-								embedSubMath(aMath, right, Oper::Number, area)->type = MathValue::Type::Imaginary;
+								embedSubMath(aMath, right, Oper::Number, area)->type = NumberType::Imaginary;
 							}
 							else
 							{
-								embedSubMath(aMath, left, Oper::Number, area)->type = MathValue::Type::Imaginary;
+								embedSubMath(aMath, left, Oper::Number, area)->type = NumberType::Imaginary;
 							}
 						}
 						else
@@ -1282,7 +1281,7 @@ bool MathParser::isVarNext(uint32_t kar) const
 	return isVarStart(kar) || isdigit(kar, m_localeUtf8) || isSymbolSuffix(kar) || kar == '_';
 }
 
-std::tuple<int, MathParser::Symbol> MathParser::parseVariable(
+std::tuple<int, Symbol> MathParser::parseVariable(
 				const Math& aMath,
 				int x,
 				int y) const
@@ -1323,13 +1322,13 @@ std::tuple<int, MathParser::Symbol> MathParser::parseVariable(
 	return std::make_tuple(x, symbol);
 }
 
-MathParser::Area MathParser::join(const Area& aLeftArea, const Area& aRightArea) const
+Area MathParser::join(const Area& aLeftArea, const Area& aRightArea) const
 {
   return Area{ Position{ std::min(aLeftArea.upperLeft.x, aRightArea.upperLeft.x), std::min(aLeftArea.upperLeft.y, aRightArea.upperLeft.y) },
 						   Position{ std::max(aLeftArea.lowerRight.x, aRightArea.lowerRight.x), std::max(aLeftArea.lowerRight.y, aRightArea.lowerRight.y) } };
 }
 
-MathParser::Area MathParser::totalArea(const Math& aMath, const Area& aArea) const
+Area MathParser::totalArea(const Math& aMath, const Area& aArea) const
 {
 	Area result = aArea;
 
@@ -1364,7 +1363,7 @@ bool MathParser::isEmpty(uint32_t kar) const
 	return isBlank(kar) || kar == BADCHAR;
 }
 
-MathParser::OptArea MathParser::getSymbol(
+OptArea MathParser::getSymbol(
 				const Math& aMath, 
 				const Position& aLeftPosition,
 				bool aAllowSpaces) const
@@ -1438,7 +1437,7 @@ MathParser::OptArea MathParser::getSymbol(
 	return result;
 }
 
-	std::tuple<bool, MathParser::OptArea> MathParser::getRightToLeftSymbol(
+	std::tuple<bool, OptArea> MathParser::getRightToLeftSymbol(
 				const Math& aMath, 
 				const Position& aRightPosition,
 				bool aAllowSpaces) const
@@ -1478,7 +1477,7 @@ bool MathParser::isSymbolGreek(uint32_t aKar) const
 	return ((aKar >= 0x388U && aKar <= 0x3E1U));
 }
 
-MathParser::Area MathParser::getEndExponent(
+Area MathParser::getEndExponent(
 				const Math& aMath,
 				const Position& aStartExponent) const
 {
@@ -1525,7 +1524,7 @@ uint32_t MathParser::getSuperscript(uint32_t aKar) const
 	return 0;
 }
 
-std::tuple<bool, bool, bool, MathParser::Area, MathParser::Area> MathParser::findPower(
+std::tuple<bool, bool, bool, Area, Area> MathParser::findPower(
 				Math& aMath) const
 {
 	for (int y = 0; y < aMath.height() - 1; ++y)
@@ -1563,7 +1562,7 @@ std::tuple<bool, bool, bool, MathParser::Area, MathParser::Area> MathParser::fin
 	return std::make_tuple(false, false, false, Area{}, Area{});
 }
 
-MathParser::OptPosition MathParser::findAnyOf(
+OptPosition MathParser::findAnyOf(
 				const Math& aMath, 
 				const std::initializer_list<uint32_t>& aSearchChars) const
 {
@@ -1579,7 +1578,7 @@ MathParser::OptPosition MathParser::findAnyOf(
 	return std::nullopt;
 }
 
-MathParser::OptPosition MathParser::findAny(
+OptPosition MathParser::findAny(
 				const Math& aMath, 
 				uint32_t aSearchChar) const
 {
@@ -1597,7 +1596,7 @@ MathParser::OptPosition MathParser::findAny(
 	return std::nullopt;
 }
 
-MathParser::OptPosition MathParser::findMatchingBig(
+OptPosition MathParser::findMatchingBig(
 				const Math& aMath, 
 				const Position& aLeftPosition,
 				uint32_t aLeftChar,
@@ -1630,7 +1629,7 @@ MathParser::OptPosition MathParser::findMatchingBig(
 	return Position{ x - 1, y };
 }
 
-MathParser::OptPosition MathParser::findRepeatingRight(
+OptPosition MathParser::findRepeatingRight(
 				const Math& aMath, 
 				const Position& aLeftLowerPosition, 
 				uint32_t aSearchChar) const
@@ -1648,7 +1647,7 @@ MathParser::OptPosition MathParser::findRepeatingRight(
 	return std::nullopt;
 }
 
-MathParser::OptPosition MathParser::findMatchingDown(
+OptPosition MathParser::findMatchingDown(
 				const Math& aMath, 
 				const Position& aUpperPosition,
 				uint32_t aInbetweenChar,
@@ -1682,7 +1681,7 @@ bool MathParser::badSomethingVertical(uint32_t kar) const
 	return (kar == HORIZONTAL_BAR || kar == ROOT_BAR);
 }
 
-MathParser::OptPosition MathParser::findDiagonalRightUp(
+OptPosition MathParser::findDiagonalRightUp(
 				const Math& aMath, 
 				const Position& aLeftLowerPosition,
 				uint32_t aInbetweenChar,
@@ -1727,7 +1726,7 @@ std::tuple<bool, bool> MathParser::isFractionBar(
 	return std::make_tuple(isBar, isBlank);
 }
 
-MathParser::OptPosition MathParser::findTopOfFraction(
+OptPosition MathParser::findTopOfFraction(
 				const Math& aMath, 
 				const Position& aLowerPosition,
 				int aRightX) const
@@ -1760,7 +1759,7 @@ MathParser::OptPosition MathParser::findTopOfFraction(
 	return result;
 }
 
-MathParser::OptPosition MathParser::findBottomOfFraction(
+OptPosition MathParser::findBottomOfFraction(
 				const Math& aMath, 
 				const Position& aUpperPosition,
 				int aRightX) const
@@ -1794,7 +1793,7 @@ MathParser::OptPosition MathParser::findBottomOfFraction(
 	return result;
 }
 
-MathParser::Position MathParser::mathPos(const Math& aMath, const Position& aPosition) const
+Position MathParser::mathPos(const Math& aMath, const Position& aPosition) const
 {
 	return Position{ (int)aMath.y + aPosition.y, (int)aMath.x + aPosition.x };
 }
@@ -1825,22 +1824,24 @@ void MathParser::mathError(
 }
 
 
-	void MathParser::addSymbol(const Symbol& aSymbol)
+void MathParser::addSymbol(const Symbol& aSymbol)
+{
+	if (aSymbol.name == "i" || aSymbol.name == "j" || aSymbol.name == "e" ||
+			aSymbol.name == "π" || aSymbol.name == "𝑖")
 	{
-		if (aSymbol.name == "i" || aSymbol.name == "j" || aSymbol.name == "e" ||
-				aSymbol.name == "π" || aSymbol.name == "𝑖")
+		error(Position(), "Reserved name: " + aSymbol.name);
+	}
+	else
+	{
+		if (mSymbols.find(aSymbol.name) != mSymbols.end())
 		{
-			error(Position(), "Reserved name: " + aSymbol.name);
+			error(Position(), "Duplicate name: " + aSymbol.name);
 		}
 		else
 		{
-			if (mSymbols.find(aSymbol.name) != mSymbols.end())
-			{
-				error(Position(), "Duplicate name: " + aSymbol.name);
-			}
-			else
-			{
-				mSymbols[aSymbol.name] = aSymbol;
-			}
+			mSymbols[aSymbol.name] = aSymbol;
 		}
 	}
+}
+
+} // namespace nate

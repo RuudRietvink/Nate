@@ -164,9 +164,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MathParser.h" />
+    <ClInclude Include="MathTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MathParser.cpp" />
+    <ClCompile Include="MathTypes.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
