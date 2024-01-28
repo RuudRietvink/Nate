@@ -50,10 +50,9 @@ private:
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
 	void fillUpMath(Math& aMath) const;
-	void printMath(const Math& aMath, const std::string& aText = "") const;
-	void printDebugMath(bool print, const Math& aMath, const std::string& aText = "") const;
+	void printMath(const Math& aMath, const std::string& aFunction, const std::string& aText = "") const;
+	void printDebugMath(bool print, const Math& aMath, const std::string& aFunction, const std::string& aText = "") const;
 	void doStartMathParsing(Math& aMath);
-	void doPrepareMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	MathValue* embedSubMath(Math& aMath, 
 										const Math& aSubMath1, 
@@ -161,6 +160,7 @@ private:
 									int y) const;
 	void addSymbol(const Symbol& aSymbol);
 	std::string u2s(uint32_t aChar);
+	std::string operToString(Oper aOper);
 
 	uint32_t mTabSize = 4;
 	std::map<std::string, Symbol> mSymbols;

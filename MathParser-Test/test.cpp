@@ -632,7 +632,7 @@ TEST_F(TestMathParser, TestDivide07)
     ――――
      z
  ――――――――――――
-   (x * x)
+   (c * x)
 )zzz";
 
   EXPECT_STREQ("((((x - 1) / (((1 + x) / z)))) / ((x * x)))", parser.doMath(ss).c_str());
@@ -809,7 +809,7 @@ TEST_F(TestMathParser, TestBrackets01)
   ss << R"zzz(
     ⎛  z  ⎞
     ⎜ x   ⎟
-  x[⎜ ――― ⎟] ← 3
+ x[ ⎜ ――― ⎟ ] ← 3
     ⎜  z  ⎟
     ⎜ ――― ⎟
     ⎝ x+z ⎠

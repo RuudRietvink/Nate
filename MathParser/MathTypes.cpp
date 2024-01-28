@@ -35,6 +35,17 @@ Position operator-(const Position& aLeft, const Position aRight)
 	return Position{ aLeft.x - aRight.x, aLeft.y - aRight.y };
 }
 
+
+Area Area::merge(const Area& otherArea)
+{
+	Position newUpperLeft { std::min(upperLeft.x,  otherArea.upperLeft.x),
+		                      std::min(upperLeft.y,  otherArea.upperLeft.y)};
+	Position newLowerRight{ std::max(lowerRight.x, otherArea.lowerRight.x),
+		                      std::max(lowerRight.y, otherArea.lowerRight.y)};
+	return Area{ newUpperLeft, newLowerRight };
+}
+
+
 MathValue::MathValue(uint32_t aValue)
 	: value(aValue),
 		oper(Oper::Number),

@@ -41,10 +41,13 @@ public:
 	friend Position operator-(const Position& aLeft, const Position aRight);
 };
 	
-struct Area
+class Area
 {
+public:
 	Position upperLeft;
 	Position lowerRight;
+	
+	Area merge(const Area& otherArea);
 };
 	
 struct Size
