@@ -25,21 +25,21 @@ public:
 	virtual MATHPARSER_API ~MathParser() {}
 
 	MATHPARSER_API void setTabSize(uint32_t aTabSize);
-	MATHPARSER_API void addVariable(const std::string& aName, const std::string& aCodeName);
-	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType);
+	MATHPARSER_API void addVariable(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
+	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
+	MATHPARSER_API void addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
 	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
 	
 protected:
 	MATHPARSER_API virtual void error(const InputPosition& aPosition, const std::string& aError) const;
 	
-	MATHPARSER_API virtual std::string code(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const;
-	MATHPARSER_API virtual uint32_t operatorMultiply() const;
-	MATHPARSER_API virtual uint32_t operatorDivide() const;
+	MATHPARSER_API virtual std::string codeOperator(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const;
+	MATHPARSER_API virtual std::string codeFunction(const std::string& aName, const Math& aMathArg) const;
 
 	MATHPARSER_API virtual bool isSymbol(const std::string& aInput) const;
 	MATHPARSER_API virtual bool isNumber(const std::string& aInput) const;
-	MATHPARSER_API virtual bool isVarStart(uint32_t kar) const;
-	MATHPARSER_API virtual bool isVarNext(uint32_t kar) const;
+	MATHPARSER_API virtual bool isSymbolStart(uint32_t kar) const;
+	MATHPARSER_API virtual bool isSymbolNext(uint32_t kar) const;
 
 private:
 	const Symbol& getSymbol(const std::string& aInput) const;
@@ -71,8 +71,8 @@ private:
 								 const Area& aArea);
 	
 	void doMathSuperscript(Math& aMath);
-	void doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc);
-	void doMathSimpleOperators(Math& aMath);
+	void doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc, bool addLeft = false);
+	void doMathRenameSimpleOperators(Math& aMath);
 	void doMathVariablesNumbers(Math& aMath);
 	
 	void doMathMonomial(Math& aMath);
@@ -92,9 +92,9 @@ private:
 											uint32_t aSearchChar) const;
 	OptPosition findAnyOf(const Math& aMath, 
 									  		const std::initializer_list<uint32_t>& aSearchChars) const;
-	OptArea getSymbol(const Math& aMath, 
-										const Position& aLeftPosition,
-										bool aAllowSpaces = false) const;
+	OptArea getRightArea(const Math& aMath, 
+									     const Position& aLeftPosition,
+										   bool aAllowSpaces = false) const;
 	std::tuple<bool, OptArea> getRightToLeftSymbol(const Math& aMath, 
 																										 const Position& aRightPosition,
 																										 bool aAllowSpaces = false) const;
@@ -151,7 +151,7 @@ private:
 	
 	std::string popFront(const std::string& aInput) const;
 	std::string popBack(const std::string& aInput) const;
-	std::tuple<int, Symbol> parseVariable(const Math& aMath,
+	std::tuple<int, Symbol> parseSymbol(const Math& aMath,
 																  			int x,
 																  			int y) const;
 	

@@ -58,14 +58,19 @@ void MathParser::setTabSize(uint32_t aTabSize)
 	mTabSize = aTabSize;
 }
 
-void MathParser::addVariable(const std::string& aName, const std::string& aCodeName)
+void MathParser::addVariable(const std::string& aName, const std::string& aCodeName, NumberType aType)
 {
-	addSymbol({ Symbol::Type::Variable, aName, aCodeName, NumberType::Real });
+	addSymbol({ Symbol::Type::Variable, aName, aCodeName, aType });
 }
 
 void MathParser::addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType)
 {
 	addSymbol({ Symbol::Type::Constant, aName, aCodeName, aType });
+}
+
+void MathParser::addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType)
+{
+	addSymbol({ Symbol::Type::Function, aName, aCodeName, aType });
 }
 
 std::string MathParser::doMath(std::istream& aStream, int line)
@@ -107,6 +112,10 @@ std::string MathParser::doMath(Math& aMath)
 	mSymbols["π"] = mSymbols["pi"] =               Symbol{ Symbol::Type::Constant, "pi", "pi", NumberType::Real };
 	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", "i", NumberType::Imaginary };
 
+	addFunction("sin", "sin");
+	addFunction("cos", "cos");
+	addFunction("tan", "tan");
+
 	fillUpMath(aMath);
 	printDebugMath(false, aMath);
 	doStartMathParsing(aMath);
@@ -129,7 +138,7 @@ void MathParser::error(const InputPosition& aPosition, const std::string& aError
 	std::cerr << "(y:" << aPosition.y << ", x:" << aPosition.x << "): " << aError << std::endl;
 }
 
-std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const
+std::string MathParser::codeOperator(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const
 {
 	std::stringstream ss;
 
@@ -149,7 +158,7 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Brackets:
 	{
-		ss << "[" << mathString(aMathLeft) << "]";
+		ss << mathString(aMathLeft) << "[" << mathString(aMathRight) << "]";
 		break;
 	}
 	case Oper::Ceiling:
@@ -174,8 +183,8 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Division:
 	{
-		ss << "(" << code(Oper::Parentheses, aMathLeft, {}) << " / "
-							<< code(Oper::Parentheses, aMathRight, {}) << ")";
+		ss << "(" << codeOperator(Oper::Parentheses, aMathLeft, {}) << " / "
+							<< codeOperator(Oper::Parentheses, aMathRight, {}) << ")";
 		break;
 	}
 	case Oper::Addition:
@@ -226,14 +235,7 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	}
 	case Oper::Monomial:
 	{
-		if (aMathRight.matrix[1][1].oper == Oper::Brackets)
-		{
-			ss << mathString(aMathLeft) << mathString(aMathRight);
-		}
-		else
-		{
-			ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
-		}
+		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
 		break;
 	}
 	case Oper::Assignment:
@@ -251,15 +253,16 @@ std::string MathParser::code(Oper aOper, const Math& aMathLeft, const Math& aMat
 	return ss.str();
 }
 
-uint32_t MathParser::operatorMultiply() const
+std::string MathParser::codeFunction(const std::string& aName, const Math& aMathArg) const
 {
-	return '*';
+	std::stringstream ss;
+			
+	ss << aName << "(" << mathString(aMathArg) << ")";
+
+	return ss.str();
+
 }
 
-uint32_t MathParser::operatorDivide() const
-{
-	return '/';
-}
 
 bool MathParser::isSymbol(const std::string& aInput) const
 {
@@ -439,7 +442,7 @@ std::string MathParser::mathString(const Math& aMath) const
 		{
 			if (col.isSubMatrix())
 			{
-				ss << code(col.oper, col.embedded1, col.embedded2);
+				ss << codeOperator(col.oper, col.embedded1, col.embedded2);
 			}
 			else if (col.hasSubMatrix())
 			{
@@ -551,16 +554,16 @@ void MathParser::spaceMath(
 void MathParser::doStartMathParsing(Math& aMath)
 {
 	doMathSuperscript(aMath);
-	doMathSimpleOperators(aMath);
+	doMathRenameSimpleOperators(aMath);
+	doMathVariablesNumbers(aMath);
 	doPrepareMathParsing(aMath);
 }
 
 void MathParser::doPrepareMathParsing(Math& aMath)
 {
-	doMathVariablesNumbers(aMath);
 	doMathParentheses(aMath);
 	doMathSimpleMatching(aMath, '(',          ')',           Oper::Parentheses, "parentheses");
-	doMathSimpleMatching(aMath, '[',          ']',           Oper::Brackets,    "brackets");
+	doMathSimpleMatching(aMath, '[',          ']',           Oper::Brackets,    "brackets", true);
 	doMathSimpleMatching(aMath, '|',          '|',           Oper::Absolute,    "vertical bars");
 	doMathSimpleMatching(aMath, LEFT_CEILING, RIGHT_CEILING, Oper::Floor,       "floor delimiters");
 	doMathSimpleMatching(aMath, LEFT_FLOOR,   RIGHT_FLOOR,   Oper::Ceiling,     "ceiling delimiters");
@@ -577,8 +580,8 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathMonomial(aMath);
 	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
 	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
-	doMathDownRightOperator(aMath, operatorMultiply(), Oper::Multiplication);
-	doMathDownRightOperator(aMath, operatorDivide(), Oper::Division);
+	doMathDownRightOperator(aMath, '*', Oper::Multiplication);
+	doMathDownRightOperator(aMath, '/', Oper::Division);
 	doMathDownRightOperator(aMath, '+', Oper::Addition);
 	doMathDownRightOperator(aMath, '-', Oper::Subtraction);
 	doMathUpLeftOperator(aMath, ASSIGNMENT, Oper::Assignment);
@@ -749,14 +752,13 @@ void MathParser::doMathSquareRoot(Math& aMath)
 		}
 		else
 		{
-			Position startSymbol = (*squareRoot).right();
-			OptArea symbol = getSymbol(aMath, startSymbol);
-			if (symbol)
+			OptArea rightArea = getRightArea(aMath, (*squareRoot).right());
+			if (rightArea)
 			{
-				Math sub = getSubMath(aMath, *symbol);
+				Math sub = getSubMath(aMath, *rightArea);
 				printDebugMath(false, sub, __FUNCTION__);
 			  doMathParsing(sub);
-				embedSubMath(aMath, sub, Oper::SquareRoot, *symbol);
+				embedSubMath(aMath, sub, Oper::SquareRoot, *rightArea);
 				spaceMath(aMath, Area{ *squareRoot, *squareRoot });
 				
 				printDebugMath(false, aMath, __FUNCTION__);
@@ -846,15 +848,18 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 				}
 			}
 
-			if (endX < x && isVarStart(kar))
+			if (endX < x && isSymbolStart(kar))
 			{
-				auto [endX, symbol] = parseVariable(aMath, x, y);
+				auto [endX, symbol] = parseSymbol(aMath, x, y);
 				if (endX >= x)
 				{
 					Position startPos{ x, y };
 					Position endPos{ endX, y };
 					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.codeName);
-					embedSubMath(aMath, var, Oper::Symbol, Area{ startPos, endPos });
+					Oper oper = symbol.type == Symbol::Type::Function
+						          ? Oper::FunctionCall
+						          : Oper::Symbol;
+					embedSubMath(aMath, var, oper, Area{ startPos, endPos });
 				}
 			}
 		}
@@ -878,6 +883,11 @@ void MathParser::doMathMonomial(Math& aMath)
 				{
 					if (lastX != -1)
 					{
+						if (aMath.matrix[y][x].mathValue->oper == Oper::Number)
+						{
+							error(Position{ x, y }, "Number without operator");
+						}
+
 						MathValueSPtr& rightMathValue = aMath.matrix[y][x].mathValue;
 						Area leftArea = lastMathValue->getArea(lastX, y);
 						Area rightArea = aMath.matrix[y][x].getArea(x, y);
@@ -902,12 +912,14 @@ void MathParser::doMathMonomial(Math& aMath)
 						}
 						else
 						{
+							printDebugMath(true, left, __FUNCTION__);
+							printDebugMath(true, right, __FUNCTION__);
 						  embedSubMath(aMath, left, right, Oper::Monomial, area);
 						}
 
-						printDebugMath(false, aMath, __FUNCTION__);
+						printDebugMath(true, aMath, __FUNCTION__);
 					}
-					else
+					else if (aMath.matrix[y][x].mathValue->oper != Oper::FunctionCall)
 					{
 						lastMathValue = &aMath.matrix[y][x];
 						lastX = x;
@@ -921,7 +933,7 @@ void MathParser::doMathMonomial(Math& aMath)
 			}
 		}
 	}
-	printDebugMath(false, aMath, __FUNCTION__);
+	printDebugMath(true, aMath, __FUNCTION__);
 }
 
 void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOper)
@@ -934,10 +946,21 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 			if (kar == aOperChar)
 			{
 				auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
-				// no operand left?
+
+				// not function at left?
+				if (leftArea)
+				{
+						const auto& left = aMath.mathValue(leftArea->upperLeft);
+						if (left.oper == Oper::FunctionCall)
+						{
+							leftArea = std::nullopt;
+						}
+				}
+
+				// no operand at left?
 				if (!leftArea)
 				{
-					auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
+					auto rightArea = getRightArea(aMath, Position{ x + 1, y }, true);
 					if (rightArea)
 					{
 						Math right = getSubMath(aMath, *rightArea);
@@ -988,7 +1011,7 @@ void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
 	auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x - 1, y }, true);
 	if (leftArea)
 	{
-		auto rightArea = getSymbol(aMath, Position{ x + 1, y }, true);
+		auto rightArea = getRightArea(aMath, Position{ x + 1, y }, true);
 		if (rightArea)
 		{
 			Math left = getSubMath(aMath, *leftArea);
@@ -1009,7 +1032,7 @@ void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
 	}
 }
 
-void MathParser::doMathSimpleOperators(Math& aMath)
+void MathParser::doMathRenameSimpleOperators(Math& aMath)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
@@ -1021,13 +1044,13 @@ void MathParser::doMathSimpleOperators(Math& aMath)
 					kar == MULTIPLY_X ||
 					kar == '*')
 			{
-				kar = operatorMultiply();
+				kar = '*';
 			}
 			else if (kar == DIVIDE_SIGN ||
 					     kar == DIVIDE_SLASH ||
 							 kar == '/')
 			{
-				kar = operatorDivide();
+				kar = '/';
 			}
 
 			if (kar != aMath(y, x))
@@ -1097,7 +1120,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 				x = x - 1 - blankCount;
 				Area area{ Position{ startX, y }, Position{ x, y } };
 				Math superMath = getSubMath(aMath, Area{ Position{ startX, y }, Position{ x, y } });
-				doPrepareMathParsing(superMath);
+				doStartMathParsing(superMath);
 				MathValue* mathValue = embedSubMath(aMath, superMath, Oper::Nested, area);
 				mathValue->superscript = true;
 			}
@@ -1107,7 +1130,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 	printDebugMath(false, aMath, __FUNCTION__);
 }
 
-void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc)
+void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right, Oper oper, const char* desc, bool addLeft)
 {
 	for (int y = 0; y < aMath.height(); ++y)
 	{
@@ -1213,11 +1236,28 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 				}
 				else
 				{				
-					Area area{ Position{ startX, upY }, Position{ x, downY } };
+					Area parensArea{ Position{ startX, upY }, Position{ x, downY } };
 					Math parens = getSubMath(aMath, Area{ Position{ startX + 1, upY }, Position{ x - 1, downY } });
 				  printDebugMath(true, parens, __FUNCTION__);
 					doPrepareMathParsing(parens);
-					embedSubMath(aMath, parens, oper, area);
+					if (addLeft)
+					{
+						auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ startX - 1, y });
+						if (!leftArea)
+						{
+							error(Position{ x, y }, std::string("expecting value before ") + desc);
+						}
+						else
+						{
+							Math left = getSubMath(aMath, *leftArea);
+							embedSubMath(aMath, left, parens, oper, Area{ leftArea->upperLeft, parensArea.lowerRight });
+						}
+					}
+					else
+					{
+						embedSubMath(aMath, parens, oper, parensArea);
+					}
+
 				  printDebugMath(true, aMath, __FUNCTION__);
 				}
 			}
@@ -1271,30 +1311,30 @@ int MathParser::parseNumber(
 	return x;
 }
 
-bool MathParser::isVarStart(uint32_t kar) const
+bool MathParser::isSymbolStart(uint32_t kar) const
 {
 	return isalpha(kar, m_localeUtf8) || isSymbolGreek(kar);
 }
 
-bool MathParser::isVarNext(uint32_t kar) const
+bool MathParser::isSymbolNext(uint32_t kar) const
 {
-	return isVarStart(kar) || isdigit(kar, m_localeUtf8) || isSymbolSuffix(kar) || kar == '_';
+	return isSymbolStart(kar) || isdigit(kar, m_localeUtf8) || isSymbolSuffix(kar) || kar == '_';
 }
 
-std::tuple<int, Symbol> MathParser::parseVariable(
+std::tuple<int, Symbol> MathParser::parseSymbol(
 				const Math& aMath,
 				int x,
 				int y) const
 {
 	Symbol symbol;
-	if (isVarStart(aMath(y, x)))
+	if (isSymbolStart(aMath(y, x)))
 	{
 		int start = x;
 		std::string variable;
 		auto backIns = std::back_inserter(variable);
 
 		int size = aMath.width();
-		for (; x < size && isVarNext(aMath(y, x)); ++x)
+		for (; x < size && isSymbolNext(aMath(y, x)); ++x)
 		{
 			utf8::append(aMath(y, x), backIns);
 		}
@@ -1347,8 +1387,8 @@ Area MathParser::totalArea(const Math& aMath, const Area& aArea) const
 
 bool MathParser::isOperator(uint32_t kar) const
 {
-	return kar == operatorDivide() || 
-		     kar == operatorMultiply() ||
+	return kar == '/' || 
+		     kar == '*' ||
 		     kar == '+' || 
 		     kar == '-';
 }
@@ -1363,7 +1403,7 @@ bool MathParser::isEmpty(uint32_t kar) const
 	return isBlank(kar) || kar == BADCHAR;
 }
 
-OptArea MathParser::getSymbol(
+OptArea MathParser::getRightArea(
 				const Math& aMath, 
 				const Position& aLeftPosition,
 				bool aAllowSpaces) const
@@ -1437,7 +1477,7 @@ OptArea MathParser::getSymbol(
 	return result;
 }
 
-	std::tuple<bool, OptArea> MathParser::getRightToLeftSymbol(
+std::tuple<bool, OptArea> MathParser::getRightToLeftSymbol(
 				const Math& aMath, 
 				const Position& aRightPosition,
 				bool aAllowSpaces) const

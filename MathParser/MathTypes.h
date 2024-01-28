@@ -79,6 +79,7 @@ enum class Oper
 	Addition,
 	Subtraction,
 	Symbol,
+	FunctionCall,
 	Constant,
 	Number,
 	Monomial,

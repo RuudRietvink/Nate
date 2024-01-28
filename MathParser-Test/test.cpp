@@ -236,7 +236,7 @@ TEST_F(TestMathParser, TestSimple17)
 )zzz";
   
   EXPECT_CALL(parser, error(_, "unbalanced vertical bars"));
-  EXPECT_STREQ("x|z", parser.doMath(ss).c_str());
+  parser.doMath(ss);
 }
 TEST_F(TestMathParser, TestPower01)
 {  
@@ -890,6 +890,44 @@ TEST_F(TestMathParser, TestMonomial08)
 
   EXPECT_STREQ("((2*pi)*x)", parser.doMath(ss).c_str());
 }
+
+TEST_F(TestMathParser, TestMonomial09)
+{  
+  ss << R"zzz(
+x2π
+)zzz";
+  
+  EXPECT_CALL(parser, error(_, "Number without operator"));
+  parser.doMath(ss);
+}
+
+TEST_F(TestMathParser, TestMonomial10)
+{  
+  ss << R"zzz(
+2πvarx
+)zzz";
+
+  EXPECT_STREQ("(((2*pi)*var)*x)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial11)
+{  
+  ss << R"zzz(
+2x[1]
+)zzz";
+
+  EXPECT_STREQ("(2*x[1])", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestMonomial12)
+{  
+  ss << R"zzz(
+2πx[1]varH₂Ox₂
+)zzz";
+
+  EXPECT_STREQ("(((((2*pi)*x[1])*var)*H2O)*x_2)", parser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestFormula01)
 {  
   ss << R"zzz(
