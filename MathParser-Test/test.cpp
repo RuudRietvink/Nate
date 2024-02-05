@@ -635,7 +635,7 @@ TEST_F(TestMathParser, TestDivide07)
    (c * x)
 )zzz";
 
-  EXPECT_STREQ("((((x - 1) / (((1 + x) / z)))) / ((x * x)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((((x - 1) / (((1 + x) / z)))) / ((c * x)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestDivide08)
@@ -816,6 +816,54 @@ TEST_F(TestMathParser, TestBrackets01)
 )zzz";
 
   EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z)))] = 3", errorParser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestBrackets02)
+{  
+  ss << R"zzz(
+ x[ 3 * c ] ← 3
+)zzz";
+
+  EXPECT_STREQ("x[3 * c] = 3", errorParser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestBrackets03)
+{  
+  ss << R"zzz(
+    3    2
+ x[ ― * c ] ← 3
+    4
+)zzz";
+
+  EXPECT_STREQ("x[(3 / 4) * pow(c, 2)] = 3", errorParser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestBrackets04)
+{  
+  ss << R"zzz(
+   ⎛  z  ⎞
+   ⎜ x   ⎟      2
+ x[⎜ ――― ⎟ * var ] ← 3
+   ⎜  z  ⎟
+   ⎜ ――― ⎟
+   ⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z))) * pow(var, 2)] = 3", errorParser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestBrackets05)
+{  
+  ss << R"zzz(
+   ⎛  z  ⎞
+   ⎜ x   ⎟       2
+ x[⎜ ――― ⎟ * x[c] ] ← 3
+   ⎜  z  ⎟
+   ⎜ ――― ⎟
+   ⎝ x+z ⎠
+)zzz";
+
+  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z))) * pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial01)

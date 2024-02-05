@@ -1227,21 +1227,29 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 							lastOpen = false;
 						}
 
-						if (y > 0)
+						for (int up = 1; y - up >= 0; ++up)
 						{
-							uint32_t upKar = aMath(y - 1, x);
+							uint32_t upKar = aMath(y - up, x);
 							if (!isBlank(upKar) && !badSomethingVertical(upKar))
 							{
-								upY = y - 1;
+								upY = std::min(upY, y - up);
+							}
+							else
+							{
+								break;
 							}
 						}
 						
-						if (y < aMath.height() - 1)
+						for (int down = 1; y + down < aMath.height() - 1; ++down)
 						{
-							uint32_t downKar = aMath(y + 1, x);
+							uint32_t downKar = aMath(y + down, x);
 							if (!isBlank(downKar) && !badSomethingVertical(downKar))
 							{
-								downY = y + 1;
+								downY = std::max(downY, y + down);
+							}
+							else
+							{
+								break;
 							}
 						}
 					}
@@ -1259,12 +1267,6 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 				else
 				{				
 					Area parensArea{ Position{ startX + 1, upY }, Position{ x - 1, downY } };
-					OptArea optParensArea = getRightArea(aMath, Position{ startX + 1, y }, true);
-					if (optParensArea)
-					{
-						parensArea = *optParensArea;
-					}
-
 					Math parens = getSubMath(aMath, parensArea);
 					printDebugMath(true, parens, __FUNCTION__, std::format("right {}", desc));
 					doMathParsing(parens);
