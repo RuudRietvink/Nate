@@ -866,6 +866,71 @@ TEST_F(TestMathParser, TestBrackets05)
   EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z))) * pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestFunctionCall01)
+{  
+  ss << R"zzz(
+sin(z)
+)zzz";
+
+  EXPECT_STREQ("sin(z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall02)
+{  
+  ss << R"zzz(
+sin z 
+)zzz";
+
+  EXPECT_STREQ("sin(z)", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall03)
+{  
+  ss << R"zzz(
+cos 2z 
+)zzz";
+
+  EXPECT_STREQ("cos((2*z))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall04)
+{  
+  ss << R"zzz(
+cos -2z 
+)zzz";
+
+  EXPECT_STREQ("cos(-(2*z))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall05)
+{  
+  ss << R"zzz(
+  4 + -cos -2z * sin sin var
+)zzz";
+
+  EXPECT_STREQ("4 + -cos(-(2*z)) * sin(sin(var))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall06)
+{  
+  ss << R"zzz(
+                    2
+  -2cos 2πvarxsinvar
+)zzz";
+
+  EXPECT_STREQ("(-2*cos(((((2*pi)*var)*x)*pow(var, 2))))", parser.doMath(ss).c_str());
+}
+
+TEST_F(TestMathParser, TestFunctionCall07)
+{  
+  ss << R"zzz(
+                         2
+  -2⋅cos(2π⋅var⋅x⋅sin(var ))
+)zzz";
+
+  EXPECT_STREQ("-2 * cos(((2*pi) * var * x * sin((pow(var, 2)))))", parser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestMonomial01)
 {  
   ss << R"zzz(

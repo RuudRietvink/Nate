@@ -163,7 +163,19 @@ std::string MathParser::codeOperator(Oper aOper, const Math& aMathLeft, const Ma
 	}
 	case Oper::FunctionCall:
 	{
-		ss << mathString(aMathLeft) << "(" << mathString(aMathRight) << "_";
+		if (needsParens(aMathLeft))
+		{
+			 ss << mathString(aMathLeft) << "(" << mathString(aMathRight) << ")";
+		}
+		else
+		{
+			 ss << mathString(aMathLeft) << mathString(aMathRight);
+		}
+		break;
+	}
+	case Oper::FunctionName:
+	{
+		ss << mathString(aMathLeft);
 		break;
 	}
 	case Oper::Ceiling:
@@ -310,6 +322,7 @@ std::string MathParser::operToString(Oper aOper)
   case Oper::Addition: return "Addition";
   case Oper::Subtraction: return "Subtraction";
   case Oper::Symbol: return "Symbol";
+  case Oper::FunctionName: return "FunctionName";
   case Oper::FunctionCall: return "FunctionCall";
   case Oper::Constant: return "Constant";
   case Oper::Number: return "Number";
@@ -613,6 +626,9 @@ void MathParser::doMathParsing(Math& aMath)
 	doMathMonomial(aMath);
 	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
 	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
+	doMathFunctionCall(aMath);
+	doMathUnaryLeadingOperator(aMath, '-', Oper::UnaryMinus);
+	doMathUnaryLeadingOperator(aMath, '+', Oper::UnaryPlus);
 	doMathDownRightOperator(aMath, '*', Oper::Multiplication);
 	doMathDownRightOperator(aMath, '/', Oper::Division);
 	doMathDownRightOperator(aMath, '+', Oper::Addition);
@@ -885,7 +901,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 					Position endPos{ endX, y };
 					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.codeName);
 					Oper oper = symbol.type == Symbol::Type::Function
-						          ? Oper::FunctionCall
+						          ? Oper::FunctionName
 						          : Oper::Symbol;
 					embedSubMath(aMath, var, oper, Area{ startPos, endPos });
 				}
@@ -914,38 +930,41 @@ void MathParser::doMathMonomial(Math& aMath)
 							error(Position{ x, y }, "Number without operator");
 						}
 
-						MathValueSPtr& rightMathValue = aMath.matrix[y][x].mathValue;
-						Area leftArea = lastMathValue->getArea(lastX, y);
-						Area rightArea = aMath.matrix[y][x].getArea(x, y);
-						Math left = getSubMath(aMath, leftArea);
-						Math right = getSubMath(aMath, rightArea);
-						Area area = join(leftArea, rightArea);
-						if (lastMathValue->type == NumberType::Imaginary || rightMathValue->type == NumberType::Imaginary)
+						if (aMath.matrix[y][x].mathValue->oper != Oper::FunctionName)
 						{
-						  if (lastMathValue->type == NumberType::Imaginary && rightMathValue->type == NumberType::Imaginary)
+							MathValueSPtr& rightMathValue = aMath.matrix[y][x].mathValue;
+							Area leftArea = lastMathValue->getArea(lastX, y);
+							Area rightArea = aMath.matrix[y][x].getArea(x, y);
+							Math left = getSubMath(aMath, leftArea);
+							Math right = getSubMath(aMath, rightArea);
+							Area area = join(leftArea, rightArea);
+							if (lastMathValue->type == NumberType::Imaginary || rightMathValue->type == NumberType::Imaginary)
 							{
-								Math number = createSubMath(aMath, area, "-1");
-								embedSubMath(aMath, number, Oper::Number, area);
-							}
-							else if (lastMathValue->type == NumberType::Imaginary)
-							{
-								embedSubMath(aMath, right, Oper::Number, area)->type = NumberType::Imaginary;
+								if (lastMathValue->type == NumberType::Imaginary && rightMathValue->type == NumberType::Imaginary)
+								{
+									Math number = createSubMath(aMath, area, "-1");
+									embedSubMath(aMath, number, Oper::Number, area);
+								}
+								else if (lastMathValue->type == NumberType::Imaginary)
+								{
+									embedSubMath(aMath, right, Oper::Number, area)->type = NumberType::Imaginary;
+								}
+								else
+								{
+									embedSubMath(aMath, left, Oper::Number, area)->type = NumberType::Imaginary;
+								}
 							}
 							else
 							{
-								embedSubMath(aMath, left, Oper::Number, area)->type = NumberType::Imaginary;
+								printDebugMath(true, left, __FUNCTION__);
+								printDebugMath(true, right, __FUNCTION__);
+								embedSubMath(aMath, left, right, Oper::Monomial, area);
 							}
-						}
-						else
-						{
-							printDebugMath(true, left, __FUNCTION__);
-							printDebugMath(true, right, __FUNCTION__);
-						  embedSubMath(aMath, left, right, Oper::Monomial, area);
-						}
 
-						printDebugMath(true, aMath, __FUNCTION__);
+							printDebugMath(true, aMath, __FUNCTION__);
+						}
 					}
-					else if (aMath.matrix[y][x].mathValue->oper != Oper::FunctionCall)
+					else if (aMath.matrix[y][x].mathValue->oper != Oper::FunctionName)
 					{
 						lastMathValue = &aMath.matrix[y][x];
 						lastX = x;
@@ -953,6 +972,55 @@ void MathParser::doMathMonomial(Math& aMath)
 				}
 			}
 			else if (lastX != -1)
+			{
+				lastX = -1;
+				lastMathValue = nullptr;
+			}
+		}
+	}
+}
+
+void MathParser::doMathFunctionCall(Math& aMath)
+{
+	for (int y = 0; y < aMath.height(); ++y)
+	{
+		int lastX = -1;
+		MathValue* lastMathValue = nullptr;
+
+		for (int x = aMath.width() - 1; x >= 0; --x)
+		{
+			if (aMath.hasSubMatrix(y, x))
+			{
+				if (lastMathValue == nullptr || aMath.matrix[y][x].mathValue != lastMathValue->mathValue)
+				{
+					if (lastX != -1)
+					{
+					  if (aMath.matrix[y][x].mathValue->oper == Oper::FunctionName)
+						{
+							MathValueSPtr& rightMathValue = aMath.matrix[y][x].mathValue;
+							auto [isSuperscript, leftArea] = getRightToLeftSymbol(aMath, Position{ x, y });
+							Area rightArea = lastMathValue->getArea(lastX, y);
+							Math left = getSubMath(aMath, *leftArea);
+							Math right = getSubMath(aMath, rightArea);
+							Area area = join(*leftArea, rightArea);
+							printDebugMath(true, left, __FUNCTION__);
+							printDebugMath(true, right, __FUNCTION__);
+							embedSubMath(aMath, left, right, Oper::FunctionCall, area);
+							printDebugMath(true, aMath, __FUNCTION__);
+						}
+					}
+					else if (aMath.matrix[y][x].mathValue->oper == Oper::FunctionName)
+					{
+						error(Position{ x, y }, "Function without value");
+					}
+					else
+					{
+						lastMathValue = &aMath.matrix[y][x];
+						lastX = x;
+					}
+				}
+			}
+			else if (!isBlank(aMath.matrix[y][x].value))
 			{
 				lastX = -1;
 				lastMathValue = nullptr;
@@ -976,7 +1044,7 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 				if (leftArea)
 				{
 						const auto& left = aMath.mathValue(leftArea->upperLeft);
-						if (left.oper == Oper::FunctionCall)
+						if (left.oper == Oper::FunctionName)
 						{
 							leftArea = std::nullopt;
 						}
@@ -989,11 +1057,14 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 					if (rightArea)
 					{
 						Math right = getSubMath(aMath, *rightArea);
-						rightArea->upperLeft.x = x;
-						printDebugMath(false, right, __FUNCTION__);
-						doMathParsing(right);
-						embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
-						printDebugMath(false, aMath, __FUNCTION__);
+						if (aMath.mathValue(rightArea->upperLeft).oper != Oper::FunctionName)
+						{
+							rightArea->upperLeft.x = x;
+							printDebugMath(false, right, __FUNCTION__);
+							doMathParsing(right);
+							embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
+							printDebugMath(false, aMath, __FUNCTION__);
+						}
 					}
 				}
 			}

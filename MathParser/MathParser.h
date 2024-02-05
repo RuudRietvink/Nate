@@ -75,6 +75,7 @@ private:
 	void doMathVariablesNumbers(Math& aMath);
 	
 	void doMathMonomial(Math& aMath);
+	void doMathFunctionCall(Math& aMath);
 	void doMathParentheses(Math& aMath);
 	void doMathBrackets(Math& aMath);
 	void doMathFractionBar(Math& aMath);
