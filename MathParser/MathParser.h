@@ -22,30 +22,32 @@ namespace nate
 class MathParser
 {
 public:
-	virtual MATHPARSER_API ~MathParser() {}
+	virtual MATHPARSER_API ~MathParser() = default;
 
-	MATHPARSER_API void setTabSize(uint32_t aTabSize);
-	MATHPARSER_API void addVariable(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
-	MATHPARSER_API void addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
-	MATHPARSER_API void addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
-	MATHPARSER_API std::string doMath(std::istream& aStream, int line = 0);
+	MATHPARSER_API virtual void setTabSize(uint32_t aTabSize);
+	MATHPARSER_API virtual void addVariable(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
+	MATHPARSER_API virtual void addConstant(const std::string& aName, const std::string& aIntName, const std::string& aCodeName, NumberType aType = NumberType::Real);
+	MATHPARSER_API virtual void addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
+	MATHPARSER_API virtual std::string doMath(std::istream& aStream, int line = 0);
 	
 protected:
+	MATHPARSER_API virtual void init();
 	MATHPARSER_API virtual void error(const InputPosition& aPosition, const std::string& aError) const;
 	
-	MATHPARSER_API virtual std::string codeOperator(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const;
+	MATHPARSER_API virtual std::string codeOperator(const MathValue& aMathValue) const = 0;
 	MATHPARSER_API virtual std::string codeFunction(const std::string& aName, const Math& aMathArg) const;
 
 	MATHPARSER_API virtual bool isSymbol(const std::string& aInput) const;
 	MATHPARSER_API virtual bool isNumber(const std::string& aInput) const;
 	MATHPARSER_API virtual bool isSymbolStart(uint32_t kar) const;
 	MATHPARSER_API virtual bool isSymbolNext(uint32_t kar) const;
+	
+	virtual std::string mathString(const Math& aMath) const;
+	virtual bool needsParens(const Math& aMath) const;
 
 private:
 	const Symbol& getSymbol(const std::string& aInput) const;
 	std::string doMath(Math& aMath);
-	std::string mathString(const Math& aMath) const;
-	bool needsParens(const Math& aMath) const;
 
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;
@@ -58,11 +60,13 @@ private:
 										const Math& aSubMath1, 
 										const Math& aSubMath2, 
 										Oper aOper,
-										const Area& aArea);
+										const Area& aArea,
+										const Symbol& aSymbol = {});
 	MathValue* embedSubMath(Math& aMath, 
 										const Math& aSubMath, 
 										Oper aOper,
-										const Area& aArea);
+										const Area& aArea,
+										const Symbol& aSymbol = {});
 	void fillerMath(Math& aMath, 
 								 const Area& aArea,
 								 const MathValueSPtr& aClearValue);

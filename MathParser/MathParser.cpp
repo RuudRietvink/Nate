@@ -60,17 +60,17 @@ void MathParser::setTabSize(uint32_t aTabSize)
 
 void MathParser::addVariable(const std::string& aName, const std::string& aCodeName, NumberType aType)
 {
-	addSymbol({ Symbol::Type::Variable, aName, aCodeName, aType });
+	addSymbol({ Symbol::Type::Variable, aName, aName, aCodeName, aType });
 }
 
-void MathParser::addConstant(const std::string& aName, const std::string& aCodeName, NumberType aType)
+void MathParser::addConstant(const std::string& aName, const std::string& aIntName, const std::string& aCodeName, NumberType aType)
 {
-	addSymbol({ Symbol::Type::Constant, aName, aCodeName, aType });
+	addSymbol({ Symbol::Type::Constant, aName, aIntName, aCodeName, aType });
 }
 
 void MathParser::addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType)
 {
-	addSymbol({ Symbol::Type::Function, aName, aCodeName, aType });
+	addSymbol({ Symbol::Type::Function, aName, aName, aCodeName, aType });
 }
 
 std::string MathParser::doMath(std::istream& aStream, int line)
@@ -108,13 +108,7 @@ std::string MathParser::doMath(std::istream& aStream, int line)
 
 std::string MathParser::doMath(Math& aMath)
 {
-	mSymbols["e"] = mSymbols["𝑒"] =                Symbol{ Symbol::Type::Constant, "e", "e", NumberType::Real };
-	mSymbols["π"] = mSymbols["pi"] =               Symbol{ Symbol::Type::Constant, "pi", "pi", NumberType::Real };
-	mSymbols["i"] = mSymbols["j"] = mSymbols["𝑖"] = Symbol{ Symbol::Type::Constant, "i", "i", NumberType::Imaginary };
-
-	addFunction("sin", "sin");
-	addFunction("cos", "cos");
-	addFunction("tan", "tan");
+	init();
 
 	fillUpMath(aMath);
 	printDebugMath(false, aMath, "");
@@ -124,6 +118,10 @@ std::string MathParser::doMath(Math& aMath)
 }
 
 ////////////////////////// protected /////////////////////////////////
+
+void MathParser::init()
+{
+}
 
 void MathParser::printDebugMath(bool print, const Math& aMath, const std::string& aFunction, const std::string& aText) const
 {
@@ -136,138 +134,6 @@ void MathParser::printDebugMath(bool print, const Math& aMath, const std::string
 void MathParser::error(const InputPosition& aPosition, const std::string& aError) const
 {
 	std::cerr << "(y:" << aPosition.y << ", x:" << aPosition.x << "): " << aError << std::endl;
-}
-
-std::string MathParser::codeOperator(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const
-{
-	std::stringstream ss;
-
-	switch (aOper)
-	{
-	case Oper::Parentheses:
-	{
-		if (needsParens(aMathLeft))
-		{
-			ss << "(" << mathString(aMathLeft) << ")";
-		}
-		else
-		{
-			ss << mathString(aMathLeft);
-		}
-		break;
-	}
-	case Oper::Brackets:
-	{
-		ss << mathString(aMathLeft) << "[" << mathString(aMathRight) << "]";
-		break;
-	}
-	case Oper::FunctionCall:
-	{
-		if (needsParens(aMathLeft))
-		{
-			 ss << mathString(aMathLeft) << "(" << mathString(aMathRight) << ")";
-		}
-		else
-		{
-			 ss << mathString(aMathLeft) << mathString(aMathRight);
-		}
-		break;
-	}
-	case Oper::FunctionName:
-	{
-		ss << mathString(aMathLeft);
-		break;
-	}
-	case Oper::Ceiling:
-	{
-		ss << "ceil(" << mathString(aMathLeft) << ")";
-		break;
-	}
-	case Oper::Floor:
-	{
-		ss << "floor(" << mathString(aMathLeft) << ")";
-		break;
-	}
-	case Oper::Absolute:
-	{
-		ss << "abs(" << mathString(aMathLeft) << ")";
-		break;
-	}
-	case Oper::Multiplication:
-	{
-		ss << mathString(aMathLeft) << " * " << mathString(aMathRight);
-		break;
-	}
-	case Oper::Division:
-	{
-		ss << "(" << codeOperator(Oper::Parentheses, aMathLeft, {}) << " / "
-							<< codeOperator(Oper::Parentheses, aMathRight, {}) << ")";
-		break;
-	}
-	case Oper::Addition:
-	{
-		ss << mathString(aMathLeft) << " + " << mathString(aMathRight);
-		break;
-	}
-	case Oper::Subtraction:
-	{
-		ss << mathString(aMathLeft) << " - " << mathString(aMathRight);
-		break;
-	}
-	case Oper::UnaryMinus:
-	{
-		ss << "-" << mathString(aMathLeft);
-		break;
-	}
-	case Oper::UnaryPlus:
-	{
-		ss << "+" << mathString(aMathLeft);
-		break;
-	}
-	case Oper::SquareRoot:
-	{
-		ss << "sqrt(" << mathString(aMathLeft) << ")";
-		break;
-	}
-	case Oper::Power:
-	{
-		ss << "pow(" << mathString(aMathLeft) << ", " 
-								 << mathString(aMathRight) << ")";
-		break;
-	}
-	case Oper::Exponential:
-	{
-		ss << "exp(" << mathString(aMathLeft) << ")";
-		break;
-	}
-	case Oper::Symbol:
-	{
-		ss << mathString(aMathLeft);
-		break;
-	}
-	case Oper::Number:
-	{
-		ss << mathString(aMathLeft);
-		break;
-	}
-	case Oper::Monomial:
-	{
-		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
-		break;
-	}
-	case Oper::Assignment:
-	{
-		ss << mathString(aMathLeft) << " = " << mathString(aMathRight);
-		break;
-	}
-	case Oper::Nested:
-	{
-		ss << mathString(aMathLeft);
-		break;
-	}
-	}
-
-	return ss.str();
 }
 
 std::string MathParser::codeFunction(const std::string& aName, const Math& aMathArg) const
@@ -494,7 +360,7 @@ std::string MathParser::mathString(const Math& aMath) const
 		{
 			if (col.isSubMatrix())
 			{
-				ss << codeOperator(col.oper, col.embedded1, col.embedded2);
+				ss << codeOperator(col);
 			}
 			else if (col.hasSubMatrix())
 			{
@@ -557,9 +423,10 @@ MathValue* MathParser::embedSubMath(
 				Math& aMath, 
 				const Math& aSubMath, 
 				Oper aOper,
-				const Area& aArea)
+				const Area& aArea,
+				const Symbol& aSymbol)
 {
-	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea);
+	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea, aSymbol);
 }
 
 MathValue* MathParser::embedSubMath(
@@ -567,10 +434,11 @@ MathValue* MathParser::embedSubMath(
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
 				Oper aOper,
-				const Area& aArea)
+				const Area& aArea,
+				const Symbol& aSymbol)
 {
 	Size size{ aArea.lowerRight.x + 1 - aArea.upperLeft.x, aArea.lowerRight.y + 1 - aArea.upperLeft.y };
-	auto mathValue = MathValue(aSubMath1, aSubMath2, aOper, size);
+	auto mathValue = MathValue(aSubMath1, aSubMath2, aOper, size, aSymbol);
 	fillerMath(aMath, aArea, mathValue.mathValue);
 	aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x] = mathValue;
 	return &aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x];
@@ -899,11 +767,11 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 				{
 					Position startPos{ x, y };
 					Position endPos{ endX, y };
-					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.codeName);
+					Math var = createSubMath(aMath, Area{ startPos, endPos}, symbol.intName);
 					Oper oper = symbol.type == Symbol::Type::Function
 						          ? Oper::FunctionName
 						          : Oper::Symbol;
-					embedSubMath(aMath, var, oper, Area{ startPos, endPos });
+					embedSubMath(aMath, var, oper, Area{ startPos, endPos }, symbol);
 				}
 			}
 		}
@@ -1005,7 +873,7 @@ void MathParser::doMathFunctionCall(Math& aMath)
 							Area area = join(*leftArea, rightArea);
 							printDebugMath(true, left, __FUNCTION__);
 							printDebugMath(true, right, __FUNCTION__);
-							embedSubMath(aMath, left, right, Oper::FunctionCall, area);
+							embedSubMath(aMath, left, right, Oper::FunctionCall, area, aMath.matrix[y][x].mathValue->symbol);
 							printDebugMath(true, aMath, __FUNCTION__);
 						}
 					}
@@ -1969,21 +1837,13 @@ void MathParser::mathError(
 
 void MathParser::addSymbol(const Symbol& aSymbol)
 {
-	if (aSymbol.name == "i" || aSymbol.name == "j" || aSymbol.name == "e" ||
-			aSymbol.name == "π" || aSymbol.name == "𝑖")
+	if (mSymbols.find(aSymbol.name) != mSymbols.end())
 	{
-		error(Position(), "Reserved name: " + aSymbol.name);
+		error(Position(), "Duplicate name: " + aSymbol.name);
 	}
 	else
 	{
-		if (mSymbols.find(aSymbol.name) != mSymbols.end())
-		{
-			error(Position(), "Duplicate name: " + aSymbol.name);
-		}
-		else
-		{
-			mSymbols[aSymbol.name] = aSymbol;
-		}
+		mSymbols[aSymbol.name] = aSymbol;
 	}
 }
 

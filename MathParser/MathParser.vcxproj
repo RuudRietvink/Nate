@@ -163,10 +163,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CppMathParser.h" />
     <ClInclude Include="MathParser.h" />
     <ClInclude Include="MathTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CppMathParser.cpp" />
     <ClCompile Include="MathParser.cpp" />
     <ClCompile Include="MathTypes.cpp" />
   </ItemGroup>

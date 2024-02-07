@@ -1,4 +1,4 @@
-#include "MathParser.h"
+#include "CppMathParser.h"
 #include <sstream>
 #include <string>
 #include "gtest/gtest.h"
@@ -6,13 +6,13 @@
 
 using ::testing::_;
 
-class MockMathParser : public nate::MathParser
+class MockMathParser : public nate::CppMathParser
 {
 public:      
   MOCK_CONST_METHOD2(error, void(const nate::InputPosition&, const std::string&));
 };
 
-class ErrorMathParser : public nate::MathParser
+class ErrorMathParser : public nate::CppMathParser
 {
 public:
       
@@ -68,13 +68,18 @@ class TestMathParser : public ::testing::Test
 
 TEST_F(TestMathParser, TestAddVariable)
 {
-  EXPECT_CALL(parser, error(_, "Reserved name: i"));
-  EXPECT_CALL(parser, error(_, "Reserved name: j"));
-  EXPECT_CALL(parser, error(_, "Reserved name: e"));
+  parser.init();
+  EXPECT_CALL(parser, error(_, "Duplicate name: i"));
+  EXPECT_CALL(parser, error(_, "Duplicate name: 𝑖"));
+  EXPECT_CALL(parser, error(_, "Duplicate name: e"));
+  EXPECT_CALL(parser, error(_, "Duplicate name: π"));
+  EXPECT_CALL(parser, error(_, "Duplicate name: pi"));
 
   parser.addVariable("i", "i");
-  parser.addVariable("j", "j");
+  parser.addVariable("𝑖", "i");
   parser.addVariable("e", "e");
+  parser.addVariable("π", "pi");
+  parser.addVariable("pi", "pi");
   parser.addVariable("E", "E");
   parser.addVariable("ij", "ij");
   parser.addVariable("I", "I");
@@ -114,7 +119,7 @@ TEST_F(TestMathParser, TestSimple04)
 (x )
 )zzz";
 
-  EXPECT_STREQ("(pow(x, 2))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(std::pow(x, 2))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple05)
@@ -136,7 +141,7 @@ TEST_F(TestMathParser, TestSimple06)
  x
 )zzz";
 
-  EXPECT_STREQ("((1 / x) + ((2 / H2O)) + (pow(x, 2) - z_pi)) * 3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((1 / x) + ((2 / H2O)) + (std::pow(x, 2) - z_pi)) * 3", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple07)
@@ -154,7 +159,7 @@ TEST_F(TestMathParser, TestSimple08)
  - (⌊z-1⌋- z)
 )zzz";
 
-  EXPECT_STREQ("-(ceil(z - 1) - z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(std::ceil(z - 1) - z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple09)
@@ -163,7 +168,7 @@ TEST_F(TestMathParser, TestSimple09)
  - (⌈⌊z⌋-1⌉- z)
 )zzz";
 
-  EXPECT_STREQ("-(floor(ceil(z) - 1) - z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-(std::floor(std::ceil(z) - 1) - z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple10)
@@ -172,7 +177,7 @@ TEST_F(TestMathParser, TestSimple10)
    |x|
 )zzz";
 
-  EXPECT_STREQ("abs(x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple11)
@@ -181,7 +186,7 @@ TEST_F(TestMathParser, TestSimple11)
    ||x||
 )zzz";
 
-  EXPECT_STREQ("abs(abs(x))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(std::abs(x))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple12)
@@ -190,7 +195,7 @@ TEST_F(TestMathParser, TestSimple12)
    | |x| |
 )zzz";
 
-  EXPECT_STREQ("abs(abs(x))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(std::abs(x))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple13)
@@ -199,7 +204,7 @@ TEST_F(TestMathParser, TestSimple13)
    |x + 1 | * | z-2|
 )zzz";
 
-  EXPECT_STREQ("abs(x + 1) * abs(z - 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(x + 1) * std::abs(z - 2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple14)
@@ -208,7 +213,7 @@ TEST_F(TestMathParser, TestSimple14)
    |-|x-1| * |z||
 )zzz";
 
-  EXPECT_STREQ("abs(-abs(x - 1) * abs(z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(-std::abs(x - 1) * std::abs(z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple15)
@@ -217,7 +222,7 @@ TEST_F(TestMathParser, TestSimple15)
    x|z|x
 )zzz";
 
-  EXPECT_STREQ("((x*abs(z))*x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((x*std::abs(z))*x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple16)
@@ -226,7 +231,7 @@ TEST_F(TestMathParser, TestSimple16)
    |-|x+ |-z *|-2 /|(x+1)|||||
 )zzz";
 
-  EXPECT_STREQ("abs(-abs(x + abs(-z * abs(((-2) / (abs((x + 1))))))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::abs(-std::abs(x + std::abs(-z * std::abs(((-2) / (std::abs((x + 1))))))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSimple17)
@@ -245,7 +250,7 @@ TEST_F(TestMathParser, TestPower01)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, 2)", parser.doMath(ss).c_str());
   
 }
 
@@ -256,7 +261,7 @@ TEST_F(TestMathParser, TestPower02)
  -var
 )zzz";
 
-  EXPECT_STREQ("-pow(var, 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-std::pow(var, 2)", parser.doMath(ss).c_str());
   
 }
 
@@ -267,7 +272,7 @@ TEST_F(TestMathParser, TestPower03)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, 2.5)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, 2.5)", parser.doMath(ss).c_str());
 
 }
 
@@ -278,7 +283,7 @@ TEST_F(TestMathParser, TestPower04)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, var - 3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, var - 3)", parser.doMath(ss).c_str());
   
 }
 
@@ -289,7 +294,7 @@ TEST_F(TestMathParser, TestPower05)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, -(x - 3) * 4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, -(x - 3) * 4)", parser.doMath(ss).c_str());
 
 }
 
@@ -300,7 +305,7 @@ TEST_F(TestMathParser, TestPower06)
  (x + 3)
 )zzz";
 
-  EXPECT_STREQ("pow((x + 3), -(x - 3) * 4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow((x + 3), -(x - 3) * 4)", parser.doMath(ss).c_str());
   
 }
 
@@ -312,7 +317,7 @@ TEST_F(TestMathParser, TestPower07)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, pow(2, 3))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, std::pow(2, 3))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPower08)
@@ -322,7 +327,7 @@ TEST_F(TestMathParser, TestPower08)
  x   + 3
 )zzz";
 
-  EXPECT_STREQ("pow(x, 2.5) + 3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, 2.5) + 3", parser.doMath(ss).c_str());
   }
 
 TEST_F(TestMathParser, TestExponential01)
@@ -332,7 +337,7 @@ TEST_F(TestMathParser, TestExponential01)
  e
 )zzz";
 
-  EXPECT_STREQ("exp(x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::exp(x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestExponential02)
@@ -343,7 +348,7 @@ TEST_F(TestMathParser, TestExponential02)
 𝑒
 )zzz";
 
-  EXPECT_STREQ("exp(exp(x))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::exp(std::exp(x))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper01)
@@ -352,7 +357,7 @@ TEST_F(TestMathParser, TestPowerSuper01)
 x²
 )zzz";
 
-  EXPECT_STREQ("pow(x, 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, 2)", parser.doMath(ss).c_str());
   
 }
 
@@ -362,7 +367,7 @@ TEST_F(TestMathParser, TestPowerSuper02)
 xᶻ⁻⁵
 )zzz";
 
-  EXPECT_STREQ("pow(x, z - 5)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, z - 5)", parser.doMath(ss).c_str());
   
 }
 
@@ -372,7 +377,7 @@ TEST_F(TestMathParser, TestPowerSuper03)
 x⁽ᶻ ⁻ ⁵⁾
 )zzz";
 
-  EXPECT_STREQ("pow(x, (z - 5))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, (z - 5))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper04)
@@ -382,7 +387,7 @@ TEST_F(TestMathParser, TestPowerSuper04)
 ⁵⁵
 )zzz";
 
-  EXPECT_STREQ("pow(55, x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(55, x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper05)
@@ -395,7 +400,7 @@ TEST_F(TestMathParser, TestPowerSuper05)
 xz
 )zzz";
 
-  EXPECT_STREQ("(x*pow(z, pow(z, pow(55, x - pow(2, exp(pow(e, 5)))))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(x*std::pow(z, std::pow(z, std::pow(55, x - std::pow(2, std::exp(std::pow(M_E, 5)))))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper06)
@@ -404,7 +409,7 @@ TEST_F(TestMathParser, TestPowerSuper06)
   xz⁵⁵
 )zzz";
 
-  EXPECT_STREQ("(x*pow(z, 55))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(x*std::pow(z, 55))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper07)
@@ -415,7 +420,7 @@ TEST_F(TestMathParser, TestPowerSuper07)
 )zzz";
 
   // ERROR 55 superscript only for exponents!!!!!
-  EXPECT_STREQ("pow(55, z)x*", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(55, z)x*", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper08)
@@ -425,7 +430,7 @@ TEST_F(TestMathParser, TestPowerSuper08)
   x * z⁵⁵
 )zzz";
 
-  EXPECT_STREQ("x * pow(z, pow(55, z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("x * std::pow(z, std::pow(55, z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot01)
@@ -435,7 +440,7 @@ TEST_F(TestMathParser, TestSquareRoot01)
 √4
 )zzz";
 
-  EXPECT_STREQ("sqrt(4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(4)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot02)
@@ -444,7 +449,7 @@ TEST_F(TestMathParser, TestSquareRoot02)
 √43.3E-5
 )zzz";
 
-  EXPECT_STREQ("sqrt(43.3E-5)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(43.3E-5)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot03)
@@ -453,7 +458,7 @@ TEST_F(TestMathParser, TestSquareRoot03)
 √43.3E-5+4
 )zzz";
 
-  EXPECT_STREQ("sqrt(43.3E-5) + 4", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(43.3E-5) + 4", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot04)
@@ -463,7 +468,7 @@ TEST_F(TestMathParser, TestSquareRoot04)
 √43.3E-5+4
 )zzz";
 
-  EXPECT_STREQ("sqrt(43.3E-5 + 4)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(43.3E-5 + 4)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot05)
@@ -473,7 +478,7 @@ TEST_F(TestMathParser, TestSquareRoot05)
 √43 + 42.1
 )zzz";
 
-  EXPECT_STREQ("sqrt(43 + 42.1)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(43 + 42.1)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot06)
@@ -484,7 +489,7 @@ TEST_F(TestMathParser, TestSquareRoot06)
 √4   
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x - z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(std::pow(4, x - z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot07)
@@ -495,7 +500,7 @@ TEST_F(TestMathParser, TestSquareRoot07)
 √4    + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x - z)) + 3", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(std::pow(4, x - z)) + 3", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot08)
@@ -506,7 +511,7 @@ TEST_F(TestMathParser, TestSquareRoot08)
 √ (4    ) + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt((pow(4, x - z)) + 3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt((std::pow(4, x - z)) + 3)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot09)
@@ -517,7 +522,7 @@ TEST_F(TestMathParser, TestSquareRoot09)
 √4   + 3
 )zzz";
 
-  EXPECT_STREQ("sqrt(pow(4, x - z) + 3)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(std::pow(4, x - z) + 3)", parser.doMath(ss).c_str());
 }
 
 
@@ -530,7 +535,7 @@ TEST_F(TestMathParser, TestSquareRoot10)
 √  ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt(((1 / (x + z))) * 2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(((1 / (x + z))) * 2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot11)
@@ -539,7 +544,7 @@ TEST_F(TestMathParser, TestSquareRoot11)
 √(43.3E-5+4)
 )zzz";
 
-  EXPECT_STREQ("sqrt((43.3E-5 + 4))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt((43.3E-5 + 4))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestSquareRoot12)
@@ -550,7 +555,7 @@ TEST_F(TestMathParser, TestSquareRoot12)
  ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("sqrt(((1 / (x + z))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sqrt(((1 / (x + z))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestDivide01)
@@ -728,7 +733,7 @@ TEST_F(TestMathParser, TestParens07)
   ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((1 / (x + z))), x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(((1 / (x + z))), x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens08)
@@ -740,7 +745,7 @@ TEST_F(TestMathParser, TestParens08)
   ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((1 / (x + z))), x + 1)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(((1 / (x + z))), x + 1)", parser.doMath(ss).c_str());
 }
 
 
@@ -754,7 +759,7 @@ TEST_F(TestMathParser, TestParens09)
  x
 )zzz";
 
-  EXPECT_STREQ("pow(x, ((1 / (x + z))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(x, ((1 / (x + z))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens10)
@@ -769,7 +774,7 @@ TEST_F(TestMathParser, TestParens10)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((z / (x + z))), (pow(x, 2)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(((z / (x + z))), (std::pow(x, 2)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens11)
@@ -784,7 +789,7 @@ TEST_F(TestMathParser, TestParens11)
 ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("pow(((z / (x + z))), pow((pow(x, 2)), 3))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(((z / (x + z))), std::pow((std::pow(x, 2)), 3))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestParens12)
@@ -801,7 +806,7 @@ TEST_F(TestMathParser, TestParens12)
  3
 )zzz";
 
-  EXPECT_STREQ("pow(3, pow(((z / (x + z))), pow((pow(x, 2)), exp(2))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::pow(3, std::pow(((z / (x + z))), std::pow((std::pow(x, 2)), std::exp(2))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestBrackets01)
@@ -815,7 +820,7 @@ TEST_F(TestMathParser, TestBrackets01)
     ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z)))] = 3", errorParser.doMath(ss).c_str());
+  EXPECT_STREQ("x[(((((std::pow(x, z)) / z)) / (x + z)))] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestBrackets02)
@@ -835,7 +840,7 @@ TEST_F(TestMathParser, TestBrackets03)
     4
 )zzz";
 
-  EXPECT_STREQ("x[(3 / 4) * pow(c, 2)] = 3", errorParser.doMath(ss).c_str());
+  EXPECT_STREQ("x[(3 / 4) * std::pow(c, 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestBrackets04)
@@ -849,7 +854,7 @@ TEST_F(TestMathParser, TestBrackets04)
    ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z))) * pow(var, 2)] = 3", errorParser.doMath(ss).c_str());
+  EXPECT_STREQ("x[(((((std::pow(x, z)) / z)) / (x + z))) * std::pow(var, 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestBrackets05)
@@ -863,7 +868,7 @@ TEST_F(TestMathParser, TestBrackets05)
    ⎝ x+z ⎠
 )zzz";
 
-  EXPECT_STREQ("x[(((((pow(x, z)) / z)) / (x + z))) * pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
+  EXPECT_STREQ("x[(((((std::pow(x, z)) / z)) / (x + z))) * std::pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall01)
@@ -872,7 +877,7 @@ TEST_F(TestMathParser, TestFunctionCall01)
 sin(z)
 )zzz";
 
-  EXPECT_STREQ("sin(z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sin(z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall02)
@@ -881,7 +886,7 @@ TEST_F(TestMathParser, TestFunctionCall02)
 sin z 
 )zzz";
 
-  EXPECT_STREQ("sin(z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::sin(z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall03)
@@ -890,7 +895,7 @@ TEST_F(TestMathParser, TestFunctionCall03)
 cos 2z 
 )zzz";
 
-  EXPECT_STREQ("cos((2*z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::cos((2*z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall04)
@@ -899,7 +904,7 @@ TEST_F(TestMathParser, TestFunctionCall04)
 cos -2z 
 )zzz";
 
-  EXPECT_STREQ("cos(-(2*z))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("std::cos(-(2*z))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall05)
@@ -908,7 +913,7 @@ TEST_F(TestMathParser, TestFunctionCall05)
   4 + -cos -2z * sin sin var
 )zzz";
 
-  EXPECT_STREQ("4 + -cos(-(2*z)) * sin(sin(var))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("4 + -std::cos(-(2*z)) * std::sin(std::sin(var))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall06)
@@ -918,17 +923,17 @@ TEST_F(TestMathParser, TestFunctionCall06)
   -2cos 2πvarxsinvar
 )zzz";
 
-  EXPECT_STREQ("(-2*cos(((((2*pi)*var)*x)*pow(var, 2))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(-2*std::cos(((((2*M_PI)*var)*x)*std::pow(var, 2))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall07)
 {  
   ss << R"zzz(
                          2
-  -2⋅cos(2π⋅var⋅x⋅sin(var ))
+  -2⋅cos(2πe⋅var⋅x⋅sin(var ))
 )zzz";
 
-  EXPECT_STREQ("-2 * cos(((2*pi) * var * x * sin((pow(var, 2)))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-2 * std::cos((((2*M_PI)*M_E) * var * x * std::sin(2var)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial01)
@@ -982,7 +987,7 @@ TEST_F(TestMathParser, TestMonomial06)
 x³⁴z
 )zzz";
 
-  EXPECT_STREQ("(pow(x, 34)*z)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(std::pow(x, 34)*z)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial07)
@@ -992,7 +997,7 @@ TEST_F(TestMathParser, TestMonomial07)
 √4x²
 )zzz";
 
-  EXPECT_STREQ("(sqrt(4)*pow(x, 2))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(std::sqrt(4)*std::pow(x, 2))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial08)
@@ -1001,7 +1006,7 @@ TEST_F(TestMathParser, TestMonomial08)
 2πx
 )zzz";
 
-  EXPECT_STREQ("((2*pi)*x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((2*M_PI)*x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial09)
@@ -1020,7 +1025,7 @@ TEST_F(TestMathParser, TestMonomial10)
 2πvarx
 )zzz";
 
-  EXPECT_STREQ("(((2*pi)*var)*x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(((2*M_PI)*var)*x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial11)
@@ -1038,7 +1043,7 @@ TEST_F(TestMathParser, TestMonomial12)
 2πx[1]varH₂Ox₂
 )zzz";
 
-  EXPECT_STREQ("(((((2*pi)*x[1])*var)*H2O)*x_2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(((((2*M_PI)*x[1])*var)*H2O)*x_2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFormula01)
@@ -1050,7 +1055,7 @@ TEST_F(TestMathParser, TestFormula01)
     √      2a    
 )zzz";
 
-  EXPECT_STREQ("-b + sqrt(((pow(b, 2) - ((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-b + std::sqrt(((std::pow(b, 2) - ((4*a)*c)) / ((2*a))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFormula02)
@@ -1062,7 +1067,7 @@ TEST_F(TestMathParser, TestFormula02)
          2a    
 )zzz";
 
-  EXPECT_STREQ("-b + ((sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-b + ((std::sqrt(std::pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFormula03)
@@ -1074,7 +1079,7 @@ TEST_F(TestMathParser, TestFormula03)
         2a    
 )zzz";
 
-  EXPECT_STREQ("((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((-b + std::sqrt(std::pow(b, 2) - ((4*a)*c))) / ((2*a)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFormula04)
@@ -1091,8 +1096,8 @@ TEST_F(TestMathParser, TestFormula04)
           ⎝    42E5÷a  ⎠
 )zzz";
 
-  EXPECT_STREQ("x * ((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / "
-               "(1.3 + ((sqrt(x - 2)) / x)))) / "
+  EXPECT_STREQ("x * ((((((std::sqrt(4)*std::pow(x, 2)) - std::sqrt(((3 / 4)))) / "
+               "(1.3 + ((std::sqrt(x - 2)) / x)))) / "
                "((42E5 / a))))", parser.doMath(ss).c_str());
 }
 
@@ -1112,9 +1117,9 @@ TEST_F(TestMathParser, TestFormula05)
           ⎝⎝    42E5÷a  ⎠       ⎠
 )zzz";
 
-  EXPECT_STREQ("z = x * (pow(((((((sqrt(4)*pow(x, 2)) - sqrt(((3 / 4)))) / (1.3 + ((sqrt(x - 2)) / x)))) / ((42E5 / a)))), x - 3.3) + exp(pow(32, z))) * "
-               "pow(sqrt((sqrt(pow(x, 3) - 4))), pow(((1 / (x + z))), ((x / 2.4)))) * "
-               "-pow(0.E4, -42.5E+3 + pow(x, pow((z - 5), pow(3, pow(55, 4)))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("z = x * (std::pow(((((((std::sqrt(4)*std::pow(x, 2)) - std::sqrt(((3 / 4)))) / (1.3 + ((std::sqrt(x - 2)) / x)))) / ((42E5 / a)))), x - 3.3) + std::exp(std::pow(32, z))) * "
+               "std::pow(std::sqrt((std::sqrt(std::pow(x, 3) - 4))), std::pow(((1 / (x + z))), ((x / 2.4)))) * "
+               "-std::pow(0.E4, -42.5E+3 + std::pow(x, std::pow((z - 5), std::pow(3, std::pow(55, 4)))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestAssignment01)
@@ -1127,7 +1132,7 @@ TEST_F(TestMathParser, TestAssignment01)
         
 )zzz";
 
-  EXPECT_STREQ("var = z = ((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
+  EXPECT_STREQ("var = z = ((-b + std::sqrt(std::pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestAssignment02)
@@ -1140,5 +1145,5 @@ TEST_F(TestMathParser, TestAssignment02)
         
 )zzz";
 
-  EXPECT_STREQ("z = ((-b + sqrt(pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
+  EXPECT_STREQ("z = ((-b + std::sqrt(std::pow(b, 2) - ((4*a)*c))) / ((2*a)));", parser.doMath(ss).c_str());
 }

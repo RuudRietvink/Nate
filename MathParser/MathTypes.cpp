@@ -52,9 +52,10 @@ MathValue::MathValue(uint32_t aValue)
 		size{0, 0}
 {}
 		
-MathValue::MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize)
+MathValue::MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize, const Symbol& aSymbol)
 	: value(SUBMATRIX), 
 		oper(aOper), 
+	  symbol(aSymbol),
 		embedded1(aMath1), 
 		embedded2(aMath2),
 		size(aSize)

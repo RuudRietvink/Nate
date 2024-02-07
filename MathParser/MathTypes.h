@@ -112,6 +112,7 @@ struct Symbol
 
 	Type type = Type::Number;
 	std::string name;
+	std::string intName;
 	std::string codeName;
 	NumberType valueType = NumberType::Real;
 };
@@ -141,7 +142,7 @@ struct MathValue
 {
 	MathValue(uint32_t aValue);
 		
-	MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize);
+	MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize, const Symbol& aSymbol);
 		
 	MathValue(const MathValueSPtr& aMathValue, const Size& aSize);
 		
@@ -152,6 +153,7 @@ struct MathValue
 
 	uint32_t value = BADCHAR;
 	Oper oper = Oper::Unknown;
+	Symbol symbol;
 	Math embedded1;
 	Math embedded2;
 	Size size;
