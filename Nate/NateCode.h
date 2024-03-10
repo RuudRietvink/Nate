@@ -6,6 +6,8 @@
 
 #include <ostream>
 
+namespace nate
+{
 class NateParser;
 
 class NateCode : public ICodeVisitor
@@ -110,3 +112,4 @@ private:
 	std::string									mPrevFile;
 };
 
+}

@@ -6,6 +6,8 @@
 #include <direct.h>
 #include <Windows.h>
 
+namespace nate
+{
 int parse(const std::string& aIn, const std::string& aOut, NateParser::FileType aFileType = NateParser::FileType::Normal)
 {
 	std::ifstream in(aIn);
@@ -31,4 +33,6 @@ int main()
 	//(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input");
 	//parse("Hello.ns", "created\\Hello.cpp", NateParser::FileType::ObjectImpl);
 	return parse("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in2", "C:\\Users\\ruud\\source\\repos\\Nate\\Out\\Out.cpp");
+}
+
 }

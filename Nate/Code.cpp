@@ -6,6 +6,8 @@
 #include <reflex/matcher.h>
 #include <iostream>
 
+namespace nate
+{
 Code::Code()
 {}
 
@@ -36,4 +38,5 @@ std::ostream& operator<<(std::ostream& aStream, const Code& aValue)
   aStream << ","
 		      << aValue.priority() << ")";
 	return aStream;
+}
 }

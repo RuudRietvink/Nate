@@ -1,115 +1,126 @@
 #include "NateParserMath.h"
 #include "Identifier.h"
 
+namespace nate
+{
 NateParserMath::NateParserMath(NateParser& aNateParser)
   : mNateParser(aNateParser)
 {
 }
 
-void NateParserMath::error(const Position& aPosition, const std::string& aError) const
+void NateParserMath::error(const InputPosition& aPosition, const std::string& aError) const
 {
-  yy::position position(nullptr, (unsigned int)aPosition.y, (unsigned int)aPosition.x);
+  nate::position position(nullptr, (unsigned int)aPosition.y, (unsigned int)aPosition.x);
   mNateParser.error(position, aError);
 }
 	
-bool NateParserMath::isSymbol(const std::string& aInput) const
-{
-  return !!mNateParser.getIdentifier(aInput);
-}
-
-MathParser::Symbol NateParserMath::getSymbol(const std::string& aInput) const
-{
-  MathParser::Symbol result { Symbol::Type::Variable, aInput, MathValue::Type::Real };
-
-	return result;
-}
-
-std::string NateParserMath::code(Oper aOper, const Math& aMathLeft, const Math& aMathRight) const
+std::string NateParserMath::codeOperator(const MathValue& aMathValue) const
 {
 	std::stringstream ss;
 
-	switch (aOper)
+	switch (aMathValue.oper)
 	{
 	case Oper::Parentheses:
 	{
-		if (needsParens(aMathLeft))
+		if (needsParens(aMathValue.embedded1))
 		{
-			ss << "(" << mathString(aMathLeft) << ")";
+			ss << "(" << mathString(aMathValue.embedded1) << ")";
 		}
 		else
 		{
-			ss << mathString(aMathLeft);
+			ss << mathString(aMathValue.embedded1);
 		}
 		break;
 	}
 	case Oper::Multiplication:
 	{
-		ss << mathString(aMathLeft) << " * " << mathString(aMathRight);
+		ss << mathString(aMathValue.embedded1) << " * " << mathString(aMathValue.embedded2);
 		break;
 	}
 	case Oper::Division:
 	{
-		ss << "(" << code(Oper::Parentheses, aMathLeft) << " / "
-							<< code(Oper::Parentheses, aMathRight) << ")";
+		ss << "(";
+		if (needsParens(aMathValue.embedded1))
+		{
+			ss << "(" << mathString(aMathValue.embedded1) << ")";
+		}
+		else
+		{
+			ss << mathString(aMathValue.embedded1);
+		} 
+		
+		ss << " / ";
+
+		if (needsParens(aMathValue.embedded2))
+		{
+			ss << "(" << mathString(aMathValue.embedded2) << ")";
+		}
+		else
+		{
+			ss << mathString(aMathValue.embedded2);
+		} 
+								
+		ss << ")";
 		break;
 	}
 	case Oper::Addition:
 	{
-		ss << mathString(aMathLeft) << " + " << mathString(aMathRight);
+		ss << mathString(aMathValue.embedded1) << " + " << mathString(aMathValue.embedded2);
 		break;
 	}
 	case Oper::Subtraction:
 	{
-		ss << mathString(aMathLeft) << " - " << mathString(aMathRight);
+		ss << mathString(aMathValue.embedded1) << " - " << mathString(aMathValue.embedded2);
 		break;
 	}
 	case Oper::UnaryMinus:
 	{
-		ss << "-" << mathString(aMathLeft);
+		ss << "-" << mathString(aMathValue.embedded1);
 		break;
 	}
 	case Oper::UnaryPlus:
 	{
-		ss << "+" << mathString(aMathLeft);
+		ss << "+" << mathString(aMathValue.embedded1);
 		break;
 	}
 	case Oper::SquareRoot:
 	{
-		ss << "sqrt(" << mathString(aMathLeft) << ")";
+		ss << "sqrt(" << mathString(aMathValue.embedded1) << ")";
 		break;
 	}
 	case Oper::Power:
 	{
-		ss << "(" << mathString(aMathLeft) << ")^(" 
-							<< mathString(aMathRight) << ")";
+		ss << "(" << mathString(aMathValue.embedded1) << ")^(" 
+							<< mathString(aMathValue.embedded2) << ")";
 		break;
 	}
 	case Oper::Exponential:
 	{
-		ss << "exp(" << mathString(aMathLeft) << ")";
+		ss << "exp(" << mathString(aMathValue.embedded1) << ")";
 		break;
 	}
 	case Oper::Symbol:
 	{
-		ss << mathString(aMathLeft);
+		ss << mathString(aMathValue.embedded1);
 		break;
 	}
 	case Oper::Number:
 	{
-		ss << mathString(aMathLeft);
+		ss << mathString(aMathValue.embedded1);
 		break;
 	}
 	case Oper::Monomial:
 	{
-		ss << "(" << mathString(aMathLeft) << "*" << mathString(aMathRight) << ")";
+		ss << "(" << mathString(aMathValue.embedded1) << "*" << mathString(aMathValue.embedded2) << ")";
 		break;
 	}
 	case Oper::Nested:
 	{
-		ss << mathString(aMathLeft);
+		ss << mathString(aMathValue.embedded1);
 		break;
 	}
 	}
 
 	return ss.str();
+}
 }

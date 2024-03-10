@@ -3,6 +3,8 @@
 #include "Stat.h"
 #include "Record.h"
 
+namespace nate
+{
 class StatRecord : public Stat
 {
 public:
@@ -16,3 +18,4 @@ private:
   RecordPtr mRecord;
 };
 
+}

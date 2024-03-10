@@ -3,6 +3,8 @@
 
 #include "NateFunctions.h"
 
+namespace nate
+{
 Record::Record(const std::string& aName, const TypePtr& aBaseType)
 	: Type("record", aBaseType),
 	  mName(aName)
@@ -38,4 +40,6 @@ void Records::add(RecordPtr& aRecord, const std::string& aName)
 	aRecord->setFlag(Type::Record, true);
 	mRecords.addData(aRecord);
 	mTypes.add(aRecord, aName);
+}
+
 }

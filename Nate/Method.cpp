@@ -12,6 +12,8 @@
 #include <iostream>
 #include <sstream>
 
+namespace nate
+{
 Method::Method()
 {}
 
@@ -561,7 +563,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 
 std::string Method::toCodeWord(const std::string& aWord) const
 {
-	return ::toCodeWord(aWord);
+	return nate::toCodeWord(aWord);
 }
 
 const std::string& Method::pattern() const
@@ -590,7 +592,7 @@ const std::string& Method::pattern() const
 			}
 			else
 			{
-				buf << toCodeWord(arg.word()) << "_";
+				buf << nate::toCodeWord(arg.word()) << "_";
 			}
 		}
 
@@ -821,4 +823,6 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 
 	aStream << ")";
 	return aStream;
+}
+
 }

@@ -8,6 +8,8 @@
 #include <sstream>
 #include <algorithm>
 
+namespace nate
+{
 Define::Define()
 {
 	setPriority(65);
@@ -70,4 +72,5 @@ DefinePtr Defines::getLike(const DefinePtr& aDefine)
 													 });
 
 	return (iter != mDefines.end()) ? *iter : DefinePtr();
+}
 }

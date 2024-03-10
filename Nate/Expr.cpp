@@ -3,6 +3,8 @@
 #include "Identifier.h"
 #include "core/Core.h"
 
+namespace nate
+{
 Expr::Node::Node()
 	: Node("", "", TypePtr())
 {
@@ -259,4 +261,6 @@ std::ostream& operator<<(std::ostream& aStream, const Expr& aValue)
 	aStream << "))";
 
 	return aStream;
+}
+
 }

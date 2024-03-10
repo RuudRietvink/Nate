@@ -6,6 +6,8 @@
 #include <string>
 #include <ostream>
 
+namespace nate
+{
 class Arg : public WithFlags
 {
 public:
@@ -37,3 +39,5 @@ private:
 	bool            mIsIdentifier = false;
 };
 std::ostream& operator<<(std::ostream& aStream, const Arg& aValue);
+
+}

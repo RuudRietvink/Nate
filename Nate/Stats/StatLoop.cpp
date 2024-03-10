@@ -1,6 +1,8 @@
 #include "StatLoop.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatLoop::StatLoop(const Location& aLocation)
   : Stat(aLocation)
 {}
@@ -79,4 +81,6 @@ const Expr& StatLoop::ForRange::getRange() const
 void StatLoop::ForRange::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

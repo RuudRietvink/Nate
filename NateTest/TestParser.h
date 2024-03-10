@@ -10,6 +10,8 @@
 #include <filesystem>
 #include <algorithm>
 
+namespace nate
+{
 inline std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
     size_t start_pos = 0;
@@ -131,4 +133,6 @@ Program
 TEST_F(TestParser, SUBJECT##NAME) \
 { \
   testCodePiece(#NAME, in); \
+}
+
 }

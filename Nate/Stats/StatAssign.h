@@ -3,6 +3,8 @@
 #include "StatWithExpr.h"
 #include "Identifier.h"
 
+namespace nate
+{
 class StatAssign : public StatWithExpr
 {
 public:
@@ -16,3 +18,4 @@ private:
   std::vector<Expr> mIdentifiers;
 };
 
+}

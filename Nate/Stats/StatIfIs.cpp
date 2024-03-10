@@ -1,6 +1,8 @@
 #include "StatIfIs.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatIfIs::StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Expr& aExpr)
   : StatWithExpr(aLocation, aExpr),
     mId(aId)
@@ -39,4 +41,6 @@ StatIfIs::Is::Is(const Location& aLocation, const Expr& aExpr)
 
 void StatIfIs::Is::accept(ICodeVisitor* /*aVisitor*/) const
 {
+}
+
 }

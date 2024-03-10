@@ -1,5 +1,7 @@
 #include "TestParser.h"
 
+namespace nate
+{
 TEST_F(TestParser, Program)
 {
   std::string in =
@@ -26,4 +28,6 @@ Program
 
   EXPECT_EQ(0, parseProgram(in));
   compareWhole(exp, code());
+}
+
 }

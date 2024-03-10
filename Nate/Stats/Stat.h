@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+namespace nate
+{
 class ICodeVisitor;
 
 class Stat
@@ -33,3 +35,4 @@ private:
   Location  mLocation;
 };
 
+}

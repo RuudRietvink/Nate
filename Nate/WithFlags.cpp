@@ -1,5 +1,7 @@
 #include "WithFlags.h"
 
+namespace nate
+{
 bool WithFlags::is(size_t aFlag) const
 { 
 	auto iter = mFlags.find(aFlag);
@@ -41,4 +43,6 @@ void WithFlags::setFlags(const Flags& aFlags)
 const Flags& WithFlags::getFlags() const
 {
 	return mFlags;
+}
+
 }

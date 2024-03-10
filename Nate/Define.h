@@ -5,6 +5,8 @@
 #include <list>
 #include <ostream>
 
+namespace nate
+{
 class Identifier;
 class Define;
 
@@ -40,3 +42,4 @@ private:
 };
 std::ostream& operator<<(std::ostream& aStream, const Define& aValue);
 
+}

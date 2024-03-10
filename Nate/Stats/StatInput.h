@@ -3,6 +3,8 @@
 #include "Stat.h"
 #include "StatWithExpr.h"
 
+namespace nate
+{
 class StatInput : public Stat
 {
 public:
@@ -47,3 +49,5 @@ public:
 
   void accept(ICodeVisitor* aVisitor) const override;
 };
+
+}

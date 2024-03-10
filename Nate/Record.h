@@ -4,6 +4,8 @@
 
 #include <list>
 
+namespace nate
+{
 class Record;
 typedef std::shared_ptr<Record> RecordPtr;
 
@@ -45,3 +47,5 @@ public:
 	virtual Records& records() = 0;
 };
 typedef std::shared_ptr<IRecordsHolder> IRecordsHolderPtr;
+
+}

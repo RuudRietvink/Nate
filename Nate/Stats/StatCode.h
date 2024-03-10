@@ -2,6 +2,8 @@
 
 #include "Stat.h"
 
+namespace nate
+{
 class StatCode: public Stat
 {
 public:
@@ -15,3 +17,4 @@ private:
   std::string mCode;
 };
 
+}

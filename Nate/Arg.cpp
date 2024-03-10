@@ -1,6 +1,8 @@
 
 #include "Arg.h"
 
+namespace nate
+{
 Arg::Arg(const IdentifierPtr& aIdentifier)
 	: mIdentifier(aIdentifier),
 	  mIsIdentifier(true)
@@ -100,4 +102,6 @@ std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)
 	aStream << "}";
 
 	return aStream;
+}
+
 }

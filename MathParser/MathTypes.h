@@ -167,6 +167,4 @@ struct MathValue
 	MathValueSPtr mathValue;
 };
 
-	
-
 } // namespace nate

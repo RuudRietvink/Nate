@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+namespace nate
+{
 Type::Type()
 	: Type("")
 {
@@ -385,4 +387,6 @@ void Types::add(const TypePtr& aType, const std::string& aName)
 bool Types::contains(const TypePtr& aType)
 {
 	return mTypes.contains(aType);
+}
+
 }

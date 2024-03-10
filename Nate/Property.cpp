@@ -8,6 +8,8 @@
 #include <sstream>
 #include <algorithm>
 
+namespace nate
+{
 Property::Property()
 {
 }
@@ -27,4 +29,6 @@ std::ostream& operator<<(std::ostream& aStream, const Property& aValue)
 	aStream << static_cast<int>(aValue.getPropType()) << ", ";
   operator<<(aStream, static_cast<const Define&>(aValue));
 	return aStream;
+}
+
 }

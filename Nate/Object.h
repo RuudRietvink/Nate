@@ -11,6 +11,8 @@
 #include <sstream>
 #include <map>
 
+namespace nate
+{
 class Object;
 typedef std::shared_ptr<Object> ObjectPtr;
 
@@ -64,12 +66,12 @@ public:
 	{
 		PropState states[2];
 		std::string filename;
-		yy::parser::location_type location;
+		nate::parser::location_type location;
 	};
 	
 	std::map<IdentifierPtr, PropData>& propertyMethods() { return mPropertyMethods; }
 	
-	void     addProp(const IdentifierPtr& anId, const yy::parser::location_type& aLocation, const std::string& filename);
+	void     addProp(const IdentifierPtr& anId, const nate::parser::location_type& aLocation, const std::string& filename);
 	bool     hasProp(const IdentifierPtr& anId) const;
 	PropState getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const;
 	void     setPropState(const IdentifierPtr& anId, Property::PropType aPropType, PropState aPropState);
@@ -92,3 +94,5 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);
+
+}

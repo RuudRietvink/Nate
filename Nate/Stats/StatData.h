@@ -2,6 +2,8 @@
 
 #include "StatOutput.h"
 
+namespace nate
+{
 class StatData : public StatOutput
 {
 public:
@@ -14,3 +16,5 @@ public:
 private:
   IdentifierPtr mId;
 };
+
+}

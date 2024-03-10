@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 
+namespace nate
+{
 using Flags = std::map<size_t, bool>;
 
 class WithFlags
@@ -26,3 +28,4 @@ private:
 	Flags mFlags;
 };
 
+}

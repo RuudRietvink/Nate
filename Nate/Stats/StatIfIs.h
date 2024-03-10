@@ -3,6 +3,8 @@
 #include "StatWithExpr.h"
 #include "Expr.h"
 
+namespace nate
+{
 class StatIfIs : public StatWithExpr
 {
 public:
@@ -40,3 +42,4 @@ private:
   IdentifierPtr mId; 
 };
 
+}

@@ -10,6 +10,8 @@
 #include <ostream>
 #include <memory>
 
+namespace nate
+{
 class Scope;
 class Identifier;
 typedef std::shared_ptr<Identifier> IdentifierPtr;
@@ -80,3 +82,5 @@ public:
 	};
 	virtual ScopeFlag scopeFlag() const = 0;
 };
+
+}

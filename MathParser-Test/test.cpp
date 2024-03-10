@@ -871,6 +871,20 @@ TEST_F(TestMathParser, TestBrackets05)
   EXPECT_STREQ("x[(((((std::pow(x, z)) / z)) / (x + z))) * std::pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
 }
 
+TEST_F(TestMathParser, TestMatrix01)
+{  
+  ss << R"zzz(
+   ⎡1  2⎤
+   ⎢    ⎥
+   ⎢3  4⎥
+   ⎢    ⎥
+   ⎢5  6⎥ 
+   ⎣    ⎦
+)zzz";
+
+  EXPECT_STREQ("", errorParser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestFunctionCall01)
 {  
   ss << R"zzz(

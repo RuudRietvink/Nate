@@ -2,6 +2,8 @@
 #include "StatExpr.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatInput::StatInput(const Location& aLocation)
   : Stat(aLocation)
 {}
@@ -51,4 +53,5 @@ StatInput::Value::Value(const Location& aLocation, const Expr& aExpr)
 void StatInput::Value::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
 }

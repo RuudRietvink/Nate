@@ -1,6 +1,8 @@
 #include "StatObject.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatObject::StatObject(const Location& aLocation, const ObjectPtr& aObject, bool aIsDecl)
   : Stat(aLocation),
     mObject(aObject),
@@ -20,4 +22,6 @@ const ObjectPtr& StatObject::getObject() const
 bool StatObject::isDecl() const
 {
   return mIsDecl;
+}
+
 }

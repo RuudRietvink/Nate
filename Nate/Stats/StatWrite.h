@@ -2,6 +2,8 @@
 
 #include "StatOutput.h"
 
+namespace nate
+{
 class StatWrite : public StatOutput
 {
 public:
@@ -20,3 +22,5 @@ private:
   Expr mOutput;
   bool mCreateIt;
 };
+
+}

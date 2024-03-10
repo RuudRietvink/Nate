@@ -10,6 +10,8 @@
 #include <ostream>
 #include <tuple>
 
+namespace nate
+{
 class Identifier;
 class Record;
 class Object;
@@ -139,5 +141,4 @@ private:
 };
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);
 
-
-
+}

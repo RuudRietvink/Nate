@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+namespace nate
+{
 NateCode::NateCode(std::ostream& aOut, NateParser* aParser)
   : mOut(&aOut),
 	  mParser(aParser)
@@ -1165,4 +1167,6 @@ void NateCode::codeImplObjectNested(const StatObject& aStat, bool inImpl)
 			}
 		}
 	}
+}
+
 }

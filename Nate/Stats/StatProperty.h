@@ -5,6 +5,8 @@
 #include "Identifier.h"
 #include "Property.h"
 
+namespace nate
+{
 class StatProperty : public Stat
 {
 public:
@@ -29,3 +31,4 @@ private:
   PropertyPtr mProperties[2];
 };
 
+}

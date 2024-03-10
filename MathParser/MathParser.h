@@ -29,6 +29,7 @@ public:
 	MATHPARSER_API virtual void addConstant(const std::string& aName, const std::string& aIntName, const std::string& aCodeName, NumberType aType = NumberType::Real);
 	MATHPARSER_API virtual void addFunction(const std::string& aName, const std::string& aCodeName, NumberType aType = NumberType::Real);
 	MATHPARSER_API virtual std::string doMath(std::istream& aStream, int line = 0);
+	MATHPARSER_API virtual std::string doMath(Math& aMath);
 	
 protected:
 	MATHPARSER_API virtual void init();
@@ -46,8 +47,7 @@ protected:
 	virtual bool needsParens(const Math& aMath) const;
 
 private:
-	const Symbol& getSymbol(const std::string& aInput) const;
-	std::string doMath(Math& aMath);
+	Symbol getSymbol(const std::string& aInput) const;
 
 	Position mathPos(const Math& aMath, 
 									 const Position& aPosition) const;

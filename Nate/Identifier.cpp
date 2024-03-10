@@ -3,6 +3,8 @@
 #include "Expr.h"
 #include "NateFunctions.h"
 
+namespace nate
+{
 Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
 	: Identifier(aIdentifiersHolder, aName, aType, Expr("default", "{}", aType))
 {
@@ -87,4 +89,6 @@ void Identifiers::add(const IdentifierPtr& aIdentifier)
 {
 	mIds.addData(aIdentifier);
 	mIdentifierList.push_back(aIdentifier);
+}
+
 }

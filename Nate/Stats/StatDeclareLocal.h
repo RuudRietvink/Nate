@@ -4,6 +4,8 @@
 #include "Identifier.h"
 #include "Expr.h"
 
+namespace nate
+{
 class StatDeclareLocal : public StatWithExpr
 {
 public:
@@ -17,3 +19,4 @@ private:
   IdentifierPtr mIdentifier;
 };
 
+}

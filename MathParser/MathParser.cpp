@@ -125,7 +125,7 @@ void MathParser::init()
 
 void MathParser::printDebugMath(bool print, const Math& aMath, const std::string& aFunction, const std::string& aText) const
 {
-	//if (print)
+	if (print)
 	{
 		printMath(aMath, aFunction, aText);
 	}
@@ -152,7 +152,7 @@ bool MathParser::isSymbol(const std::string& aInput) const
 	return mSymbols.find(aInput) != mSymbols.end();
 }
 
-const Symbol& MathParser::getSymbol(const std::string& aInput) const
+Symbol MathParser::getSymbol(const std::string& aInput) const
 {
 	return mSymbols.at(aInput);
 }
@@ -570,11 +570,11 @@ void MathParser::doMathParentheses(Math& aMath)
 		Area subArea{ area->upperLeft.right(), area->lowerRight.left() };
 		Math sub = getSubMath(aMath, subArea);
 					
-		printDebugMath(true, sub, __FUNCTION__);
+		printDebugMath(false, sub, __FUNCTION__);
 		doMathParsing(sub);
 		embedSubMath(aMath, sub, Oper::Parentheses, *area);
 
-		printDebugMath(true, aMath, __FUNCTION__);
+		printDebugMath(false, aMath, __FUNCTION__);
 		doMathParsing(aMath);
 	}
 }
@@ -605,7 +605,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 	OptPosition leftHorizontalBar = findAny(aMath, HORIZONTAL_BAR);
 	if (leftHorizontalBar)
 	{
-		printDebugMath(true, aMath, __FUNCTION__);
+		printDebugMath(false, aMath, __FUNCTION__);
 		OptPosition rightHorizontalBar = findRepeatingRight(aMath, *leftHorizontalBar, HORIZONTAL_BAR);
 
 		Math subNumerator;
@@ -617,7 +617,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 			Position rightPos = Position{ rightHorizontalBar->x, rightHorizontalBar->y - 1};
 			Area areaNumerator = Area{ *leftUpperPosition, rightPos };
 			subNumerator = getSubMath(aMath, areaNumerator);
-			printDebugMath(true, subNumerator, __FUNCTION__, "numerator");
+			printDebugMath(false, subNumerator, __FUNCTION__, "numerator");
 
 			OptPosition leftLowerPosition = findBottomOfFraction(aMath, *leftHorizontalBar, rightHorizontalBar->x);
 			if (leftLowerPosition)
@@ -627,7 +627,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				rightPos = Position{ rightHorizontalBar->x, leftLowerPosition->y };
 				Area areaDenomenator = Area{ leftPos, rightPos };
 				subDenomenator = getSubMath(aMath, areaDenomenator);
-				printDebugMath(true, subDenomenator, __FUNCTION__, "denomerator");
+				printDebugMath(false, subDenomenator, __FUNCTION__, "denomerator");
 		
 				doMathParsing(subNumerator);
 				doMathParsing(subDenomenator);
@@ -635,7 +635,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				Area area = join(areaNumerator, areaDenomenator);
 				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, area);
 				
-				printDebugMath(true, aMath, __FUNCTION__);
+				printDebugMath(false, aMath, __FUNCTION__);
 				doMathParsing(aMath);
 			}
 			else
@@ -670,12 +670,12 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			
 			Position rightPos = Position{ lastRootBar->x, squareRoot->y };
 			Math sub = getSubMath(aMath, Area{ leftPos, rightPos });
-			printDebugMath(true, sub, __FUNCTION__);
+			printDebugMath(false, sub, __FUNCTION__);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
 			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos });
 			
-			printDebugMath(true, aMath, __FUNCTION__);
+			printDebugMath(false, aMath, __FUNCTION__);
 			doMathParsing(aMath);
 		}
 		else
@@ -837,12 +837,12 @@ void MathParser::doMathMonomial(Math& aMath)
 							}
 							else
 							{
-								printDebugMath(true, left, __FUNCTION__);
-								printDebugMath(true, right, __FUNCTION__);
+								printDebugMath(false, left, __FUNCTION__);
+								printDebugMath(false, right, __FUNCTION__);
 								embedSubMath(aMath, left, right, Oper::Monomial, area);
 							}
 
-							printDebugMath(true, aMath, __FUNCTION__);
+							printDebugMath(false, aMath, __FUNCTION__);
 						}
 					}
 					else if (aMath.matrix[y][x].mathValue->oper != Oper::FunctionName)
@@ -884,10 +884,10 @@ void MathParser::doMathFunctionCall(Math& aMath)
 							Math left = getSubMath(aMath, *leftArea);
 							Math right = getSubMath(aMath, rightArea);
 							Area area = join(*leftArea, rightArea);
-							printDebugMath(true, left, __FUNCTION__);
-							printDebugMath(true, right, __FUNCTION__);
+							printDebugMath(false, left, __FUNCTION__);
+							printDebugMath(false, right, __FUNCTION__);
 							embedSubMath(aMath, left, right, Oper::FunctionCall, area, aMath.matrix[y][x].mathValue->symbol);
-							printDebugMath(true, aMath, __FUNCTION__);
+							printDebugMath(false, aMath, __FUNCTION__);
 						}
 					}
 					else if (aMath.matrix[y][x].mathValue->oper == Oper::FunctionName)
@@ -1032,7 +1032,8 @@ std::vector<Math> MathParser::getMatrixCells(const Math& aMath, const std::vecto
 {
 	std::vector<Math> cells;
   int startRow = 0;
-
+	
+	std::cerr << __FUNCTION__ << " " << horLines.size() << " " << verLines.size() << std::endl;
   for (int y : horLines)
 	{
 		int startCol = 0;
@@ -1041,6 +1042,7 @@ std::vector<Math> MathParser::getMatrixCells(const Math& aMath, const std::vecto
 			Area subArea{ Position{ startRow, startCol }, Position{ y, x } };
 			Math sub = getSubMath(aMath, subArea);
 			cells.push_back(sub);
+			printDebugMath(true, sub, __FUNCTION__);
 
       startRow = y + 1;
       startCol = x + 1;
@@ -1317,7 +1319,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 				{				
 					Area parensArea{ Position{ startX + 1, upY }, Position{ x - 1, downY } };
 					Math parens = getSubMath(aMath, parensArea);
-					printDebugMath(true, parens, __FUNCTION__, std::format("right {}", desc));
+					printDebugMath(false, parens, __FUNCTION__, std::format("right {}", desc));
 					doMathParsing(parens);
 					parensArea.upperLeft.x = startX;
 					parensArea.lowerRight.x = x;
@@ -1332,7 +1334,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 						else
 						{
 							Math left = getSubMath(aMath, *leftArea);
-					    printDebugMath(true, left, __FUNCTION__, std::format("left {}", desc));
+					    printDebugMath(false, left, __FUNCTION__, std::format("left {}", desc));
 							embedSubMath(aMath, left, parens, oper, leftArea->merge(parensArea));
 						}
 					}
@@ -1341,7 +1343,7 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 						embedSubMath(aMath, parens, oper, parensArea);
 					}
 
-				  printDebugMath(true, aMath, __FUNCTION__, desc);
+				  printDebugMath(false, aMath, __FUNCTION__, desc);
 				}
 			}
 			else if (kar == right)

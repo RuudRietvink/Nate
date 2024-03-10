@@ -1,6 +1,8 @@
 #include "StatDefine.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatDefine::StatDefine(const Location& aLocation, const DefinePtr& aDefine, bool aImpOnly, bool aIsDecl)
   : Stat(aLocation),
     mDefine(aDefine),
@@ -26,4 +28,6 @@ bool StatDefine::isImpOnly() const
 bool StatDefine::isDecl() const
 {
   return mIsDecl;
+}
+
 }

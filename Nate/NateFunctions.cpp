@@ -9,6 +9,8 @@
 #include <sstream>
 #include <iomanip>
 
+namespace nate
+{
 std::string unquote(const std::string& aString)
 {
 	return aString.substr(1, aString.size() - 2);
@@ -111,4 +113,6 @@ std::tuple<std::string, std::string> fromMonomial(const std::string& aString)
 	}
 
 	return std::make_tuple(number, word);
+}
+
 }

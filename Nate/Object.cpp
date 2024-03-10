@@ -3,6 +3,8 @@
 
 #include <algorithm>
 
+namespace nate
+{
 Object::Object()
 	: Record(),
 		mRecords(mTypes)
@@ -67,7 +69,7 @@ DefinePtr Object::basesGetLike(const DefinePtr& aDefine, const ObjectPtr& inheri
 	return result;
 }
 
-void Object::addProp(const IdentifierPtr& anId, const yy::parser::location_type& aLocation, const std::string& filename)
+void Object::addProp(const IdentifierPtr& anId, const nate::parser::location_type& aLocation, const std::string& filename)
 {
 	PropData prop;
 	prop.location = aLocation;
@@ -149,4 +151,6 @@ std::ostream& operator<<(std::ostream& aStream, const Object& aValue)
 	if (aValue.isRole()) aStream << ",isRole";
 	aStream << ")";
 	return aStream;
+}
+
 }

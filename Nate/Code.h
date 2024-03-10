@@ -5,6 +5,8 @@
 #include <string>
 #include <ostream>
 
+namespace nate
+{
 class Code;
 typedef std::shared_ptr<Code> CodePtr;
 
@@ -24,3 +26,4 @@ private:
 };
 std::ostream& operator<<(std::ostream& aStream, const Code& aValue);
 
+}

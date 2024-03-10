@@ -4,15 +4,18 @@
 
 #include <string>
 
+namespace nate
+{
 struct Location
 {
 	Location()
 	{}
 
-	Location(const yy::location& aLocation, const std::string& aCurFile);
+	Location(const nate::location& aLocation, const std::string& aCurFile);
 
 	std::string filename;
 	int beginLine = -1;
 	int beginColumn = -1;
 };
 
+}

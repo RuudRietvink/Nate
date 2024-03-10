@@ -1,6 +1,8 @@
 #include "StatProperty.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatProperty::StatProperty(const Location& aLocation, const IdentifierPtr& aId, const ObjectPtr& aObject, bool aImpOnly)
   : Stat(aLocation),
     mId(aId),
@@ -36,4 +38,6 @@ const PropertyPtr& StatProperty::getProperty(Property::PropType propType) const
 void StatProperty::setProperty(Property::PropType propType, const PropertyPtr aProperty)
 {
   mProperties[static_cast<int>(propType)] = aProperty;
+}
+
 }

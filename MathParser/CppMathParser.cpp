@@ -1,6 +1,7 @@
 #include "CppMathParser.h"
 
 #include <sstream>
+#include <format>
 
 namespace nate 
 {
@@ -165,6 +166,34 @@ std::string CppMathParser::codeOperator(const MathValue& aMathValue) const
 	case Oper::Nested:
 	{
 		ss << mathString(aMathValue.embedded1);
+		break;
+	}
+	case Oper::Matrix:
+	{
+		ss << std::format("eigen::Matrix<double, {}, {}>", aMathValue.matrixSize.height, aMathValue.matrixSize.width);
+	  ss << "{ ";
+		for (int y = 0; y < aMathValue.matrixSize.height; ++y)
+		{
+			if (y != 0)
+			{
+				ss << ", ";
+			}
+
+			ss << "{ ";
+
+			for (int x = 0; y < aMathValue.matrixSize.width; ++x)
+			{
+				if (x != 0)
+				{
+					ss << ", ";
+				}
+
+				ss << mathString(aMathValue.matrixCells[y * aMathValue.matrixSize.width + x].mathValue(0, 0).embedded1);
+			}
+			ss << " }";
+		}
+
+		ss << " }";
 		break;
 	}
 	}

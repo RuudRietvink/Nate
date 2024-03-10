@@ -21,6 +21,8 @@
 #include "StatScope.h"
 #include "StatWrite.h"
 
+namespace nate
+{
 class ICodeVisitor
 {
 public:
@@ -60,3 +62,4 @@ public:
   virtual void visit(const StatWrite& aStat) = 0;
 };
 
+}

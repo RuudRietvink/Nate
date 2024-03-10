@@ -1,6 +1,8 @@
 #include "StatRecord.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatRecord::StatRecord(const Location& aLocation, const RecordPtr& aRecord)
   : Stat(aLocation),
     mRecord(aRecord)
@@ -14,4 +16,6 @@ void StatRecord::accept(ICodeVisitor* aVisitor) const
 const RecordPtr& StatRecord::getRecord() const
 {
   return mRecord;
+}
+
 }

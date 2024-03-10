@@ -1,6 +1,8 @@
 #include "StatRead.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatRead::StatRead(const Location& aLocation, InputType aInputType, const IdentifierPtr& aReader, const Expr& aInput, bool aCreateIt)
   : StatInput(aLocation),
     mInputType(aInputType),
@@ -32,4 +34,6 @@ bool StatRead::getCreateIt() const
 void StatRead::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

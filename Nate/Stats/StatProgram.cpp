@@ -1,6 +1,8 @@
 #include "StatProgram.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatProgram::StatProgram(const Location& aLocation)
   : Stat(aLocation)
 {}
@@ -8,4 +10,6 @@ StatProgram::StatProgram(const Location& aLocation)
 void StatProgram::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

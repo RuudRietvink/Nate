@@ -4,6 +4,8 @@
 #include "StatExpr.h"
 
 
+namespace nate
+{
 class StatLoop : public Stat
 {
 public:
@@ -57,3 +59,5 @@ public:
 
   void accept(ICodeVisitor* aVisitor) const override;
 };
+
+}

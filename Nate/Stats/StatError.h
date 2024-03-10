@@ -2,6 +2,8 @@
 
 #include "StatOutput.h"
 
+namespace nate
+{
 class StatError : public StatOutput
 {
 public:
@@ -9,3 +11,5 @@ public:
 
   void accept(ICodeVisitor* aVisitor) const override;
 };
+
+}

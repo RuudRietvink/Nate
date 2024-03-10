@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+namespace nate
+{
 template <typename T>
 class Container
 {
@@ -32,3 +34,4 @@ private:
 	std::map<std::string, T> mContainer;
 };
 
+}

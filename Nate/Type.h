@@ -7,6 +7,8 @@
 #include <ostream>
 #include <memory>
 
+namespace nate
+{
 class Type;
 typedef std::shared_ptr<Type> TypePtr;
 
@@ -109,3 +111,5 @@ protected:
 };
 
 typedef std::shared_ptr<ITypesHolder> ITypesHolderPtr;
+
+}

@@ -6,6 +6,7 @@
 #include "core/Core.h"
 #include "core/Complex.h"
 #include <optional>
+
 %}
 
 %class{
@@ -35,7 +36,7 @@ public:
 		filenames.pop_back();
   }
 
-  std::string fileLocation(const std::optional<yy::location>& aLocation = std::nullopt)
+  std::string fileLocation(const std::optional<nate::location>& aLocation = std::nullopt)
   {
     std::stringstream ss;
     ss << currentFile() << ": " << aLocation.value_or(location());
@@ -117,14 +118,14 @@ public:
 	  unputString(aString.crbegin(), aString.crend());
   }
 
-	yy::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const yy::location& aLocation)
+	nate::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const nate::location& aLocation)
 	{
 		std::string name;
 		bool isId;
 
 		std::tie(isId, name) = nate->makeIdOrWord(aOrig, aString);
-		return isId ? yy::parser::make_IDENTIFIER(name, aLocation)
-		            : yy::parser::make_WORD(name, aLocation);
+		return isId ? nate::parser::make_IDENTIFIER(name, aLocation)
+		            : nate::parser::make_WORD(name, aLocation);
 	}
   
   void outIndents(const std::string& aString)
@@ -219,11 +220,11 @@ public:
 %}
 
 %option bison-complete
-%option bison-cc-namespace=yy
+%option bison-cc-namespace=nate
 %option bison-cc-parser=parser
 %option bison-locations
-%option exception="yy::parser::syntax_error(location(), std::string(\"Unknown token in \") + currentFile())"
-%option namespace=yy
+%option exception="nate::parser::syntax_error(location(), std::string(\"Unknown token in \") + currentFile())"
+%option namespace=nate
 %option lexer=Lexer
 %option unicode
 %option tabs=2
@@ -285,7 +286,7 @@ string          ["][^"]*[""]
 <^CODE,^INCLUDE_CODE>\h+     s();// ignore
 (?^\\\n\h*)    s();// lines ending in \ will continue on the next line
 
-<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^INBRACKETS>\n  return yy::parser::make_EOS(location());
+<^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^INBRACKETS>\n  return nate::parser::make_EOS(location());
 
 // *** comments
 (?^^\h*"//".*\n) s();// eat //-comments that start a line without affecting indent stops
@@ -297,9 +298,9 @@ string          ["][^"]*[""]
 //////////////////////////
 
 <*,^COMMENT,^ARGS,^INBRACKETS>{
-^\h*\i			  outIndents("i "); s(); return yy::parser::make_BEGIN(location()); // indent
-^\h*\j			  outIndents("j "); s(); return yy::parser::make_END(location());   // dedent
-\j				    outIndents("j+ "); s(); return yy::parser::make_END(location());   // dedent, for each extra indent level on the same line
+^\h*\i			  outIndents("i "); s(); return nate::parser::make_BEGIN(location()); // indent
+^\h*\j			  outIndents("j "); s(); return nate::parser::make_END(location());   // dedent
+\j				    outIndents("j+ "); s(); return nate::parser::make_END(location());   // dedent, for each extra indent level on the same line
 }
 //////////////////////////
 
@@ -316,7 +317,7 @@ string          ["][^"]*[""]
 <^SUPERSCRIPT_EXPR,^COMMENT>{
 {superscriptChar} unputString(str()); 
                   startSuperscript();
-                  return yy::parser::make_WORD("^", location());
+                  return nate::parser::make_WORD("^", location());
 }
 }
 //////////////////////////
@@ -326,179 +327,179 @@ include\h*\".*\"  s(); includeFile();
 
 // *** key words
 <LOOP>{
-\bin\b 	      return yy::parser::make_IN(location());
+\bin\b 	      return nate::parser::make_IN(location());
 \bwhile\b     |
-(?^^\h+/while\b)	return yy::parser::make_WHILE(location());
+(?^^\h+/while\b)	return nate::parser::make_WHILE(location());
 }
 //////////////////////////
 
 <DEFINE>{
-\breturn\b	  return yy::parser::make_RETURN(location());
+\breturn\b	  return nate::parser::make_RETURN(location());
 }
 //////////////////////////
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
-":="			    return yy::parser::make_ASSIGN(location());
-":"				    return yy::parser::make_COL(location());
-"("					  return yy::parser::make_OPENPAR(location());
-")"					  return yy::parser::make_CLOSEPAR(location());
-","					  return yy::parser::make_COMMA(location());
-"&"					  return yy::parser::make_CONCAT(location());
-";"				    return yy::parser::make_EOS(location());
-"}"           return yy::parser::make_ARGEND(location());
-{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{rational}	  return yy::parser::make_RATIONAL(str(), location());
-{string}    	return yy::parser::make_STRING(str(), location());
-"true"|"false" return yy::parser::make_BOOL(str(), location());
+":="			    return nate::parser::make_ASSIGN(location());
+":"				    return nate::parser::make_COL(location());
+"("					  return nate::parser::make_OPENPAR(location());
+")"					  return nate::parser::make_CLOSEPAR(location());
+","					  return nate::parser::make_COMMA(location());
+"&"					  return nate::parser::make_CONCAT(location());
+";"				    return nate::parser::make_EOS(location());
+"}"           return nate::parser::make_ARGEND(location());
+{number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{rational}	  return nate::parser::make_RATIONAL(str(), location());
+{string}    	return nate::parser::make_STRING(str(), location());
+"true"|"false" return nate::parser::make_BOOL(str(), location());
 <^DECL_TYPE>{word}	  		return makeIdOrWord(str(), str(), location());
-[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
-{oper}				return yy::parser::make_WORD(str(), location());
+[$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
+{oper}				return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <FOR_EXPR>{
-\bto\b		    return yy::parser::make_TO(location());
-\bdown-to\b	  return yy::parser::make_DOWNTO(location());
-\bstep\b	    return yy::parser::make_STEP(location());
-\bwhile\b 	  return yy::parser::make_WHILE(location());
-\bin\b 	      return yy::parser::make_IN(location());
+\bto\b		    return nate::parser::make_TO(location());
+\bdown-to\b	  return nate::parser::make_DOWNTO(location());
+\bstep\b	    return nate::parser::make_STEP(location());
+\bwhile\b 	  return nate::parser::make_WHILE(location());
+\bin\b 	      return nate::parser::make_IN(location());
 }
 //////////////////////////
 
 <SUPERSCRIPT_EXPR>{
 {superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
-{superNumber} return yy::parser::make_NUMBER(Core::unSuperscript(str()), location());
-{superMinus}  return yy::parser::make_WORD("-", location());
-{superPlus}   return yy::parser::make_WORD("+", location());
-{superOpen}   return yy::parser::make_OPENPAR(location());
-{superClose}  return yy::parser::make_CLOSEPAR(location());
+{superNumber} return nate::parser::make_NUMBER(Core::unSuperscript(str()), location());
+{superMinus}  return nate::parser::make_WORD("-", location());
+{superPlus}   return nate::parser::make_WORD("+", location());
+{superOpen}   return nate::parser::make_OPENPAR(location());
+{superClose}  return nate::parser::make_CLOSEPAR(location());
 {word}      	stopSuperscript();
 {oper}			  stopSuperscript(); 
-\n            stopSuperscript(); return yy::parser::make_EOS(location());
+\n            stopSuperscript(); return nate::parser::make_EOS(location());
 [^\h]         stopSuperscript();
 }
 //////////////////////////
 
 <ARGS>{
-\bis\b			  return yy::parser::make_IS(location());
-\bas\b			  return yy::parser::make_AS(location());
-":="			    return yy::parser::make_ASSIGN(location());
-":"				    return yy::parser::make_COL(location());
-"("					  return yy::parser::make_OPENPAR(location());
-")"					  return yy::parser::make_CLOSEPAR(location());
-","					  return yy::parser::make_COMMA(location());
-"${"          return yy::parser::make_ARGSTART(location());
-"}"           return yy::parser::make_ARGEND(location());
-[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
-{string}    	return yy::parser::make_STRING(str(), location());
-[\\]{word}		return yy::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
-{word}		    return yy::parser::make_WORD(str(), location());
-{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{oper}				return yy::parser::make_WORD(str(), location());
-"{{"          return yy::parser::make_START_SPEC(location());
+\bis\b			  return nate::parser::make_IS(location());
+\bas\b			  return nate::parser::make_AS(location());
+":="			    return nate::parser::make_ASSIGN(location());
+":"				    return nate::parser::make_COL(location());
+"("					  return nate::parser::make_OPENPAR(location());
+")"					  return nate::parser::make_CLOSEPAR(location());
+","					  return nate::parser::make_COMMA(location());
+"${"          return nate::parser::make_ARGSTART(location());
+"}"           return nate::parser::make_ARGEND(location());
+[$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
+{string}    	return nate::parser::make_STRING(str(), location());
+[\\]{word}		return nate::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
+{word}		    return nate::parser::make_WORD(str(), location());
+{number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{oper}				return nate::parser::make_WORD(str(), location());
+"{{"          return nate::parser::make_START_SPEC(location());
 \h*\k?        // ignore
 }
 //////////////////////////
 
 <INCLUDE_CODE>{
-[^\h\n][^\n]*\n      return yy::parser::make_WORD(str(), location());
+[^\h\n][^\n]*\n      return nate::parser::make_WORD(str(), location());
 ^[\h]+        // ignore
 \n            // ignore
 }
 //////////////////////////
 
 <CODE>{
-{string}    	return yy::parser::make_WORD(str(), location());
-[^\$"\h\n]+   return yy::parser::make_WORD(str(), location());
+{string}    	return nate::parser::make_WORD(str(), location());
+[^\$"\h\n]+   return nate::parser::make_WORD(str(), location());
 ^[\h]+        // ignore
 [\h]*\n       // ignore
-[\h]+         return yy::parser::make_WORD(str(), location());
-[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
+[\h]+         return nate::parser::make_WORD(str(), location());
+[$]{idName}   return nate::parser::make_IDENTIFIER(str(), location());
 }
 //////////////////////////
 
 <INBRACKETS>{
-"}}"          return yy::parser::make_END_SPEC(location());
-[\h]?[\p{Alpha}]+[\h]?  return yy::parser::make_WORD(str(), location());
-[^\$\h\n]+	  return yy::parser::make_WORD(str(), location());
-[$]{idName}   return yy::parser::make_IDENTIFIER(str(), location());
-\n            return yy::parser::make_WORD(str(), location());
+"}}"          return nate::parser::make_END_SPEC(location());
+[\h]?[\p{Alpha}]+[\h]?  return nate::parser::make_WORD(str(), location());
+[^\$\h\n]+	  return nate::parser::make_WORD(str(), location());
+[$]{idName}   return nate::parser::make_IDENTIFIER(str(), location());
+\n            return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <DECL_TYPE>{
-\bof\b		    return yy::parser::make_OF(location());
-\bas\b		    return yy::parser::make_AS(location());
-"{{"          return yy::parser::make_START_SPEC(location());
-{word}	  		return yy::parser::make_WORD(str(), location());
+\bof\b		    return nate::parser::make_OF(location());
+\bas\b		    return nate::parser::make_AS(location());
+"{{"          return nate::parser::make_START_SPEC(location());
+{word}	  		return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <FOR_VAR_DECL>{
-\bin\b 	      return yy::parser::make_IN(location());
+\bin\b 	      return nate::parser::make_IN(location());
 }
 //////////////////////////
 
 <VAR_DECL,FOR_VAR_DECL>{
-\bis\b		    return yy::parser::make_IS(location());
-\bas\b		    return yy::parser::make_AS(location());
-[$]?{idName}  return yy::parser::make_IDENTIFIER(str(), location());
-":="		      return yy::parser::make_ASSIGN(location());
-","			      return yy::parser::make_COMMA(location());
-":"				    return yy::parser::make_COL(location());
-. 				    return yy::parser::make_BADTOKEN(location());
+\bis\b		    return nate::parser::make_IS(location());
+\bas\b		    return nate::parser::make_AS(location());
+[$]?{idName}  return nate::parser::make_IDENTIFIER(str(), location());
+":="		      return nate::parser::make_ASSIGN(location());
+","			      return nate::parser::make_COMMA(location());
+":"				    return nate::parser::make_COL(location());
+. 				    return nate::parser::make_BADTOKEN(location());
 }
 //////////////////////////
 
-\bprogram\b		return yy::parser::make_PROGRAM(location());
-\bscope\b	  	return yy::parser::make_SCOPE(location());
-\bimport\b		return yy::parser::make_IMPORT(location());
-\balias\b 		return yy::parser::make_ALIAS(location());
-\bvar\b			  return yy::parser::make_VAR(location());
-\bproperty\b  return yy::parser::make_PROP(location());
-\bget\b       return yy::parser::make_GET(location());
-\bset\b       return yy::parser::make_SET(location());
-\bconst\b		  return yy::parser::make_CONST(location());
-\bdeclare\b	  return yy::parser::make_DECLARE(location());
-\bimplement\b	return yy::parser::make_IMPLEMENT(location());
-\brole\b	    return yy::parser::make_ROLE(location());
-\bobject\b	  return yy::parser::make_OBJECT(location());
-\bcode\b		  return yy::parser::make_CODE(location());
-\bmath\b		  return yy::parser::make_MATH(location());
-\bdefine\b	  return yy::parser::make_DEFINE(location());
-\boutput\b		return yy::parser::make_OUTPUT(location());
-\berror\b		  return yy::parser::make_ERROR(location());
-\binput\b		  return yy::parser::make_INPUT(location());
-\bwrite\b		  return yy::parser::make_WRITE(location());
-\bread\b		  return yy::parser::make_READ(location());
-\bif\b   		  return yy::parser::make_IF(location());
-\belse\b 		  return yy::parser::make_ELSE(location());
-\bis\b		    return yy::parser::make_IS(location());
-\bloop\b 		  return yy::parser::make_LOOP(location());
-\bfor\b 		  return yy::parser::make_FOR(location());
-\brecord\b    return yy::parser::make_RECORD(location());
-\bto\b		    return yy::parser::make_TO(location());
-\bfrom\b		  return yy::parser::make_FROM(location());
-\bline\b		  return yy::parser::make_LINE(location());
-\ball\b		    return yy::parser::make_ALL(location());
-\bdata\b		  return yy::parser::make_DATA(location());
-":="			    return yy::parser::make_ASSIGN(location());
-":"				    return yy::parser::make_COL(location());
-","				    return yy::parser::make_COMMA(location());
-"&"					  return yy::parser::make_CONCAT(location());
-";"				    return yy::parser::make_EOS(location());
-"("				    return yy::parser::make_OPENPAR(location());
-")"				    return yy::parser::make_CLOSEPAR(location());
-"{{"          return yy::parser::make_START_SPEC(location());
-"}}"          return yy::parser::make_END_SPEC(location());
+\bprogram\b		return nate::parser::make_PROGRAM(location());
+\bscope\b	  	return nate::parser::make_SCOPE(location());
+\bimport\b		return nate::parser::make_IMPORT(location());
+\balias\b 		return nate::parser::make_ALIAS(location());
+\bvar\b			  return nate::parser::make_VAR(location());
+\bproperty\b  return nate::parser::make_PROP(location());
+\bget\b       return nate::parser::make_GET(location());
+\bset\b       return nate::parser::make_SET(location());
+\bconst\b		  return nate::parser::make_CONST(location());
+\bdeclare\b	  return nate::parser::make_DECLARE(location());
+\bimplement\b	return nate::parser::make_IMPLEMENT(location());
+\brole\b	    return nate::parser::make_ROLE(location());
+\bobject\b	  return nate::parser::make_OBJECT(location());
+\bcode\b		  return nate::parser::make_CODE(location());
+\bmath\b		  return nate::parser::make_MATH(location());
+\bdefine\b	  return nate::parser::make_DEFINE(location());
+\boutput\b		return nate::parser::make_OUTPUT(location());
+\berror\b		  return nate::parser::make_ERROR(location());
+\binput\b		  return nate::parser::make_INPUT(location());
+\bwrite\b		  return nate::parser::make_WRITE(location());
+\bread\b		  return nate::parser::make_READ(location());
+\bif\b   		  return nate::parser::make_IF(location());
+\belse\b 		  return nate::parser::make_ELSE(location());
+\bis\b		    return nate::parser::make_IS(location());
+\bloop\b 		  return nate::parser::make_LOOP(location());
+\bfor\b 		  return nate::parser::make_FOR(location());
+\brecord\b    return nate::parser::make_RECORD(location());
+\bto\b		    return nate::parser::make_TO(location());
+\bfrom\b		  return nate::parser::make_FROM(location());
+\bline\b		  return nate::parser::make_LINE(location());
+\ball\b		    return nate::parser::make_ALL(location());
+\bdata\b		  return nate::parser::make_DATA(location());
+":="			    return nate::parser::make_ASSIGN(location());
+":"				    return nate::parser::make_COL(location());
+","				    return nate::parser::make_COMMA(location());
+"&"					  return nate::parser::make_CONCAT(location());
+";"				    return nate::parser::make_EOS(location());
+"("				    return nate::parser::make_OPENPAR(location());
+")"				    return nate::parser::make_CLOSEPAR(location());
+"{{"          return nate::parser::make_START_SPEC(location());
+"}}"          return nate::parser::make_END_SPEC(location());
 
-{number}			return yy::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{rational}	  return yy::parser::make_RATIONAL(str(), location());
-{string}    	return yy::parser::make_STRING(str(), location());
-"true"|"false" return yy::parser::make_BOOL(str(), location());
+{number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{rational}	  return nate::parser::make_RATIONAL(str(), location());
+{string}    	return nate::parser::make_STRING(str(), location());
+"true"|"false" return nate::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());
-[$]{idName}		return yy::parser::make_IDENTIFIER(str(), location());
-{oper}				return yy::parser::make_WORD(str(), location());
+[$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
+{oper}				return nate::parser::make_WORD(str(), location());
 
 <<EOF>>		 if (commentNested > 0)
            {
@@ -509,15 +510,15 @@ include\h*\".*\"  s(); includeFile();
            if (!matcher().stops().empty())
 			     {
 			       matcher().stops().pop_back();
-			       return yy::parser::make_END(location()); 
+			       return nate::parser::make_END(location()); 
 			     }
 			     else if (endOfFile()) 
 			     {
-			       return yy::parser::make_EOF(location());
+			       return nate::parser::make_EOF(location());
 			     }
            else
            {
-			       return yy::parser::make_EOS(location());
+			       return nate::parser::make_EOS(location());
            }
 
 

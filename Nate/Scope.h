@@ -6,6 +6,8 @@
 #include "Record.h"
 #include "Type.h"
 
+namespace nate
+{
 class Scope;
 typedef std::shared_ptr<Scope> ScopePtr;
 
@@ -40,3 +42,5 @@ private:
 	Defines                  mDefines;
 	ScopeFlag						     mScopeFlag;
 };    
+
+}

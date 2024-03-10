@@ -3,16 +3,19 @@
 #include "MathParser.h"
 #include "NateParser.h"
 
+namespace nate
+{
 class NateParserMath : public MathParser
 {
 public:
 	NateParserMath(NateParser& aNateParser);
 
 private:
-	void error(const Position& aPosition, const std::string& aError) const override;
-	bool isSymbol(const std::string& aInput) const override;
-	Symbol getSymbol(const std::string& aInput) const override;
-	std::string code(Oper aOper, const Math& aMathLeft, const Math& aMathRight = Math()) const override;
+	void error(const InputPosition& aPosition, const std::string& aError) const override;
+	std::string codeOperator(const MathValue& aMathValue) const override;
 
 	NateParser& mNateParser;
 };
+
+}
+

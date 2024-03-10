@@ -1,6 +1,8 @@
 #include "Stat.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 Stat::Stat(const Location& aLocation)
   : mLocation(aLocation)
 {
@@ -25,4 +27,6 @@ void Stat::setLocation(const Location& aLocation)
 const Stat::List& Stat::getCompound() const
 {
   return mCompound;
+}
+
 }

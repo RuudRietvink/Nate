@@ -3,6 +3,8 @@
 #include "StatInput.h"
 #include "NateData.h"
 
+namespace nate
+{
 class StatRead : public StatInput
 {
 public:
@@ -24,3 +26,5 @@ private:
   Expr mInput;
   bool mCreateIt;
 };
+
+}

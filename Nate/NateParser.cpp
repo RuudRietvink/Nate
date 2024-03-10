@@ -11,12 +11,14 @@
 #include <cctype>
 #include <tuple>
 
+namespace nate
+{
 int gDebug = 0;
 
 NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 											 FileType aFileType)
-: mLexer(new yy::Lexer(aIn)),
-	mParser(new yy::parser(*mLexer, *this)),
+: mLexer(new nate::Lexer(aIn)),
+	mParser(new nate::parser(*mLexer, *this)),
 	mOut(&aOut),
 	mFileType(aFileType),
 	mFileName(aFilename),
@@ -32,7 +34,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 
 NateParser::~NateParser() = default;
 
-Location NateParser::location(const yy::parser::location_type& aLocation)
+Location NateParser::location(const nate::parser::location_type& aLocation)
 {
 	return Location(aLocation, mLexer->currentFile());
 }
@@ -51,7 +53,7 @@ Stat::SPtr NateParser::addStatement(const Stat::SPtr& stat)
 	return stat;
 }
 
-yy::Lexer* NateParser::getLexer()
+nate::Lexer* NateParser::getLexer()
 {
 	return mLexer.get();
 }
@@ -174,10 +176,10 @@ int NateParser::code()
 void NateParser::parseFile(const std::string& aFilename)
 {
 	std::ifstream stream(aFilename);
-	yy::Lexer lexer(stream);
+	nate::Lexer lexer(stream);
 	lexer.nate = this;
 	lexer.pushFile(aFilename);
-	yy::parser parser(lexer, *this);
+	nate::parser parser(lexer, *this);
 	if (mLexer->debug())
 	{
 		std::cerr << "Parsing: " << aFilename << std::endl;
@@ -189,13 +191,13 @@ void NateParser::parseFile(const std::string& aFilename)
 	}
 }
 
-void NateParser::startProgram(const yy::parser::location_type& aLocation)
+void NateParser::startProgram(const nate::parser::location_type& aLocation)
 {
 	pushScope(std::make_shared<Scope>("main", IIdentifiersHolder::ScopeFlag::Local));
 	pushStatsHolder(addStatement(std::make_shared<StatProgram>(location(aLocation))));
 }
 
-void NateParser::endProgram(const yy::parser::location_type& aLocation)
+void NateParser::endProgram(const nate::parser::location_type& aLocation)
 {
 	popStatsHolder();
 	popScope();
@@ -203,7 +205,7 @@ void NateParser::endProgram(const yy::parser::location_type& aLocation)
 
 void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 													const Expr& aValue,
-													const yy::parser::location_type& aLocation)
+													const nate::parser::location_type& aLocation)
 {
 	Expr copy(aValue);
 	for (auto const& expr : aExpressions)
@@ -237,7 +239,7 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
   addStatement(std::make_shared<StatAssign>(Location(aLocation, mLexer->currentFile()), aExpressions, aValue));
 }
 
-void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doIf(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	if (!aValue.type()->is(Type::Boolean))
 	{
@@ -248,7 +250,7 @@ void NateParser::doIf(const Expr& aValue, const yy::parser::location_type& aLoca
 	pushStatsHolder(addStatement(std::make_shared<StatIfThen>(location(aLocation), aValue)));
 }
 
-void NateParser::doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doElseIf(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	popScope();
 	popStatsHolder();
@@ -256,7 +258,7 @@ void NateParser::doElseIf(const Expr& aValue, const yy::parser::location_type& a
 	pushStatsHolder(addStatement(std::make_shared<StatIfThen::ElseIf>(location(aLocation), aValue)));
 }
 
-void NateParser::doElse(const yy::parser::location_type& aLocation)
+void NateParser::doElse(const nate::parser::location_type& aLocation)
 {
 	popScope();
 	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
@@ -264,13 +266,13 @@ void NateParser::doElse(const yy::parser::location_type& aLocation)
   pushStatsHolder(addStatement(std::make_shared<StatIfThen::Else>(location(aLocation))));
 }
 
-void NateParser::doEndIf(const yy::parser::location_type& aLocation)
+void NateParser::doEndIf(const nate::parser::location_type& aLocation)
 {
 	popScope();
 	popStatsHolder();
 }
 
-void NateParser::doIfIs(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doIfIs(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), uniqueName(), aValue.type());
 	addIdentifier(id);
@@ -282,12 +284,12 @@ void NateParser::doIfIs(const Expr& aValue, const yy::parser::location_type& aLo
   pushStatsHolder(addStatement(std::make_shared<StatIfIs>(location(aLocation), id, aValue)));
 }
 
-void NateParser::doCaseIsList(const yy::parser::location_type& aLocation)
+void NateParser::doCaseIsList(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatIfIs::IsList>(location(aLocation))));
 }
 
-void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation)
+void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const nate::parser::location_type& aLocation)
 {
 	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
 				aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
@@ -298,29 +300,29 @@ void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::par
 	addStatement(std::make_shared<StatIfIs::Is>(location(aLocation), aValue));
 }
 
-void NateParser::doElseIs(const yy::parser::location_type& aLocation)
+void NateParser::doElseIs(const nate::parser::location_type& aLocation)
 {
   pushStatsHolder(addStatement(std::make_shared<StatIfIs::Else>(location(aLocation))));
 }
 
-void NateParser::doEndIs(const yy::parser::location_type& aLocation)
+void NateParser::doEndIs(const nate::parser::location_type& aLocation)
 {
 	mIfIs.pop();
 	popStatsHolder();
 }
 
-void NateParser::doInitLoop(const yy::parser::location_type& aLocation)
+void NateParser::doInitLoop(const nate::parser::location_type& aLocation)
 {
 	mLoopWhileCounts.push_back(0);
 	pushScope(std::make_shared<Scope>("while", IIdentifiersHolder::ScopeFlag::Local));
 }
 
-void NateParser::doStartLoop(const yy::parser::location_type& aLocation)
+void NateParser::doStartLoop(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatLoop>(location(aLocation))));
 }
 
-void NateParser::doWhile(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doWhile(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	if (mLoopWhileCounts.back() > 0)
 	{
@@ -343,7 +345,7 @@ void NateParser::doStartLoopForStep(const std::string& aId,
 																		const Expr& aStart,
 																		const Expr& aEnd,
 																		const Expr& aStep, 
-																		const yy::parser::location_type& aLocation)
+																		const nate::parser::location_type& aLocation)
 {
 	TypePtr type = aType->empty()
 							   ? aStart.type()
@@ -357,7 +359,7 @@ void NateParser::doStartLoopForStep(const std::string& aId,
 
 void NateParser::doStartLoopForRange(const std::string& aId, 
 																	   const Expr& aRange, 
-											  					 	 const yy::parser::location_type& aLocation)
+											  					 	 const nate::parser::location_type& aLocation)
 {
 	TypePtr rangeType = aRange.type();
 	if (rangeType->isOfType("container"))
@@ -373,26 +375,26 @@ void NateParser::doStartLoopForRange(const std::string& aId,
 	}
 }
 
-void NateParser::doEndLoop(const yy::parser::location_type& aLocation)
+void NateParser::doEndLoop(const nate::parser::location_type& aLocation)
 {
 	mLoopWhileCounts.pop_back();
 	popScope();
 	popStatsHolder();
 }
 
-void NateParser::doStartScope(const yy::parser::location_type& aLocation)
+void NateParser::doStartScope(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatScope>(location(aLocation))));
 	pushScope(std::make_shared<Scope>("scope", IIdentifiersHolder::ScopeFlag::Local));
 }
 
-void NateParser::doEndScope(const yy::parser::location_type& aLocation)
+void NateParser::doEndScope(const nate::parser::location_type& aLocation)
 {
 	popScope();
 	popStatsHolder();
 }
 
-void NateParser::doCodeInclude(const yy::parser::location_type& aLocation)
+void NateParser::doCodeInclude(const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatCode>(location(aLocation), mCodes.back()->code()));
 	mCodes.pop_back();
@@ -408,7 +410,7 @@ std::string NateParser::in(int aOffset) const
 	return std::string(size, '\t');
 }
 
-void NateParser::doData(const std::string& aId, const yy::parser::location_type& aLocation)
+void NateParser::doData(const std::string& aId, const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, determineType("text"));
 	id->setFlag(Identifier::Const);
@@ -421,7 +423,7 @@ void NateParser::doDataEnd()
 	popStatsHolder();
 }
 
-void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doWrite(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr writer = getIdentifier("nate__writer");
 
@@ -455,22 +457,22 @@ void NateParser::doWrite(const Expr& aValue, const yy::parser::location_type& aL
 	}
 }
 
-void NateParser::doOutputStart(const yy::parser::location_type& aLocation)
+void NateParser::doOutputStart(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatOutput>(location(aLocation))));
 }
 
-void NateParser::doOutputComma(const yy::parser::location_type& aLocation)
+void NateParser::doOutputComma(const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatOutput::Comma>(location(aLocation)));
 }
 
-void NateParser::doOutputConcat(const yy::parser::location_type& aLocation)
+void NateParser::doOutputConcat(const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatOutput::Concat>(location(aLocation)));
 }
 
-void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder)
+void NateParser::doOutputEnd(bool aEnd, const nate::parser::location_type& aLocation, bool aPopStatsHolder)
 {
 	addStatement(std::make_shared<StatOutput::End>(location(aLocation), aEnd));
 	if (aPopStatsHolder)
@@ -479,7 +481,7 @@ void NateParser::doOutputEnd(bool aEnd, const yy::parser::location_type& aLocati
 	}
 }
 
-void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doOutputExpr(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
   if (aValue.type() && !aValue.type()->empty())
   {
@@ -491,7 +493,7 @@ void NateParser::doOutputExpr(const Expr& aValue, const yy::parser::location_typ
   }
 }
 
-void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doRead(InputType aInputType, const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr reader = getIdentifier("nate__reader");
 
@@ -532,33 +534,33 @@ void NateParser::doRead(InputType aInputType, const Expr& aValue, const yy::pars
 	}
 }
 
-void NateParser::doInput(const yy::parser::location_type& aLocation)
+void NateParser::doInput(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatInput>(location(aLocation))));
 }
 
-void NateParser::doInputComma(const yy::parser::location_type& aLocation)
+void NateParser::doInputComma(const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatInput::Comma>(location(aLocation)));
 }
 
-void NateParser::doInputConcat(const yy::parser::location_type& aLocation)
+void NateParser::doInputConcat(const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatInput::Concat>(location(aLocation)));
 }
 
-void NateParser::doInputEnd(bool aEnd, const yy::parser::location_type& aLocation)
+void NateParser::doInputEnd(bool aEnd, const nate::parser::location_type& aLocation)
 {
 	addStatement(std::make_shared<StatInput::End>(location(aLocation), aEnd));
 	popStatsHolder();
 }
 
-void NateParser::doError(const yy::parser::location_type& aLocation)
+void NateParser::doError(const nate::parser::location_type& aLocation)
 {
 	pushStatsHolder(addStatement(std::make_shared<StatError>(location(aLocation))));
 }
 
-void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doInputExpr(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	if (aValue.is(Expr::Output) && !aValue.is(Expr::ConstExpr))
 	{
@@ -570,7 +572,7 @@ void NateParser::doInputExpr(const Expr& aValue, const yy::parser::location_type
 	}
 }
 
-void NateParser::doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation)
+void NateParser::doStartRecord(const std::string& anId, const nate::parser::location_type& aLocation)
 {
   if (curTypesHolder()->types().get(anId))
   {
@@ -585,13 +587,13 @@ void NateParser::doStartRecord(const std::string& anId, const yy::parser::locati
 	pushStatsHolder(addStatement(std::make_shared<StatRecord>(location(aLocation), record)));
 }
 
-void NateParser::doEndRecord(const yy::parser::location_type& aLocation)
+void NateParser::doEndRecord(const nate::parser::location_type& aLocation)
 {
 	popIdentifiersHolder();
 	popStatsHolder();
 }
 
-void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& aLocation)
+void NateParser::doReturn(const Expr& aValue, const nate::parser::location_type& aLocation)
 {
 	if (!curDefine())
 	{
@@ -605,14 +607,14 @@ void NateParser::doReturn(const Expr& aValue, const yy::parser::location_type& a
 	addStatement(std::make_shared<StatReturn>(location(aLocation), aValue));
 }
 
-void NateParser::doDeclObject(const yy::parser::location_type& aLocation)
+void NateParser::doDeclObject(const nate::parser::location_type& aLocation)
 {	
 	addObject(data.object);
   checkObject(curObject());
 	pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), true)));
 }
 
-void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
+void NateParser::doEndDeclObject(const nate::parser::location_type& aLocation)
 {
 	if (!curObject()->isRole())
 	{
@@ -625,7 +627,7 @@ void NateParser::doEndDeclObject(const yy::parser::location_type& aLocation)
 	popStatsHolder();
 }
 
-void NateParser::doImplObject(const yy::parser::location_type& aLocation)
+void NateParser::doImplObject(const nate::parser::location_type& aLocation)
 {
   auto objectDecl = getObject(data.object->name());
   bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
@@ -956,7 +958,7 @@ void NateParser::checkObject(const ObjectPtr& aObject)
 	}
 }
 
-void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::parser::location_type& aLocation)
+void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const nate::parser::location_type& aLocation)
 {
 	for (const auto& base : aObject->getBases())
 	{
@@ -983,7 +985,7 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const yy::par
 	}
 }
 
-void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser::location_type& aLocation)
+void NateParser::addUndeclaredDefines(const ObjectPtr& aObject, const nate::parser::location_type& aLocation)
 {
 	if (!aObject->isRole())
 	{
@@ -1122,11 +1124,11 @@ CodePtr NateParser::getCode(const CodePtr& aCode)
 	return iter != mCodes.cend() ? *iter : CodePtr();
 }
 
-void NateParser::startInbrackets(const yy::parser::location_type& aLocation, const std::string& type)
+void NateParser::startInbrackets(const nate::parser::location_type& aLocation, const std::string& type)
 {
 	mMathStart = aLocation;
 	mInBracketsType = type;
-	mMath = NateParserMath::Math();
+	mMath = Math();
 	mMath.x = 0;
 	mMath.y = aLocation.begin.line;
 	data.inBracketsCode.clear();
@@ -1147,7 +1149,7 @@ void NateParser::endInbrackets()
 }
 
 void NateParser::addInbracketsStatWord(const std::string& aWord,
-											                 const yy::parser::location_type& aLocation)
+											                 const nate::parser::location_type& aLocation)
 {
 	if (mInBracketsType == "math")
 	{
@@ -1161,7 +1163,7 @@ void NateParser::addInbracketsStatWord(const std::string& aWord,
 			int x = aLocation.begin.column - mMathStart.begin.column;
 			while (y >= mMath.matrix.size())
 			{
-				mMath.matrix.push_back(NateParserMath::MathVector());
+				mMath.matrix.push_back(MathVector());
 			}
 
 			while (x >= 0 && x >= mMath.matrix[y].size())
@@ -1207,7 +1209,7 @@ void NateParser::deleteCurDefine()
 }
 
 void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
-										           const yy::parser::location_type& aLocation)
+										           const nate::parser::location_type& aLocation)
 {
 	curDefine()->endDecl();
 	mDefineDecl = aIsDecl;
@@ -1283,13 +1285,13 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 	curDefine()->createCodeCall();
 }
 
-void NateParser::doEndDeclDefine(const yy::parser::location_type& aLocation)
+void NateParser::doEndDeclDefine(const nate::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
 	popDefineScope();
 }
 
-void NateParser::doEndDefine(const yy::parser::location_type& aLocation)
+void NateParser::doEndDefine(const nate::parser::location_type& aLocation)
 {
 	mCurDefine.reset();
 	popDefineScope();
@@ -1301,7 +1303,7 @@ DefinePtr NateParser::curDefine() const { return mCurDefine; }
 void NateParser::declareProperties(const std::vector<std::string>& aNames,
 																	 const TypePtr& aType,
 																	 const std::vector<std::string>& flags,
-																   const yy::parser::location_type& aLocation)
+																   const nate::parser::location_type& aLocation)
 {
 	for (auto const& name : aNames)
 	{
@@ -1316,7 +1318,7 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 }
 
 IdentifierPtr NateParser::doProp(const std::string& aName,
-						          					const TypePtr& optType,const std::vector<std::string>& flags,const yy::parser::location_type& aLocation)
+						          					const TypePtr& optType,const std::vector<std::string>& flags,const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
 	bool declared = (bool)result;
@@ -1347,13 +1349,13 @@ IdentifierPtr NateParser::doProp(const std::string& aName,
 	return result;
 }
 
-void NateParser::doEndProp(const yy::parser::location_type& aLocation)
+void NateParser::doEndProp(const nate::parser::location_type& aLocation)
 {
 	popStatsHolder();
 }
 
 void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
-										          const yy::parser::location_type& aLocation)
+										          const nate::parser::location_type& aLocation)
 {
 	const std::string method = aPropType == Property::PropType::Get ? "get" : "set";
 
@@ -1393,14 +1395,14 @@ void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Property::PropTy
 	}
 }
 
-void NateParser::doEndPropDefine(const yy::parser::location_type& aLocation)
+void NateParser::doEndPropDefine(const nate::parser::location_type& aLocation)
 {
 	deleteCurDefine();
 	popIdentifiersHolder();
 	popStatsHolder();
 }
 
-void NateParser::doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation)
+void NateParser::doExpressionStatement(const Expr& aExpr, const nate::parser::location_type& aLocation)
 {
   addStatement(std::make_shared<StatExpr>(Location(aLocation, mLexer->currentFile()), aExpr));
 }
@@ -1489,9 +1491,9 @@ void NateParser::error(const std::string& aLocationString, const std::string& an
 	++mErrors;
 }
 
-void NateParser::error(const yy::position& aPosition, const std::string& anError) const
+void NateParser::error(const nate::position& aPosition, const std::string& anError) const
 {
-	error(mLexer->fileLocation(yy::location(aPosition)), anError);
+	error(mLexer->fileLocation(nate::location(aPosition)), anError);
 }
 
 void NateParser::optionalError(const std::string& anError) const
@@ -2156,7 +2158,7 @@ void NateParser::declareLocalIdentifiers(
 				const TypePtr& aType,
 				const std::vector<Expr>& aInitValues,
 				bool initializeVariables,
-				const yy::parser::location_type& aLocation)
+				const nate::parser::location_type& aLocation)
 {
 	//std::cout << Core::join(aNames, ", ") << ":" << aType << ":" << Core::join(aInitValues, ", ") << std::endl;
 
@@ -2257,7 +2259,7 @@ void NateParser::declareRecordIdentifiers(
 				const std::vector<std::string>& aNames,
 				const TypePtr& aType,
 				const std::vector<Expr>& aInitValues,
-				const yy::parser::location_type& aLocation)
+				const nate::parser::location_type& aLocation)
 {
 	declareLocalIdentifiers(aIsConst, aNames, aType, aInitValues, !NateParser::InitializeVariables, aLocation);
 }
@@ -2282,4 +2284,6 @@ std::string NateParser::typeScopeName() const
 std::string NateParser::codeId(const std::string& aName, Scope* aScope)
 {
 	return getOrFakeIdentifier(aName, aScope)->codeName();
+}
+
 }

@@ -1,6 +1,8 @@
 #include "StatIfThen.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatIfThen::StatIfThen(const Location& aLocation, const Expr& aExpr)
   : StatWithExpr(aLocation, aExpr)
 {}
@@ -28,4 +30,6 @@ StatIfThen::Else::Else(const Location& aLocation)
 void StatIfThen::Else::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

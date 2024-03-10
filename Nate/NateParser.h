@@ -23,13 +23,12 @@
 #include "Object.h"
 #include "Stat.h"
 
-namespace yy
-{
-	class Lexer;
-	class parser;
-};
 
+namespace nate
+{
 class Expr;
+class Lexer;
+class parser;
 
 class NateParser
 {
@@ -42,7 +41,7 @@ public:
 		std::string prevReadSource;
 		bool prevWasValue = false;
 		std::stack<Expr> ifExpr;
-		std::stack<yy::parser::location_type> ifLocation;
+		std::stack<nate::parser::location_type> ifLocation;
 		std::string forId;
 		std::list<CodePtr> curParsedCodes;
 		bool inObject = false;
@@ -85,71 +84,71 @@ public:
 	bool wantsUnary(const std::string& aWord) const;
 	void popStatsHolder();
 	
-	yy::Lexer* getLexer();
+	nate::Lexer* getLexer();
 
-	void startProgram(const yy::parser::location_type& aLocation);
-	void endProgram(const yy::parser::location_type& aLocation);
-	void doAssign(const std::vector<Expr>& aExpressions, const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doIf(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doElseIf(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doElse(const yy::parser::location_type& aLocation);
-	void doEndIf(const yy::parser::location_type& aLocation);
-	void doIfIs(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doCaseIsList(const yy::parser::location_type& aLocation);
-	void doCaseIs(const Expr& aValue, const Expr& aIfExpr, const yy::parser::location_type& aLocation);
-	void doElseIs(const yy::parser::location_type& aLocation);
-	void doEndIs(const yy::parser::location_type& aLocation);
-	void doInitLoop(const yy::parser::location_type& aLocation);
-	void doStartLoop(const yy::parser::location_type& aLocation);
-	void doWhile(const Expr& aValue, const yy::parser::location_type& aLocation);
+	void startProgram(const nate::parser::location_type& aLocation);
+	void endProgram(const nate::parser::location_type& aLocation);
+	void doAssign(const std::vector<Expr>& aExpressions, const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doIf(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doElseIf(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doElse(const nate::parser::location_type& aLocation);
+	void doEndIf(const nate::parser::location_type& aLocation);
+	void doIfIs(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doCaseIsList(const nate::parser::location_type& aLocation);
+	void doCaseIs(const Expr& aValue, const Expr& aIfExpr, const nate::parser::location_type& aLocation);
+	void doElseIs(const nate::parser::location_type& aLocation);
+	void doEndIs(const nate::parser::location_type& aLocation);
+	void doInitLoop(const nate::parser::location_type& aLocation);
+	void doStartLoop(const nate::parser::location_type& aLocation);
+	void doWhile(const Expr& aValue, const nate::parser::location_type& aLocation);
   void doStartLoopForStep(const std::string& aId, 
 												 const TypePtr& aType, 
 												 bool aDownTo,
 												 const Expr& aStart,
 												 const Expr& aEnd,
 												 const Expr& aStep, 
-												 const yy::parser::location_type& aLocation);
+												 const nate::parser::location_type& aLocation);
   void doStartLoopForRange(const std::string& aId, 
 													 const Expr& aRange, 
-											  	 const yy::parser::location_type& aLocation);
-	void doEndLoop(const yy::parser::location_type& aLocation);
-	void doData(const std::string& aId, const yy::parser::location_type& aLocation);
+											  	 const nate::parser::location_type& aLocation);
+	void doEndLoop(const nate::parser::location_type& aLocation);
+	void doData(const std::string& aId, const nate::parser::location_type& aLocation);
 	void doDataEnd();
-	void doWrite(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doOutputStart(const yy::parser::location_type& aLocation);
-	void doOutputComma(const yy::parser::location_type& aLocation);
-	void doOutputConcat(const yy::parser::location_type& aLocation);
-	void doOutputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doOutputEnd(bool aEnd, const yy::parser::location_type& aLocation, bool aPopStatsHolder = true);
-	void doError(const yy::parser::location_type& aLocation);
-	void doStartRecord(const std::string& anId, const yy::parser::location_type& aLocation);
-	void doEndRecord(const yy::parser::location_type& aLocation);
+	void doWrite(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doOutputStart(const nate::parser::location_type& aLocation);
+	void doOutputComma(const nate::parser::location_type& aLocation);
+	void doOutputConcat(const nate::parser::location_type& aLocation);
+	void doOutputExpr(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doOutputEnd(bool aEnd, const nate::parser::location_type& aLocation, bool aPopStatsHolder = true);
+	void doError(const nate::parser::location_type& aLocation);
+	void doStartRecord(const std::string& anId, const nate::parser::location_type& aLocation);
+	void doEndRecord(const nate::parser::location_type& aLocation);
 	void doStartDefine(bool aIsDecl, bool aIsImpl,
-										 const yy::parser::location_type& aLocation);
-	void doEndDeclDefine(const yy::parser::location_type& aLocation);
-	void doEndDefine(const yy::parser::location_type& aLocation);
-  void doReturn(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doRead(InputType aInputType, const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doInput(const yy::parser::location_type& aLocation);
-	void doInputComma(const yy::parser::location_type& aLocation);
-	void doInputConcat(const yy::parser::location_type& aLocation);
-	void doInputExpr(const Expr& aValue, const yy::parser::location_type& aLocation);
-	void doInputEnd(bool aEnd, const yy::parser::location_type& aLocation);	
-	void doStartScope(const yy::parser::location_type& aLocation);
-	void doEndScope(const yy::parser::location_type& aLocation);
-	void doCodeInclude(const yy::parser::location_type& aLocation);	
-	void doDeclObject(const yy::parser::location_type& aLocation);
-	void doEndDeclObject(const yy::parser::location_type& aLocation);
-	void doImplObject(const yy::parser::location_type& aLocation);
+										 const nate::parser::location_type& aLocation);
+	void doEndDeclDefine(const nate::parser::location_type& aLocation);
+	void doEndDefine(const nate::parser::location_type& aLocation);
+  void doReturn(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doRead(InputType aInputType, const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doInput(const nate::parser::location_type& aLocation);
+	void doInputComma(const nate::parser::location_type& aLocation);
+	void doInputConcat(const nate::parser::location_type& aLocation);
+	void doInputExpr(const Expr& aValue, const nate::parser::location_type& aLocation);
+	void doInputEnd(bool aEnd, const nate::parser::location_type& aLocation);	
+	void doStartScope(const nate::parser::location_type& aLocation);
+	void doEndScope(const nate::parser::location_type& aLocation);
+	void doCodeInclude(const nate::parser::location_type& aLocation);	
+	void doDeclObject(const nate::parser::location_type& aLocation);
+	void doEndDeclObject(const nate::parser::location_type& aLocation);
+	void doImplObject(const nate::parser::location_type& aLocation);
 	void doEndImplObject();
 	IdentifierPtr doProp(const std::string& aName, 
 										   const TypePtr& optType, const std::vector<std::string>& flags,
-											 const yy::parser::location_type& aLocation);
-	void doEndProp(const yy::parser::location_type& aLocation);
+											 const nate::parser::location_type& aLocation);
+	void doEndProp(const nate::parser::location_type& aLocation);
 	void doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
-							const yy::parser::location_type& aLocation);
-	void doEndPropDefine(const yy::parser::location_type& aLocation);
-  void doExpressionStatement(const Expr& aExpr, const yy::parser::location_type& aLocation);
+							const nate::parser::location_type& aLocation);
+	void doEndPropDefine(const nate::parser::location_type& aLocation);
+  void doExpressionStatement(const Expr& aExpr, const nate::parser::location_type& aLocation);
 
 
 	void pushScope(const ScopePtr& aScope);
@@ -161,7 +160,7 @@ public:
 	ITypesHolderPtr& curTypesHolder();
 	IDefinesHolderPtr& curDefinesHolder();
 	
-	void error(const yy::position& aPosition, const std::string& anError) const;
+	void error(const nate::position& aPosition, const std::string& anError) const;
 	void error(const std::string& aLocationString, const std::string& anError) const;
 	void error(const std::string& anError) const;
 	void optionalError(const std::string& anError) const;
@@ -184,8 +183,8 @@ public:
 	
 	void addObject(const ObjectPtr& aObject);
 	void endObject();
-	void addUndeclaredProperties(const ObjectPtr& aObject, const yy::parser::location_type& aLocation);
-	void addUndeclaredDefines(const ObjectPtr& aObject, const yy::parser::location_type& aLocation);
+	void addUndeclaredProperties(const ObjectPtr& aObject, const nate::parser::location_type& aLocation);
+	void addUndeclaredDefines(const ObjectPtr& aObject, const nate::parser::location_type& aLocation);
 	void endImplementObject();
 	void startObject(const ObjectPtr& aObject);
 	ObjectPtr curObject() const;
@@ -197,12 +196,12 @@ public:
 	void declareProperties(const std::vector<std::string>& aNames,
 												 const TypePtr& aType,
 												 const std::vector<std::string>& flags,
-												 const yy::parser::location_type& aLocation);
+												 const nate::parser::location_type& aLocation);
 	
-	void startInbrackets(const yy::parser::location_type& aLocation, const std::string& type);
+	void startInbrackets(const nate::parser::location_type& aLocation, const std::string& type);
 	void endInbrackets();
 	void addInbracketsStatWord(const std::string& aWord,
-											       const yy::parser::location_type& aLocation);
+											       const nate::parser::location_type& aLocation);
 	void addCode();
 	void endCode();
 	CodePtr curCode();
@@ -223,13 +222,13 @@ public:
 					const TypePtr& aType,
 					const std::vector<Expr>& aInitValues,
 					bool initializeVariables,
-					const yy::parser::location_type& aLocation);
+					const nate::parser::location_type& aLocation);
 	void declareRecordIdentifiers(
 					bool aIsConst,
 					const std::vector<std::string>& aNames,
 					const TypePtr& aType,
 					const std::vector<Expr>& aInitValues,
-					const yy::parser::location_type& aLocation);
+					const nate::parser::location_type& aLocation);
 	
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
   Expr evaluate(const Expr& aExpr, int aDebug = 0);
@@ -285,13 +284,13 @@ private:
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
 
-	Location location(const yy::parser::location_type& aLocation);
+	Location location(const nate::parser::location_type& aLocation);
 
 	Stat::SPtr addStatement(const Stat::SPtr& stat);
 		
 	
-	std::unique_ptr<yy::Lexer>	mLexer;
-	std::unique_ptr<yy::parser>	mParser;
+	std::unique_ptr<nate::Lexer>	mLexer;
+	std::unique_ptr<nate::parser>	mParser;
 	std::list<ObjectPtr>        mObjects;
 	ObjectPtr                   mCurObject;
 	DefinePtr                   mCurDefine;
@@ -322,10 +321,10 @@ private:
 	std::string                 mFileName;
 	std::string                 mLibrary;
 	std::unique_ptr<MathParser> mMathParser;
-	MathParser::Math            mMath;
+	Math											  mMath;
 	std::string									mInBracketsType;
-	yy::parser::location_type   mMathStart;
-	yy::parser::location_type   mDummyLocation;
+	nate::parser::location_type   mMathStart;
+	nate::parser::location_type   mDummyLocation;
 
 	struct IfIs
 	{
@@ -353,5 +352,4 @@ private:
 
 	int32_t  			          	  mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 };
-
-
+}

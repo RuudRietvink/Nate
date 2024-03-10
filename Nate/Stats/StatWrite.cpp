@@ -1,6 +1,8 @@
 #include "StatWrite.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatWrite::StatWrite(const Location& aLocation, const IdentifierPtr& aWriter, const Expr& aOutput, bool aCreateIt)
   : StatOutput(aLocation),
     mWriter(aWriter),
@@ -26,4 +28,6 @@ bool StatWrite::getCreateIt() const
 void StatWrite::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "Define.h"
 
+namespace nate
+{
 class Property;
 
 typedef std::shared_ptr<Property> PropertyPtr;
@@ -26,3 +28,4 @@ private:
 };
 std::ostream& operator<<(std::ostream& aStream, const Property& aValue);
 
+}

@@ -2,6 +2,8 @@
 #include "StatExpr.h"
 #include "ICodeVisitor.h"
 
+namespace nate
+{
 StatOutput::StatOutput(const Location& aLocation)
   : Stat(aLocation)
 {}
@@ -51,4 +53,6 @@ StatOutput::Value::Value(const Location& aLocation, const Expr& aExpr)
 void StatOutput::Value::accept(ICodeVisitor* aVisitor) const
 {
   aVisitor->visit(*this);
+}
+
 }

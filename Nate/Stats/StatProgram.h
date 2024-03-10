@@ -2,6 +2,8 @@
 
 #include "Stat.h"
 
+namespace nate
+{
 class StatProgram : public Stat
 {
 public:
@@ -10,3 +12,4 @@ public:
   void accept(ICodeVisitor* aVisitor) const override;
 };
 
+}

@@ -3,6 +3,8 @@
 #include "Stat.h"
 #include "Expr.h"
 
+namespace nate
+{
 class StatWithExpr : public Stat
 {
 public:
@@ -14,3 +16,4 @@ private:
   Expr mExpr;
 };
 
+}

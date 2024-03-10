@@ -3,6 +3,8 @@
 #include "Stat.h"
 #include "Define.h"
 
+namespace nate
+{
 class StatDefine : public Stat
 {
 public:
@@ -22,3 +24,4 @@ private:
   bool mIsDecl;
 };
 
+}

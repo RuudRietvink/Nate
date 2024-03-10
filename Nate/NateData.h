@@ -6,9 +6,12 @@
 
 #include <memory>
 
+namespace nate
+{
 enum class InputType
 {
 	Normal,
 	Line,
 	All,
 };
+}

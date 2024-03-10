@@ -8,6 +8,8 @@
 #include <ostream>
 #include <memory>
 
+namespace nate
+{
 class Expr;
 typedef std::shared_ptr<Expr> ExprPtr;
 class Identifier;
@@ -92,3 +94,5 @@ typedef std::vector<Expr::Node>::const_iterator ExprNodesCIter;
 
 std::ostream& operator<<(std::ostream& aStream, const Expr& aValue);
 std::ostream& operator<<(std::ostream& aStream, const Expr::Node& aValue);
+
+}
