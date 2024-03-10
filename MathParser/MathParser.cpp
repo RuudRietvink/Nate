@@ -9,6 +9,7 @@
 #include <cctype>
 #include <clocale>
 #include <format>
+#include <tuple>
 
 namespace nate 
 {
@@ -18,7 +19,8 @@ namespace nate
 // ⁰¹²³⁴⁵⁶⁷⁸⁹ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁻⁺⁽⁾
 // ₀₁₂₃₄₅₆₇₈₉ ₊₋₍₎ₐₑₒₓ
 // ⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞
-// πτ𝑖𝑒⋅÷⁄×⇑⇓←
+// πτ𝑖𝑒αδφ
+// ⋅÷⁄×⇑⇓←
 
 const uint32_t LEFT_PARENTHESIS_UPPER_HOOK				= 0x239B; // ⎛
 const uint32_t LEFT_PARENTHESIS_EXTENSION					= 0x239C; // ⎜
@@ -40,8 +42,6 @@ const uint32_t HORIZONTAL_BAR											= 0x2015; // ―
 const uint32_t ROOT_BAR														= 0x005F; //   _
 const uint32_t ROOT_DIAGONAL											= 0x2571; //  ╱
 const uint32_t SQUARE_ROOT												= 0x221A; // √
-const uint32_t E																	= 0x1D452;// 𝑒
-const uint32_t PI																	= 0x03C0;// π
 const uint32_t MULTIPLY_X													= 0x00D7; // ×
 const uint32_t MULTIPLY_STAR											= 0x2217; // ∗
 const uint32_t MULTIPLY_DOT												= 0x22C5; // ⋅
@@ -444,6 +444,19 @@ MathValue* MathParser::embedSubMath(
 	return &aMath.matrix[aArea.upperLeft.y][aArea.upperLeft.x];
 }
 
+MathValue* MathParser::embedSubMath(
+				Math& aMath,
+				Oper aOper,
+				const std::vector<Math> aMatrixCells,
+				Size aMatrixSize)
+{
+	Area area = { Position{ 0, 0 }, Position{ aMath.width(), aMath.height() } };
+	auto mathValue = MathValue(aOper, aMatrixCells, aMatrixSize);
+	fillerMath(aMath, area, mathValue.mathValue);
+	aMath.matrix[area.upperLeft.y][area.upperLeft.x] = mathValue;
+	return &aMath.matrix[area.upperLeft.y][area.upperLeft.x];
+}
+
 void MathParser::fillerMath(
 				Math& aMath, 
 				const Area& aArea,
@@ -568,8 +581,9 @@ void MathParser::doMathParentheses(Math& aMath)
 
 void MathParser::doMathBrackets(Math& aMath)
 {
-	OptArea area = findBigBlock(aMath, { LEFT_SQUARE_BRACKET_UPPER_CORNER, LEFT_SQUARE_BRACKET_EXTENSION, LEFT_SQUARE_BRACKET_LOWER_CORNER},
-															{ RIGHT_SQUARE_BRACKET_UPPER_CORNER, RIGHT_SQUARE_BRACKET_EXTENSION, RIGHT_SQUARE_BRACKET_LOWER_CORNER},
+	OptArea area = findBigBlock(aMath, 
+															{ LEFT_SQUARE_BRACKET_UPPER_CORNER, LEFT_SQUARE_BRACKET_EXTENSION, LEFT_SQUARE_BRACKET_LOWER_CORNER },
+															{ RIGHT_SQUARE_BRACKET_UPPER_CORNER, RIGHT_SQUARE_BRACKET_EXTENSION, RIGHT_SQUARE_BRACKET_LOWER_CORNER },
 															"brackets");
 
 	if (area)
@@ -578,8 +592,8 @@ void MathParser::doMathBrackets(Math& aMath)
 		Math sub = getSubMath(aMath, subArea);
 					
 		printDebugMath(true, sub, __FUNCTION__);
-		doMathParsing(sub);
-		embedSubMath(aMath, sub, Oper::Matrix, *area);
+		auto [cells, ver, hor ] = doMatrixCells(sub);
+		embedSubMath(aMath,  Oper::Matrix, cells, Size{ static_cast<int>(ver), static_cast<int>(hor) });
 
 		printDebugMath(true, aMath, __FUNCTION__);
 		doMathParsing(aMath);
@@ -715,10 +729,9 @@ void MathParser::doMathPower(Math& aMath)
 			spaceMath(aMath, expArea);
 		}
 
-		bool area1 = baseArea.upperLeft.x == baseArea.lowerRight.x && baseArea.upperLeft.y == baseArea.lowerRight.y;
 		bool isSub = aMath.isSubMatrix(baseArea.upperLeft);
 		bool isSym = aMath.mathValue(baseArea.upperLeft).oper == Oper::Symbol;
-		if (area1 && isSub && isSym)
+		if (isSub && isSym)
 		{
 			std::string text = mathString(aMath.mathValue(baseArea.upperLeft).embedded1);
 			if (text == "e") 
@@ -938,6 +951,103 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 			}
 		}
 	}
+}
+
+std::tuple<std::vector<Math>, size_t, size_t> MathParser::doMatrixCells(Math& aMath)
+{
+	std::vector<int> verLines = getVerticalCellLines(aMath);
+	std::vector<int> horLines = getHorizontalCellLines(aMath);	
+	std::vector<Math> cells = getMatrixCells(aMath, verLines, horLines);
+
+	return std::make_tuple(cells, verLines.size(), horLines.size());
+}
+
+std::vector<int> MathParser::getVerticalCellLines(const Math& aMath)
+{
+	std::vector<int> verLines;
+	
+  int spaceCount = 0;
+  for (int x = 0; x < aMath.width(); ++x)
+	{
+		bool isBlank = true;
+
+    for (int y = 0; isBlank && y < aMath.height(); ++y)
+		{
+      if (aMath(y, x) != SPACE)
+			{
+        isBlank = false;
+      }
+    }
+
+		if (isBlank)
+		{
+			++spaceCount;
+		}
+		else if (spaceCount >= 2)
+		{
+			verLines.push_back(x);
+			spaceCount = 0;
+		}
+  }
+
+	verLines.push_back(aMath.width() - 1);
+
+	return verLines;
+}
+
+std::vector<int> MathParser::getHorizontalCellLines(const Math& aMath)
+{
+	std::vector<int> horLines;
+	
+  int spaceCount = 0;
+  for (int y = 0; y < aMath.height(); ++y)
+	{
+		bool isBlank = true;
+
+    for (int x = 0; isBlank && x < aMath.width(); ++x)
+		{
+      if (aMath(y, x) != SPACE)
+			{
+        isBlank = false;
+      }
+    }
+		
+		if (isBlank)
+		{
+			++spaceCount;
+		}
+		else if (spaceCount >= 1)
+		{
+			horLines.push_back(y);
+			spaceCount = 0;
+		}
+  }
+
+	horLines.push_back(aMath.height() - 1);
+
+	return horLines;
+}
+	
+std::vector<Math> MathParser::getMatrixCells(const Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines)
+{
+	std::vector<Math> cells;
+  int startRow = 0;
+
+  for (int y : horLines)
+	{
+		int startCol = 0;
+    for (int x : verLines)
+		{
+			Area subArea{ Position{ startRow, startCol }, Position{ y, x } };
+			Math sub = getSubMath(aMath, subArea);
+			cells.push_back(sub);
+
+      startRow = y + 1;
+      startCol = x + 1;
+    }
+  }
+	
+	return cells;
 }
 
 void MathParser::doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper)
@@ -1844,6 +1954,7 @@ void MathParser::addSymbol(const Symbol& aSymbol)
 	else
 	{
 		mSymbols[aSymbol.name] = aSymbol;
+		mSymbols[aSymbol.intName] = aSymbol;
 	}
 }
 

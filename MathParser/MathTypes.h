@@ -145,6 +145,8 @@ struct MathValue
 	MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize, const Symbol& aSymbol);
 		
 	MathValue(const MathValueSPtr& aMathValue, const Size& aSize);
+
+	MathValue(Oper aOper, const std::vector<Math> aMatrixCells, Size aMatrixSize);
 		
 	bool isSubMatrix() const;
 	bool hasSubMatrix() const;
@@ -160,6 +162,8 @@ struct MathValue
 	Position lowerRight;
 	bool superscript = false;
 	NumberType type = NumberType::Real;
+	std::vector<Math> matrixCells;
+	Size matrixSize;
 	MathValueSPtr mathValue;
 };
 

@@ -70,6 +70,14 @@ MathValue::MathValue(const MathValueSPtr& aMathValue, const Size& aSize)
 		size(aSize)
 {}
 		
+MathValue::MathValue(Oper aOper, const std::vector<Math> aMatrixCells, Size aMatrixSize)
+	: value(SUBMATRIX), 
+	  oper(aOper),
+		matrixCells(aMatrixCells),
+		matrixSize(aMatrixSize)
+{
+}
+
 bool MathValue::isSubMatrix() const { return value == SUBMATRIX; }
 bool MathValue::hasSubMatrix() const { return isSubMatrix() || value == SUBMATRIXREFERENCE; }
 bool MathValue::isSuperscript() const { return superscript; }

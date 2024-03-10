@@ -400,7 +400,7 @@ TEST_F(TestMathParser, TestPowerSuper05)
 xz
 )zzz";
 
-  EXPECT_STREQ("(x*std::pow(z, std::pow(z, std::pow(55, x - std::pow(2, std::exp(std::pow(M_E, 5)))))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(x*std::pow(z, std::pow(z, std::pow(55, x - std::pow(2, std::exp(std::exp(5)))))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestPowerSuper06)
@@ -923,7 +923,7 @@ TEST_F(TestMathParser, TestFunctionCall06)
   -2cos 2πvarxsinvar
 )zzz";
 
-  EXPECT_STREQ("(-2*std::cos(((((2*M_PI)*var)*x)*std::pow(var, 2))))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(-2*std::cos(((((2*n::pi)*var)*x)*std::pow(var, 2))))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall07)
@@ -933,7 +933,7 @@ TEST_F(TestMathParser, TestFunctionCall07)
   -2⋅cos(2πe⋅var⋅x⋅sin(var ))
 )zzz";
 
-  EXPECT_STREQ("-2 * std::cos((((2*M_PI)*M_E) * var * x * std::sin(2var)))", parser.doMath(ss).c_str());
+  EXPECT_STREQ("-2 * std::cos((((2*n::pi)*n::e) * var * x * std::sin(2var)))", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial01)
@@ -1006,7 +1006,7 @@ TEST_F(TestMathParser, TestMonomial08)
 2πx
 )zzz";
 
-  EXPECT_STREQ("((2*M_PI)*x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("((2*n::pi)*x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial09)
@@ -1025,7 +1025,7 @@ TEST_F(TestMathParser, TestMonomial10)
 2πvarx
 )zzz";
 
-  EXPECT_STREQ("(((2*M_PI)*var)*x)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(((2*n::pi)*var)*x)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestMonomial11)
@@ -1043,7 +1043,7 @@ TEST_F(TestMathParser, TestMonomial12)
 2πx[1]varH₂Ox₂
 )zzz";
 
-  EXPECT_STREQ("(((((2*M_PI)*x[1])*var)*H2O)*x_2)", parser.doMath(ss).c_str());
+  EXPECT_STREQ("(((((2*n::pi)*x[1])*var)*H2O)*x_2)", parser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFormula01)

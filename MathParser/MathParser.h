@@ -67,6 +67,10 @@ private:
 										Oper aOper,
 										const Area& aArea,
 										const Symbol& aSymbol = {});
+	MathValue* embedSubMath(Math& aMath,
+										Oper aOper,
+										const std::vector<Math> aMatrixCells,
+										Size aMatrixSize);
 	void fillerMath(Math& aMath, 
 								 const Area& aArea,
 								 const MathValueSPtr& aClearValue);
@@ -85,6 +89,10 @@ private:
 	void doMathFractionBar(Math& aMath);
 	void doMathSquareRoot(Math& aMath);
 	void doMathPower(Math& aMath);
+	std::tuple<std::vector<Math>, size_t, size_t> doMatrixCells(Math& aMath);	
+	std::vector<int> getVerticalCellLines(const Math& aMath);
+	std::vector<int> getHorizontalCellLines(const Math& aMath);
+  std::vector<Math> getMatrixCells(const Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines);
 	void doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper);
 	void doMathUpLeftOperator(Math& aMath, uint32_t aOperChar, Oper aOper);
 	void doMathOperator(Math& aMath, Oper aOper, int x, int y);

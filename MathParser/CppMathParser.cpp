@@ -8,12 +8,12 @@ void CppMathParser::init()
 {
 	MathParser::init();
 
-	addConstant("e", "e", "M_E", NumberType::Real);
-	addConstant("𝑒", "e", "M_E", NumberType::Real);
-	addConstant("π", "pi", "M_PI", NumberType::Real);
-	addConstant("pi", "pi", "M_PI", NumberType::Real);
-	addConstant("i", "i", "i", NumberType::Real);
-	addConstant("𝑖", "i", "i", NumberType::Real);
+	addConstant("𝑒", "e",     "n::e", NumberType::Real);
+	addConstant("π", "pi",    "n::pi", NumberType::Real);
+	addConstant("𝑖", "i",     "i", NumberType::Real);
+	addConstant("α", "alpha", "n::alpha", NumberType::Real);
+	addConstant("δ", "delta", "n::delta", NumberType::Real);
+	addConstant("φ", "phi",   "n::phi", NumberType::Real);
 
 	addFunction("sin", "std::sin");
 	addFunction("cos", "std::cos");
