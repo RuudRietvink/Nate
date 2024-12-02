@@ -7,12 +7,12 @@
 namespace nate
 {
 Type::Type()
-	: Type("")
+  : Type("")
 {
 }
 
 Type::Type(const std::string& aName, const TypePtr& aBaseType)
-	: mName(aName)
+  : mName(aName)
 {
 	setBaseType(aBaseType);
 	setType(aName);
@@ -223,7 +223,7 @@ bool Type::is(size_t aFlags) const
 bool Type::isOfType(const std::string& aType) const
 {
 	return name() == aType || 
-				 (mBaseType && mBaseType->isOfType(aType));
+		   (mBaseType && mBaseType->isOfType(aType));
 }
 
 bool Type::isBiggerThan(const TypePtr& aType) const
@@ -293,11 +293,11 @@ Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMa
 	return result;
 }
 
-bool               Type::empty()     const { return mName.empty(); }
-const std::string& Type::name()      const { return mName; }
-int                Type::bitSize()   const { return mBitSize; }
-const TypePtr&		 Type::typenameType() const { return mTypenameType; }
-const TypePtr&		 Type::baseType()  const { return mBaseType; }
+bool               Type::empty()        const { return mName.empty(); }
+const std::string& Type::name()         const { return mName; }
+int                Type::bitSize()      const { return mBitSize; }
+const TypePtr&	   Type::typenameType() const { return mTypenameType; }
+const TypePtr&	   Type::baseType()     const { return mBaseType; }
 
 void Type::setTypenameType(const TypePtr& aTypenameType) { mTypenameType = aTypenameType; }
 void Type::setCodeType(const std::string& aCodeType) { mCodeType = aCodeType; }

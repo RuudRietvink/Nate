@@ -8,9 +8,9 @@ namespace nate
 class StatReturn : public StatWithExpr
 {
 public:
-  StatReturn(const Location& aLocation, const Expr& aExpr);
+    StatReturn(const Location& aLocation, const Expr& aExpr);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
 };
 
 }

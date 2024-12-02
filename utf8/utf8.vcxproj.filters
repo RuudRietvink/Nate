@@ -7,16 +7,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Nate\utf8\checked.h">
+    <ClInclude Include="utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Nate\utf8\core.h">
+    <ClInclude Include="checked.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Nate\utf8\unchecked.h">
+    <ClInclude Include="core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Nate\utf8.h">
+    <ClInclude Include="unchecked.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

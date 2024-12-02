@@ -59,7 +59,7 @@ public:
 	using ArgConstIterator = ArgVector::const_iterator;
 
 	int                 priority() const;
-  const TypePtr&      type() const;
+	const TypePtr&      type() const;
 	const ArgVector&    args() const;
 	ArgVector&          args();
 	Arg&                curArg();
@@ -69,9 +69,9 @@ public:
 	Record*             getOwner(const ExprNodesCIter& aNodeIter) const;
 	Record*             getOwnerType(const Type* type) const;
 	TypePtr             getTemplateType(const ExprNodesCIter& aNodeIter) const;
-	bool						    isStatic() const;
-	bool						    isObjectMethod() const;
-	virtual bool		    isCodeMethod() const { return false; }
+	bool				isStatic() const;
+	bool				isObjectMethod() const;
+	virtual bool		isCodeMethod() const { return false; }
 		
 	void                setPriority(int aValue);
 	void                setType(const TypePtr& aType);
@@ -128,17 +128,18 @@ private:
 
 	std::string          mCode;
 	TypePtr              mType;
-	ArgVector						 mArgs;
+	ArgVector			 mArgs;
 	std::string          mSignature;
 	mutable std::string  mPattern;
 	int                  mPriority = 0;
 	ObjectPtr            mObject;
-	ArgConstIterator		 mObjectArg;
-	ArgConstIterator		 mOwnerArg;
-	ArgConstIterator		 mMemberArg;
-	ArgConstIterator		 mTemplateArg;
-	ArgConstIterator		 mTypenameArg;
+	ArgConstIterator	 mObjectArg;
+	ArgConstIterator	 mOwnerArg;
+	ArgConstIterator	 mMemberArg;
+	ArgConstIterator	 mTemplateArg;
+	ArgConstIterator	 mTypenameArg;
 };
+
 std::ostream& operator<<(std::ostream& aStream, const Method& aValue);
 
 }

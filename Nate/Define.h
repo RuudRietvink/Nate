@@ -40,6 +40,7 @@ public:
 
 private:
 };
+
 std::ostream& operator<<(std::ostream& aStream, const Define& aValue);
 
 }

@@ -6,13 +6,13 @@
 namespace nate
 {
 Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType)
-	: Identifier(aIdentifiersHolder, aName, aType, Expr("default", "{}", aType))
+  : Identifier(aIdentifiersHolder, aName, aType, Expr("default", "{}", aType))
 {
 	mInitValue.setFlag(Expr::Default, true);
 }
 
 Identifier::Identifier(const IIdentifiersHolderPtr& aIdentifiersHolder, const std::string& aName, const TypePtr& aType, const Expr& aInitValue)
-	: mIdentifiersHolder(aIdentifiersHolder),
+  : mIdentifiersHolder(aIdentifiersHolder),
 	mName(aName),
 	mCodeName(toCodeName(aName)),
 	mType(aType ? aType : std::make_shared<Type>()),
@@ -54,9 +54,9 @@ bool Identifier::isNameMe(const std::string& aName)
 	return aName == nameMe();
 }
 
-const std::string&		Identifier::name()      const { return mName; }
-const std::string&		Identifier::codeName()  const { return mCodeName; }
-Expr    		      		Identifier::initValue() const { return mInitValue; }
+const std::string&					Identifier::name()      const { return mName; }
+const std::string&					Identifier::codeName()  const { return mCodeName; }
+Expr    		      				Identifier::initValue() const { return mInitValue; }
 TypePtr								Identifier::type()      const { return mType; }
 std::weak_ptr<IIdentifiersHolder>	Identifier::identifiersHolder() const { return mIdentifiersHolder; }
 bool					 		    Identifier::isObjectMe()const { return isNameMe(mName); }

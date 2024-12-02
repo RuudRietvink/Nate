@@ -10,7 +10,7 @@ StatWithExpr::StatWithExpr(const Location& aLocation, const Expr& aExpr)
 
 const Expr& StatWithExpr::getExpr() const
 {
-  return mExpr;
+    return mExpr;
 }
 
 }

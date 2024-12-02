@@ -6,25 +6,25 @@
 import File-Input
 
 code:
-  #include <fstream>
+    #include <fstream>
   
 implement object File-Input:
-  var stream is {{code std::shared_ptr<std::ifstream> }}
+    var stream is {{code std::shared_ptr<std::ifstream> }}
   
-  implement new File-Input is File-Input:
-    return constructed object
+    implement new File-Input is File-Input:
+       return constructed object
     
-  implement ${me} stream is {{code std::shared_ptr<std::istream> }} :
-    return {{code _impl->$stream }} is {{code std::shared_ptr<std::istream> }}
+    implement ${me} stream is {{code std::shared_ptr<std::istream> }} :
+        return {{code _impl->$stream }} is {{code std::shared_ptr<std::istream> }}
 
-  implement ${me} \is ok is boolean:
-    return {{code _impl->$stream && _impl->$stream->good() }} is boolean
+    implement ${me} \is ok is boolean:
+        return {{code _impl->$stream && _impl->$stream->good() }} is boolean
 
-  implement ${me} \is opened is boolean:
-    return {{code _impl->$stream->is_open() }} is boolean
+    implement ${me} \is opened is boolean:
+        return {{code _impl->$stream->is_open() }} is boolean
 
-  implement open \u ${me as out} from file \u ${file is text}:
-    {{code _impl->$stream.reset(new std::ifstream($file, std::ios::in)) }}
+    implement open \u ${me as out} from file \u ${file is text}:
+        {{code _impl->$stream.reset(new std::ifstream($file, std::ios::in)) }}
 
-  implement close \u ${me as out}:
-    {{code if (_impl->$stream) _impl->$stream->close() }}
+    implement close \u ${me as out}:
+        {{code if (_impl->$stream) _impl->$stream->close() }}

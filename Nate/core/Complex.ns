@@ -10,7 +10,7 @@ alias "𝑖" "i"
 ///////////////////////////////////////////////
 
 code:
-  #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
+    #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
 	#include <complex>
 
 const i is imaginary := 1
@@ -64,25 +64,25 @@ code define 110 \u \l log2 ${val is complex as exact} as same:
 	NI
   
 code define 120 \u ⇑ ${val is number as out, exact} as same:
-  ++$val
+    ++$val
   
 code define 120 ${val is number as out, exact} \u ⇑ as same:
-  $val++
+    $val++
   
 code define 120 \u ⇓ ${val is number as out, exact} as same:
-  NI
+    NI
   
 code define 120 ${val is number as out, exact} \u ⇓ as same:
-  NI
+    NI
 
 code define 120 \u inc# ${val is number as out, exact} as same:
-  NI
+    NI
   
 code define 120 ${val is number as out, exact} \u #inc as same:
-  NI
+    NI
   
 code define 120 \u dec# ${val is number as out, exact} as same:
-  NI
+    NI
   
 code define 120 ${val is number as out, exact} \u #dec as same:
-  NI
+    NI

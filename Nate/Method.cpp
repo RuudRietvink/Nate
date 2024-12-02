@@ -32,8 +32,8 @@ std::vector<Arg>&       Method::args()            { return mArgs; }
 Arg&                    Method::curArg()          { return mArgs.back(); }
 int                     Method::priority()  const { return mPriority; }
 
-const std::string&      Method::code()			const { return mCode; }
-std::string&            Method::code()						{ return mCode; }
+const std::string&      Method::code()		const { return mCode; }
+std::string&            Method::code()			  { return mCode; }
 
 ObjectPtr               Method::object()    const { return mObject; }
 void                    Method::setObject(const ObjectPtr& aObject) { mObject = aObject; }
@@ -263,17 +263,17 @@ bool Method::matches(const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, i
 	{
 		auto exp = Expr();
 		exp.addNodes(aBegin, aEnd);
-	  std::cerr << pattern() << " matches " << exp.text() << std::endl;
+		std::cerr << pattern() << " matches " << exp.text() << std::endl;
 	}
 
 	return true;
 }
 
 void Method::getTypes(
-					const ExprNodesCIter& aBegin,
-					Record* aOwner,
-					TypePtr& aFirstType,
-					TypePtr& aHighestType) const
+		const ExprNodesCIter& aBegin,
+		Record* aOwner,
+		TypePtr& aFirstType,
+		TypePtr& aHighestType) const
 {
 	ExprNodesCIter nodeIter = aBegin;
 	for (auto const& arg : mArgs)
@@ -310,12 +310,12 @@ void Method::getTypes(
 }
 
 void Method::handleOwnerMember(
-					const ExprNodesCIter& aNodeIter,
-					Record* aOwner,
-					const ExprNodesCIter& aOwnerNode,
-					Method::EvaluateResult& aResult,
-					std::string& aNodeCode,
-					TypePtr& aNodeType) const
+		const ExprNodesCIter& aNodeIter,
+		Record* aOwner,
+		const ExprNodesCIter& aOwnerNode,
+		Method::EvaluateResult& aResult,
+		std::string& aNodeCode,
+		TypePtr& aNodeType) const
 {
 	auto identifier = aOwner->getIdentifier(aNodeIter->text());
 	if (identifier)
@@ -353,12 +353,12 @@ void Method::handleOwnerMember(
 }
 
 Expr Method::createTypeCastNode(
-					const ExprNodesCIter& aNodeIter,
-					const Arg& aArg,
-					const TypePtr& aTemplateType,
-					const TypePtr& aFirstType,
-					const TypePtr& aHighestType,
-					std::string& aNodeCode) const
+		const ExprNodesCIter& aNodeIter,
+		const Arg& aArg,
+		const TypePtr& aTemplateType,
+		const TypePtr& aFirstType,
+		const TypePtr& aHighestType,
+		std::string& aNodeCode) const
 {
 	Expr::Node node = *aNodeIter;
 	if (aArg.is(Arg::Typename))
@@ -388,22 +388,22 @@ Expr Method::createTypeCastNode(
 }
 
 void Method::createArgCode(
-					const Arg& aArg,
-					const Expr& aNode,
-					const DefinePtr& aCurDefine,
-					const std::string& aNodeCode,
-					bool aIsObjectArg,
-					// ->
-					std::string& resultCode) const
+		const Arg& aArg,
+		const Expr& aNode,
+		const DefinePtr& aCurDefine,
+		const std::string& aNodeCode,
+		bool aIsObjectArg,
+		// ->
+		std::string& resultCode) const
 {;
 
 	std::string code = (aArg.is(Arg::Member) || 
-											aArg.is(Arg::Out) ||
-											aNode.is(Expr::Literal) ||
-											aNode.is(Expr::Property) ||
-											aNode.is(Expr::Identifier))
-											? aNodeCode 
-											: "(" + aNodeCode + ")";
+						aArg.is(Arg::Out) ||
+						aNode.is(Expr::Literal) ||
+						aNode.is(Expr::Property) ||
+						aNode.is(Expr::Identifier))
+						? aNodeCode 
+						: "(" + aNodeCode + ")";
 			
 	if (!aIsObjectArg) 
 	{
@@ -421,12 +421,12 @@ void Method::createArgCode(
 				}
 			}
 			else if (aCurDefine->is(Method::Undeclared) && aNode.is(Expr::Property) &&
-							 aNode.is(Expr::Identifier) && !aArg.is(Arg::Member))
+					 aNode.is(Expr::Identifier) && !aArg.is(Arg::Member))
 			{
 				code = "me->" + code;
 			}
 			else if (!aCurDefine->is(Method::Undeclared) &&
-							 aNode.is(Expr::Identifier) && aNode.is(Expr::ObjectImpl))
+					 aNode.is(Expr::Identifier) && aNode.is(Expr::ObjectImpl))
 			{
 				code = "_impl->" + code;
 			}
@@ -475,7 +475,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	result.type = type();
 
 	getTypes(aBegin, owner, // ->
-					 firstType, highestType);
+			 firstType, highestType);
 
 	ExprNodesCIter nodeIter = aBegin;
 		
@@ -489,7 +489,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 			if (arg->is(Arg::Member) && owner != nullptr)
 			{
 				handleOwnerMember(nodeIter, owner, ownerNode,	// ->
-					                result, nodeCode, nodeType);
+					              result, nodeCode, nodeType);
 			}
 			else
 			{
@@ -497,10 +497,10 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 			}
 
 			Expr node = createTypeCastNode(
-													nodeIter, *arg, templateType, firstType, highestType,	// ->
-													nodeCode);
+								nodeIter, *arg, templateType, firstType, highestType,	// ->
+								nodeCode);
 			createArgCode(*arg, node, aCurDefine, nodeCode, (arg == mObjectArg), //-->
-										result.code);
+						  result.code);
 
 			lastType = nodeType;
 			if (!node.is(Expr::ConstExpr))
@@ -520,7 +520,7 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	else if (is(Me))
 	{
 		result.type = aCurDefine->object();
-	  result.flags[Expr::Output] = true;
+		result.flags[Expr::Output] = true;
 	}
 	else if (is(Last))
 	{
@@ -533,13 +533,13 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 
 	if (isConst)
 	{
-	  result.flags[Expr::ConstExpr] = true;
+		result.flags[Expr::ConstExpr] = true;
 	}
 	
 	if (isStatic())
 	{
 		if (is(Method::Undeclared) && aCurDefine && object() == aCurDefine->object() &&
-				!object()->is(Type::ObjectImpl))
+			!object()->is(Type::ObjectImpl))
 		{
 			result.code = "__impl::" + result.code;
 		}
@@ -723,19 +723,17 @@ Method::checkArgTypes(NateParser& parser, const ExprNodesCIter& aBegin, const Ex
 					result.matches = false;
 				}
 				else if (arg->is(Arg::Same) && 
-								 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) 
-														== Type::CompareResult::No)
+						 (comp = firstType->canBeCastedFrom(nodeType, needExactMatch)) == Type::CompareResult::No)
 				{
 					error << "1 Not same type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									 " must be of type " << firstType->name();
+							 " must be of type " << firstType->name();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::CompHigh) && 
-								 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) 
-														== Type::CompareResult::No)
+						 (comp = highestType->canBeCastedFrom(nodeType, needExactMatch)) == Type::CompareResult::No)
 				{
 					error << "2 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									 " must be compatible with type " << highestType->name();
+							 " must be compatible with type " << highestType->name();
 					result.matches = false;
 				}
 				else if (arg->is(Arg::Typename))
@@ -745,22 +743,20 @@ Method::checkArgTypes(NateParser& parser, const ExprNodesCIter& aBegin, const Ex
 						error << "No generic supplied for : " << nodeType->name();
 						result.matches = false;
 					}
-					else if ((comp = templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch)) 
-															== Type::CompareResult::No)
+					else if ((comp = templateType->typenameType()->canBeCastedFrom(nodeType, needExactMatch)) == Type::CompareResult::No)
 					{
 						error << "3 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-									   " must be of type " << templateType->typenameType()->name();
+								 " must be of type " << templateType->typenameType()->name();
 						result.matches = false;
 					}
 				}
 				else if (argType && !argType->is(Type::Unknown) &&
-								 (comp = argType->canBeCastedFrom(nodeType, needExactMatch)) 
-															== Type::CompareResult::No)
+						 (comp = argType->canBeCastedFrom(nodeType, needExactMatch)) == Type::CompareResult::No)
 				{
 					if (args().size() > 1)
 					{
 						error << "4 Not correct type: " << arg->identifier()->name() << " of type " << nodeType->name() <<
-										" must be of type " << argType->name();
+							     " must be of type " << argType->name();
 					}
 
 					result.matches = false;
@@ -791,8 +787,8 @@ Method::checkArgTypes(NateParser& parser, const ExprNodesCIter& aBegin, const Ex
 	}
 
 	if (aDebug) std::cerr << result.matches << " " 
-		                    << static_cast<int>(result.castCount) << " "
-												<< result.error << std::endl;
+		                  << static_cast<int>(result.castCount) << " "
+						  << result.error << std::endl;
 
 	return result;
 }

@@ -13,19 +13,19 @@ public:
 	Rational(const Rational& aRational);
 
 	constexpr Rational(int32_t aWhole, int32_t aNumerator, int32_t aDenominator)
-		: mNegative(aWhole < 0 || aNumerator < 0 || aDenominator < 0),
-			mWhole(aWhole < 0 ? -aWhole : aWhole),
-			mNumerator(aNumerator < 0 ? -aNumerator : aNumerator),
-			mDenominator(aDenominator < 0 ? -aDenominator : aDenominator)
+	  : mNegative(aWhole < 0 || aNumerator < 0 || aDenominator < 0),
+		mWhole(aWhole < 0 ? -aWhole : aWhole),
+		mNumerator(aNumerator < 0 ? -aNumerator : aNumerator),
+		mDenominator(aDenominator < 0 ? -aDenominator : aDenominator)
 	{
 	}
 
 	constexpr Rational(int32_t aValue)
-		: Rational(aValue, 0, 1)
+	  : Rational(aValue, 0, 1)
 	{}
 
 	constexpr explicit Rational(int64_t aValue)
-		: Rational(static_cast<int32_t>(aValue), 0, 1)
+	  : Rational(static_cast<int32_t>(aValue), 0, 1)
 	{}
 
 	virtual ~Rational() = default;
@@ -114,8 +114,8 @@ public:
 private:
 	void simplify();
 	static void preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
-														 	Rational& aFrac,
-														 	int32_t aNum2);
+								Rational& aFrac,
+								int32_t aNum2);
 	constexpr int32_t signIt(int32_t aValue) const { return mNegative ? -aValue : aValue; }
 	constexpr double signIt(double aValue) const { return mNegative ? -aValue : aValue; }
 	
@@ -123,7 +123,7 @@ private:
 	int32_t mWhole       = 0;
 	int32_t mNumerator   = 0;
 	int32_t mDenominator = 1;
-	bool		mNegative    = false;
+	bool	mNegative    = false;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const Rational& aRational);

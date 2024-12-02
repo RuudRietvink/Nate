@@ -10,25 +10,25 @@ namespace nate
 class StatProperty : public Stat
 {
 public:
-  StatProperty(const Location& aLocation, const IdentifierPtr& aId, const ObjectPtr& aObject, bool aImpOnly);
+    StatProperty(const Location& aLocation, const IdentifierPtr& aId, const ObjectPtr& aObject, bool aImpOnly);
   
-  const IdentifierPtr& getId() const;
+    const IdentifierPtr& getId() const;
 
-  const ObjectPtr& getObject() const;
+    const ObjectPtr& getObject() const;
 
-  bool isImpOnly() const;
+    bool isImpOnly() const;
 
-  const PropertyPtr& getProperty(Property::PropType propType) const;
+    const PropertyPtr& getProperty(Property::PropType propType) const;
 
-  void setProperty(Property::PropType propType, const PropertyPtr aProperty);
+    void setProperty(Property::PropType propType, const PropertyPtr aProperty);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
 
 private:
-  IdentifierPtr mId;
-  ObjectPtr mObject;
-  bool mImpOnly;
-  PropertyPtr mProperties[2];
+    IdentifierPtr mId;
+    ObjectPtr mObject;
+    bool mImpOnly;
+    PropertyPtr mProperties[2];
 };
 
 }

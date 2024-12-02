@@ -10,12 +10,12 @@ StatRecord::StatRecord(const Location& aLocation, const RecordPtr& aRecord)
 
 void StatRecord::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const RecordPtr& StatRecord::getRecord() const
 {
-  return mRecord;
+    return mRecord;
 }
 
 }

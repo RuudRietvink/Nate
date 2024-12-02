@@ -5,8 +5,8 @@ class Range
 {
 public:
 	Range(const T::iterator& aBegin, const T::iterator& aEnd)
-		: mBegin(aBegin),
-		  mEnd(aEnd)
+	  : mBegin(aBegin),
+		mEnd(aEnd)
 	{}
 
 private:

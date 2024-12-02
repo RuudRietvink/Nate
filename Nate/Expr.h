@@ -57,7 +57,7 @@ public:
 	static Expr parenthesized(const Expr& aExpr1);
 		
 	bool castToType(const TypePtr& aToType);
-  void setCode(const std::string& aText);
+	void setCode(const std::string& aText);
 	bool is(size_t aFlag) const;
 	void setFlag(size_t aFlag);
 	void setFlag(size_t aFlag, bool aEnable);
@@ -68,7 +68,7 @@ public:
 	void insertNode(const Node& aNode);
 	void addNodes(const std::vector<Node>::const_iterator& aNodeBegin, const std::vector<Node>::const_iterator& aNodeEnd);
 
-  std::string        text()       const;
+	std::string        text()       const;
 	std::string        code()       const;
 	std::string&       code();
 	TypePtr            type()       const;

@@ -26,6 +26,7 @@ public:
 private:
 	PropType mPropType = PropType::Get;
 };
+
 std::ostream& operator<<(std::ostream& aStream, const Property& aValue);
 
 }

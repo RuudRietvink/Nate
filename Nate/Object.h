@@ -17,7 +17,7 @@ class Object;
 typedef std::shared_ptr<Object> ObjectPtr;
 
 class Object : public Record, public IRecordsHolder, 
-							 public ITypesHolder, public IDefinesHolder
+			   public ITypesHolder, public IDefinesHolder
 {
 public:
 	Object();
@@ -71,25 +71,25 @@ public:
 	
 	std::map<IdentifierPtr, PropData>& propertyMethods() { return mPropertyMethods; }
 	
-	void     addProp(const IdentifierPtr& anId, const nate::parser::location_type& aLocation, const std::string& filename);
-	bool     hasProp(const IdentifierPtr& anId) const;
-	PropState getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const;
-	void     setPropState(const IdentifierPtr& anId, Property::PropType aPropType, PropState aPropState);
-	bool     isPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
-	bool     isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const;
-	bool     basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
+	void		addProp(const IdentifierPtr& anId, const nate::parser::location_type& aLocation, const std::string& filename);
+	bool		hasProp(const IdentifierPtr& anId) const;
+	PropState	getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const;
+	void		setPropState(const IdentifierPtr& anId, Property::PropType aPropType, PropState aPropState);
+	bool		isPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
+	bool		isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const;
+	bool		basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
 
-	bool isRole() const;
-	void setIsRole(bool aIsRole);
+	bool        isRole() const;
+	void        setIsRole(bool aIsRole);
 
 private:		
-	bool															mIsRole = false;
-	Types															mTypes;			
-	Records														mRecords;						
-	Defines														mDefines;
-	std::vector<ObjectPtr>						mBases;
-	std::stringstream									mImplOut;			
-	std::stringstream									mNormalOut;	
+	bool								mIsRole = false;
+	Types								mTypes;
+	Records								mRecords;
+	Defines								mDefines;
+	std::vector<ObjectPtr>				mBases;
+	std::stringstream					mImplOut;
+	std::stringstream					mNormalOut;
 	std::map<IdentifierPtr, PropData>	mPropertyMethods;
 };
 

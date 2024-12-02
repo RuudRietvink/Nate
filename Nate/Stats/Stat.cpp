@@ -10,23 +10,23 @@ Stat::Stat(const Location& aLocation)
 
 Stat::SPtr Stat::addStat(const SPtr& aStat)
 {
-  mCompound.push_back(aStat);
-  return aStat;
+    mCompound.push_back(aStat);
+    return aStat;
 }
 
 const Location& Stat::getLocation() const
 {
-  return mLocation;
+    return mLocation;
 }
   
 void Stat::setLocation(const Location& aLocation)
 {
-  mLocation = aLocation;
+    mLocation = aLocation;
 }
 
 const Stat::List& Stat::getCompound() const
 {
-  return mCompound;
+    return mCompound;
 }
 
 }

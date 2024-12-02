@@ -39,9 +39,9 @@ namespace
 	{
 		while (b != 0)
 		{
-				int32_t t = b; 
-				b = a % b; 
-				a = t;
+			int32_t t = b; 
+			b = a % b; 
+			a = t;
 		}
 
 		return a;
@@ -58,7 +58,7 @@ Rational::Rational(const std::string& aString)
 }
 
 Rational::Rational(const Rational& aRational)
-: mWhole(aRational.mWhole),
+  : mWhole(aRational.mWhole),
 	mNumerator(aRational.mNumerator),
 	mDenominator(aRational.mDenominator),
 	mNegative(aRational.mNegative)
@@ -232,8 +232,8 @@ Rational& Rational::operator=(double aValue)
 bool Rational::operator==(const Rational& aRational) const
 {
 	return mNegative == aRational.mNegative &&
-		     mWhole == aRational.mWhole && 
-				 mNumerator * aRational.mDenominator == aRational.mNumerator * mDenominator;
+		   mWhole == aRational.mWhole && 
+		   mNumerator * aRational.mDenominator == aRational.mNumerator * mDenominator;
 }
 
 bool Rational::operator!=(const Rational& aRational) const
@@ -244,29 +244,29 @@ bool Rational::operator!=(const Rational& aRational) const
 bool Rational::operator<(const Rational& aRational) const
 {
 	return (mNegative && !aRational.mNegative) ||
-		     (mNegative == aRational.mNegative &&
-					((!mNegative && 
-					 	(mWhole < aRational.mWhole || 
-						 (mWhole == aRational.mWhole && 
-							mNumerator * aRational.mDenominator < aRational.mNumerator * mDenominator))) ||
-					 (mNegative && 
-						(mWhole > aRational.mWhole || 
-						 (mWhole == aRational.mWhole && 
-						  mNumerator * aRational.mDenominator > aRational.mNumerator * mDenominator)))));
+		   (mNegative == aRational.mNegative &&
+			((!mNegative && 
+			  (mWhole < aRational.mWhole || 
+			   (mWhole == aRational.mWhole && 
+			    mNumerator * aRational.mDenominator < aRational.mNumerator * mDenominator))) ||
+			 (mNegative && 
+			  (mWhole > aRational.mWhole || 
+			   (mWhole == aRational.mWhole && 
+				mNumerator * aRational.mDenominator > aRational.mNumerator * mDenominator)))));
 }
 
 bool Rational::operator>(const Rational& aRational) const
 {
 	return (!mNegative && aRational.mNegative) ||
 		     (mNegative == aRational.mNegative &&
-					((!mNegative && 
-					 	(mWhole > aRational.mWhole || 
-						 (mWhole == aRational.mWhole && 
-							mNumerator * aRational.mDenominator > aRational.mNumerator * mDenominator))) ||
-					 (mNegative && 
-						(mWhole < aRational.mWhole || 
-						 (mWhole == aRational.mWhole && 
-						  mNumerator * aRational.mDenominator < aRational.mNumerator * mDenominator)))));
+			  ((!mNegative && 
+				(mWhole > aRational.mWhole || 
+				 (mWhole == aRational.mWhole && 
+				  mNumerator * aRational.mDenominator > aRational.mNumerator * mDenominator))) ||
+			   (mNegative && 
+				(mWhole < aRational.mWhole || 
+				 (mWhole == aRational.mWhole && 
+				  mNumerator * aRational.mDenominator < aRational.mNumerator * mDenominator)))));
 }
 
 bool Rational::operator<=(const Rational& aRational) const
@@ -304,7 +304,7 @@ Rational Rational::operator+(const Rational& aRational) const
 			preventOverflow(result.mDenominator, temp.mDenominator, 0, result, temp.mNumerator);
 			preventOverflow(result.mDenominator, temp.mDenominator, 0, temp, result.mNumerator);
 			result.mNumerator = result.mNumerator * temp.mDenominator +
-													temp.mNumerator * result.mDenominator;
+								temp.mNumerator * result.mDenominator;
 			result.mDenominator *= temp.mDenominator;
 		}
 
@@ -351,7 +351,7 @@ Rational Rational::operator-(const Rational& aRational) const
 				preventOverflow(result.mDenominator, temp.mDenominator, 0, result, temp.mNumerator);
 				preventOverflow(result.mDenominator, temp.mDenominator, 0, temp, result.mNumerator);
 				result.mNumerator = result.mNumerator * temp.mDenominator -
-														temp.mNumerator * result.mDenominator;
+									temp.mNumerator * result.mDenominator;
 				result.mDenominator *= temp.mDenominator;
 			}
 
@@ -533,12 +533,12 @@ void Rational::simplify()
 }
 
 void Rational::preventOverflow(int32_t& aMul1, int32_t& aMul2, int64_t aSum,
-														 	 Rational& aFrac,
-														 	 int32_t aNum2)
+						   	   Rational& aFrac,
+							   int32_t aNum2)
 {
 	int64_t val;
 	while ((val = static_cast<int64_t>(aMul1) * aMul2 + aSum) > std::numeric_limits<int32_t>::max() &&
-				 (aFrac.mNumerator > 1000 || aNum2 < 1000))
+		   (aFrac.mNumerator > 1000 || aNum2 < 1000))
 	{
 		aFrac.mNumerator /= 2;
 		aFrac.mDenominator /= 2;
@@ -575,7 +575,7 @@ std::string Rational::toString() const
 		else
 		{
 			ss << Core::toString(mNumerator, Core::superDigits) << "⁄" 
-				 << Core::toString(mDenominator, Core::subDigits);
+			   << Core::toString(mDenominator, Core::subDigits);
 		}
 	}
 

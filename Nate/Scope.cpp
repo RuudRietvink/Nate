@@ -5,9 +5,9 @@
 namespace nate
 {
 Scope::Scope(const std::string& aName, ScopeFlag aScopeFlag)
-	: mName(aName),
-	  mRecords(mTypes),
-	  mScopeFlag(aScopeFlag)
+  : mName(aName),
+	mRecords(mTypes),
+	mScopeFlag(aScopeFlag)
 {
 }
 

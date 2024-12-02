@@ -26,15 +26,15 @@ public:
 	virtual ~Identifier() = default;
 	std::string setFlagString(const std::string& aFlag) override;
 
-	const std::string&								name()							const;
-	const std::string&								codeName()					const;
-	Expr   				    								initValue()				  const;
-	TypePtr														type()							const;
-	std::weak_ptr<IIdentifiersHolder> identifiersHolder()	const;
-	bool															isObjectMe()				const;
-	bool															isProperty()				const;
-	static bool					   						isNameMe(const std::string& aName);
-	static std::string     						nameMe();
+	const std::string&					name()						const;
+	const std::string&					codeName()					const;
+	Expr   				    			initValue()					const;
+	TypePtr								type()						const;
+	std::weak_ptr<IIdentifiersHolder>   identifiersHolder()			const;
+	bool								isObjectMe()				const;
+	bool								isProperty()				const;
+	static bool					   		isNameMe(const std::string& aName);
+	static std::string     				nameMe();
 	
 	static const size_t Const        = 0;
 	static const size_t Property     = 1;
@@ -48,9 +48,9 @@ public:
 private:
 	std::string												mName;
 	std::string												mCodeName;
-	Expr    													mInitValue;
-	TypePtr														mType;
-	std::weak_ptr<IIdentifiersHolder>	mIdentifiersHolder;
+	Expr    												mInitValue;
+	TypePtr													mType;
+	std::weak_ptr<IIdentifiersHolder>						mIdentifiersHolder;
 };
 
 

@@ -227,10 +227,10 @@ std::istream& operator>>(std::istream& aStream, Complex<TYPE>& aComplex)
 			aStream >> imag;
 			if (aStream.good())
 			{
-		  	if (aStream.peek() == 'i')
-		  	{
+		  		if (aStream.peek() == 'i')
+		  		{
 					aStream.get();
-				  aComplex = Complex<TYPE>(real, imag);
+				    aComplex = Complex<TYPE>(real, imag);
 				}
 				else
 				{

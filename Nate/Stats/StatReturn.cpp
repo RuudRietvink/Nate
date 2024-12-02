@@ -9,7 +9,7 @@ StatReturn::StatReturn(const Location& aLocation, const Expr& aExpr)
 
 void StatReturn::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

@@ -10,12 +10,12 @@ StatAssign::StatAssign(const Location& aLocation, const std::vector<Expr>& aIden
 
 void StatAssign::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const std::vector<Expr>& StatAssign::getIdentifiers() const
 {
-  return mIdentifiers;
+    return mIdentifiers;
 }
 
 }

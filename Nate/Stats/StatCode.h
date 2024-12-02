@@ -7,14 +7,14 @@ namespace nate
 class StatCode: public Stat
 {
 public:
-  StatCode(const Location& aLocation, const std::string& aCode);
+    StatCode(const Location& aLocation, const std::string& aCode);
 
-  const std::string& getCode() const;
+    const std::string& getCode() const;
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
 
 private:
-  std::string mCode;
+    std::string mCode;
 };
 
 }

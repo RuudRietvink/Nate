@@ -9,7 +9,7 @@ StatExpr::StatExpr(const Location& aLocation, const Expr& aExpr)
 
 void StatExpr::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

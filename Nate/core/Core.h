@@ -31,7 +31,7 @@ namespace Core
 	{
 	public:
 		Utf8(const std::string::const_iterator& aBegin,
-				 const std::string::const_iterator& aEnd);
+			 const std::string::const_iterator& aEnd);
 		
 		Utf8(const std::string& aString);
 
@@ -68,24 +68,24 @@ namespace Core
 	bool strtodbl(const char* aString, double& aResult);
 	int positionIn(const std::string& aString, uint32_t aChar);
 	bool numberFrom(const Utf8& aString,
-									const std::string& aDigits,
-									int32_t& aNumber);
+					const std::string& aDigits,
+					int32_t& aNumber);
 	bool numberFrom(Utf8& aString,
-									const std::string& aDigits,
-									int32_t& aNumber);
+					const std::string& aDigits,
+					int32_t& aNumber);
 	bool numberFrom(Utf8& aString,
-									int32_t& aNumber);
+					int32_t& aNumber);
 	bool numberFrom(std::string& aString,
-									const std::string& aDigits,
-									int32_t& aNumber);
+					const std::string& aDigits,
+					int32_t& aNumber);
 	std::string toString(int32_t aNumber,
-								       const std::string& aDigits);
+						 const std::string& aDigits);
 
 	std::string unSuperscript(const std::string& aString);
 	std::string unSubscriptNumbers(const std::string& aString);
 	std::string toString(utf8::iterator<std::string::const_iterator> aIter);
 	std::string toString(const utf8::iterator<std::string::const_iterator>& aIter,
-											 const utf8::iterator<std::string::const_iterator>& aEnd);
+						 const utf8::iterator<std::string::const_iterator>& aEnd);
 	std::string toString(uint32_t aChar);
 	std::string::const_iterator lastOf(const std::string& aString);
 	bool exists(const std::string& aFileName);
@@ -114,12 +114,12 @@ namespace Core
 			static const int AlignLeft			= 0x0001;
 			static const int AlignRight			= 0x0002;
 			static const int AlignCenter		= 0x0004;
-			static const int Align					= AlignLeft | AlignRight | AlignCenter;
+			static const int Align				= AlignLeft | AlignRight | AlignCenter;
 			static const int SignMinus			= 0x0008;
-			static const int SignPlusMinus	= 0x0010;
-			static const int SignSpaceMinus	= 0x0020;
-			static const int Sign  					= SignMinus | SignPlusMinus | SignSpaceMinus;
-			static const int ShowBase				= 0x0040;
+			static const int SignPlusMinus		= 0x0010;
+			static const int SignSpaceMinus		= 0x0020;
+			static const int Sign  				= SignMinus | SignPlusMinus | SignSpaceMinus;
+			static const int ShowBase			= 0x0040;
 			static const int Uppercase			= 0x0080;
 			static const int Base10   			= 0x0100;
 			static const int Base16   			= 0x0200;
@@ -214,8 +214,8 @@ namespace Core
 	
 	template<typename T>
 	std::string join(const T& aBegin,
-									 const T& aEnd,
-									 const std::string& seperator = ",")
+				 	 const T& aEnd,
+					 const std::string& seperator = ",")
 	{
 		std::stringstream ss;
 		ss << std::distance(aBegin, aEnd) << ':';

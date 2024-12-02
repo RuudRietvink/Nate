@@ -10,12 +10,12 @@ StatIfIs::StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Ex
 
 void StatIfIs::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const IdentifierPtr& StatIfIs::getId() const
 {
-  return mId;
+    return mId;
 }
 
 StatIfIs::IsList::IsList(const Location& aLocation)
@@ -32,7 +32,7 @@ StatIfIs::Else::Else(const Location& aLocation)
 
 void StatIfIs::Else::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatIfIs::Is::Is(const Location& aLocation, const Expr& aExpr)

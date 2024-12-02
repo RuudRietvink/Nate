@@ -24,6 +24,7 @@ public:
 private:
 	bool isCodeMethod() const override { return true; }
 };
+
 std::ostream& operator<<(std::ostream& aStream, const Code& aValue);
 
 }

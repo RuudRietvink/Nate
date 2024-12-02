@@ -9,7 +9,7 @@ StatScope::StatScope(const Location& aLocation)
 
 void StatScope::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

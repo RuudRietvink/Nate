@@ -47,7 +47,7 @@ void Define::createCodeCall()
 std::ostream& operator<<(std::ostream& aStream, const Define& aValue)
 {
 	aStream << "Define(";
-  operator<<(aStream, static_cast<const Method&>(aValue));
+	operator<<(aStream, static_cast<const Method&>(aValue));
 	return aStream;
 }
 
@@ -65,11 +65,11 @@ DefinePtr Defines::add(const DefinePtr& aDefine)
 DefinePtr Defines::getLike(const DefinePtr& aDefine)
 {
 	auto iter = std::find_if(mDefines.begin(), mDefines.end(),
-													 [&aDefine](const DefinePtr& item)
-													 { 
-														 return aDefine != item &&
-													   aDefine->pattern() == item->pattern();
-													 });
+							 [&aDefine](const DefinePtr& item)
+							 { 
+							 	return aDefine != item &&
+							 aDefine->pattern() == item->pattern();
+							 });
 
 	return (iter != mDefines.end()) ? *iter : DefinePtr();
 }

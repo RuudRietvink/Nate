@@ -10,7 +10,7 @@ StatOutput::StatOutput(const Location& aLocation)
 
 void StatOutput::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatOutput::Comma::Comma(const Location& aLocation)
@@ -19,7 +19,7 @@ StatOutput::Comma::Comma(const Location& aLocation)
 
 void StatOutput::Comma::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatOutput::Concat::Concat(const Location& aLocation)
@@ -28,7 +28,7 @@ StatOutput::Concat::Concat(const Location& aLocation)
 
 void StatOutput::Concat::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatOutput::End::End(const Location& aLocation, bool aEndOfLine)
@@ -38,12 +38,12 @@ StatOutput::End::End(const Location& aLocation, bool aEndOfLine)
 
 bool StatOutput::End::getEndOfLine() const
 {
-  return mEndOfLine;
+    return mEndOfLine;
 }
 
 void StatOutput::End::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatOutput::Value::Value(const Location& aLocation, const Expr& aExpr)
@@ -52,7 +52,7 @@ StatOutput::Value::Value(const Location& aLocation, const Expr& aExpr)
 
 void StatOutput::Value::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

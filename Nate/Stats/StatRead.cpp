@@ -13,27 +13,27 @@ StatRead::StatRead(const Location& aLocation, InputType aInputType, const Identi
 
 const IdentifierPtr& StatRead::getReader() const
 {
-  return mReader;
+    return mReader;
 }
 
 const InputType& StatRead::getInputType() const
 {
-  return mInputType;
+    return mInputType;
 }
 
 const Expr& StatRead::getInput() const
 {
-  return mInput;
+    return mInput;
 }
 
 bool StatRead::getCreateIt() const
 {
-  return mCreateIt;
+    return mCreateIt;
 }
 
 void StatRead::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

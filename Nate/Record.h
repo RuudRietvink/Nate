@@ -25,7 +25,7 @@ public:
 	virtual std::ostream& print(std::ostream& aStream) const override;
 
 private:
-	std::string					    mName;	
+    std::string				mName;
 	Identifiers             mIdentifiers;
 };
 
@@ -37,8 +37,8 @@ public:
 	virtual void add(RecordPtr& aRecord, const std::string& aName);
 
 private:			
-	Container<RecordPtr>       mRecords;	
-	Types&                     mTypes;			
+    Container<RecordPtr>       mRecords;
+	Types&                     mTypes;
 };
 
 class IRecordsHolder
@@ -46,6 +46,7 @@ class IRecordsHolder
 public:
 	virtual Records& records() = 0;
 };
+
 typedef std::shared_ptr<IRecordsHolder> IRecordsHolderPtr;
 
 }

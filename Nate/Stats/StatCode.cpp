@@ -10,12 +10,12 @@ StatCode::StatCode(const Location& aLocation, const std::string& aCode)
 
 const std::string& StatCode::getCode() const
 {
-  return mCode;
+    return mCode;
 }
 
 void StatCode::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

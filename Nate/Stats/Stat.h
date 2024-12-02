@@ -13,26 +13,26 @@ class ICodeVisitor;
 class Stat
 {
 public:
-  using SPtr = std::shared_ptr<Stat>;
+    using SPtr = std::shared_ptr<Stat>;
 
-  using List = std::list<SPtr>;
-  Stat(const Location& aLocation);
+    using List = std::list<SPtr>;
+    Stat(const Location& aLocation);
 
-  virtual void accept(ICodeVisitor* aVisitor) const = 0;
+    virtual void accept(ICodeVisitor* aVisitor) const = 0;
 
-  SPtr addStat(const SPtr& aStat);
+    SPtr addStat(const SPtr& aStat);
 
-  const Location& getLocation() const;
+    const Location& getLocation() const;
 
-  void setLocation(const Location& aLocation);
+    void setLocation(const Location& aLocation);
 
-  const List& getCompound() const;
+    const List& getCompound() const;
 
 protected:
-  List mCompound;
+    List mCompound;
 
 private:
-  Location  mLocation;
+    Location  mLocation;
 };
 
 }

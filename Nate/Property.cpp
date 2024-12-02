@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& aStream, const Property& aValue)
 {
 	aStream << "Property(";
 	aStream << static_cast<int>(aValue.getPropType()) << ", ";
-  operator<<(aStream, static_cast<const Define&>(aValue));
+    operator<<(aStream, static_cast<const Define&>(aValue));
 	return aStream;
 }
 

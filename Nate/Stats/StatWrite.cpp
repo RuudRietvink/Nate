@@ -12,22 +12,22 @@ StatWrite::StatWrite(const Location& aLocation, const IdentifierPtr& aWriter, co
 
 const IdentifierPtr& StatWrite::getWriter() const
 {
-  return mWriter;
+    return mWriter;
 }
 
 const Expr& StatWrite::getOutput() const
 {
-  return mOutput;
+    return mOutput;
 }
 
 bool StatWrite::getCreateIt() const
 {
-  return mCreateIt;
+    return mCreateIt;
 }
 
 void StatWrite::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

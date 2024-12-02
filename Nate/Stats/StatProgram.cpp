@@ -9,7 +9,7 @@ StatProgram::StatProgram(const Location& aLocation)
 
 void StatProgram::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

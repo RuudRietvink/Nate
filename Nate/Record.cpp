@@ -6,8 +6,8 @@
 namespace nate
 {
 Record::Record(const std::string& aName, const TypePtr& aBaseType)
-	: Type("record", aBaseType),
-	  mName(aName)
+  : Type("record", aBaseType),
+	mName(aName)
 {
 	setCodeType(toCodeName(aName));
 }
@@ -27,7 +27,7 @@ std::ostream& Record::print(std::ostream& aStream) const
 }
 
 Records::Records(Types& aTypes)
-	: mTypes(aTypes)
+  : mTypes(aTypes)
 {}
 
 RecordPtr Records::get(const std::string& aName)

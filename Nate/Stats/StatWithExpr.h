@@ -8,12 +8,12 @@ namespace nate
 class StatWithExpr : public Stat
 {
 public:
-  StatWithExpr(const Location& aLocation, const Expr& aExpr);
+    StatWithExpr(const Location& aLocation, const Expr& aExpr);
 
-  const Expr& getExpr() const;
+    const Expr& getExpr() const;
 
 private:
-  Expr mExpr;
+    Expr mExpr;
 };
 
 }

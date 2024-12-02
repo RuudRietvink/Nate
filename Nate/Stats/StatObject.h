@@ -8,17 +8,17 @@ namespace nate
 class StatObject : public Stat
 {
 public:
-  StatObject(const Location& aLocation, const ObjectPtr& aObject, bool aIsDecl);
+    StatObject(const Location& aLocation, const ObjectPtr& aObject, bool aIsDecl);
 
-  const ObjectPtr& getObject() const;
+    const ObjectPtr& getObject() const;
 
-  bool isDecl() const;
+    bool isDecl() const;
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
 
 private:
-  ObjectPtr mObject;
-  bool mIsDecl;
+    ObjectPtr mObject;
+    bool mIsDecl;
 };
 
 }

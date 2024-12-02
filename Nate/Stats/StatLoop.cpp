@@ -9,7 +9,7 @@ StatLoop::StatLoop(const Location& aLocation)
 
 void StatLoop::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatLoop::While::While(const Location& aLocation, const Expr& aExpr)
@@ -18,12 +18,12 @@ StatLoop::While::While(const Location& aLocation, const Expr& aExpr)
 
 void StatLoop::While::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatLoop::ForStep::ForStep(const Location& aLocation, const IdentifierPtr& aId, 
-						               bool aDownTo,
-						               const Expr& aStart, const Expr& aEnd, const Expr& aStep)
+						   bool aDownTo,
+						   const Expr& aStart, const Expr& aEnd, const Expr& aStep)
   : Stat(aLocation),
     mId(aId),
     mDownTo(aDownTo),
@@ -34,32 +34,32 @@ StatLoop::ForStep::ForStep(const Location& aLocation, const IdentifierPtr& aId,
 
 const IdentifierPtr& StatLoop::ForStep::getId() const
 {
-  return mId;
+    return mId;
 }
 
 bool StatLoop::ForStep::getDownTo() const
 {
-  return mDownTo;
+    return mDownTo;
 }
 
 const Expr& StatLoop::ForStep::getStart() const
 {
-  return mStart;
+    return mStart;
 }
 
 const Expr& StatLoop::ForStep::getEnd() const
 {
-  return mEnd;
+    return mEnd;
 }
 
 const Expr& StatLoop::ForStep::getStep() const
 {
-  return mStep;
+    return mStep;
 }
 
 void StatLoop::ForStep::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 StatLoop::ForRange::ForRange(const Location& aLocation, const IdentifierPtr& aId, const Expr& aRange)
@@ -70,17 +70,17 @@ StatLoop::ForRange::ForRange(const Location& aLocation, const IdentifierPtr& aId
 
 const IdentifierPtr& StatLoop::ForRange::getId() const
 {
-  return mId;
+    return mId;
 }
 
 const Expr& StatLoop::ForRange::getRange() const
 {
-  return mRange;
+    return mRange;
 }
 
 void StatLoop::ForRange::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

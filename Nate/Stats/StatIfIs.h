@@ -8,38 +8,38 @@ namespace nate
 class StatIfIs : public StatWithExpr
 {
 public:
-  class IsList : public Stat
-  {
-  public:
-    IsList(const Location& aLocation);
+    class IsList : public Stat
+    {
+    public:
+        IsList(const Location& aLocation);
   
-    void accept(ICodeVisitor* aVisitor) const override;
-  };
+        void accept(ICodeVisitor* aVisitor) const override;
+    };
 
-  class Is : public StatWithExpr
-  {
-  public:
-    Is(const Location& aLocation, const Expr& aExpr);
+    class Is : public StatWithExpr
+    {
+    public:
+        Is(const Location& aLocation, const Expr& aExpr);
   
-    void accept(ICodeVisitor* aVisitor) const override;
-  };
+        void accept(ICodeVisitor* aVisitor) const override;
+    };
   
-  class Else : public Stat
-  {
-  public:
-    Else(const Location& aLocation);
+    class Else : public Stat
+    {
+    public:
+        Else(const Location& aLocation);
   
-    void accept(ICodeVisitor* aVisitor) const override;
-  };
+        void accept(ICodeVisitor* aVisitor) const override;
+    };
 
-  StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Expr& aExpr);
+    StatIfIs(const Location& aLocation, const IdentifierPtr& aId, const Expr& aExpr);
   
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
   
-  const IdentifierPtr& getId() const;
+    const IdentifierPtr& getId() const;
 
 private:
-  IdentifierPtr mId; 
+    IdentifierPtr mId; 
 };
 
 }

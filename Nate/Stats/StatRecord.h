@@ -8,14 +8,14 @@ namespace nate
 class StatRecord : public Stat
 {
 public:
-  StatRecord(const Location& aLocation, const RecordPtr& aRecord);
+    StatRecord(const Location& aLocation, const RecordPtr& aRecord);
 
-  const RecordPtr& getRecord() const;
+    const RecordPtr& getRecord() const;
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
 
 private:
-  RecordPtr mRecord;
+    RecordPtr mRecord;
 };
 
 }

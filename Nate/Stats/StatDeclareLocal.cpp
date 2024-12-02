@@ -10,12 +10,12 @@ StatDeclareLocal::StatDeclareLocal(const Location& aLocation, const IdentifierPt
 
 void StatDeclareLocal::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const IdentifierPtr& StatDeclareLocal::getIdentifier() const
 {
-  return mIdentifier;
+    return mIdentifier;
 }
 
 }

@@ -27,7 +27,7 @@ alias "ln" "log"
 code:
 	#define NOMINMAX
 	#include <windows.h>
-  #include <cmath>
+	#include <cmath>
 
 const pi is float-64 := 3.14159265358979323
   

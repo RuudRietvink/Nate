@@ -12,32 +12,32 @@ StatProperty::StatProperty(const Location& aLocation, const IdentifierPtr& aId, 
 
 const IdentifierPtr& StatProperty::getId() const
 {
-  return mId;
+    return mId;
 }
 
 bool StatProperty::isImpOnly() const
 {
-  return mImpOnly;
+    return mImpOnly;
 }
 
 void StatProperty::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const ObjectPtr& StatProperty::getObject() const
 {
-  return mObject;
+    return mObject;
 }
 
 const PropertyPtr& StatProperty::getProperty(Property::PropType propType) const
 {
-  return mProperties[static_cast<int>(propType)];
+    return mProperties[static_cast<int>(propType)];
 }
 
 void StatProperty::setProperty(Property::PropType propType, const PropertyPtr aProperty)
 {
-  mProperties[static_cast<int>(propType)] = aProperty;
+    mProperties[static_cast<int>(propType)] = aProperty;
 }
 
 }

@@ -34,9 +34,9 @@ bool Code::equals(const Code& aCode) const
 std::ostream& operator<<(std::ostream& aStream, const Code& aValue)
 {
 	aStream << "Code(";
-  operator<<(aStream, static_cast<const Method&>(aValue));
-  aStream << ","
-		      << aValue.priority() << ")";
+	operator<<(aStream, static_cast<const Method&>(aValue));
+	aStream << ","
+		    << aValue.priority() << ")";
 	return aStream;
 }
 }

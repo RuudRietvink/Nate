@@ -12,22 +12,22 @@ StatDefine::StatDefine(const Location& aLocation, const DefinePtr& aDefine, bool
 
 void StatDefine::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const DefinePtr& StatDefine::getDefine() const
 {
-  return mDefine;
+    return mDefine;
 }
 
 bool StatDefine::isImpOnly() const
 {
-  return mImpOnly;
+    return mImpOnly;
 }
 
 bool StatDefine::isDecl() const
 {
-  return mIsDecl;
+    return mIsDecl;
 }
 
 }

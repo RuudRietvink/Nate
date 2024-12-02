@@ -4,4 +4,4 @@
 ///////////////////////////////////////////////
   
 code define 65 \u ${stream is Output} \is ok is boolean:
-  ($stream && $stream->good())
+	($stream && $stream->good())

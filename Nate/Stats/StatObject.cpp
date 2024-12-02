@@ -11,17 +11,17 @@ StatObject::StatObject(const Location& aLocation, const ObjectPtr& aObject, bool
 
 void StatObject::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 const ObjectPtr& StatObject::getObject() const
 {
-  return mObject;
+    return mObject;
 }
 
 bool StatObject::isDecl() const
 {
-  return mIsDecl;
+    return mIsDecl;
 }
 
 }

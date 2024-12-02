@@ -32,13 +32,13 @@ public:
 	void setTypeScopeName(const std::string& aTypeScopeName) { mTypeScopeName = aTypeScopeName; }
 	const std::string& typeScopeName() const { return mTypeScopeName; }
 
-	std::string        codeType() const;
-	int                bitSize() const;
-	const TypePtr&		 typenameType() const;
-	const TypePtr&		 baseType() const;
+	std::string         codeType() const;
+	int                 bitSize() const;
+	const TypePtr&	    typenameType() const;
+	const TypePtr&		baseType() const;
 
-	void							 setTypenameType(const TypePtr& aTypenameType);
-	void							 setCodeType(const std::string& aCodeType);
+	void				setTypenameType(const TypePtr& aTypenameType);
+	void				setCodeType(const std::string& aCodeType);
 	
 	enum class CompareResult
 	{
@@ -78,7 +78,7 @@ private:
 
 	std::string mName;
 	std::string mCodeType;
-	int			    mBitSize = 4;
+	int			mBitSize = 4;
 	TypePtr	    mTypenameType;
 	TypePtr	    mBaseType;
 	std::string mTypeScopeName;
@@ -97,7 +97,7 @@ public:
 	virtual bool contains(const TypePtr& aType);
 
 private:			
-	Container<TypePtr>       mTypes;	
+	Container<TypePtr> mTypes;	
 };
 
 class ITypesHolder

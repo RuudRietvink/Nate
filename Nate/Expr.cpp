@@ -6,44 +6,44 @@
 namespace nate
 {
 Expr::Node::Node()
-	: Node("", "", TypePtr())
+  : Node("", "", TypePtr())
 {
 }
 
 Expr::Node::Node(const std::string& aWord)
-	: Node(aWord, aWord, TypePtr())
+  : Node(aWord, aWord, TypePtr())
 {
 	setFlag(Word, true);
 	setFlag(ConstExpr, true);
 }
 
 Expr::Node::Node(const IdentifierPtr& aId)
-	: Node(aId->name(), aId->codeName(), aId->type())
+  : Node(aId->name(), aId->codeName(), aId->type())
 {
 	mId = aId;
-  setFlag(ConstExpr, mId->is(Identifier::Const));
-  setFlag(Property, mId->is(Identifier::Property));
-  setFlag(ObjectImpl, mId->is(Identifier::ObjectImpl));
-  setFlag(Identifier);
+	setFlag(ConstExpr, mId->is(Identifier::Const));
+	setFlag(Property, mId->is(Identifier::Property));
+	setFlag(ObjectImpl, mId->is(Identifier::ObjectImpl));
+	setFlag(Identifier);
 }
 
 Expr::Node::Node(const std::string& aText, const TypePtr& aType)
-	: Node(aText, aText, aType)
+  : Node(aText, aText, aType)
 {
 }
 
 Expr::Node::Node(const std::string& aText, const std::string& aCode, const TypePtr& aType)
-	: mText(aText),
-	  mCode(aCode),
-	  mType(aType)
+  : mText(aText),
+	mCode(aCode),
+	mType(aType)
 {
 }
 
 const std::string& Expr::Node::text()			const { return mText; }
 const std::string& Expr::Node::code()			const { return mCode; }
-std::string&       Expr::Node::code()						{ return mCode; }
+std::string&       Expr::Node::code()				  { return mCode; }
 TypePtr            Expr::Node::type()			const { return mType; }
-IdentifierPtr      Expr::Node::id()	  		const { return mId; }
+IdentifierPtr      Expr::Node::id()	  			const { return mId; }
 
 void Expr::Node::setCode(const std::string& aCode)
 {
@@ -99,23 +99,23 @@ bool Expr::Node::castToType(const TypePtr& aToType)
 	else if (type()->is(Type::Number) && aToType->is(Type::Text))
 	{
 		*this = Node(text(), "std::to_string(" + code() + ")", aToType);
-  }
+	}
 	else if (type()->is(Type::Boolean) && aToType->is(Type::Text))
 	{
 		*this = Node(text(), "(" + code() + "?\"true\":\"false\")", aToType);
-  }
+	}
 	else if (type()->is(Type::Char) && aToType->is(Type::Text))
 	{
 		*this = Node(text(), "Core::toString(" + code() + ")", aToType);
-  }
+	}
 	else if (type()->is(Type::Char) && aToType->is(Type::Integer))
 	{
 		*this = Node(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
-  }
+	}
 	else if (type()->is(Type::Integer) && aToType->is(Type::Char))
 	{
 		*this = Node(text(), "static_cast<" + aToType->codeType() + ">(" + code() + ")", aToType);
-  }
+	}
 	else if (!type()->isOfType(aToType->name()))
 	{
 		ok = false;
@@ -134,22 +134,22 @@ Expr::Expr(const Node& aNode)
 }
 
 Expr::Expr(const std::string& aWord)
-	: Expr(Node(aWord))
+  : Expr(Node(aWord))
 {
 }
 
 Expr::Expr(const IdentifierPtr& aId)
-	: Expr(Node(aId))
+  : Expr(Node(aId))
 {
 }
 
 Expr::Expr(const std::string& aText, const TypePtr& aType)
-	: Expr(Node(aText, aText, aType))
+  : Expr(Node(aText, aText, aType))
 {
 }
 
 Expr::Expr(const std::string& aText, const std::string& aCode, const TypePtr& aType)
-	: Expr(Node(aText, aCode, aType))
+  : Expr(Node(aText, aCode, aType))
 {
 }
 
@@ -210,7 +210,7 @@ void Expr::setFlag(size_t aFlag, bool aEnable) { if (!mNodes.empty()) { mNodes.f
 std::string        Expr::code()			const { return mNodes.empty() ? "" : mNodes.front().code(); }
 std::string&       Expr::code()			      { return mNodes.front().code(); }
 TypePtr            Expr::type()			const { return mNodes.empty() ? TypePtr() : mNodes.front().type(); }
-bool               Expr::isEmpty()	const { return mNodes.empty(); }
+bool               Expr::isEmpty()		const { return mNodes.empty(); }
 IdentifierPtr      Expr::id()	  		const { return mNodes.empty() ? IdentifierPtr() : mNodes.front().id(); }
 
 bool Expr::castToType(const TypePtr& aToType)
@@ -241,8 +241,8 @@ std::ostream& operator<<(std::ostream& aStream, const Expr::Node& aValue)
 	if (aValue.is(Expr::ObjectImpl)) aStream << ",ObjectImpl";
 		
 	aStream << aValue.text() << "," 
-		      << aValue.code() << "," 
-		      << (aValue.type() ? *aValue.type() : Type());
+		    << aValue.code() << "," 
+		    << (aValue.type() ? *aValue.type() : Type());
 	
 	aStream << ")";
 

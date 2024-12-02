@@ -32,7 +32,7 @@ namespace
 	uint32_t upcase(uint32_t aChar)
 	{
 		uint32_t result = aChar;
-	  auto iter = std::find(lowers.cbegin(), lowers.cend(), aChar);
+	    auto iter = std::find(lowers.cbegin(), lowers.cend(), aChar);
 		if (iter != lowers.cend())
 		{
 			result = uppers[std::distance(lowers.cbegin(), iter)];
@@ -60,8 +60,8 @@ namespace Core
 	uint32_t Utf8::operator*() const
 	{
 		return mIter != mEnd
-					 ? utf8::peek_next(mIter, mEnd)
-			     : 0;
+			   ? utf8::peek_next(mIter, mEnd)
+			   : 0;
 	}
 
 	Utf8::operator bool() const
@@ -100,9 +100,9 @@ namespace Core
 	std::string directorySeperator()
 	{
 		#ifdef _WIN32
-				return "\\";
+			return "\\";
 		#else
-				return "/";
+			return "/";
 		#endif
 	}
 	
@@ -359,7 +359,7 @@ namespace Core
 		aResult = strtoll(aString, &endptr, aBase);
 		//std::cerr << errno << " " << aString << " " << aResult << " " << (endptr - aString) << " " << (int) *endptr << std::endl;
 		return !(endptr == aString || *endptr != 0 ||
-						 errno != 0 || aResult == LLONG_MAX);
+				 errno != 0 || aResult == LLONG_MAX);
 	}
 
 	bool strtodbl(const char* aString, double& aResult)
@@ -376,22 +376,22 @@ namespace Core
 	}
 
 	bool numberFrom(Utf8& aString,
-									int32_t& aNumber)
+					int32_t& aNumber)
 	{
 		return numberFrom(aString, "0123456789", aNumber);
 	}
 	
 	bool numberFrom(const Utf8& aString,
-									const std::string& aDigits,
-									int32_t& aNumber)
+					const std::string& aDigits,
+					int32_t& aNumber)
 	{
 		Utf8 string = aString;
 		return numberFrom(string, aDigits, aNumber);
 	}
 
 	bool numberFrom(Utf8& aString,
-									const std::string& aDigits,
-									int32_t& aNumber)
+					const std::string& aDigits,
+					int32_t& aNumber)
 	{
 		bool ok = false;
 		int pos = 0;
@@ -417,8 +417,8 @@ namespace Core
 	}
 
 	bool numberFrom(std::string& aString,
-									const std::string& aDigits,
-									int32_t& aNumber)
+					const std::string& aDigits,
+					int32_t& aNumber)
 	{
 		auto iter = cbegin(aString);
 		return numberFrom(Utf8(aString), aDigits, aNumber);
@@ -427,8 +427,8 @@ namespace Core
 	namespace detail
 	{
 		void toString(std::back_insert_iterator<std::string>& aIter,
-									int32_t aNumber,
-									const std::string& aDigits)
+					  int32_t aNumber,
+				  	  const std::string& aDigits)
 		{
 
 			if (aNumber > 0)
@@ -442,7 +442,7 @@ namespace Core
 	}
 
 	std::string toString(int32_t aNumber,
-											 const std::string& aDigits)
+						 const std::string& aDigits)
 	{
 		std::string result;
 		auto back = std::back_inserter(result);
@@ -499,7 +499,7 @@ namespace Core
 	}
 
 	std::string toString(const utf8::iterator<std::string::const_iterator>& aIter,
-											 const utf8::iterator<std::string::const_iterator>& aEnd)
+						 const utf8::iterator<std::string::const_iterator>& aEnd)
 	{
 		return std::string(aIter.base(), aEnd.base());
 	}
@@ -515,11 +515,11 @@ namespace Core
 	std::ostream& operator<<(std::ostream& aStream, const Format& aFormat)
 	{
 		aStream << "Core::Format{" 
-							<< aFormat.width << ", "
-							<< aFormat.precision << ", "
-							<< aFormat.fill << ", "
-							<< aFormat.flags
-							<< "} ";
+				<< aFormat.width << ", "
+				<< aFormat.precision << ", "
+				<< aFormat.fill << ", "
+				<< aFormat.flags
+				<< "} ";
 
 		return aStream;
 	}
@@ -546,7 +546,7 @@ namespace Core
 	}
 
 	static void getFormatWidth(const std::string& aInput, Format& aFormat, 
-														 Utf8& aString)
+							   Utf8& aString)
 	{
 		int32_t temp;
 		bool ok = numberFrom(aString, temp);
@@ -888,11 +888,11 @@ namespace Core
 	}
 
 	SaveStreamState::SaveStreamState(std::ostream& aStream)
-	: mStream{aStream},
-		mFlags{aStream.flags()},
-		mWidth{aStream.width()},
-		mPrecision{aStream.precision()},
-		mFill{aStream.fill()}
+		: mStream{aStream},
+		  mFlags{aStream.flags()},
+		  mWidth{aStream.width()},
+		  mPrecision{aStream.precision()},
+		  mFill{aStream.fill()}
 	{}
 
 	SaveStreamState::~SaveStreamState()

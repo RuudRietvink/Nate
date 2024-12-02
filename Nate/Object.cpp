@@ -6,14 +6,14 @@
 namespace nate
 {
 Object::Object()
-	: Record(),
-		mRecords(mTypes)
+  : Record(),
+	mRecords(mTypes)
 {
 }
 
 Object::Object(const std::string& aName, const TypePtr& aBaseType)
-	: Record(aName, aBaseType),
-		mRecords(mTypes)
+  : Record(aName, aBaseType),
+	mRecords(mTypes)
 {
 }
 
@@ -41,13 +41,13 @@ bool Object::basesOfType(const std::string& aType) const
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
-										 { return aBase->name() == aType || aBase->isOfType(aType); } );
+					   { return aBase->name() == aType || aBase->isOfType(aType); } );
 }
 
 bool Object::isOfType(const std::string& aType) const
 {
 	return Type::isOfType(aType) ||
-		     basesOfType(aType);
+		   basesOfType(aType);
 }
 
 DefinePtr Object::basesGetLike(const DefinePtr& aDefine, const ObjectPtr& inheritsFromThis)
@@ -76,8 +76,8 @@ void Object::addProp(const IdentifierPtr& anId, const nate::parser::location_typ
 	prop.filename = filename;
 	prop.states[(int)Property::PropType::Get] = PropState{ PropState::State::Declared, false };
 	prop.states[(int)Property::PropType::Set] = PropState{ (anId->is(Identifier::ReadOnly) 
-																													? PropState::State::Unknown
-																					 								: PropState::State::Declared), false };
+												? PropState::State::Unknown
+												: PropState::State::Declared), false };
 	for (auto propType : { Property::PropType::Get, Property::PropType::Set })	
 	{
 		if (basesIsPropDeclared(anId, propType))
@@ -92,8 +92,8 @@ void Object::addProp(const IdentifierPtr& anId, const nate::parser::location_typ
 bool Object::hasProp(const IdentifierPtr& anId) const
 {
 	return std::find_if(mPropertyMethods.begin(), mPropertyMethods.end(),
-													 [&](const auto& aPair) { return anId->name() == aPair.first->name(); })
-				    != mPropertyMethods.cend();
+						[&](const auto& aPair) { return anId->name() == aPair.first->name(); })
+		   != mPropertyMethods.cend();
 }
 
 Object::PropState Object::getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const
@@ -101,7 +101,7 @@ Object::PropState Object::getPropState(const IdentifierPtr& anId, Property::Prop
 	PropState result = PropState { PropState::State::Unknown, false };
 
 	auto iter = std::find_if(mPropertyMethods.begin(), mPropertyMethods.end(),
-													 [&](const auto& aPair) { return anId->name() == aPair.first->name(); });
+							[&](const auto& aPair) { return anId->name() == aPair.first->name(); });
 	if (iter != mPropertyMethods.cend())
 	{
 		result = iter->second.states[(int)aPropType];
@@ -124,8 +124,8 @@ bool Object::basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType a
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
-										 { return aBase->isPropDeclared(anId, aPropType) || 
-										          aBase->basesIsPropDeclared(anId, aPropType); } );
+					   { return aBase->isPropDeclared(anId, aPropType) || 
+								aBase->basesIsPropDeclared(anId, aPropType); } );
 }
 
 bool Object::isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const

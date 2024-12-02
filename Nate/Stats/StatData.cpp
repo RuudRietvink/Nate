@@ -10,12 +10,12 @@ StatData::StatData(const Location& aLocation, const IdentifierPtr& anId)
 
 const IdentifierPtr& StatData::getId() const
 {
-  return mId;
+    return mId;
 }
 
 void StatData::accept(ICodeVisitor* aVisitor) const
 {
-  aVisitor->visit(*this);
+    aVisitor->visit(*this);
 }
 
 }

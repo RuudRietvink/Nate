@@ -14,89 +14,89 @@ alias "⇓" "dec"
 ///////////////////////////////////////////////
 
 code define 120 \u uminus ${val-1 is number} is number as same, const:
-  -$val-1
+    -$val-1
 
 code define 120 \u uplus ${val-1 is number} is number as same, const:
-  $val-1
+    $val-1
 
 code define 120 \u not ${cond is boolean} is boolean as const:
-  !$cond
+    !$cond
 
 code define 80 ${val-1 is number} \u * ${val-2 is number} is number as highest, const:
-  $val-1 * $val-2
+    $val-1 * $val-2
 
 code define 80 ${val-1 is number} \u / ${val-2 is number} is number as highest, const:
-  $val-1 / $val-2
+    $val-1 / $val-2
 
 code define 80 ${val-1 is number} \u mod ${val-2 is number} is number as highest, const:
-  $val-1 % $val-2
+    $val-1 % $val-2
 
 code define 70 ${val-1 is number} \u + ${val-2 is number} is number as highest, const:
-  $val-1 + $val-2
+    $val-1 + $val-2
 
 code define 70 ${val-1 is number} \u - ${val-2 is number} is number as highest, const:
-  $val-1 - $val-2
+    $val-1 - $val-2
   
 code define 62 ${val-1 is text as literal } \u + ${val-2 is text as literal } is text as const:
-  string_t($val-1) + $val-2 
+    string_t($val-1) + $val-2 
 
 code define 62 ${val-1 is text} \u + ${val-2 is text} is text as const:
-  $val-1 + $val-2
+    $val-1 + $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u = ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 == $val-2
+    $val-1 == $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u != ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 != $val-2
+    $val-1 != $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u >= ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 >= $val-2
+    $val-1 >= $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u <= ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 <= $val-2
+    $val-1 <= $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u > ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 > $val-2
+    $val-1 > $val-2
 
 code define 50 ${val-1 is any as comphigh, cmp} \u < ${val-2 is any as comphigh, cmp} is boolean as const:
-  $val-1 < $val-2
+    $val-1 < $val-2
 
 code define 40 ${cond-1 is boolean} \u and ${cond-2 is boolean} is boolean as const:
-  $cond-1 && $cond-2
+    $cond-1 && $cond-2
 
 code define 35 ${cond-1 is boolean} \u or ${cond-2 is boolean} is boolean as const:
-  $cond-1 || $cond-2
+    $cond-1 || $cond-2
 
 ///////////////////////////////////////////////
 // face value
 ///////////////////////////////////////////////
 
 code define 120 inc \u # ${val is number as out} as same:
-  ++$val
+    ++$val
 
 code define 120 ${val is number as out} # inc as same:
-  $val++
+    $val++
 
 code define 120 dec \u # ${val is number as out} as same:
-  --$val
+    --$val
 
 code define 120 ${val is number as out} # dec as same:
-  $val--
+    $val--
 
 code define 65 \u decrease ${val-1 is number as out} \u with ${val-2 as same}:
-  $val-1 -= $val-2
+    $val-1 -= $val-2
 
 code define 65 \u decrease ${val is number as out}:
-  --$val
+    --$val
 
 code define 65 \u increase ${val-1 is number as out} \u with ${val-2 as same}:
-  $val-1 += $val-2
+    $val-1 += $val-2
 
 code define 65 \u increase ${val is number as out}:
-  ++$val
+    ++$val
 
 code define 60 ${val-1 is any} \u if ${cond is boolean} \u else ${val-2 as same} as same, const, right:
-  $cond ? $val-1 : $val-2
+    $cond ? $val-1 : $val-2
 
 
 ///////////////////////////////////////////////
@@ -104,22 +104,22 @@ code define 60 ${val-1 is any} \u if ${cond is boolean} \u else ${val-2 as same}
 ///////////////////////////////////////////////
 
 code define 200 ${owner is any as owner} 's ${member is any as member} as last:
-  $owner __ACCESS__ $member
+    $owner __ACCESS__ $member
 
 code define 200 ${member is any as member} of ${owner is any as owner} as same:
-  $owner __ACCESS__ $member
+    $owner __ACCESS__ $member
 
 code define 65 stream-out ${val is number}:
-  $val
+    $val
 
 code define 65 stream-out ${val is boolean}:
-  $val
+    $val
 
 code define 60 construct ${result is object as out}:
-  $result.reset(new decltype($result)::element_type())
+    $result.reset(new decltype($result)::element_type())
 
 code define 60 constructed ${result is object as out} as same:
-  ($result.reset(new decltype($result)::element_type()), $result)
+    ($result.reset(new decltype($result)::element_type()), $result)
 
 code define 60 constructed object as me:
-  std::make_shared<__X__OBJECT_TYPE__.__>()
+    std::make_shared<__X__OBJECT_TYPE__.__>()

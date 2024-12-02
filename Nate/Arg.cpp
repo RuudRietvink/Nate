@@ -4,14 +4,14 @@
 namespace nate
 {
 Arg::Arg(const IdentifierPtr& aIdentifier)
-	: mIdentifier(aIdentifier),
-	  mIsIdentifier(true)
+  : mIdentifier(aIdentifier),
+	mIsIdentifier(true)
 {}
 
 Arg::Arg(const std::string& aWord)
-	: mIdentifier(), 
-	  mWord(aWord),
-	  mIsIdentifier(false)
+  : mIdentifier(), 
+	mWord(aWord),
+	mIsIdentifier(false)
 {}
 
 bool                  Arg::isIdentifier()    const { return mIsIdentifier; }
@@ -20,7 +20,7 @@ const std::string&    Arg::word()            const { return mWord; }
 
 std::string Arg::setFlagString(const std::string& aFlag)
 {
-  std::string errorString;
+	std::string errorString;
 
 	if (aFlag == "cmp")
 	{
@@ -67,12 +67,12 @@ std::string Arg::setFlagString(const std::string& aFlag)
 	{
 		setFlag(Literal, true);
 	}
-  else
-  {
-    errorString = "Unknown argument type: " + aFlag;
-  }
+	else
+	{
+		errorString = "Unknown argument type: " + aFlag;
+	}
 
-  return errorString;
+	return errorString;
 }
 
 std::ostream& operator<<(std::ostream& aStream, const Arg& aValue)

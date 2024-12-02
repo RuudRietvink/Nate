@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////
   
 code define 65 seed random with time:
-  std::srand(std::time(nullptr));
+	std::srand(std::time(nullptr));
 
 code define 65 random number \u from ${val-1 is number} \u to ${val-2 is number} as highest:
-  Core::random($val-1, $val-2)
+	Core::random($val-1, $val-2)

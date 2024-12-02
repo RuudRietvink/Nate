@@ -5,11 +5,11 @@
   
 code define 65 size \u of ${container is container},
                ${container is container} 's size is int-32 as const:
-  static_cast<int32_t>($container.size())
+    static_cast<int32_t>($container.size())
 
 code define 65 clear ${container is container as out},
                empty ${container is container as out}:
-  $container.clear()
+    $container.clear()
 
 code define 65 stream-out ${container is container}:
-  Core::join($container)
+    Core::join($container)

@@ -8,23 +8,23 @@ namespace nate
 class StatRead : public StatInput
 {
 public:
-  StatRead(const Location& aLocation, InputType aInputType, const IdentifierPtr& aReader, const Expr& aInput, bool aCreateIt);
+    StatRead(const Location& aLocation, InputType aInputType, const IdentifierPtr& aReader, const Expr& aInput, bool aCreateIt);
 
-  void accept(ICodeVisitor* aVisitor) const override;
+    void accept(ICodeVisitor* aVisitor) const override;
   
-  const IdentifierPtr& getReader() const;
+    const IdentifierPtr& getReader() const;
 
-  const InputType& getInputType() const;
+    const InputType& getInputType() const;
   
-  const Expr& getInput() const;
+    const Expr& getInput() const;
 
-  bool getCreateIt() const;
+    bool getCreateIt() const;
 
 private:
-  InputType mInputType;
-  IdentifierPtr mReader;
-  Expr mInput;
-  bool mCreateIt;
+    InputType mInputType;
+    IdentifierPtr mReader;
+    Expr mInput;
+    bool mCreateIt;
 };
 
 }

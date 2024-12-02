@@ -26,8 +26,8 @@ public:
 	bool contains(const T& aData)
 	{
 		return std::find_if(mContainer.cbegin(), mContainer.cend(),
-											  [&aData](const auto& aPair)
-												{ return aPair.second == aData; }) != mContainer.cend();
+							[&aData](const auto& aPair)
+							{ return aPair.second == aData; }) != mContainer.cend();
 	}
 
 private:

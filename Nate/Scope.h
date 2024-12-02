@@ -34,13 +34,13 @@ public:
 	// IRecordHolder
 	Records& records() override { return mRecords; }
 
-private:					
-	std::string					     mName;	
-	Identifiers              mIdentifiers;		
-	Types                    mTypes;		
-	Records                  mRecords;							
-	Defines                  mDefines;
-	ScopeFlag						     mScopeFlag;
+private:
+	std::string			    mName;
+	Identifiers             mIdentifiers;
+	Types                   mTypes;
+	Records                 mRecords;
+	Defines                 mDefines;
+	ScopeFlag				mScopeFlag;
 };    
 
 }
