@@ -50,7 +50,7 @@ namespace internal
     const uint16_t TRAIL_SURROGATE_MIN = 0xdc00u;
     const uint16_t TRAIL_SURROGATE_MAX = 0xdfffu;
     const uint16_t LEAD_OFFSET         = LEAD_SURROGATE_MIN - (0x10000 >> 10);
-    const uint32_t SURROGATE_OFFSET    = 0x10000u - (LEAD_SURROGATE_MIN << 10) - TRAIL_SURROGATE_MIN;
+    const uint32_t SURROGATE_OFFSET    = static_cast<uint32_t>(0x10000ull - (LEAD_SURROGATE_MIN << 10) - TRAIL_SURROGATE_MIN);
 
     // Maximum valid value for a Unicode code point
     const uint32_t CODE_POINT_MAX      = 0x0010ffffu;

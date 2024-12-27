@@ -72,6 +72,7 @@ public:
 	int parseAndCode();
 	int parse();
 	int code();
+    const Stat::List& getStats() const;
 	void import(const std::string& aName);
 	void importBaseObject(const std::string& aInObjectName);
 	std::string baseObjectName() const;
@@ -101,16 +102,16 @@ public:
 	void doInitLoop(const nate::parser::location_type& aLocation);
 	void doStartLoop(const nate::parser::location_type& aLocation);
 	void doWhile(const Expr& aValue, const nate::parser::location_type& aLocation);
-  void doStartLoopForStep(const std::string& aId, 
-												 const TypePtr& aType, 
-												 bool aDownTo,
-												 const Expr& aStart,
-												 const Expr& aEnd,
-												 const Expr& aStep, 
-												 const nate::parser::location_type& aLocation);
-  void doStartLoopForRange(const std::string& aId, 
-													 const Expr& aRange, 
-											  	 const nate::parser::location_type& aLocation);
+    void doStartLoopForStep(const std::string& aId, 
+							const TypePtr& aType, 
+							bool aDownTo,
+							const Expr& aStart,
+							const Expr& aEnd,
+							const Expr& aStep, 
+							const nate::parser::location_type& aLocation);
+    void doStartLoopForRange(const std::string& aId, 
+							const Expr& aRange, 
+						    const nate::parser::location_type& aLocation);
 	void doEndLoop(const nate::parser::location_type& aLocation);
 	void doData(const std::string& aId, const nate::parser::location_type& aLocation);
 	void doDataEnd();
@@ -127,7 +128,7 @@ public:
 										 const nate::parser::location_type& aLocation);
 	void doEndDeclDefine(const nate::parser::location_type& aLocation);
 	void doEndDefine(const nate::parser::location_type& aLocation);
-  void doReturn(const Expr& aValue, const nate::parser::location_type& aLocation);
+    void doReturn(const Expr& aValue, const nate::parser::location_type& aLocation);
 	void doRead(InputType aInputType, const Expr& aValue, const nate::parser::location_type& aLocation);
 	void doInput(const nate::parser::location_type& aLocation);
 	void doInputComma(const nate::parser::location_type& aLocation);
@@ -142,13 +143,13 @@ public:
 	void doImplObject(const nate::parser::location_type& aLocation);
 	void doEndImplObject();
 	IdentifierPtr doProp(const std::string& aName, 
-										   const TypePtr& optType, const std::vector<std::string>& flags,
-											 const nate::parser::location_type& aLocation);
+						 const TypePtr& optType, const std::vector<std::string>& flags,
+						 const nate::parser::location_type& aLocation);
 	void doEndProp(const nate::parser::location_type& aLocation);
 	void doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
-							const nate::parser::location_type& aLocation);
+					  const nate::parser::location_type& aLocation);
 	void doEndPropDefine(const nate::parser::location_type& aLocation);
-  void doExpressionStatement(const Expr& aExpr, const nate::parser::location_type& aLocation);
+    void doExpressionStatement(const Expr& aExpr, const nate::parser::location_type& aLocation);
 
 
 	void pushScope(const ScopePtr& aScope);
@@ -173,7 +174,7 @@ public:
 	bool isType(const std::string& aName);
 	TypePtr determineType(const std::string& aName);
 	TypePtr makeType(const std::string& aValue);
-  bool checkProperty(std::ostringstream& error, const ExprNodesCIter& nodeIter) const;
+    bool checkProperty(std::ostringstream& error, const ExprNodesCIter& nodeIter) const;
 	IdentifierPtr getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
@@ -231,7 +232,7 @@ public:
 					const nate::parser::location_type& aLocation);
 	
 	std::string codeId(const std::string& aName, Scope* aScope = nullptr);
-  Expr evaluate(const Expr& aExpr, int aDebug = 0);
+    Expr evaluate(const Expr& aExpr, int aDebug = 0);
 
 private:
 	void checkIdentifierName(const std::string& aName);
@@ -255,31 +256,31 @@ private:
 		ExprNodesCIter			nodeStartIter;
 		ExprNodesCIter			nodeEndIter;
 		MethodPtr	      		matchedMethod;
-		Method::MatchResult matchResult;
+		Method::MatchResult     matchResult;
 	};
 
 	std::string handleCompileCommand(const std::string& aCommand, const std::string& aData);
 	void handleCompileCommands(Expr& aExpr);
 	void checkIfBetterMatch(const MethodPtr& aMethod,
-													const ExprNodesCIter& aStartIter,
-													const ExprNodesCIter& aEndIter,
-													Match& aMatch,
-													bool aLeftToRight,
-													int aDebug);
-  void checkLeftToRightMethod(const MethodPtr& aMethod,
+							const ExprNodesCIter& aStartIter,
+							const ExprNodesCIter& aEndIter,
+							Match& aMatch,
+							bool aLeftToRight,
+							int aDebug);
+    void checkLeftToRightMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
-															int aDebug = 0);
-  void checkRightToLeftMethod(const MethodPtr& aMethod,
+								int aDebug = 0);
+    void checkRightToLeftMethod(const MethodPtr& aMethod,
 	                            const Expr& aExpr,
 	                            Match& aMatch,
-															int aDebug = 0);
+								int aDebug = 0);
 	void checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Match& aMatch,
-										 int aDebug = 0);
+					   int aDebug = 0);
 	void checkIfObjectDefine(const ObjectPtr& aObject, const Expr& aExpr, int aDebug,
-								 					 Match& aMatch);
+							 Match& aMatch);
 	void unput(const std::string::const_iterator& aStart,
-						 const std::string::const_iterator& aEnd);
+			   const std::string::const_iterator& aEnd);
 	std::string makeTempDir();
 	bool importObjectDefinition(const std::string& aLibrary, const std::string& aName);
 	std::string typeScopeName() const;
@@ -291,40 +292,40 @@ private:
 	
 	std::unique_ptr<nate::Lexer>	mLexer;
 	std::unique_ptr<nate::parser>	mParser;
-	std::list<ObjectPtr>        mObjects;
-	ObjectPtr                   mCurObject;
-	DefinePtr                   mCurDefine;
-	std::ostream*               mSavedOut = nullptr;
+	std::list<ObjectPtr>            mObjects;
+	ObjectPtr                       mCurObject;
+	DefinePtr                       mCurDefine;
+	std::ostream*                   mSavedOut = nullptr;
 	std::list<IIdentifiersHolderPtr> mIdentifiersHolders;
-	std::list<IRecordsHolderPtr>mRecordsHolders;
-	std::list<ITypesHolderPtr>  mTypesHolders;
-	std::list<IDefinesHolderPtr>mDefinesHolders;
-	std::list<ScopePtr>         mScopes;
-	std::list<ScopePtr>         mOldScopes;
-	std::list<CodePtr>          mCodes;
-	Stat::List                  mStats;
-	std::list<Stat::SPtr>       mStatHolders;                 
-	bool												mDefineDecl = false;
-	std::list<int>              mLoopWhileCounts;
-	std::set<std::string>       mWantsUnary;
-	std::set<std::string>       mLeftMonomial;
-	mutable int	                mErrors = 0;
-	mutable int				          mWarnings = 0;
-	std::ostream*               mOut = nullptr;
-	std::string                 mCachedOutput;
-	bool                        mDataOutput = false;
-	std::string                 mStream;
-	std::string                 mLastReadStream;
+	std::list<IRecordsHolderPtr>    mRecordsHolders;
+	std::list<ITypesHolderPtr>      mTypesHolders;
+	std::list<IDefinesHolderPtr>    mDefinesHolders;
+	std::list<ScopePtr>             mScopes;
+	std::list<ScopePtr>             mOldScopes;
+	std::list<CodePtr>              mCodes;
+	Stat::List                      mStats;
+	std::list<Stat::SPtr>           mStatHolders;                 
+	bool						    mDefineDecl = false;
+	std::list<int>                  mLoopWhileCounts;
+	std::set<std::string>           mWantsUnary;
+	std::set<std::string>           mLeftMonomial;
+	mutable int	                    mErrors = 0;
+	mutable int				        mWarnings = 0;
+	std::ostream*                   mOut = nullptr;
+	std::string                     mCachedOutput;
+	bool                            mDataOutput = false;
+	std::string                     mStream;
+	std::string                     mLastReadStream;
 	std::map<std::string, std::string> mAliases;
-	std::set<std::string>       mImports;
-	FileType										mFileType = FileType::Normal;
-	std::string                 mFileName;
-	std::string                 mLibrary;
-	std::unique_ptr<MathParser> mMathParser;
-	Math											  mMath;
-	std::string									mInBracketsType;
-	nate::parser::location_type   mMathStart;
-	nate::parser::location_type   mDummyLocation;
+	std::set<std::string>           mImports;
+	FileType					    mFileType = FileType::Normal;
+	std::string                     mFileName;
+	std::string                     mLibrary;
+	std::unique_ptr<MathParser>     mMathParser;
+	Math						    mMath;
+	std::string					    mInBracketsType;
+	nate::parser::location_type     mMathStart;
+	nate::parser::location_type     mDummyLocation;
 
 	struct IfIs
 	{
@@ -340,16 +341,16 @@ private:
 		Value,
 	};
 
-  MethodType                  mMethodType = MethodType::Define;
+    MethodType mMethodType = MethodType::Define;
 
 	enum class SpecialWord
 	{
-		None					= 0x0,
+		None		    = 0x0,
 		WantsUnary		= 0x01,
-		IsAlias				= 0x02,
+		IsAlias		    = 0x02,
 		LeftMonomial	= 0x04,
 	};
 
-	int32_t  			          	  mSpecialWord = static_cast<int32_t>(SpecialWord::None);
+	int32_t mSpecialWord = static_cast<int32_t>(SpecialWord::None);
 };
 }

@@ -1,34 +1,21 @@
 ###Empty
   output
 ---
-  StdOutput
-    End
+  *output << std::endl;
 ###String
   output "Hello"
 ---
-  StdOutput
-    Expr "Hello"
-    End
+  *output << "Hello" << std::endl;
 ###Multiple
   output "Hello", "Hi" & 3
 ---
-  StdOutput
-    Expr "Hello"
-    OutputSepComma
-    Expr "Hi"
-    OutputSepConcat
-    Expr 3
-    End
+  *output << "Hello Hi" << 3 << std::endl;
 ###CommaAtEnd
   output "Hello",
 ---
-  StdOutput
-    Expr "Hello"
-    OutputSepComma
+  *output << "Hello ";
 ###ConcatAtEnd
   output "Hello"&
 ---
-  StdOutput
-    Expr "Hello"
-    OutputSepConcat
+  *output << "Hello";
 ###

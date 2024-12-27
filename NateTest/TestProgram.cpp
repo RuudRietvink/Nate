@@ -2,6 +2,31 @@
 
 namespace nate
 {
+extern const char* programExp =
+R"__(#line 1 "test.nd"
+std::shared_ptr<std::ostream> output = {};
+#line 1
+std::shared_ptr<std::ostream> error = {};
+#line 1
+std::shared_ptr<std::istream> input = {};
+#undef NOMINMAX
+#define NOMINMAX
+#include <windows.h>
+#line 1 ""
+int main(int argc, char** argv)
+{
+  output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
+  error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});
+  input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
+  SetConsoleOutputCP(65001);
+#line 2
+  string_t text = {};
+  int32_t int32 = {};
+  float float = {};
+  *output << "Hello" << std::endl;
+}
+)__";
+
 TEST_F(TestParser, Program)
 {
   std::string in =
@@ -12,22 +37,8 @@ R"__(program:
   output "Hello"
 )__";
 
-  const char* exp =
-R"__(Code
-LocalVar output std::shared_ptr<std::ostream>={}
-LocalVar error std::shared_ptr<std::ostream>={}
-LocalVar input std::shared_ptr<std::istream>={}
-Program
-  LocalVar text string_t={}
-  LocalVar int32 int32_t={}
-  LocalVar float float={}
-  StdOutput
-    Expr "Hello"
-    End
-)__";
-
   EXPECT_EQ(0, parseProgram(in));
-  compareWhole(exp, code());
+  compareWhole(programExp, code());
 }
 
 }

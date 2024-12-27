@@ -12,6 +12,8 @@
 
 namespace nate
 {
+extern const char* programExp;
+
 inline std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
     size_t start_pos = 0;
@@ -46,9 +48,6 @@ public:
   {
     std::string progIn = 
 R"__(program:
-  var text is text
-  var int32 is int-32
-  var float is float
 )__" + in;
     return parseProgram(progIn, fileType);
   }
@@ -56,11 +55,10 @@ R"__(program:
 
   std::string code()
   {
-    std::ostringstream out;
+      std::ostringstream out;
 	  NateCode coder(out, mParser.get());
-    std::ostringstream out2;
-	  coder.codeTreeDesc(mParser->data.stats, out2);
-    return out2.str();
+      coder.codeStats(mParser->getStats());
+      return out.str();
   }
 
   std::string trimEnd(const std::string& in)
@@ -81,19 +79,17 @@ R"__(program:
 
   void compare(const std::string& exp, const std::string& out)
   {
-    static const std::string start =  
-R"__(Code
-LocalVar output std::shared_ptr<std::ostream>={}
-LocalVar error std::shared_ptr<std::ostream>={}
-LocalVar input std::shared_ptr<std::istream>={}
-Program
-  LocalVar text string_t={}
-  LocalVar int32 int32_t={}
-  LocalVar float float={}
-)__";
-    static const size_t startLen = start.size();
+      std::string start = programExp;
+      static const std::string programEndLine = "#line 2\n";
+      auto startEnd = start.find(programEndLine);
+      if (startEnd != std::string::npos)
+      {
+          start = start.substr(0, startEnd + programEndLine.size());
+      }
+      const size_t startLen = start.size();
+      std::string testCode = out.substr(0, out.size() - 3);
 
-    EXPECT_STREQ(trimEnd(exp).c_str(), trimEnd(replaceAll(out, "\t", "  ").substr(startLen)).c_str());
+      EXPECT_STREQ(trimEnd(exp).c_str(), trimEnd(replaceAll(testCode, "\t", "  ").substr(startLen)).c_str());
   }
 
   void testCodePiece(const std::string& testName, const std::filesystem::path& filename)

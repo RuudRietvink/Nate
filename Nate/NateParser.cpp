@@ -173,6 +173,11 @@ int NateParser::code()
 	return result;
 }
 
+const Stat::List& NateParser::getStats() const
+{
+    return mStats;
+}
+
 void NateParser::parseFile(const std::string& aFilename)
 {
 	std::ifstream stream(aFilename);
