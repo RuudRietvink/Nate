@@ -4,6 +4,7 @@
     <ClCompile Include="TestOutput.cpp" />
     <ClCompile Include="TestExpr.cpp" />
     <ClCompile Include="TestProgram.cpp" />
+    <ClCompile Include="TestVariables.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestFiles">
@@ -15,6 +16,9 @@
       <Filter>TestFiles</Filter>
     </Text>
     <Text Include="testfiles\Output_tests.txt">
+      <Filter>TestFiles</Filter>
+    </Text>
+    <Text Include="testfiles\Variables_tests.txt">
       <Filter>TestFiles</Filter>
     </Text>
   </ItemGroup>

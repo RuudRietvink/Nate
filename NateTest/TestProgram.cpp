@@ -9,17 +9,28 @@ std::shared_ptr<std::ostream> output = {};
 std::shared_ptr<std::ostream> error = {};
 #line 1
 std::shared_ptr<std::istream> input = {};
+#line 27 ""
+#define NOMINMAX
+#include <windows.h>
+#include <cmath>
+#line 32
+const double pi = 3.14159265358979323;
+#line 34
+const double tau = 6.283185307179586;
+#line 36
+const double e = 2.718281828459045;
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
-#line 1 ""
+#line 3
 int main(int argc, char** argv)
 {
   output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
   error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});
   input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
   SetConsoleOutputCP(65001);
-#line 2
+#define NATE_PROGRAM_START
+#line 4
   string_t text = {};
   int32_t int32 = {};
   float float = {};
@@ -30,7 +41,9 @@ int main(int argc, char** argv)
 TEST_F(TestParser, Program)
 {
   std::string in =
-R"__(program:
+R"__(
+import Math
+program:
   var text is text
   var int32 is int-32
   var float is float

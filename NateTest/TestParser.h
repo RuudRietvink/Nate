@@ -79,17 +79,22 @@ R"__(program:
 
   void compare(const std::string& exp, const std::string& out)
   {
-      std::string start = programExp;
-      static const std::string programEndLine = "#line 2\n";
-      auto startEnd = start.find(programEndLine);
+      std::string toTest = replaceAll(out, "\t", "  ");
+      static const std::string programStartLine = "#define NATE_PROGRAM_START\n";
+      auto startEnd = toTest.find(programStartLine);
       if (startEnd != std::string::npos)
       {
-          start = start.substr(0, startEnd + programEndLine.size());
+          toTest = toTest.substr(startEnd + programStartLine.size());
+          auto afterLine = toTest.find("\n");
+          if (afterLine != std::string::npos)
+          {
+              toTest = toTest.substr(afterLine + 1);
+          }
       }
-      const size_t startLen = start.size();
-      std::string testCode = out.substr(0, out.size() - 3);
 
-      EXPECT_STREQ(trimEnd(exp).c_str(), trimEnd(replaceAll(testCode, "\t", "  ").substr(startLen)).c_str());
+      toTest = toTest.substr(0, toTest.size() - 3);
+
+      EXPECT_STREQ(trimEnd(exp).c_str(), toTest.c_str());
   }
 
   void testCodePiece(const std::string& testName, const std::filesystem::path& filename)
@@ -117,6 +122,8 @@ R"__(program:
       outString += line + "\n";
     }
     
+    ASSERT_FALSE(inString.empty());
+
     EXPECT_EQ(0, parse(inString));
     compare(outString, code());
   }

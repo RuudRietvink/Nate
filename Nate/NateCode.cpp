@@ -79,6 +79,7 @@ void NateCode::visit(const StatProgram& aStat)
 	*mOut << in() << "input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
 	*mOut << in() << "SetConsoleOutputCP(65001);" << end();
 	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
+    *mOut << "#define NATE_PROGRAM_START" << end();
 	
 	codeStats(aStat.getCompound());
 	--mIndent;
@@ -499,7 +500,7 @@ void NateCode::visit(const StatWrite& aStat)
 
 	if (aStat.getCreateIt())
 	{
-    codeDeclIdentifier(false, aStat.getWriter(), true, aStat.getLocation());
+        codeDeclIdentifier(false, aStat.getWriter(), true, aStat.getLocation());
 	}
 	else if (!aStat.getOutput().isEmpty())
 	{
@@ -651,9 +652,9 @@ void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,
-																	const IdentifierPtr& aIdentifier,
-																	bool initializeVariables,
-																	const Location& aLocation)
+								  const IdentifierPtr& aIdentifier,
+								  bool initializeVariables,
+								  const Location& aLocation)
 {
 	printLineNr(aLocation);
 

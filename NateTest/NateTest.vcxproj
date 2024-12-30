@@ -38,6 +38,7 @@
     <ClCompile Include="TestExpr.cpp" />
     <ClCompile Include="TestOutput.cpp" />
     <ClCompile Include="TestProgram.cpp" />
+    <ClCompile Include="TestVariables.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -56,6 +57,7 @@
   <ItemGroup>
     <Text Include="testfiles\Expr_tests.txt" />
     <Text Include="testfiles\Output_tests.txt" />
+    <Text Include="testfiles\Variables_tests.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

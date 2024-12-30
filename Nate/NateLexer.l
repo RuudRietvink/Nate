@@ -247,7 +247,7 @@ public:
 %x COMMENT
 
 subscriptDigit  [₀₁₂₃₄₅₆₇₈₉]
-subscript       {subscriptDigit}|[⏨]
+subscript       {subscriptDigit}|[⏨₊₋₌₍₎ₐₑₒₓₔₕₖₗₘₙₚₛₜ]
 superscriptDigit [⁰¹²³⁴⁵⁶⁷⁸⁹]
 superNumber     {superscriptDigit}+
 superMinus      [⁻]
