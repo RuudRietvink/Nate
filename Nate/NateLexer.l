@@ -11,211 +11,211 @@
 
 %class{
 public:
-	std::vector<std::string> filenames;
-	int depth = 0;
-	NateParser* nate = nullptr;
-  int commentNested = 0;
-  int savedState = EXPR;
-  int savedStateExprValue = EXPR;
-  int stateExprValue = EXPR;
-  bool spaceBeen = false;
-		
-  std::string currentFile()
-  {
-    return filenames.back();
-  }
-  
-  void pushFile(const std::string& aFile)
-  {
-    std::string escFile = Core::replaceAll(aFile, "\\", "\\\\");
-		filenames.push_back(escFile);
-  }
-
-  void popFile()
-  {
-		filenames.pop_back();
-  }
-
-  std::string fileLocation(const std::optional<nate::location>& aLocation = std::nullopt)
-  {
-    std::stringstream ss;
-    ss << currentFile() << ": " << aLocation.value_or(location());
-    return ss.str();
-  }
-  
-	void includeFile(const std::string& aFile)
-	{
-    if (debug())
+    std::vector<std::string> filenames;
+    int depth = 0;
+    NateParser* nate = nullptr;
+    int commentNested = 0;
+    int savedState = EXPR;
+    int savedStateExprValue = EXPR;
+    int stateExprValue = EXPR;
+    bool spaceBeen = false;
+        
+    std::string currentFile()
     {
-      std::cerr << "Including: " << aFile << std::endl;
+	    return filenames.back();
+    }
+  
+    void pushFile(const std::string& aFile)
+    {
+        std::string escFile = Core::replaceAll(aFile, "\\", "\\\\");
+        filenames.push_back(escFile);
     }
 
-		if (depth > 99)
-		{
-			std::cerr << "Include depth overflow on " << aFile << std::endl;
-		}
-		else
-		{
-      std::ifstream inFile(aFile);
-      if (inFile.good())
-      {
-        std::string str{std::istreambuf_iterator<char>(inFile),
-                        std::istreambuf_iterator<char>()};
-        std::istringstream* inStream = new std::istringstream(str);
-				++depth;
-				pushFile(aFile);
-				push_matcher(new_matcher(*inStream));  // push current matcher, use new matcher
-      }
-			else
-			{
-				std::cerr << "Include file not found: " << aFile << std::endl;
-      }
-		}
-	}
-
-	void includeFile()
-	{
-		const char *q = strchr(text(), '"');  // get ..."filename"
-		std::string filename(q + 1, strrchr(text(), '"'));
-		includeFile(filename);
-	}
-  
-	bool endOfFile()
-	{
-		bool result = true;
-		if (depth > 0)
-		{
-      if (debug())
-      {
-        std::cerr << "End of file: " << currentFile() << std::endl;
-      }
-
-      delete in().istream();          // close current input in() (a istream*)
-			pop_matcher();                  // delete current matcher, pop matcher
-			popFile();
-			--depth;
-			result = false;                 // continue reading
-      if (debug() && 
-          !filenames.empty())
-      {
-        std::cerr << "Continue parsing: " << currentFile() << std::endl;
-      }
-		}
-
-		return result;
-	}
-  
-  void unputString(const std::string::const_reverse_iterator& aBegin, const std::string::const_reverse_iterator& aEnd)
-  {
-	  for (auto iter = aBegin; iter != aEnd; ++iter)
-	  {
-      matcher().unput(*iter);
-	  }
-  }
-
-  void unputString(const std::string& aString)
-  {
-	  unputString(aString.crbegin(), aString.crend());
-  }
-
-	nate::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const nate::location& aLocation)
-	{
-		std::string name;
-		bool isId;
-
-		std::tie(isId, name) = nate->makeIdOrWord(aOrig, aString);
-		return isId ? nate::parser::make_IDENTIFIER(name, aLocation)
-		            : nate::parser::make_WORD(name, aLocation);
-	}
-  
-  void outIndents(const std::string& aString)
-  {
-    if (debug())
+    void popFile()
     {
-      std::cerr << aString << matcher().stops().size() << " " << matcher().last_stop() << std::endl;
+        filenames.pop_back();
     }
-  }
-  
-  int curState()
-  {
-	  return start();
-  }
 
-  std::string strState(int aState)
-  {
-    std::vector<std::string> strs =
+    std::string fileLocation(const std::optional<nate::location>& aLocation = std::nullopt)
     {
-      "INITIAL",
-      "EXPR",
-      "LOOP",
-      "DEFINE",
-      "CODE",
-      "INLINE",
-      "ARGS",
-      "VAR_DECL",
-      "FOR_VAR_DECL",
-      "DECL_TYPE",
-      "FOR_EXPR",
-      "SUPERSCRIPT_EXPR",
-      "COMMENT"
-    };
-    return strs[aState];
-  }
-
-  void pushState(int aState)
-  {
-	  if (debug()) std::cerr << "Push " << strState(aState) << std::endl;
-	  push_state(aState);
-  }
-
-  void popState()
-  {
-    if (debug()) std::cerr << "Pop from " << strState(start());
-	  if (!states_empty())
-	  {
-		  pop_state();
-	  }
-
-	  if (debug()) std::cerr << " to " << strState(start()) << std::endl;
-  }
-
-  void setState(int aState)
-  {
-	  if (debug()) std::cerr << "Set " << strState(aState) << " from " << strState(start()) << std::endl;    
-	  start(aState);
-  }
-
-  void startSuperscript()
-  {
-    space();
-    savedState = start();
-    savedStateExprValue = stateExprValue;
-    stateExprValue = SUPERSCRIPT_EXPR;
-    setState(stateExprValue);
-  }
-
-  void stopSuperscript()
-  {
-    unputString(str());
-    setState(savedState);
-    stateExprValue = savedStateExprValue;
-    space();
-  }
-
-  void s()
-  {
-    spaceBeen = true;
-  }
+        std::stringstream ss;
+        ss << currentFile() << ": " << aLocation.value_or(location());
+        return ss.str();
+    }
   
-  void space()
-  {
-    s();
-  }
+    void includeFile(const std::string& aFile)
+    {
+        if (debug())
+        {
+        std::cerr << "Including: " << aFile << std::endl;
+        }
 
-  void noSpace()
-  {
-    spaceBeen = false;
-  }
+        if (depth > 99)
+        {
+            std::cerr << "Include depth overflow on " << aFile << std::endl;
+        }
+        else
+        {
+            std::ifstream inFile(aFile);
+            if (inFile.good())
+            {
+                std::string str{std::istreambuf_iterator<char>(inFile),
+                            std::istreambuf_iterator<char>()};
+                std::istringstream* inStream = new std::istringstream(str);
+                ++depth;
+                pushFile(aFile);
+                push_matcher(new_matcher(*inStream));  // push current matcher, use new matcher
+            }
+            else
+            {
+                std::cerr << "Include file not found: " << aFile << std::endl;
+            }
+        }
+    }
+
+    void includeFile()
+    {
+        const char *q = strchr(text(), '"');  // get ..."filename"
+        std::string filename(q + 1, strrchr(text(), '"'));
+        includeFile(filename);
+    }
+  
+    bool endOfFile()
+    {
+        bool result = true;
+        if (depth > 0)
+        {
+            if (debug())
+            {
+                std::cerr << "End of file: " << currentFile() << std::endl;
+            }
+
+            delete in().istream();          // close current input in() (a istream*)
+            pop_matcher();                  // delete current matcher, pop matcher
+            popFile();
+            --depth;
+            result = false;                 // continue reading
+            if (debug() && 
+                !filenames.empty())
+            {
+                std::cerr << "Continue parsing: " << currentFile() << std::endl;
+            }
+        }
+
+        return result;
+    }
+  
+    void unputString(const std::string::const_reverse_iterator& aBegin, const std::string::const_reverse_iterator& aEnd)
+    {
+        for (auto iter = aBegin; iter != aEnd; ++iter)
+        {
+            matcher().unput(*iter);
+        }
+    }
+
+    void unputString(const std::string& aString)
+    {
+        unputString(aString.crbegin(), aString.crend());
+    }
+
+    nate::parser::symbol_type makeIdOrWord(const std::string& aOrig, const std::string& aString, const nate::location& aLocation)
+    {
+        std::string name;
+        bool isId;
+
+        std::tie(isId, name) = nate->makeIdOrWord(aOrig, aString);
+        return isId ? nate::parser::make_IDENTIFIER(name, aLocation)
+                    : nate::parser::make_WORD(name, aLocation);
+    }
+  
+    void outIndents(const std::string& aString)
+    {
+        if (debug())
+        {
+            std::cerr << aString << matcher().stops().size() << " " << matcher().last_stop() << std::endl;
+        }
+    }
+  
+    int curState()
+    {
+        return start();
+    }
+
+    std::string strState(int aState)
+    {
+        std::vector<std::string> strs =
+        {
+            "INITIAL",
+            "EXPR",
+            "LOOP",
+            "DEFINE",
+            "CODE",
+            "INLINE",
+            "ARGS",
+            "VAR_DECL",
+            "FOR_VAR_DECL",
+            "DECL_TYPE",
+            "FOR_EXPR",
+            "SUPERSCRIPT_EXPR",
+            "COMMENT"
+        };
+        return strs[aState];
+    }
+
+    void pushState(int aState)
+    {
+        if (debug()) std::cerr << "Push " << strState(aState) << std::endl;
+        push_state(aState);
+    }
+
+    void popState()
+    {
+        if (debug()) std::cerr << "Pop from " << strState(start());
+        if (!states_empty())
+        {
+            pop_state();
+        }
+
+        if (debug()) std::cerr << " to " << strState(start()) << std::endl;
+    }
+
+    void setState(int aState)
+    {
+        if (debug()) std::cerr << "Set " << strState(aState) << " from " << strState(start()) << std::endl;    
+        start(aState);
+    }
+
+    void startSuperscript()
+    {
+        space();
+        savedState = start();
+        savedStateExprValue = stateExprValue;
+        stateExprValue = SUPERSCRIPT_EXPR;
+        setState(stateExprValue);
+    }
+
+    void stopSuperscript()
+    {
+        unputString(str());
+        setState(savedState);
+        stateExprValue = savedStateExprValue;
+        space();
+    }
+
+    void s()
+    {
+        spaceBeen = true;
+    }
+  
+    void space()
+    {
+        s();
+    }
+
+    void noSpace()
+    {
+        spaceBeen = false;
+    }
 
 %}
 
@@ -267,12 +267,15 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-numberBase      (0[fF])
-decimal         {numberBase}?[0-9]+(\.[0-9]+)?(([E]|[⏨]|(\*\^)|[ю])[-+]?[0-9]+)?
+bitsSize        ((8)|(16)|(32)|(64)|(128))?
+numberTypeInt   ([iI]{bitsSize}_)
+numberTypeFloat ([fF]{bitsSize}_)
+numberType      {numberTypeInt}|{numberTypeFloat}
+decimal         [-]?{numberType}?[0-9]+(\.[0-9]+)?([Eю][-+]?[0-9]+)?
 smallDecimal    {subscriptDigit}+
-binary          [0][bB][0-1]+
-oct             [0][oO][0-7]+
-hex             [0][xX][0-9a-fA-F]+
+binary          [bB]{bitsSize}_[0-1]+
+oct             [oO]{bitsSize}_[0-7]+
+hex             [xX]{bitsSize}_[0-9a-fA-F]+
 number          {decimal}|{binary}|{oct}|{hex}
 oper            [^\p{Ll}\p{Lu}0-9\h\n]
 rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+[/⁄][₀₁₂₃₄₅₆₇₈₉]+))
@@ -282,25 +285,25 @@ string          ["][^"]*[""]
  
 <*>{
 // ** spacing
-(?^^\h*\n)     s();// eat empty lines without affecting indent stops
-<^CODE,^INCLUDE_CODE>\h+     s();// ignore
-(?^\\\n\h*)    s();// lines ending in \ will continue on the next line
+(?^^\h*\n)                  s();// eat empty lines without affecting indent stops
+<^CODE,^INCLUDE_CODE>\h+    s();// ignore
+(?^\\\n\h*)                 s();// lines ending in \ will continue on the next line
 
 <^SUPERSCRIPT_EXPR,^COMMENT,^CODE,^INCLUDE_CODE,^INBRACKETS>\n  return nate::parser::make_EOS(location());
 
 // *** comments
-(?^^\h*"//".*\n) s();// eat //-comments that start a line without affecting indent stops
-"//".*         s();// eat //-comments
-\h*"/*"\k?     s();
-               if (commentNested == 0) pushState(COMMENT);
-               ++commentNested;                  // allow nesting /*-comments
+(?^^\h*"//".*\n)    s();// eat //-comments that start a line without affecting indent stops
+"//".*              s();// eat //-comments
+\h*"/*"\k?          s();
+                    if (commentNested == 0) pushState(COMMENT);
+                    ++commentNested;                  // allow nesting /*-comments
 }
 //////////////////////////
 
 <*,^COMMENT,^ARGS,^INBRACKETS>{
-^\h*\i			  outIndents("i "); s(); return nate::parser::make_BEGIN(location()); // indent
-^\h*\j			  outIndents("j "); s(); return nate::parser::make_END(location());   // dedent
-\j				    outIndents("j+ "); s(); return nate::parser::make_END(location());   // dedent, for each extra indent level on the same line
+^\h*\i		   outIndents("i ");  s(); return nate::parser::make_BEGIN(location()); // indent
+^\h*\j		   outIndents("j ");  s(); return nate::parser::make_END(location());   // dedent
+\j			   outIndents("j+ "); s(); return nate::parser::make_END(location());   // dedent, for each extra indent level on the same line
 }
 //////////////////////////
 
@@ -327,127 +330,127 @@ include\h*\".*\"  s(); includeFile();
 
 // *** key words
 <LOOP>{
-\bin\b 	      return nate::parser::make_IN(location());
-\bwhile\b     |
+\bin\b 	            return nate::parser::make_IN(location());
+\bwhile\b        |
 (?^^\h+/while\b)	return nate::parser::make_WHILE(location());
 }
 //////////////////////////
 
 <DEFINE>{
-\breturn\b	  return nate::parser::make_RETURN(location());
+\breturn\b	        return nate::parser::make_RETURN(location());
 }
 //////////////////////////
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
 ":="			    return nate::parser::make_ASSIGN(location());
 ":"				    return nate::parser::make_COL(location());
-"("					  return nate::parser::make_OPENPAR(location());
-")"					  return nate::parser::make_CLOSEPAR(location());
-","					  return nate::parser::make_COMMA(location());
-"&"					  return nate::parser::make_CONCAT(location());
+"("				    return nate::parser::make_OPENPAR(location());
+")"					return nate::parser::make_CLOSEPAR(location());
+","					return nate::parser::make_COMMA(location());
+"&"					return nate::parser::make_CONCAT(location());
 ";"				    return nate::parser::make_EOS(location());
-"}"           return nate::parser::make_ARGEND(location());
+"}"                 return nate::parser::make_ARGEND(location());
 {number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{rational}	  return nate::parser::make_RATIONAL(str(), location());
-{string}    	return nate::parser::make_STRING(str(), location());
-"true"|"false" return nate::parser::make_BOOL(str(), location());
-<^DECL_TYPE>{word}	  		return makeIdOrWord(str(), str(), location());
-[$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
+{rational}	        return nate::parser::make_RATIONAL(str(), location());
+{string}    	    return nate::parser::make_STRING(str(), location());
+"true"|"false"      return nate::parser::make_BOOL(str(), location());
+<^DECL_TYPE>{word}	return makeIdOrWord(str(), str(), location());
+[$]{idName}		    return nate::parser::make_IDENTIFIER(str(), location());
 {oper}				return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <FOR_EXPR>{
 \bto\b		    return nate::parser::make_TO(location());
-\bdown-to\b	  return nate::parser::make_DOWNTO(location());
+\bdown-to\b	    return nate::parser::make_DOWNTO(location());
 \bstep\b	    return nate::parser::make_STEP(location());
-\bwhile\b 	  return nate::parser::make_WHILE(location());
-\bin\b 	      return nate::parser::make_IN(location());
+\bwhile\b 	    return nate::parser::make_WHILE(location());
+\bin\b 	        return nate::parser::make_IN(location());
 }
 //////////////////////////
 
 <SUPERSCRIPT_EXPR>{
-{superIdName}	return makeIdOrWord(str(), Core::unSuperscript(str()), location());
-{superNumber} return nate::parser::make_NUMBER(Core::unSuperscript(str()), location());
-{superMinus}  return nate::parser::make_WORD("-", location());
-{superPlus}   return nate::parser::make_WORD("+", location());
-{superOpen}   return nate::parser::make_OPENPAR(location());
-{superClose}  return nate::parser::make_CLOSEPAR(location());
-{word}      	stopSuperscript();
-{oper}			  stopSuperscript(); 
-\n            stopSuperscript(); return nate::parser::make_EOS(location());
-[^\h]         stopSuperscript();
+{superIdName}   return makeIdOrWord(str(), Core::unSuperscript(str()), location());
+{superNumber}   return nate::parser::make_NUMBER(Core::unSuperscript(str()), location());
+{superMinus}    return nate::parser::make_WORD("-", location());
+{superPlus}     return nate::parser::make_WORD("+", location());
+{superOpen}     return nate::parser::make_OPENPAR(location());
+{superClose}    return nate::parser::make_CLOSEPAR(location());
+{word}          stopSuperscript();
+{oper}		    stopSuperscript(); 
+\n              stopSuperscript(); return nate::parser::make_EOS(location());
+[^\h]           stopSuperscript();
 }
 //////////////////////////
 
 <ARGS>{
-\bis\b			  return nate::parser::make_IS(location());
-\bas\b			  return nate::parser::make_AS(location());
-":="			    return nate::parser::make_ASSIGN(location());
-":"				    return nate::parser::make_COL(location());
-"("					  return nate::parser::make_OPENPAR(location());
-")"					  return nate::parser::make_CLOSEPAR(location());
-","					  return nate::parser::make_COMMA(location());
-"${"          return nate::parser::make_ARGSTART(location());
-"}"           return nate::parser::make_ARGEND(location());
-[$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
+\bis\b		    return nate::parser::make_IS(location());
+\bas\b		    return nate::parser::make_AS(location());
+":="		    return nate::parser::make_ASSIGN(location());
+":"			    return nate::parser::make_COL(location());
+"("			    return nate::parser::make_OPENPAR(location());
+")"			    return nate::parser::make_CLOSEPAR(location());
+","			    return nate::parser::make_COMMA(location());
+"${"            return nate::parser::make_ARGSTART(location());
+"}"             return nate::parser::make_ARGEND(location());
+[$]{idName}	    return nate::parser::make_IDENTIFIER(str(), location());
 {string}    	return nate::parser::make_STRING(str(), location());
 [\\]{word}		return nate::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
 {word}		    return nate::parser::make_WORD(str(), location());
-{number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{oper}				return nate::parser::make_WORD(str(), location());
-"{{"          return nate::parser::make_START_SPEC(location());
-\h*\k?        // ignore
+{number}	    return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{oper}		    return nate::parser::make_WORD(str(), location());
+"{{"            return nate::parser::make_START_SPEC(location());
+\h*\k?          // ignore
 }
 //////////////////////////
 
 <INCLUDE_CODE>{
-[^\h\n][^\n]*\n      return nate::parser::make_WORD(str(), location());
-^[\h]+        // ignore
-\n            // ignore
+[^\h\n][^\n]*\n return nate::parser::make_WORD(str(), location());
+^[\h]+          // ignore
+\n              // ignore
 }
 //////////////////////////
 
 <CODE>{
 {string}    	return nate::parser::make_WORD(str(), location());
-[^\$"\h\n]+   return nate::parser::make_WORD(str(), location());
-^[\h]+        // ignore
-[\h]*\n       // ignore
-[\h]+         return nate::parser::make_WORD(str(), location());
-[$]{idName}   return nate::parser::make_IDENTIFIER(str(), location());
+[^\$"\h\n]+     return nate::parser::make_WORD(str(), location());
+^[\h]+          // ignore
+[\h]*\n         // ignore
+[\h]+           return nate::parser::make_WORD(str(), location());
+[$]{idName}     return nate::parser::make_IDENTIFIER(str(), location());
 }
 //////////////////////////
 
 <INBRACKETS>{
-"}}"          return nate::parser::make_END_SPEC(location());
+"}}"                    return nate::parser::make_END_SPEC(location());
 [\h]?[\p{Alpha}]+[\h]?  return nate::parser::make_WORD(str(), location());
-[^\$\h\n]+	  return nate::parser::make_WORD(str(), location());
-[$]{idName}   return nate::parser::make_IDENTIFIER(str(), location());
-\n            return nate::parser::make_WORD(str(), location());
+[^\$\h\n]+	            return nate::parser::make_WORD(str(), location());
+[$]{idName}             return nate::parser::make_IDENTIFIER(str(), location());
+\n                      return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <DECL_TYPE>{
 \bof\b		    return nate::parser::make_OF(location());
 \bas\b		    return nate::parser::make_AS(location());
-"{{"          return nate::parser::make_START_SPEC(location());
+"{{"            return nate::parser::make_START_SPEC(location());
 {word}	  		return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
 <FOR_VAR_DECL>{
-\bin\b 	      return nate::parser::make_IN(location());
+\bin\b 	        return nate::parser::make_IN(location());
 }
 //////////////////////////
 
 <VAR_DECL,FOR_VAR_DECL>{
 \bis\b		    return nate::parser::make_IS(location());
 \bas\b		    return nate::parser::make_AS(location());
-[$]?{idName}  return nate::parser::make_IDENTIFIER(str(), location());
-":="		      return nate::parser::make_ASSIGN(location());
-","			      return nate::parser::make_COMMA(location());
-":"				    return nate::parser::make_COL(location());
-. 				    return nate::parser::make_BADTOKEN(location());
+[$]?{idName}    return nate::parser::make_IDENTIFIER(str(), location());
+":="		    return nate::parser::make_ASSIGN(location());
+","			    return nate::parser::make_COMMA(location());
+":"			    return nate::parser::make_COL(location());
+. 		        return nate::parser::make_BADTOKEN(location());
 }
 //////////////////////////
 
@@ -455,71 +458,71 @@ include\h*\".*\"  s(); includeFile();
 \bscope\b	  	return nate::parser::make_SCOPE(location());
 \bimport\b		return nate::parser::make_IMPORT(location());
 \balias\b 		return nate::parser::make_ALIAS(location());
-\bvar\b			  return nate::parser::make_VAR(location());
-\bproperty\b  return nate::parser::make_PROP(location());
-\bget\b       return nate::parser::make_GET(location());
-\bset\b       return nate::parser::make_SET(location());
-\bconst\b		  return nate::parser::make_CONST(location());
-\bdeclare\b	  return nate::parser::make_DECLARE(location());
+\bvar\b		    return nate::parser::make_VAR(location());
+\bproperty\b    return nate::parser::make_PROP(location());
+\bget\b         return nate::parser::make_GET(location());
+\bset\b         return nate::parser::make_SET(location());
+\bconst\b	    return nate::parser::make_CONST(location());
+\bdeclare\b	    return nate::parser::make_DECLARE(location());
 \bimplement\b	return nate::parser::make_IMPLEMENT(location());
 \brole\b	    return nate::parser::make_ROLE(location());
-\bobject\b	  return nate::parser::make_OBJECT(location());
-\bcode\b		  return nate::parser::make_CODE(location());
-\bmath\b		  return nate::parser::make_MATH(location());
-\bdefine\b	  return nate::parser::make_DEFINE(location());
+\bobject\b	    return nate::parser::make_OBJECT(location());
+\bcode\b	    return nate::parser::make_CODE(location());
+\bmath\b	    return nate::parser::make_MATH(location());
+\bdefine\b	    return nate::parser::make_DEFINE(location());
 \boutput\b		return nate::parser::make_OUTPUT(location());
-\berror\b		  return nate::parser::make_ERROR(location());
-\binput\b		  return nate::parser::make_INPUT(location());
-\bwrite\b		  return nate::parser::make_WRITE(location());
-\bread\b		  return nate::parser::make_READ(location());
-\bif\b   		  return nate::parser::make_IF(location());
-\belse\b 		  return nate::parser::make_ELSE(location());
+\berror\b	    return nate::parser::make_ERROR(location());
+\binput\b	    return nate::parser::make_INPUT(location());
+\bwrite\b	    return nate::parser::make_WRITE(location());
+\bread\b	    return nate::parser::make_READ(location());
+\bif\b   	    return nate::parser::make_IF(location());
+\belse\b 	    return nate::parser::make_ELSE(location());
 \bis\b		    return nate::parser::make_IS(location());
-\bloop\b 		  return nate::parser::make_LOOP(location());
-\bfor\b 		  return nate::parser::make_FOR(location());
-\brecord\b    return nate::parser::make_RECORD(location());
+\bloop\b 	    return nate::parser::make_LOOP(location());
+\bfor\b 	    return nate::parser::make_FOR(location());
+\brecord\b      return nate::parser::make_RECORD(location());
 \bto\b		    return nate::parser::make_TO(location());
-\bfrom\b		  return nate::parser::make_FROM(location());
-\bline\b		  return nate::parser::make_LINE(location());
+\bfrom\b	    return nate::parser::make_FROM(location());
+\bline\b	    return nate::parser::make_LINE(location());
 \ball\b		    return nate::parser::make_ALL(location());
-\bdata\b		  return nate::parser::make_DATA(location());
-":="			    return nate::parser::make_ASSIGN(location());
-":"				    return nate::parser::make_COL(location());
-","				    return nate::parser::make_COMMA(location());
-"&"					  return nate::parser::make_CONCAT(location());
-";"				    return nate::parser::make_EOS(location());
-"("				    return nate::parser::make_OPENPAR(location());
-")"				    return nate::parser::make_CLOSEPAR(location());
-"{{"          return nate::parser::make_START_SPEC(location());
-"}}"          return nate::parser::make_END_SPEC(location());
+\bdata\b	    return nate::parser::make_DATA(location());
+":="		    return nate::parser::make_ASSIGN(location());
+":"			    return nate::parser::make_COL(location());
+","			    return nate::parser::make_COMMA(location());
+"&"			    return nate::parser::make_CONCAT(location());
+";"			    return nate::parser::make_EOS(location());
+"("			    return nate::parser::make_OPENPAR(location());
+")"			    return nate::parser::make_CLOSEPAR(location());
+"{{"            return nate::parser::make_START_SPEC(location());
+"}}"            return nate::parser::make_END_SPEC(location());
 
-{number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
-{rational}	  return nate::parser::make_RATIONAL(str(), location());
+{number}	    return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
+{rational}	    return nate::parser::make_RATIONAL(str(), location());
 {string}    	return nate::parser::make_STRING(str(), location());
-"true"|"false" return nate::parser::make_BOOL(str(), location());
+"true"|"false"  return nate::parser::make_BOOL(str(), location());
 {word}	  		return makeIdOrWord(str(), str(), location());
 [$]{idName}		return nate::parser::make_IDENTIFIER(str(), location());
-{oper}				return nate::parser::make_WORD(str(), location());
+{oper}		    return nate::parser::make_WORD(str(), location());
 
-<<EOF>>		 if (commentNested > 0)
-           {
-             nate->error("/* without matching */");
-             commentNested = 0;
-           }
+<<EOF>>		    if (commentNested > 0)
+                {
+                    nate->error("/* without matching */");
+                    commentNested = 0;
+                }
            
-           if (!matcher().stops().empty())
-			     {
-			       matcher().stops().pop_back();
-			       return nate::parser::make_END(location()); 
-			     }
-			     else if (endOfFile()) 
-			     {
-			       return nate::parser::make_EOF(location());
-			     }
-           else
-           {
-			       return nate::parser::make_EOS(location());
-           }
+                if (!matcher().stops().empty())
+                {
+                    matcher().stops().pop_back();
+                    return nate::parser::make_END(location()); 
+                }
+                else if (endOfFile()) 
+                {
+                    return nate::parser::make_EOF(location());
+                }
+                else
+                {
+                    return nate::parser::make_EOS(location());
+                }
 
 
 %%

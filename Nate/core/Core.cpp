@@ -178,12 +178,14 @@ namespace Core
 		return result;
 	}
 
-	void parseBaseNumber(std::string& aString)
+    std::tuple<bool, int>  parseBaseNumber(std::string& aString)
 	{
+        bool ok = true;
+        int length = 0;
 		int base = 10;
-		if (aString.size() > 2 && aString[0] == '0')
+		if (aString.size() > 2)
 		{
-			switch (aString[1])
+			switch (aString[0])
 			{
 			case 'b': case 'B':
 				base = 2;
@@ -200,22 +202,40 @@ namespace Core
 
 			if (base != 10)
 			{
-				auto number = aString.substr(2); 
-				int64_t temp;
-				bool ok = strtoi64(number.c_str(), temp, base);
+                int ind = 1;
+                for (; aString[ind] != '_'; ++ind)
+                {
+                    length = length * 10 + (aString[ind] - '0');
+                }
+
+				auto number = aString.substr(ind + 1); 
+				int64_t value;
+				ok = strtoi64(number.c_str(), value, base);
 				if (ok)
 				{
-					aString = std::to_string(temp);
+                    int64_t max = static_cast<int64_t>(std::pow(2, length == 0 ? 32 : length));
+                    int64_t maxPos = max / 2 - 1;
+                    if (value > max)
+                    {
+                        ok = false;
+                    }
+                    else if (value > maxPos)
+                    {
+                        value = maxPos - value;
+                    }
+
+                    aString = std::to_string(value);
+
 				}
 			}
 		}
+
+        return std::tie(ok, length);
 	}
 
 	std::string normalizeNumber(const std::string& aString)
 	{
-		std::string result = replaceAll(aString, "⏨", "E");
-		result = replaceAll(result, "*^", "E");
-		result = replaceAll(result, "ю", "E");
+		std::string result = replaceAll(aString, "ю", "E");
 		result = unSubscriptNumbers(result);
 		return result;
 	}

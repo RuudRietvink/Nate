@@ -1,21 +1,21 @@
 ###Empty
   output
 ---
-  *output << std::endl;
+  *output_ << std::endl;
 ###String
   output "Hello"
 ---
-  *output << "Hello" << std::endl;
+  *output_ << "Hello" << std::endl;
 ###Multiple
   output "Hello", "Hi" & 3
 ---
-  *output << "Hello Hi" << 3 << std::endl;
+  *output_ << "Hello Hi" << 3 << std::endl;
 ###CommaAtEnd
   output "Hello",
 ---
-  *output << "Hello ";
+  *output_ << "Hello ";
 ###ConcatAtEnd
   output "Hello"&
 ---
-  *output << "Hello";
+  *output_ << "Hello";
 ###

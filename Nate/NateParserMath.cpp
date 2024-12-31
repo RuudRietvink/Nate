@@ -10,8 +10,8 @@ NateParserMath::NateParserMath(NateParser& aNateParser)
 
 void NateParserMath::error(const InputPosition& aPosition, const std::string& aError) const
 {
-  nate::position position(nullptr, (unsigned int)aPosition.y, (unsigned int)aPosition.x);
-  mNateParser.error(position, aError);
+    nate::position position(nullptr, (unsigned int)aPosition.y, (unsigned int)aPosition.x);
+    mNateParser.error(position, aError);
 }
 	
 std::string NateParserMath::codeOperator(const MathValue& aMathValue) const

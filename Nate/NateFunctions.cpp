@@ -42,6 +42,7 @@ std::string toCodeName(const std::string& aName)
 		}
 	}
 
+    buf << '_';
 	//std::cerr << buf.str() << std::endl;
 	return buf.str();
 }

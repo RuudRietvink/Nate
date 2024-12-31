@@ -1,41 +1,41 @@
 ###NormalOperators
   var a := -1 + -2 * +3 - -4 / 5 mod ---++--+6
 ---
-  int32_t a = ((-1) + ((-2) * (3))) - (((-4) / 5) % (-(-(-(((-(-(6)))))))));
+  int32_t a_ = (-1 + (-2 * (3))) - ((-4 / 5) % (-(-(-(((-(-(6)))))))));
 ###Aliases
   var a := 1 ⁄ 2 × 3 - 4 ÷ 5
 ---
-  int32_t a = ((1 / 2) * 3) - (4 / 5);
+  int32_t a_ = ((1 / 2) * 3) - (4 / 5);
 ###Parentheses
   var a := (1 + 2) / (3 * (4 - 2))
 ---
-  int32_t a = ((1 + 2)) / ((3 * ((4 - 2))));
+  int32_t a_ = ((1 + 2)) / ((3 * ((4 - 2))));
 ###StringOperators
   var a := "Hello, World"
   var b := a + "Hi" + "There" + a
   var c := "Hi" + "There"
   var d := "Hi" + a
 ---
-  string_t a = "Hello, World";
-  string_t b = ((a + "Hi") + "There") + a;
-  string_t c = string_t("Hi") + "There";
-  string_t d = "Hi" + a;
+  string_t a_ = "Hello, World";
+  string_t b_ = ((a_ + "Hi") + "There") + a_;
+  string_t c_ = string_t("Hi") + "There";
+  string_t d_ = "Hi" + a_;
 ###BoolOperators
   var a := 1 < 3 or 1 <= 3 and not 1 = 3 and 1 != 3 or 1 > 3 and 1 >= 3
   var b := a or not a
 ---
-  bool a = ((1 < 3) || (((1 <= 3) && (!(1 == 3))) && (1 != 3))) || ((1 > 3) && (1 >= 3));
-  bool b = a || (!a);
+  bool a_ = ((1 < 3) || (((1 <= 3) && (!(1 == 3))) && (1 != 3))) || ((1 > 3) && (1 >= 3));
+  bool b_ = a_ || (!a_);
 ###Increments
   var a := 1
   var b := inc#a + a#inc + ⇑#a + a#⇑ + a
   var c := inc #a + a# inc + ⇑ #a + a# ⇑ + a
   var d := inc # a + a # inc + ⇑ # a + a # ⇑ + a
 ---
-  int32_t a = 1;
-  int32_t b = ((((++a) + (a++)) + (++a)) + (a++)) + a;
-  int32_t c = ((((++a) + (a++)) + (++a)) + (a++)) + a;
-  int32_t d = ((((++a) + (a++)) + (++a)) + (a++)) + a;
+  int32_t a_ = 1;
+  int32_t b_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
+  int32_t c_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
+  int32_t d_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
 ###Decrements
   var a-123 := 1
   var a := 1
@@ -43,11 +43,11 @@
   var c := dec #a + a# dec + ⇓ #a + a# ⇓ + a
   var d := dec # a + a # dec + ⇓ # a + a # ⇓ + a
 ---
-  int32_t a_123 = 1;
-  int32_t a = 1;
-  int32_t b = ((((--a_123) + (a_123--)) + (--a_123)) + (a_123--)) + a_123;
-  int32_t c = ((((--a) + (a--)) + (--a)) + (a--)) + a;
-  int32_t d = ((((--a) + (a--)) + (--a)) + (a--)) + a;
+  int32_t a_123_ = 1;
+  int32_t a_ = 1;
+  int32_t b_ = ((((--a_123_) + (a_123_--)) + (--a_123_)) + (a_123_--)) + a_123_;
+  int32_t c_ = ((((--a_) + (a_--)) + (--a_)) + (a_--)) + a_;
+  int32_t d_ = ((((--a_) + (a_--)) + (--a_)) + (a_--)) + a_;
 ###IncreaseDecrease
   var a := 1
   increase a
@@ -55,15 +55,15 @@
   decrease a
   decrease a with 3
 ---
-  int32_t a = 1;
-  ++a;
-  a += 2;
-  --a;
-  a -= 3;
+  int32_t a_ = 1;
+  ++a_;
+  a_ += 2;
+  --a_;
+  a_ -= 3;
 ###IfElse
   var a := 3 * 4 if 5 + 6 < 5 else 5/2
   var b := a if true else a + 1 if false else a + 2
 ---
-  int32_t a = ((5 + 6) < 5) ? (3 * 4) : (5 / 2);
-  int32_t b = true ? a : (false ? (a + 1) : (a + 2));
+  int32_t a_ = ((5 + 6) < 5) ? (3 * 4) : (5 / 2);
+  int32_t b_ = true ? a_ : (false ? (a_ + 1) : (a_ + 2));
 ###

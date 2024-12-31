@@ -16,8 +16,8 @@ namespace nate
 int gDebug = 0;
 
 NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
-											 FileType aFileType)
-: mLexer(new nate::Lexer(aIn)),
+					   FileType aFileType)
+  : mLexer(new nate::Lexer(aIn)),
 	mParser(new nate::parser(*mLexer, *this)),
 	mOut(&aOut),
 	mFileType(aFileType),
@@ -43,11 +43,11 @@ Stat::SPtr NateParser::addStatement(const Stat::SPtr& stat)
 {
 	if (mStatHolders.empty())
 	{
-	  mStats.push_back(stat);
+	    mStats.push_back(stat);
 	}
 	else
 	{
-	  mStatHolders.back()->addStat(stat);
+	    mStatHolders.back()->addStat(stat);
 	}
 
 	return stat;
@@ -97,10 +97,10 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("Input", getType("object")));
 	addType(std::make_shared<Type>("Data-Input", getType("Input")));
 	auto input = std::make_shared<Object>("InputRole", getType("Input"));
-  input->setFlag(Type::Abstract, true);
-  input->setFlag(Type::Unknown, false);
-  input->setFlag(Type::NoCode, true);
-  input->setIsRole(true);
+    input->setFlag(Type::Abstract, true);
+    input->setFlag(Type::Unknown, false);
+    input->setFlag(Type::NoCode, true);
+    input->setIsRole(true);
 	addObject(input);
 	endObject();
 }
@@ -268,7 +268,7 @@ void NateParser::doElse(const nate::parser::location_type& aLocation)
 	popScope();
 	pushScope(std::make_shared<Scope>("else", IIdentifiersHolder::ScopeFlag::Local));
 	popStatsHolder();
-  pushStatsHolder(addStatement(std::make_shared<StatIfThen::Else>(location(aLocation))));
+    pushStatsHolder(addStatement(std::make_shared<StatIfThen::Else>(location(aLocation))));
 }
 
 void NateParser::doEndIf(const nate::parser::location_type& aLocation)
@@ -286,7 +286,7 @@ void NateParser::doIfIs(const Expr& aValue, const nate::parser::location_type& a
 	info.isSwitch = aValue.type()->is(Type::Scalar);
 	mIfIs.push(info);
 		
-  pushStatsHolder(addStatement(std::make_shared<StatIfIs>(location(aLocation), id, aValue)));
+    pushStatsHolder(addStatement(std::make_shared<StatIfIs>(location(aLocation), id, aValue)));
 }
 
 void NateParser::doCaseIsList(const nate::parser::location_type& aLocation)
@@ -297,7 +297,7 @@ void NateParser::doCaseIsList(const nate::parser::location_type& aLocation)
 void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const nate::parser::location_type& aLocation)
 {
 	if (!(aValue.type()->isOfType(aIfExpr.type()->name()) ||
-				aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
+		aValue.type()->is(Type::Real) == aIfExpr.type()->is(Type::Real)))
 	{
 		error("Expected expression with same type as in IF");
 	}
@@ -307,7 +307,7 @@ void NateParser::doCaseIs(const Expr& aValue, const Expr& aIfExpr, const nate::p
 
 void NateParser::doElseIs(const nate::parser::location_type& aLocation)
 {
-  pushStatsHolder(addStatement(std::make_shared<StatIfIs::Else>(location(aLocation))));
+    pushStatsHolder(addStatement(std::make_shared<StatIfIs::Else>(location(aLocation))));
 }
 
 void NateParser::doEndIs(const nate::parser::location_type& aLocation)
@@ -345,16 +345,16 @@ void NateParser::doWhile(const Expr& aValue, const nate::parser::location_type& 
 }
 
 void NateParser::doStartLoopForStep(const std::string& aId, 
-																		const TypePtr& aType, 
-																		bool aDownTo,
-																		const Expr& aStart,
-																		const Expr& aEnd,
-																		const Expr& aStep, 
-																		const nate::parser::location_type& aLocation)
+									const TypePtr& aType, 
+									bool aDownTo,
+									const Expr& aStart,
+									const Expr& aEnd,
+									const Expr& aStep, 
+									const nate::parser::location_type& aLocation)
 {
 	TypePtr type = aType->empty()
-							   ? aStart.type()
-							   : aType;
+				   ? aStart.type()
+				   : aType;
 
 	IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 	addIdentifier(id);
@@ -363,8 +363,8 @@ void NateParser::doStartLoopForStep(const std::string& aId,
 }
 
 void NateParser::doStartLoopForRange(const std::string& aId, 
-																	   const Expr& aRange, 
-											  					 	 const nate::parser::location_type& aLocation)
+									 const Expr& aRange, 
+									 const nate::parser::location_type& aLocation)
 {
 	TypePtr rangeType = aRange.type();
 	if (rangeType->isOfType("container"))
@@ -372,7 +372,7 @@ void NateParser::doStartLoopForRange(const std::string& aId,
 		TypePtr type = rangeType->typenameType();
 		IdentifierPtr id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 		addIdentifier(id);
-	  pushStatsHolder(addStatement(std::make_shared<StatLoop::ForRange>(location(aLocation), id, aRange)));
+	    pushStatsHolder(addStatement(std::make_shared<StatLoop::ForRange>(location(aLocation), id, aRange)));
 	}
 	else
 	{
@@ -436,7 +436,7 @@ void NateParser::doWrite(const Expr& aValue, const nate::parser::location_type& 
 	{
 		if (writer)
 		{
-	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, false)));
+	        pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, false)));
 		}
 		else
 		{
@@ -449,12 +449,9 @@ void NateParser::doWrite(const Expr& aValue, const nate::parser::location_type& 
 		{
 			writer = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__writer", determineType("Output"), aValue);
 			addIdentifier(writer);
-	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, true)));
 		}
-		else
-		{
-	    pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, false)));
-		}
+
+        pushStatsHolder(addStatement(std::make_shared<StatWrite>(location(aLocation), writer, aValue, !writer)));
 	}
 	else
 	{
@@ -494,7 +491,7 @@ void NateParser::doOutputExpr(const Expr& aValue, const nate::parser::location_t
   }
   else
   {
-    error("Cannot have typeless expression in output");
+      error("Cannot have typeless expression in output");
   }
 }
 
@@ -506,7 +503,7 @@ void NateParser::doRead(InputType aInputType, const Expr& aValue, const nate::pa
 	{
 		if (reader)
 		{
-	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, false)));
+	        pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, aValue, false)));
 		}
 		else
 		{
@@ -526,12 +523,9 @@ void NateParser::doRead(InputType aInputType, const Expr& aValue, const nate::pa
 		{
 			reader = std::make_shared<Identifier>(curIdentifiersHolder(), "nate__reader", determineType("Input"), stream);
 			addIdentifier(reader);
-	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, stream, true)));
 		}
-		else
-		{
-	    pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, stream, false)));
-		}
+
+        pushStatsHolder(addStatement(std::make_shared<StatRead>(location(aLocation), aInputType, reader, stream, !reader)));
 	}
 	else
 	{
@@ -569,7 +563,7 @@ void NateParser::doInputExpr(const Expr& aValue, const nate::parser::location_ty
 {
 	if (aValue.is(Expr::Output) && !aValue.is(Expr::ConstExpr))
 	{
-	  addStatement(std::make_shared<StatInput::Value>(location(aLocation), aValue));
+	    addStatement(std::make_shared<StatInput::Value>(location(aLocation), aValue));
 	}
 	else
 	{
@@ -579,14 +573,14 @@ void NateParser::doInputExpr(const Expr& aValue, const nate::parser::location_ty
 
 void NateParser::doStartRecord(const std::string& anId, const nate::parser::location_type& aLocation)
 {
-  if (curTypesHolder()->types().get(anId))
-  {
-		error("Duplicate type of :" + anId);
-  }
+    if (curTypesHolder()->types().get(anId))
+    {
+        error("Duplicate type of :" + anId);
+    }
 
-  RecordPtr record = std::make_shared<Record>(anId);
-  curRecordsHolder()->records().add(record, anId);
-  data.curRecord.push(record);
+    RecordPtr record = std::make_shared<Record>(anId);
+    curRecordsHolder()->records().add(record, anId);
+    data.curRecord.push(record);
 	addType(record, record->name());
 	pushIdentifiersHolder(record);
 	pushStatsHolder(addStatement(std::make_shared<StatRecord>(location(aLocation), record)));
@@ -615,7 +609,7 @@ void NateParser::doReturn(const Expr& aValue, const nate::parser::location_type&
 void NateParser::doDeclObject(const nate::parser::location_type& aLocation)
 {	
 	addObject(data.object);
-  checkObject(curObject());
+    checkObject(curObject());
 	pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), true)));
 }
 
@@ -627,37 +621,37 @@ void NateParser::doEndDeclObject(const nate::parser::location_type& aLocation)
 		addUndeclaredDefines(curObject(), aLocation);
 	}
 
-  data.inObject = false;
+    data.inObject = false;
 	endObject();
 	popStatsHolder();
 }
 
 void NateParser::doImplObject(const nate::parser::location_type& aLocation)
 {
-  auto objectDecl = getObject(data.object->name());
-  bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
+    auto objectDecl = getObject(data.object->name());
+    bool existingObjectDecl = objectDecl && !objectDecl->is(Type::ObjectImpl);
 
-  if (!existingObjectDecl)
-  {
-		addObject(data.object);
-    curObject()->setCodeType(toCodeName(data.object->name()));
-    curObject()->setFlag(Type::Abstract, false);
-    curObject()->setFlag(Type::Unknown, false);
-    curObject()->setFlag(Type::ObjectImpl);
+    if (!existingObjectDecl)
+    {
+        addObject(data.object);
+        curObject()->setCodeType(toCodeName(data.object->name()));
+        curObject()->setFlag(Type::Abstract, false);
+        curObject()->setFlag(Type::Unknown, false);
+        curObject()->setFlag(Type::ObjectImpl);
           
-    checkObject(curObject());
-		pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), false)));
-  }
-  else
-  {
-		if (!data.object->getBases().empty())
-		{
-			error("Redefinition of base objects/roles");
-		}
+        checkObject(curObject());
+	    pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), curObject(), false)));
+    }
+    else
+    {
+	    if (!data.object->getBases().empty())
+	    {
+		    error("Redefinition of base objects/roles");
+	    }
 		
-    startObject(objectDecl);
-		pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), objectDecl, false)));
-  }
+        startObject(objectDecl);
+	    pushStatsHolder(addStatement(std::make_shared<StatObject>(location(aLocation), objectDecl, false)));
+    }
 }
 
 
@@ -915,8 +909,8 @@ void NateParser::popDefineScope()
 MethodPtr NateParser::curMethod()
 {
 	return mMethodType == MethodType::Code 
-			   ? static_cast<MethodPtr>(curCode()) 
-		     : static_cast<MethodPtr>(curDefine());
+		   ? static_cast<MethodPtr>(curCode()) 
+		   : static_cast<MethodPtr>(curDefine());
 }
 
 void NateParser::addObject(const ObjectPtr& aObject)
@@ -947,7 +941,7 @@ void NateParser::startObject(const ObjectPtr& aObject)
 void NateParser::checkObject(const ObjectPtr& aObject)
 {
 	size_t baseCount = std::count_if(aObject->getBases().begin(), aObject->getBases().end(),
-													   	     [&](const ObjectPtr& aBase)
+									 [&](const ObjectPtr& aBase)
 	                                 { return !aBase->isRole(); });
 	if (baseCount > 1)
 	{
@@ -955,11 +949,11 @@ void NateParser::checkObject(const ObjectPtr& aObject)
 	}
 	else if (baseCount == 0 && !aObject->isRole())
 	{
-    if (aObject->name() != baseObjectName())
-    {
-      importBaseObject(baseObjectName());
-      aObject->addBase(getObject(baseObjectName()));
-    }
+        if (aObject->name() != baseObjectName())
+        {
+            importBaseObject(baseObjectName());
+            aObject->addBase(getObject(baseObjectName()));
+        }
 	}
 }
 
@@ -982,7 +976,7 @@ void NateParser::addUndeclaredProperties(const ObjectPtr& aObject, const nate::p
 						id->setFlags(propId->getFlags());
 						addIdentifier(id);
 					}
-				  curObject()->addProp(id, aLocation, mLexer->currentFile());
+				    curObject()->addProp(id, aLocation, mLexer->currentFile());
 				}
 			}
 			addUndeclaredProperties(base, aLocation);
@@ -1066,8 +1060,8 @@ void NateParser::endImplementObject()
 ObjectPtr NateParser::getObject(const std::string& aId)
 {
 	auto iter = std::find_if(mObjects.cbegin(), mObjects.cend(),
-												 	 [&](ObjectPtr const& aObject)
-													 { return aObject->name() == aId; });
+							 [&](ObjectPtr const& aObject)
+							 { return aObject->name() == aId; });
 	return iter != mObjects.cend() ? *iter : ObjectPtr();
 }
 
@@ -1077,6 +1071,7 @@ void NateParser::addObjectBase(ObjectPtr& aCurObject, const ObjectPtr& aObject)
 	{
 		error("Base object must not be a role: " + aObject->name());
 	}
+
 	aCurObject->addBase(aObject);
 }
 
@@ -1086,6 +1081,7 @@ void NateParser::addObjectRole(ObjectPtr& aCurObject, const ObjectPtr& aObject)
 	{
 		error("Base role must not be an object: " + aObject->name());
 	}
+
 	aCurObject->addBase(aObject);
 }
 
@@ -1124,8 +1120,8 @@ CodePtr NateParser::curCode() { return mCodes.back(); }
 CodePtr NateParser::getCode(const CodePtr& aCode)
 {
 	auto iter = std::find_if(mCodes.cbegin(), mCodes.cend(),
-												 	 [&](const CodePtr& aCodeFromList)
-													 { return aCode->equals(*aCodeFromList); });
+							 [&](const CodePtr& aCodeFromList)
+							 { return aCode->equals(*aCodeFromList); });
 	return iter != mCodes.cend() ? *iter : CodePtr();
 }
 
@@ -1154,7 +1150,7 @@ void NateParser::endInbrackets()
 }
 
 void NateParser::addInbracketsStatWord(const std::string& aWord,
-											                 const nate::parser::location_type& aLocation)
+									   const nate::parser::location_type& aLocation)
 {
 	if (mInBracketsType == "math")
 	{
@@ -1214,7 +1210,7 @@ void NateParser::deleteCurDefine()
 }
 
 void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
-										           const nate::parser::location_type& aLocation)
+							   const nate::parser::location_type& aLocation)
 {
 	curDefine()->endDecl();
 	mDefineDecl = aIsDecl;
@@ -1266,6 +1262,7 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 			{
 				error("Role method requires 'me' object");
 			}
+
 			addIdentifier(std::make_shared<Identifier>(curIdentifiersHolder(), "me", curObject()));
 		}
 		else if (curDefine()->is(Method::Final) && curObject()->isRole())
@@ -1303,12 +1300,15 @@ void NateParser::doEndDefine(const nate::parser::location_type& aLocation)
 	popStatsHolder();
 }
 
-DefinePtr NateParser::curDefine() const { return mCurDefine; }
+DefinePtr NateParser::curDefine() const 
+{ 
+    return mCurDefine;
+}
 
 void NateParser::declareProperties(const std::vector<std::string>& aNames,
-																	 const TypePtr& aType,
-																	 const std::vector<std::string>& flags,
-																   const nate::parser::location_type& aLocation)
+								   const TypePtr& aType,
+								   const std::vector<std::string>& flags,
+							       const nate::parser::location_type& aLocation)
 {
 	for (auto const& name : aNames)
 	{
@@ -1323,7 +1323,9 @@ void NateParser::declareProperties(const std::vector<std::string>& aNames,
 }
 
 IdentifierPtr NateParser::doProp(const std::string& aName,
-						          					const TypePtr& optType,const std::vector<std::string>& flags,const nate::parser::location_type& aLocation)
+						         const TypePtr& optType,
+                                 const std::vector<std::string>& flags,
+                                 const nate::parser::location_type& aLocation)
 {
 	IdentifierPtr result = getIdentifier(aName, curIdentifiersHolder().get());
 	bool declared = (bool)result;
@@ -1360,19 +1362,19 @@ void NateParser::doEndProp(const nate::parser::location_type& aLocation)
 }
 
 void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Property::PropType aPropType,
-										          const nate::parser::location_type& aLocation)
+							  const nate::parser::location_type& aLocation)
 {
 	const std::string method = aPropType == Property::PropType::Get ? "get" : "set";
 
 	bool isDeclared = curObject()->isPropDeclared(aIdentifier, aPropType);
 	if (!isDeclared && !aIdentifier->is(Identifier::Undeclared))
 	{
-	  error("Undeclared " + method + " method for property: " + aIdentifier->name());
+	    error("Undeclared " + method + " method for property: " + aIdentifier->name());
 	}
 
 	if (curObject()->isPropDefined(aIdentifier, aPropType))
 	{
-	  error("Redefined " + method + " method for property: " + aIdentifier->name());
+	    error("Redefined " + method + " method for property: " + aIdentifier->name());
 	}
 
 	if (aIdentifier->is(Identifier::ReadOnly) && aPropType != Property::PropType::Get)
@@ -1409,7 +1411,7 @@ void NateParser::doEndPropDefine(const nate::parser::location_type& aLocation)
 
 void NateParser::doExpressionStatement(const Expr& aExpr, const nate::parser::location_type& aLocation)
 {
-  addStatement(std::make_shared<StatExpr>(Location(aLocation, mLexer->currentFile()), aExpr));
+    addStatement(std::make_shared<StatExpr>(Location(aLocation, mLexer->currentFile()), aExpr));
 }
 
 void NateParser::addArgWord(const std::string& aWord)
@@ -1448,7 +1450,7 @@ void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const st
 
 	if (type->empty())
 	{
-    if (!Identifier::isNameMe(aId))
+        if (!Identifier::isNameMe(aId))
 		{
 			error("Expected a type");
 		}
@@ -1461,28 +1463,28 @@ void NateParser::addArgId(const std::string& aId, const TypePtr& aType, const st
 	auto id = std::make_shared<Identifier>(curIdentifiersHolder(), aId, type);
 	addIdentifier(id);
 	curMethod()->addArgId(id);
-  if (!inOut.empty())
-  {
-    curMethod()->curArg().setFlagString(inOut);
-  }
-
-  if (id->isObjectMe())
-  {
-    if (!data.inObject)
+    if (!inOut.empty())
     {
-      error("The id 'me' is reserved for objects");
+        curMethod()->curArg().setFlagString(inOut);
     }
-    else if (data.objectMe)
-    {
-      error("The id 'me' may only occur once in a define");
-    }
-		else if (curObject()->name() != type->name())
-		{
-      error("The id 'me' must be of type: " + curObject()->name());
-		}
 
-    data.objectMe = true;
-  }
+    if (id->isObjectMe())
+    {
+        if (!data.inObject)
+        {
+            error("The id 'me' is reserved for objects");
+        }
+        else if (data.objectMe)
+        {
+            error("The id 'me' may only occur once in a define");
+        }
+	    else if (curObject()->name() != type->name())
+	    {
+            error("The id 'me' must be of type: " + curObject()->name());
+	    }
+
+        data.objectMe = true;
+    }
 }
 
 void NateParser::error(const std::string& anError) const
@@ -1516,7 +1518,7 @@ void NateParser::warning(const std::string& aWarning) const
 }
 
 void NateParser::unput(const std::string::const_iterator& aStart,
-											 const std::string::const_iterator& aEnd)
+					   const std::string::const_iterator& aEnd)
 {
 	std::string::const_iterator iter = aStart;
 	if (iter != aEnd)
@@ -1547,8 +1549,8 @@ std::string NateParser::alias(const std::string& aString)
 bool NateParser::isReservedName(const std::string& aString) const
 {
 	return std::any_of(mAliases.cbegin(), mAliases.cend(),
-										 [&](const auto& pair) 
-										 { return pair.first == aString || pair.second == aString; });
+					   [&](const auto& pair) 
+					   { return pair.first == aString || pair.second == aString; });
 }
 
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
@@ -1725,7 +1727,7 @@ bool NateParser::isType(const std::string& aName)
 
 TypePtr NateParser::makeType(const std::string& aValue)
 {
-	TypePtr result = std::make_shared<Type>("");
+	TypePtr result;
 
 	if (aValue[0] == '"')
 	{
@@ -1762,70 +1764,143 @@ TypePtr NateParser::makeType(const std::string& aValue)
 
 TypePtr NateParser::getNumberType(std::string& aString)
 {
-  TypePtr result;
-  bool isFloat = false;
+    TypePtr result;
+    int start = 0;
 
-  if (aString.size() > 2 &&
-      aString[0] == '0' && (aString[1] == 'f' || aString[1] == 'F'))
-  {
-    aString = aString.substr(2);
-    isFloat = true;
-  }
+    if (aString[0] == '-')
+    {
+        start = 1;
+    }
 
-  Core::parseBaseNumber(aString);
-	        
-  if (isFloat)
-  {
-		if (aString.find('.') == std::string::npos && aString.find('E') == std::string::npos)
-		{
-			aString += ".0";
-		}
+    char type = aString.size() > 2 + start ? toupper(aString[start]) : ' ';
 
-    aString += 'f';
-    result = getType("float-32");
-  }
-  else
-  {
-    result = makeType(aString);
-  }
+    if (type == 'F' || type == 'I')
+    {
+        int ind = 1 + start;
+        int length = 0;
+        for (; aString[ind] != '_'; ++ind)
+        {
+            length = length * 10 + (aString[ind] - '0');
+        }
+
+        aString = aString.substr(ind + 1);
+
+        if (type == 'F')
+        {
+            if (aString.find('.') == std::string::npos && aString.find('E') == std::string::npos)
+            {
+                aString += ".0";
+            }
+
+            switch (length)
+            {
+            case 0: case 32:
+                result = getType("float-32");
+                aString += 'f';
+                break;
+            case 64:
+                result = getType("float-64");
+                break;
+            default:
+                break;  // Error-handling in higher function
+            }
+        }
+        else
+        {
+            Core::parseBaseNumber(aString);
+
+            switch (length)
+            {
+            case 0: case 32:
+                result = getType("int-32");
+                break;
+            case 8:
+                result = getType("int-8");
+                break;
+            case 16:
+                result = getType("int-16");
+                break;
+            case 64:
+                result = getType("int-64");
+                aString += "ll";
+                break;
+            default:
+                break;  // Error-handling in higher function
+            }
+        }
+
+        if (start == 1)
+        {
+            aString = '-' + aString;
+        }
+    }
+    else if (type == 'B' || type == 'O' || type == 'X')
+    {
+        auto [ok, length] = Core::parseBaseNumber(aString);
+        if (ok)
+        {
+            switch (length)
+            {
+            case 0: case 32:
+                result = getType("int-32");
+                break;
+            case 8:
+                result = getType("int-8");
+                break;
+            case 16:
+                result = getType("int-16");
+                break;
+            case 64:
+                result = getType("int-64");
+                aString += "ll";
+                break;
+            default:
+                break;  // Error-handling in higher function
+            }
+        }
+    }
+    else
+    {
+        result = makeType(aString);
+    }
 
 	return result;
 }
 
 void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
-																		const ExprNodesCIter& aStartIter,
-																		const ExprNodesCIter& aEndIter,
-																		Match& aMatch,
-																		bool aLeftToRight,
-																		int aDebug)
+									const ExprNodesCIter& aStartIter,
+									const ExprNodesCIter& aEndIter,
+									Match& aMatch,
+									bool aLeftToRight,
+									int aDebug)
 {
 	if (aMethod->matches(aStartIter, aEndIter, aDebug) &&
-			(!aMatch.methodFound || 
-			 (aMethod->priority() > aMatch.methodFound->priority() ||
-			  (aMethod->priority() == aMatch.methodFound->priority() &&
-         ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
-				  (!aLeftToRight && aStartIter >= aMatch.nodeStartIter))))))
+		(!aMatch.methodFound || 
+		 (aMethod->priority() > aMatch.methodFound->priority() ||
+		  (aMethod->priority() == aMatch.methodFound->priority() &&
+           ((aLeftToRight  && aStartIter <= aMatch.nodeStartIter) ||
+		    (!aLeftToRight && aStartIter >= aMatch.nodeStartIter))))))
 	{
 		Method::MatchResult matchResult = aMethod->checkArgTypes(*this, aStartIter, aEndIter, aDebug);
 		
 		if (matchResult.matches)
 		{
 			if ((!aMatch.methodFound || 
-					 aMethod->priority() > aMatch.methodFound->priority() ||
-					 (aMethod->priority() == aMatch.methodFound->priority() &&
-						((aLeftToRight  && aStartIter < aMatch.nodeStartIter) ||
-						 (!aLeftToRight && aStartIter > aMatch.nodeStartIter)))))
+				 aMethod->priority() > aMatch.methodFound->priority() ||
+				 (aMethod->priority() == aMatch.methodFound->priority() &&
+				  ((aLeftToRight  && aStartIter < aMatch.nodeStartIter) ||
+				   (!aLeftToRight && aStartIter > aMatch.nodeStartIter)))))
 			{
 				if (aDebug)
 				{
 					std::cerr << "Better match 1: " << " "
-										<< aMethod->code() 
-										<< matchResult.castCount << " "
-										<< (aMatch.methodFound  ? aMatch.methodFound->code() : "None") << " "
-										<< aMatch.matchResult.castCount << " "
-										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-										<< std::endl;
+							  << aMethod->code() 
+							  << matchResult.castCount << " "
+							  << (aMatch.methodFound  ? aMatch.methodFound->code() : "None") << " "
+							  << aMatch.matchResult.castCount << " "
+							  << std::distance(aStartIter, aMatch.nodeStartIter) << " "
+							  << std::distance(aEndIter, aMatch.nodeEndIter) << " "
+							  << std::endl;
 				}
 
 				aMatch.matchResult = matchResult;
@@ -1834,21 +1909,20 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 				aMatch.nodeEndIter = aEndIter;
 			}
 			else if (aMethod->priority() == aMatch.methodFound->priority() &&
-							 ((aLeftToRight  && aStartIter == aMatch.nodeStartIter) ||
-								(!aLeftToRight && aStartIter == aMatch.nodeStartIter)) &&
-							 matchResult.castCount < aMatch.matchResult.castCount)
+					 ((aLeftToRight  && aStartIter == aMatch.nodeStartIter) ||
+					  (!aLeftToRight && aStartIter == aMatch.nodeStartIter)) &&
+					 matchResult.castCount < aMatch.matchResult.castCount)
 			{
-
 				if (aDebug)
 				{
 					std::cerr << "Better match 2: " << " "
-										<< aMethod->code() 
-										<< matchResult.castCount << " "
-										<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
-										<< aMatch.matchResult.castCount << " "
-										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-										<< std::endl;
+							  << aMethod->code() 
+							  << matchResult.castCount << " "
+							  << (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
+							  << aMatch.matchResult.castCount << " "
+							  << std::distance(aStartIter, aMatch.nodeStartIter) << " "
+							  << std::distance(aEndIter, aMatch.nodeEndIter) << " "
+							  << std::endl;
 				}
 
 				aMatch.matchResult = matchResult;
@@ -1861,13 +1935,13 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 				if (aDebug)
 				{
 					std::cerr << "No match1: " << " "
-										<< aMethod->code() << " "
-										<< matchResult.castCount << " "
-										<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
-										<< aMatch.matchResult.castCount << " "
-										<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-										<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-										<< std::endl;
+							  << aMethod->code() << " "
+							  << matchResult.castCount << " "
+							  << (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
+							  << aMatch.matchResult.castCount << " "
+							  << std::distance(aStartIter, aMatch.nodeStartIter) << " "
+							  << std::distance(aEndIter, aMatch.nodeEndIter) << " "
+							  << std::endl;
 				}
 
 				aMatch.matchedMethod = aMethod;
@@ -1879,13 +1953,13 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 			if (aDebug)
 			{
 				std::cerr << "No match2: " << " "
-					        << aMethod->code() << " "
-					        << matchResult.castCount << " "
-									<< (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
-					        << aMatch.matchResult.castCount << " "
-									<< std::distance(aStartIter, aMatch.nodeStartIter) << " "
-									<< std::distance(aEndIter, aMatch.nodeEndIter) << " "
-									<< std::endl;
+					      << aMethod->code() << " "
+					      << matchResult.castCount << " "
+						  << (aMatch.methodFound ? aMatch.methodFound->code() : "None") << " "
+					      << aMatch.matchResult.castCount << " "
+						  << std::distance(aStartIter, aMatch.nodeStartIter) << " "
+						  << std::distance(aEndIter, aMatch.nodeEndIter) << " "
+						  << std::endl;
 			}
 
 			if (!aMatch.matchedMethod || !matchResult.error.empty())
@@ -1898,14 +1972,14 @@ void NateParser::checkIfBetterMatch(const MethodPtr& aMethod,
 }
 
 void NateParser::checkLeftToRightMethod(const MethodPtr& aMethod,
-																			  const Expr& aExpr,
-																			  Match& aMatch, 
-																				int aDebug)
+										const Expr& aExpr,
+										Match& aMatch, 
+										int aDebug)
 {
 	auto size = aMethod->args().size();
 
 	for (auto startIter = aExpr.nodes().cbegin();
-			 size <= static_cast<size_t>(std::distance(startIter, aExpr.nodes().cend())); ++startIter)
+		 size <= static_cast<size_t>(std::distance(startIter, aExpr.nodes().cend())); ++startIter)
 	{
 		auto endIter = startIter + size;
 		checkIfBetterMatch(aMethod, startIter, endIter, aMatch, true, aDebug);
@@ -1913,14 +1987,14 @@ void NateParser::checkLeftToRightMethod(const MethodPtr& aMethod,
 }
 
 void NateParser::checkRightToLeftMethod(const MethodPtr& aMethod,
-																			  const Expr& aExpr,
-																			  Match& aMatch, 
-																				int aDebug)
+								        const Expr& aExpr,
+								        Match& aMatch, 
+								        int aDebug)
 {
 	auto size = aMethod->args().size();
 
 	for (auto endIter = aExpr.nodes().cend();
-			 size <= static_cast<size_t>(std::distance(aExpr.nodes().cbegin(), endIter)); --endIter)
+		 size <= static_cast<size_t>(std::distance(aExpr.nodes().cbegin(), endIter)); --endIter)
 	{
 		auto startIter = endIter - size;
 		checkIfBetterMatch(aMethod, startIter, endIter, aMatch, false, aDebug);
@@ -1944,7 +2018,7 @@ void NateParser::checkIfMethod(const MethodPtr& aMethod, const Expr& aExpr, Matc
 }
 
 void NateParser::checkIfObjectDefine(const ObjectPtr& aObject, const Expr& aExpr, int aDebug,
-															     	 Match& aMatch)
+									 Match& aMatch)
 {
 	for (auto const& define : aObject->defines().get())
 	{
@@ -1989,8 +2063,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 
 		if (match.methodFound)
 		{
-			Method::EvaluateResult evalResult = 
-				match.methodFound->createCode(curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
+			Method::EvaluateResult evalResult = match.methodFound->createCode(curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
 			if (!evalResult.error.empty())
 			{
 				error(evalResult.error);
@@ -2022,8 +2095,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 			{
 				if (!match.matchResult.error.empty())
 				{
-					error(result.text() + ": " + 
-								match.matchResult.error);
+					error(result.text() + ": " + match.matchResult.error);
 				}
 			}
 		}
@@ -2062,8 +2134,8 @@ std::string NateParser::handleCompileCommand(const std::string& aCommand, const 
 
 	if (aCommand == "GETFORMAT")
 	{
-	  static const std::string preData = "Core::getFormat(";
-	  static const std::string postData = ")";
+	    static const std::string preData = "Core::getFormat(";
+	    static const std::string postData = ")";
 		size_t endPre = preData.size();
 
 		if (aData.substr(0, endPre) == preData && aData.back() == ')')
@@ -2136,8 +2208,8 @@ void NateParser::handleCompileCommands(Expr& aExpr)
 				if (dataEnd != std::string::npos)
 				{
 					code.replace(pos, dataEnd + 2 - pos,
-											 handleCompileCommand(code.substr(commandStart, commandEnd - commandStart),
-																					  code.substr(dataStart, dataEnd - dataStart)));
+								 handleCompileCommand(code.substr(commandStart, commandEnd - commandStart),
+													  code.substr(dataStart, dataEnd - dataStart)));
 				}
 				else
 				{

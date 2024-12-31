@@ -55,7 +55,7 @@ namespace Core
 	std::wstring u16(const std::string& str);
 	int find(Utf8& aString, uint32_t aChar);
 	
-	void parseBaseNumber(std::string& aString);
+	std::tuple<bool, int> parseBaseNumber(std::string& aString);
 	std::string normalizeNumber(const std::string& aString);
 	std::string upperCased(const std::string& aString);
 	std::string firstOf(const std::string& aString);

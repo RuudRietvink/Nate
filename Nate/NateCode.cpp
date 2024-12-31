@@ -10,7 +10,7 @@ namespace nate
 {
 NateCode::NateCode(std::ostream& aOut, NateParser* aParser)
   : mOut(&aOut),
-	  mParser(aParser)
+	mParser(aParser)
 {
 }
 
@@ -21,9 +21,8 @@ std::string NateCode::in(int extra)
 
 void NateCode::printLineNr(const Location& aLocation)
 {
-
 	if (aLocation.beginLine != mPrevLine || 
-			aLocation.filename != mPrevFile)
+		aLocation.filename != mPrevFile)
 	{
 		*mOut << "#line " << aLocation.beginLine;
 		if (mPrevFile != aLocation.filename)
@@ -40,8 +39,8 @@ void NateCode::printLineNr(const Location& aLocation)
 
 void NateCode::codeStats(const std::list<Stat::SPtr>& aStats)
 {
-  for (auto& stat : aStats)
-  {
+    for (auto& stat : aStats)
+    {
 		stat->accept(this);
 	}
 }
@@ -74,9 +73,9 @@ void NateCode::visit(const StatProgram& aStat)
 
 	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
 	++mIndent;
-	*mOut << in() << "output = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
-	*mOut << in() << "error = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
-	*mOut << in() << "input = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
+	*mOut << in() << "output_ = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
+	*mOut << in() << "error_ = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
+	*mOut << in() << "input_ = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
 	*mOut << in() << "SetConsoleOutputCP(65001);" << end();
 	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
     *mOut << "#define NATE_PROGRAM_START" << end();
@@ -171,11 +170,11 @@ void NateCode::visit(const StatIfIs& aStat)
 	
 	*mOut << in() << "auto const " << aStat.getId()->codeName() << " = " << codeExpr(aStat.getExpr()) << ";" << end();
 	
-  for (auto& part : aStat.getCompound())
-  {
-		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
-    if (isList != nullptr)
+    for (auto& part : aStat.getCompound())
     {
+		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
+        if (isList != nullptr)
+        {
 			if (!isList->getCompound().empty())
 			{
 				if (isNestedNonConstIntScalar(*isList))
@@ -190,7 +189,7 @@ void NateCode::visit(const StatIfIs& aStat)
 		}
 		else
 		{
-	    elsePart = part;
+	        elsePart = part;
 		}
 	}
 
@@ -207,7 +206,7 @@ void NateCode::visit(const StatIfIs& aStat)
 				++mIndent;
 				codeIfIsIfs(aStat, elsePart);
 				--mIndent;
-			  *mOut << in() << "}" << end();
+			    *mOut << in() << "}" << end();
 			}
 			else
 			{
@@ -248,9 +247,9 @@ void NateCode::visit(const StatLoop::ForStep& aStat)
 	printLineNr(aStat.getLocation());
 
 	*mOut << in() << "for (" << aStat.getId()->type()->codeType() << " " 
-			 << aStat.getId()->codeName() << "= " << codeExpr(aStat.getStart()) << ";"  
-			 << aStat.getId()->codeName() << (aStat.getDownTo() ? " >= " : "<=") << codeExpr(aStat.getEnd()) << "; "
-			 << aStat.getId()->codeName() << (aStat.getDownTo() ? " -= " : "+=") << codeExpr(aStat.getStep()) << ")" << end();
+		  << aStat.getId()->codeName() << "= " << codeExpr(aStat.getStart()) << ";"  
+		  << aStat.getId()->codeName() << (aStat.getDownTo() ? " >= " : "<=") << codeExpr(aStat.getEnd()) << "; "
+		  << aStat.getId()->codeName() << (aStat.getDownTo() ? " -= " : "+=") << codeExpr(aStat.getStep()) << ")" << end();
 	codeCompound(aStat);
 }
 
@@ -279,8 +278,8 @@ void NateCode::visit(const StatLoop::ForRange& aStat)
 	}
 
 	*mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
-			 << iter << " != " << range << ".cend(); "
-			 << increment << ")" << end();
+		  << iter << " != " << range << ".cend(); "
+		  << increment << ")" << end();
 
 	*mOut << in() << "{" << end();
 	++mIndent;
@@ -312,7 +311,7 @@ void NateCode::visit(const StatExpr& aStat)
 
 void NateCode::visit(const StatOutput& aStat)
 {
-	codeOutputStart(aStat, "*output");
+	codeOutputStart(aStat, "*output_");
 }
 
 void NateCode::visit(const StatOutput::Comma& aStat)
@@ -381,10 +380,10 @@ void NateCode::codeOutputStart(const StatOutput& aStat, const std::string& aOutp
 	
 	*mOut << in() << mStream;
 
-  for (auto& part : aStat.getCompound())
-  {
+    for (auto& part : aStat.getCompound())
+    {
 		part->accept(this);
-  }
+    }
 
 	*mOut << ";" << end();
 }
@@ -452,7 +451,7 @@ void NateCode::visit(const StatInput::Value& aStat)
 	std::string skipSpaces = mLastInputComma ? " >> std::ws" : "";
 
 	if (!mNextInputEnd || !aStat.getExpr().type()->is(Type::Text)) {
-			inputType = InputType::Normal;			
+		inputType = InputType::Normal;			
 	}
 
 	if (inputType == InputType::Line)
@@ -479,7 +478,7 @@ void NateCode::visit(const StatRead& aStat)
 {
 	if (aStat.getCreateIt())
 	{
-    codeDeclIdentifier(false, aStat.getReader(), true, aStat.getLocation());
+        codeDeclIdentifier(false, aStat.getReader(), true, aStat.getLocation());
 	}
 	else if (!aStat.getInput().isEmpty())
 	{
@@ -553,7 +552,7 @@ void NateCode::visit(const StatRecord& aStat)
 	*mOut << in() << "{}" << end();
 	for (auto& id : aStat.getRecord()->identifiers().get())
 	{
-    codeDeclIdentifier(false, id, false, aStat.getLocation());
+        codeDeclIdentifier(false, id, false, aStat.getLocation());
 	}
 
 	--mIndent;
@@ -644,11 +643,11 @@ void NateCode::codeInputStart(const StatInput& aStat, const std::string& aStream
 	mStream = aStream;
 	
 	for (auto iter = aStat.getCompound().begin(); iter != aStat.getCompound().end(); ++iter)
-  {
+    {
 		auto next = std::next(iter);
 		mNextInputEnd = (next != aStat.getCompound().end() && dynamic_cast<StatInput::End*>(next->get()) != nullptr);
 		(*iter)->accept(this);
-  }
+    }
 }
 
 void NateCode::codeDeclIdentifier(bool aExtern,
@@ -662,7 +661,7 @@ void NateCode::codeDeclIdentifier(bool aExtern,
 
 	if (aExtern)
 	{
-	  *mOut << "extern ";	
+	    *mOut << "extern ";	
 	}
 
 	if (aIdentifier->is(Identifier::Const))
@@ -701,21 +700,27 @@ std::string NateCode::codeExpr(const Expr& aValue)
 bool NateCode::isConstIntScalar(const Expr& aExpr)
 {
   return (aExpr.is(Expr::ConstExpr) && aExpr.type()->is(Type::Scalar) &&
-		      !aExpr.type()->is(Type::Real));
+		  !aExpr.type()->is(Type::Real));
 }
 
 bool NateCode::isNestedConstIntScalar(const Stat& aStat)
 {
 	return std::any_of(aStat.getCompound().begin(), aStat.getCompound().end(),
-										[&](const Stat::SPtr& part) { const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
-	                                          return is == nullptr || isConstIntScalar(is->getExpr()); });
+				       [&](const Stat::SPtr& part)
+                       { 
+                           const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+	                       return is == nullptr || isConstIntScalar(is->getExpr());
+                       });
 }
 
 bool NateCode::isNestedNonConstIntScalar(const Stat& aStat)
 {
 	return std::any_of(aStat.getCompound().begin(), aStat.getCompound().end(),
-										[&](const Stat::SPtr& part) { const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
-	                                          return is != nullptr && !isConstIntScalar(is->getExpr()); });
+					   [&](const Stat::SPtr& part)
+                       { 
+                           const StatIfIs::Is* is = dynamic_cast<const StatIfIs::Is*>(part.get());
+	                       return is != nullptr && !isConstIntScalar(is->getExpr());
+                       });
 }
 
 
@@ -762,16 +767,16 @@ void NateCode::codeIfIsIfs(const StatIfIs& aStat, const Stat::SPtr& aElsePart)
 {
 	bool firstIf = true;
 
-  for (auto& part : aStat.getCompound())
-  {
+    for (auto& part : aStat.getCompound())
+    {
 		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
 
-	  if (isList != nullptr && isNestedNonConstIntScalar(*isList) && !isList->getCompound().empty())
-    {
-      codeCaseIsListIf(*isList, aStat, firstIf);
-		  firstIf = false;
+	    if (isList != nullptr && isNestedNonConstIntScalar(*isList) && !isList->getCompound().empty())
+        {
+            codeCaseIsListIf(*isList, aStat, firstIf);
+		    firstIf = false;
+        }
     }
-  }
 
 	if (aElsePart)
 	{
@@ -787,13 +792,13 @@ void NateCode::codeIfIsSwitch(const StatIfIs& aStat)
 	*mOut << in() << "{" << end();
 	
 	for (auto& part : aStat.getCompound())
-  {
+    {
 		const StatIfIs::IsList* isList = dynamic_cast<const StatIfIs::IsList*>(part.get());
 		if (isList != nullptr)
-    {
-      codeCaseIsListSwitch(*isList);
+        {
+            codeCaseIsListSwitch(*isList);
+        }
     }
-  }
 }
 
 void NateCode::codeCaseIsListSwitch(const Stat& aStat)
@@ -923,31 +928,31 @@ void NateCode::visit(const StatProperty& aStat)
 }
 
 std::string NateCode::codePropHeader(const ObjectPtr& aObject,
-																	   bool aAddObjectName,
-																		 const IdentifierPtr& aId, 
-																		 Property::PropType aPropType)
+							         bool aAddObjectName,
+								     const IdentifierPtr& aId, 
+								    Property::PropType aPropType)
 {
 	std::stringstream buf;
 	
 	auto scopeName = aId->type()->typeScopeName();
 	std::string propType = (aId->type()->is(Type::NeedsRef))
-											    ? scopeName + aId->type()->codeType()
-			                    : aId->type()->codeType();
+						   ? scopeName + aId->type()->codeType()
+			               : aId->type()->codeType();
 	std::string refType = (aId->type()->is(Type::NeedsRef))
-											    ? "&"
-			                    : "";
+						  ? "&"
+			              : "";
 	std::string objectPrefix = aAddObjectName
-													   ? toCodeName(aObject->name()) + "::"
-														 : "";
+							   ? toCodeName(aObject->name()) + "::"
+							   : "";
 
 	if (aPropType == Property::PropType::Get)
 	{
-	  buf << propType << " " << objectPrefix << aId->codeName();
+	    buf << propType << " " << objectPrefix << aId->codeName();
 		buf << "_get() const";
 	}
 	else
 	{
-	  buf << "const " <<  propType << refType << " " << objectPrefix << aId->codeName();
+	    buf << "const " <<  propType << refType << " " << objectPrefix << aId->codeName();
 		buf << "_set(const " << propType << refType << " value)";
 	}
 
@@ -963,20 +968,20 @@ void NateCode::codeDefaultProperties(const ObjectPtr& aObject)
 }
 
 void NateCode::codeDefaultPropertyImpl(const ObjectPtr& aObject,
-																			 const IdentifierPtr& propId,
-																	     const Object::PropData& propdata)
+									   const IdentifierPtr& propId,
+									   const Object::PropData& propdata)
 {
 	bool addObjectName = !aObject->is(Type::ObjectImpl);
 	if (propdata.states[static_cast<int>(Property::PropType::Get)].state == Object::PropState::State::Declared)
 	{
 		*mOut << in() << codePropHeader(aObject, addObjectName, propId, Property::PropType::Get) 
-				  << " { return " << propId->codeName() << "; }" << end();
+			  << " { return " << propId->codeName() << "; }" << end();
 	}
 
 	if (propdata.states[static_cast<int>(Property::PropType::Set)].state == Object::PropState::State::Declared)
 	{
 		*mOut << in() << codePropHeader(aObject, addObjectName, propId, Property::PropType::Set) 
-				  << " { return " << propId->codeName() << " = value; }" << end();
+			  << " { return " << propId->codeName() << " = value; }" << end();
 	}
 }
 
@@ -990,13 +995,13 @@ void NateCode::codeDeclProperties(const ObjectPtr& aObject)
 }
 
 void NateCode::codeDeclareProperty(const ObjectPtr& aObject,
-																	 const IdentifierPtr& aId,
-																	 const Location& aLocation)
+								   const IdentifierPtr& aId,
+								   const Location& aLocation)
 {
 	TypePtr idType = aId->type();
 	std::string propType = (idType->is(Type::NeedsRef))
-											    ? idType->codeType() + "&"
-			                    : idType->codeType();
+						   ? idType->codeType() + "&"
+			               : idType->codeType();
 	std::string declType = idType->codeType();
 				
 	if (!aObject->isRole())
@@ -1011,20 +1016,20 @@ void NateCode::codeDeclareProperty(const ObjectPtr& aObject,
 	bool overriden = aObject->basesIsPropDeclared(aId, Property::PropType::Get);
 
 	const char* startKeys = aId->is(Identifier::Final) || overriden
-			                    ? "" : "virtual ";
+			                ? "" : "virtual ";
 	const char* abstractKey = aObject->isRole()
-			                      ? " = 0" : "";
+			                  ? " = 0" : "";
 	const char* endKeys = overriden
-			                  ? " override" : "";
+			              ? " override" : "";
 	*mOut << in() << startKeys << codePropHeader(aObject, false, aId, Property::PropType::Get) << endKeys << abstractKey << ";" << end();
 
 	if (!aId->is(Identifier::ReadOnly))
 	{
 		overriden = aObject->basesIsPropDeclared(aId, Property::PropType::Set);
-	  startKeys = aId->is(Identifier::Final) || overriden
-			          ? "" : "virtual ";
+	    startKeys = aId->is(Identifier::Final) || overriden
+			        ? "" : "virtual ";
 		endKeys = overriden
-			        ? " override" : "";
+			      ? " override" : "";
 		*mOut << in() << startKeys << codePropHeader(aObject, false, aId, Property::PropType::Set) << endKeys << abstractKey << ";" << end();
 	}
 }
@@ -1124,9 +1129,9 @@ void NateCode::codeObjectBases(const ObjectPtr& aObject)
 		{
 			if (!base->is(Type::NoCode))
 			{
-				*mOut << (first ? ": public " : ", public ") << 
-								 (base->isRole() ? "virtual " : "") <<
-								 toCodeName(base->name());
+				*mOut << (first ? ": public " : ", public ")
+                      << (base->isRole() ? "virtual " : "")
+                      << toCodeName(base->name());
 				first = false;
 			}
 		}
@@ -1135,8 +1140,8 @@ void NateCode::codeObjectBases(const ObjectPtr& aObject)
 
 void NateCode::codeImplObjectVariables(const StatObject& aStat)
 {
-  for (auto& stat : aStat.getCompound())
-  {
+    for (auto& stat : aStat.getCompound())
+    {
 		if (dynamic_cast<StatDeclareLocal*>(stat.get()) != nullptr)
 		{
 			stat->accept(this);
@@ -1146,8 +1151,8 @@ void NateCode::codeImplObjectVariables(const StatObject& aStat)
 
 void NateCode::codeImplObjectNested(const StatObject& aStat, bool inImpl)
 {
-  for (auto& stat : aStat.getCompound())
-  {
+    for (auto& stat : aStat.getCompound())
+    {
 		StatDefine* defyne = dynamic_cast<StatDefine*>(stat.get());
 		if (defyne != nullptr)
 		{

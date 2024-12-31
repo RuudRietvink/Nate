@@ -195,14 +195,14 @@ public:
 	void addObjectBase(ObjectPtr& aCurObject, const ObjectPtr& aObject);
 	void addObjectRole(ObjectPtr& aCurObject, const ObjectPtr& aObject);
 	void declareProperties(const std::vector<std::string>& aNames,
-												 const TypePtr& aType,
-												 const std::vector<std::string>& flags,
-												 const nate::parser::location_type& aLocation);
+						   const TypePtr& aType,
+						   const std::vector<std::string>& flags,
+						   const nate::parser::location_type& aLocation);
 	
 	void startInbrackets(const nate::parser::location_type& aLocation, const std::string& type);
 	void endInbrackets();
 	void addInbracketsStatWord(const std::string& aWord,
-											       const nate::parser::location_type& aLocation);
+							   const nate::parser::location_type& aLocation);
 	void addCode();
 	void endCode();
 	CodePtr curCode();

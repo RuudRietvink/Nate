@@ -36,6 +36,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="TestExpr.cpp" />
+    <ClCompile Include="TestLiterals.cpp" />
     <ClCompile Include="TestOutput.cpp" />
     <ClCompile Include="TestProgram.cpp" />
     <ClCompile Include="TestVariables.cpp" />
@@ -56,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="testfiles\Expr_tests.txt" />
+    <Text Include="testfiles\Literals_tests.txt" />
     <Text Include="testfiles\Output_tests.txt" />
     <Text Include="testfiles\Variables_tests.txt" />
   </ItemGroup>

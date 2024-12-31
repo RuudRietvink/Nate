@@ -78,7 +78,7 @@ private:
 							   Property::PropType aPropType);
 	void codeDefaultPropertyImpl(const ObjectPtr& aObject,
 								 const IdentifierPtr& propId,
-							 	const Object::PropData& propdata);
+							 	 const Object::PropData& propdata);
 	void codeDefaultProperties(const ObjectPtr& aObject);
 	void codeDeclProperties(const ObjectPtr& aObject);
 	void codeDeclareProperty(const ObjectPtr& aObject,
