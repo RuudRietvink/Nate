@@ -3,25 +3,21 @@
 namespace nate
 {
 extern const char* programExp =
-R"__(#line 1 "test.nd"
+R"__(#undef NOMINMAX
+#define NOMINMAX
+#include <windows.h>
+#include <cmath>
+#include <stdfloat>
+#line 1 "test.nd"
 std::shared_ptr<std::ostream> output_ = {};
 #line 1
 std::shared_ptr<std::ostream> error_ = {};
 #line 1
 std::shared_ptr<std::istream> input_ = {};
 #line 27 ""
-#define NOMINMAX
-#include <windows.h>
-#include <cmath>
-#line 32
-const double pi_ = 3.14159265358979323;
-#line 34
-const double tau_ = 6.283185307179586;
-#line 36
-const double e_ = 2.718281828459045;
-#undef NOMINMAX
-#define NOMINMAX
-#include <windows.h>
+const std::float64_t pi_ = 3.14159265358979323;
+const std::float64_t tau_ = 6.283185307179586;
+const std::float64_t e_ = 2.718281828459045;
 #line 3
 int main(int argc, char** argv)
 {
@@ -33,7 +29,7 @@ int main(int argc, char** argv)
 #line 4
   string_t text_ = {};
   int32_t int32_ = {};
-  float float_ = {};
+  std::float32_t float_ = {};
   *output_ << "Hello" << std::endl;
 }
 )__";

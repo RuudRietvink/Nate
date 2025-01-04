@@ -10,6 +10,7 @@ std::shared_ptr<std::istream> input = {};
 #define NOMINMAX
 #include <windows.h>
 #include <cmath>
+#include <stdfloat>
 #line 32
 const double pi = 3.14159265358979323;
 #line 34

@@ -44,6 +44,11 @@ void Type::setType(const std::string& aName)
 		setFlag(Integer, true);
 		setFlag(SingleNr, true);
 	}
+    else if (aName == "unsigned")
+    {
+        setFlag(Unsigned, true);
+        setFlag(SingleNr, true);
+    }
 	else if (aName == "real")
 	{
 		setFlag(Real, true);
@@ -76,15 +81,39 @@ void Type::setType(const std::string& aName)
 	else if (aName == "float-32")
 	{
 		setFlag(Abstract, false);
-		mCodeType = "float";
+		mCodeType = "std::float32_t";
 		mBitSize = 132;
 	}
 	else if (aName == "float-64")
 	{
 		setFlag(Abstract, false);
-		mCodeType = "double";
+		mCodeType = "std::float64_t";
 		mBitSize = 164;
 	}
+    else if (aName == "bits-8")
+    {
+        setFlag(Abstract, false);
+        mCodeType = "uint8_t";
+        mBitSize = 8;
+    }
+    else if (aName == "bits-16")
+    {
+        setFlag(Abstract, false);
+        mCodeType = "uint16_t";
+        mBitSize = 16;
+    }
+    else if (aName == "bits-32")
+    {
+        setFlag(Abstract, false);
+        mCodeType = "uint32_t";
+        mBitSize = 32;
+    }
+    else if (aName == "bits-64")
+    {
+        setFlag(Abstract, false);
+        mCodeType = "uint64_t";
+        mBitSize = 64;
+    }
 	else if (aName == "rational")
 	{
 		setFlag(Abstract, false);
@@ -114,7 +143,6 @@ void Type::setType(const std::string& aName)
 		setFlag(Abstract, false);
 		setFlag(Boolean, true);
 		setFlag(Scalar, true);
-		mCodeType = "double";
 		mCodeType = "bool";
 		mBitSize = 232;
 	}
@@ -264,6 +292,10 @@ Type::CompareResult Type::canBeCastedFrom(const TypePtr& aType, bool needExactMa
 		{
 			result = CompareResult::RequiresCast;
 		}
+		else if (is(Unsigned) && aType->is(Unsigned))
+		{
+			result = CompareResult::RequiresCast;
+		}
 		else if (is(Char) && aType->is(Integer))
 		{
 			result = CompareResult::RequiresCast;
@@ -366,6 +398,7 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::IsContainer)) aStream << ",IsContainer";
 	if (is(Type::List)) aStream << ",List";
 	if (is(Type::Template)) aStream << ",Template";
+    if (is(Type::Unsigned)) aStream << ",Unsigned";
 	if (mTypenameType) {
 		aStream << "TypenameType(" << *mTypenameType << "),";
 	}

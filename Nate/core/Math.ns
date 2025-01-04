@@ -24,15 +24,8 @@ alias "ln" "log"
 // Math
 ///////////////////////////////////////////////
 
-code:
-	#define NOMINMAX
-	#include <windows.h>
-	#include <cmath>
-
-const pi is float-64 := 3.14159265358979323
-  
-const tau is float-64 := 6.283185307179586
-  
+const pi is float-64 := 3.14159265358979323  
+const tau is float-64 := 6.283185307179586  
 const e is float-64 := 2.718281828459045
 
 code define 130 e \u ^ ${val is number} is number as float-64, right:

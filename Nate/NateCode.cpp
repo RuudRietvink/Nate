@@ -12,6 +12,11 @@ NateCode::NateCode(std::ostream& aOut, NateParser* aParser)
   : mOut(&aOut),
 	mParser(aParser)
 {
+    *mOut << in() << "#undef NOMINMAX" << end();
+    *mOut << in() << "#define NOMINMAX" << end();
+    *mOut << in() << "#include <windows.h>" << end();
+    *mOut << in() << "#include <cmath>" << end();
+    *mOut << in() << "#include <stdfloat>" << end();
 }
 
 std::string NateCode::in(int extra)
@@ -65,10 +70,6 @@ void NateCode::codeBlock(const Stat& aStat)
 
 void NateCode::visit(const StatProgram& aStat)
 {
-	*mOut << in() << "#undef NOMINMAX" << end();
-	*mOut << in() << "#define NOMINMAX" << end();
-	*mOut << in() << "#include <windows.h>" << end();
-
 	printLineNr(aStat.getLocation());
 
 	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();

@@ -65,6 +65,7 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("any"));
 	addType(std::make_shared<Type>("number", getType("any")));
 	addType(std::make_shared<Type>("integer", getType("number")));
+    addType(std::make_shared<Type>("unsigned", getType("number")));
 	addType(std::make_shared<Type>("real", getType("number")));
 	addType(std::make_shared<Type>("int-8", getType("integer")));
 	addType(std::make_shared<Type>("int-16", getType("integer")));
@@ -76,6 +77,11 @@ void NateParser::initTypesAndObjects()
 	addType(getType("float-32"), "float");
 	addType(std::make_shared<Type>("boolean", getType("any")));
 	addType(getType("boolean"), "bool");
+    addType(std::make_shared<Type>("bits-8", getType("unsigned")));
+    addType(std::make_shared<Type>("bits-16", getType("unsigned")));
+    addType(std::make_shared<Type>("bits-32", getType("unsigned")));
+    addType(std::make_shared<Type>("bits-64", getType("unsigned")));
+    addType(getType("bits-32"), "bits");
 		
 	addType(std::make_shared<Type>("rational", getType("number")));
 	addType(std::make_shared<Type>("imaginary", getType("number")));
@@ -1842,17 +1848,20 @@ TypePtr NateParser::getNumberType(std::string& aString)
             switch (length)
             {
             case 0: case 32:
-                result = getType("int-32");
+                result = getType("bits-32");
+                aString += "u";
                 break;
             case 8:
-                result = getType("int-8");
+                result = getType("bits-8");
+                aString += "u";
                 break;
             case 16:
-                result = getType("int-16");
+                result = getType("bits-16");
+                aString += "u";
                 break;
             case 64:
-                result = getType("int-64");
-                aString += "ll";
+                result = getType("bits-64");
+                aString += "ull";
                 break;
             default:
                 break;  // Error-handling in higher function

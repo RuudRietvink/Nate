@@ -214,14 +214,9 @@ namespace Core
 				if (ok)
 				{
                     int64_t max = static_cast<int64_t>(std::pow(2, length == 0 ? 32 : length));
-                    int64_t maxPos = max / 2 - 1;
                     if (value > max)
                     {
                         ok = false;
-                    }
-                    else if (value > maxPos)
-                    {
-                        value = maxPos - value;
                     }
 
                     aString = std::to_string(value);
