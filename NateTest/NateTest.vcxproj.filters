@@ -6,6 +6,7 @@
     <ClCompile Include="TestProgram.cpp" />
     <ClCompile Include="TestVariables.cpp" />
     <ClCompile Include="TestLiterals.cpp" />
+    <ClCompile Include="TestList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestFiles">
@@ -23,6 +24,9 @@
       <Filter>TestFiles</Filter>
     </Text>
     <Text Include="testfiles\Literals_tests.txt">
+      <Filter>TestFiles</Filter>
+    </Text>
+    <Text Include="testfiles\List_tests.txt">
       <Filter>TestFiles</Filter>
     </Text>
   </ItemGroup>

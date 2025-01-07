@@ -101,6 +101,8 @@
 %token CONCAT "&"
 %token OPENPAR "("
 %token CLOSEPAR ")"
+%token OPENBRACKET "["
+%token CLOSEBRACKET "]"
 %token ARGSTART "${"
 %token ARGEND "}"
 %token BADTOKEN
@@ -114,7 +116,7 @@
 %type <std::string>              flag;
 %type <TypePtr>                  is-type;
 %type <TypePtr>                  type;
-%type <std::string>              type-extra;
+%type <TypePtr>                  type-extra;
 %type <std::string>              code-key;
 %type <bool>                     var;
 %type <std::vector<Expr>>        var-init-assign;
@@ -128,7 +130,6 @@
 %type <Expr>                     inline-expr;
 %type <Expr>                     math-expr;
 %type <Expr>                     code-expr;
-%type <Expr>                     expr-at-end-of-statement;
 %type <Expr>                     expr-part;
 %type <Expr>                     expr-part-list;
 %type <Expr>				     expr-non-word;
@@ -820,7 +821,7 @@ id:
 optional-is-type:
     %empty
 		{ 
-            $$ = std::make_shared<Type>("");
+            $$ = std::make_shared<Type>();
         }
   | is-type 
   ;
@@ -847,13 +848,13 @@ type:
   |
     WORD type-extra
         { 
-            if (!$[type-extra].empty())
+            if (!$[type-extra]->empty())
             {
                 $$ = nate.determineType($WORD);
                 if ($$->is(Type::Template))
                 {
                     $$ = std::make_shared<Type>(*$$); // clone
-                    $$->setTypenameType(nate.determineType($[type-extra]));
+                    $$->setTypenameType($[type-extra]);
                 }
                 else
                 {
@@ -870,11 +871,11 @@ type:
 type-extra:
     %empty
         { 
-            $$ = "";
+            $$ = std::make_shared<Type>();
         }
-  | OF WORD
+  | OF type
         { 
-            $$ = $WORD;
+            $$ = $[type];
         }
   ;
 
@@ -902,7 +903,7 @@ var-init-list:
   ;
   
 var-init:
-	  expr-at-end-of-statement
+	  inline-expr
   ;
 
 record-statement:
@@ -1492,10 +1493,6 @@ inline-expr:
             nate.data.prevWasValue = false;
             lexer.space();
 		}
-  ;
-  
-expr-at-end-of-statement:
-    inline-expr
   ;
   
 expr-end:

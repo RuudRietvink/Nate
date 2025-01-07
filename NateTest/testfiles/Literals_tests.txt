@@ -1,0 +1,90 @@
+###Integers
+  var int32Zero := 0;
+  var int32Plus := 123;
+  var int32Neg := -42;
+  var int32Max := 2147483647;
+  var int32Min := -2147483648;
+---
+  int32_t int32Zero_ = 0;
+  int32_t int32Plus_ = 123;
+  int32_t int32Neg_ = -42;
+  int32_t int32Max_ = 2147483647;
+  int32_t int32Min_ = -2147483648;
+###Int8
+  var int8Zero := I8_0;
+  var int8Plus := i8_123;
+  var int8Neg := -i8_42;
+  var int8Max := I8_127;
+  var int8Min := -I8_128;
+---
+  int8_t int8Zero_ = 0;
+  int8_t int8Plus_ = 123;
+  int8_t int8Neg_ = -42;
+  int8_t int8Max_ = 127;
+  int8_t int8Min_ = -128;
+###Int16
+  var int16Zero := i16_0;
+  var int16Plus := i16_123;
+  var int16Neg := -I16_42;
+  var int16Max := I16_32767;
+  var int16Min := -I16_32768;
+---
+  int16_t int16Zero_ = 0;
+  int16_t int16Plus_ = 123;
+  int16_t int16Neg_ = -42;
+  int16_t int16Max_ = 32767;
+  int16_t int16Min_ = -32768;
+###Int32
+  var int32Zero := I32_0;
+  var int32Plus := i32_123;
+  var int32Neg := -I32_42;
+  var int32Max := I32_2147483647;
+  var int32Min := -i32_2147483648;
+---
+  int32_t int32Zero_ = 0;
+  int32_t int32Plus_ = 123;
+  int32_t int32Neg_ = -42;
+  int32_t int32Max_ = 2147483647;
+  int32_t int32Min_ = -2147483648;
+###Int64
+  var int64Zero := I64_0;
+  var int64Plus := i64_123;
+  var int64Neg := -I64_42;
+  var int64Max := i64_9223372036854775807;
+  var int64Min := -I64_9223372036854775808;
+---
+  int64_t int64Zero_ = 0ll;
+  int64_t int64Plus_ = 123ll;
+  int64_t int64Neg_ = -42ll;
+  int64_t int64Max_ = 9223372036854775807ll;
+  int64_t int64Min_ = -9223372036854775808ll;
+###Binary
+  var bitsbZero := b_0;
+  var bitsbPlus := b_0101010;
+  var bitsbHlf := b_01111111111111111111111111111111;
+  var bitsbMax := b_11111111111111111111111111111111;
+---
+  uint32_t bitsbZero_ = 0u;
+  uint32_t bitsbPlus_ = 42u;
+  uint32_t bitsbHlf_ = 2147483647u;
+  uint32_t bitsbMax_ = 4294967295u;
+###Octal
+  var bitsoZero := o_0;
+  var bitsoPlus := o_01234567;
+  var bitsoHlf := o_17777777777;
+  var bitsoMax := o_37777777777;
+---
+  uint32_t bitsoZero_ = 0u;
+  uint32_t bitsoPlus_ = 342391u;
+  uint32_t bitsoHlf_ = 2147483647u;
+  uint32_t bitsoMax_ = 4294967295u;
+###Hex
+  var bitsxZero := x_0;
+  var bitsxPlus := X_68AbCdEf;
+  var bitsxHlf := x_7FFFFFFF;
+  var bitsxMax := x_FFFFffFF;
+---
+  uint32_t bitsxZero_ = 0u;
+  uint32_t bitsxPlus_ = 1756089839u;
+  uint32_t bitsxHlf_ = 2147483647u;
+  uint32_t bitsxMax_ = 4294967295u;

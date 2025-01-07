@@ -1,0 +1,10 @@
+###Decl
+  var vecInt is list of int-32
+  var vecText is list of text
+  var vecComplex is list of complex of float-32
+  var vecListComplex is list of list of complex of float-32
+---
+  std::vector<int32_t> vecInt_ = {};
+  std::vector<string_t> vecText_ = {};
+  std::vector<Complex<std::float32_t>> vecComplex_ = {};
+  std::vector<std::vector<Complex<std::float32_t>>> vecListComplex_ = {};

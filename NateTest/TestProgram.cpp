@@ -18,7 +18,9 @@ std::shared_ptr<std::istream> input_ = {};
 const std::float64_t pi_ = 3.14159265358979323;
 const std::float64_t tau_ = 6.283185307179586;
 const std::float64_t e_ = 2.718281828459045;
-#line 3
+#line 6
+#include <vector>
+#line 4
 int main(int argc, char** argv)
 {
   output_ = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
@@ -26,7 +28,7 @@ int main(int argc, char** argv)
   input_ = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
   SetConsoleOutputCP(65001);
 #define NATE_PROGRAM_START
-#line 4
+#line 5
   string_t text_ = {};
   int32_t int32_ = {};
   std::float32_t float_ = {};
@@ -39,6 +41,7 @@ TEST_F(TestParser, Program)
   std::string in =
 R"__(
 import Math
+import List
 program:
   var text is text
   var int32 is int-32

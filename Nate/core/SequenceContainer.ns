@@ -9,5 +9,5 @@ code define 65 \u add ${val as typename} to ${container is container as template
                \u append ${val as typename} to ${container is container as template, out}:
     $container.push_back($val)
   
-code define 65 \u insert ${val as typename} to ${container is container as template, out}:
+code define 65 \u insert ${val as typename} in ${container is container as template, out}:
     $container.insert($container.cbegin(), $val)

@@ -4,6 +4,12 @@
 ///////////////////////////////////////////////
 
 code:
-	 #include <list>
+	 #include <vector>
 
 import SequenceContainer
+
+code define 65 \u ${container is container as template, out} [ ${index is integer} ] :
+    $container[$index]
+
+code define 65 \u ${container is container as template} [ ${index is integer} ] as const:
+    $container[$index]

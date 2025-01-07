@@ -192,7 +192,7 @@ void Type::setType(const std::string& aName)
 	{
 		setFlag(Abstract, false);
 		setFlag(List, true);
-		mCodeType = "std::list";
+		mCodeType = "std::vector";
 	}
 	else if (aName == "Output")
 	{
