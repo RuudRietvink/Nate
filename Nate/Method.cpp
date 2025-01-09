@@ -81,6 +81,14 @@ std::string Method::setFlagString(const std::string& aFlag)
 	{
 		setFlag(Ref);
 	}
+    else if (aFlag == "typename")
+    {
+        setFlag(Typename);
+    }
+    else if (aFlag == "output")
+    {
+        setFlag(Output);
+    }
 	else
 	{
 		errorResult = "Bad flag: " + aFlag;
@@ -530,10 +538,18 @@ Method::createCode(const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, co
 	{
 		result.type = highestType;
 	}
+    else if (is(Typename))
+    {
+        result.type = templateType->typenameType();
+    }
 
-	if (isConst)
+    if (isConst)
+    {
+        result.flags[Expr::ConstExpr] = true;
+    }
+    else if (is(Output))
 	{
-		result.flags[Expr::ConstExpr] = true;
+		result.flags[Expr::Output] = true;
 	}
 	
 	if (isStatic())
@@ -815,7 +831,9 @@ std::ostream& operator<<(std::ostream& aStream, const Method& aValue)
 	if (aValue.is(Method::Overriden)) aStream << ",Overriden";	
 	if (aValue.is(Method::Me)) aStream << ",Me";	
 	if (aValue.is(Method::Static)) aStream << ",Static";	
-	if (aValue.is(Method::Ref)) aStream << ",Ref";	
+	if (aValue.is(Method::Ref)) aStream << ",Ref";
+    if (aValue.is(Method::Typename)) aStream << ",Typename";
+    if (aValue.is(Method::Output)) aStream << ",Output";
 
 	aStream << ")";
 	return aStream;

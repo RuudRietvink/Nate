@@ -31,12 +31,7 @@ public:
     TestParser()
     {
     }
-    
-    int parse(std::istream& in, NateParser::FileType fileType = NateParser::FileType::Normal)
-    {
-        mParser.reset(new NateParser("test.nd", in, mOutStream, fileType));
-    }
-  
+      
     int parseProgram(const std::string& in, NateParser::FileType fileType = NateParser::FileType::Normal)
     {
         std::istringstream ins(in);
@@ -47,7 +42,8 @@ public:
     int parse(const std::string& in, NateParser::FileType fileType = NateParser::FileType::Normal)
     {
         std::string progIn = 
-R"__(program:
+R"__(import List
+program:
 )__" + in;
         return parseProgram(progIn, fileType);
     }

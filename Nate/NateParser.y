@@ -1644,7 +1644,17 @@ expr-word:
                 nate.data.prevWasValue = !nate.wantsUnary(value);
                 lexer.noSpace();
             }
-      }
+        }
+  | OPENBRACKET
+		{ 
+            nate.data.prevWasValue = false;
+            $$ = Expr("[");
+        }
+  | CLOSEBRACKET
+		{ 
+            nate.data.prevWasValue = false;
+            $$ = Expr("]");
+        }
   ;
 
 string:

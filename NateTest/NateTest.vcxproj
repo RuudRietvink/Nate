@@ -98,7 +98,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>C:\Users\ruud\source\repos\Nate\Nate;C:\Users\ruud\source\repos\Nate\Nate\Stats;C:\Users\ruud\source\repos\Nate\utf8;C:\Users\ruud\source\repos\Nate\MathParser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -136,7 +136,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>C:\Users\ruud\source\repos\Nate\Nate;C:\Users\ruud\source\repos\Nate\Nate\Stats;C:\Users\ruud\source\repos\Nate\utf8;C:\Users\ruud\source\repos\Nate\MathParser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

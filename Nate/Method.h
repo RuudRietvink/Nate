@@ -96,6 +96,8 @@ public:
 	static const size_t Me           =13;
 	static const size_t Static       =14;
 	static const size_t Ref          =15;
+	static const size_t Typename     =16;
+	static const size_t Output       =17;
   
 private:
 	void getTypes(

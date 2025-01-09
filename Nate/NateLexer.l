@@ -392,6 +392,8 @@ include\h*\".*\"  s(); includeFile();
 ":"			    return nate::parser::make_COL(location());
 "("			    return nate::parser::make_OPENPAR(location());
 ")"			    return nate::parser::make_CLOSEPAR(location());
+"["			    return nate::parser::make_WORD(str(), location());
+"]"			    return nate::parser::make_WORD(str(), location());
 ","			    return nate::parser::make_COMMA(location());
 "${"            return nate::parser::make_ARGSTART(location());
 "}"             return nate::parser::make_ARGEND(location());

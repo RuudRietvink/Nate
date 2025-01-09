@@ -5,20 +5,20 @@
   var ĀāſЀӿͰϿ is int
 ---
   int32_t a_ = {};
-#line 2
+#line 3
   int32_t a2_ = {};
-#line 2
+#line 3
   int32_t a_2_ = {};
-#line 2
+#line 3
   int32_t abc_ = {};
-#line 2
+#line 3
   int32_t a_a_a_ = {};
-#line 2
+#line 3
   int32_t is_ = {};
   int32_t xx__2080__ = {};
-#line 3
+#line 4
   int32_t y___2085__ = {};
-#line 3
+#line 4
   int32_t z__2080___2081___2082___2083___2084___2085___2086___2087___2088___2089___23e8___208a___208b___208c___208d___208e___2090___2091___2092___2093___2094___2095___2096___2097___2098___2099___209a___209b___209c__ = {};
   int32_t abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ = {};
   int32_t __100___101___17f___400___4ff___370___3ff__ = {};

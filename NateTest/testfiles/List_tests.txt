@@ -8,3 +8,13 @@
   std::vector<string_t> vecText_ = {};
   std::vector<Complex<std::float32_t>> vecComplex_ = {};
   std::vector<std::vector<Complex<std::float32_t>>> vecListComplex_ = {};
+###Access
+  var vecInt is list of int-32
+  var index := 1
+  vecInt[0] := 42
+  vecInt[index] := inc#vecInt[0]
+---
+  std::vector<int32_t> vecInt_ = {};
+  int32_t index_ = 1;
+  vecInt_[0] = 42;
+  vecInt_[index_] = ++vecInt_[0];
