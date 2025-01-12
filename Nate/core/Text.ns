@@ -2,6 +2,8 @@
 ///////////////////////////////////////////////
 // Text
 ///////////////////////////////////////////////
+  
+import SequenceContainer
 
 code define 150 \u uppercased ${val is text} is text:
     Core::upperCased($val)
@@ -27,5 +29,3 @@ code define 65 stream-out ${char-1 is char}:
 
 code define 65 stream-out ${val is text}:
     $val
-  
-import SequenceContainer

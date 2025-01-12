@@ -43,6 +43,7 @@ public:
     {
         std::string progIn = 
 R"__(import List
+import Text
 program:
 )__" + in;
         return parseProgram(progIn, fileType);
@@ -112,10 +113,11 @@ program:
             inString += line + "\n";
         }
 
-        while (std::getline(in, line).good() &&
+        while ((std::getline(in, line).good() || !line.empty()) &&
                line.substr(0,3) != "###")
         {
             outString += line + "\n";
+            line.clear();
         }
     
         ASSERT_FALSE(inString.empty());

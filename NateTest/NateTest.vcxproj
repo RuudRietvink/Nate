@@ -61,6 +61,7 @@
     <Text Include="testfiles\List_tests.txt" />
     <Text Include="testfiles\Literals_tests.txt" />
     <Text Include="testfiles\Output_tests.txt" />
+    <Text Include="testfiles\Program_tests.txt" />
     <Text Include="testfiles\Variables_tests.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />

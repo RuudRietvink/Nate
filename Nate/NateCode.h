@@ -57,6 +57,7 @@ private:
     void printLineNr(const Location& aLocation);
 	char end();
 	void codeOutput(const std::string& aString);
+    void codeOutputEnd();
 	void codeInputStart(const StatInput& aStat, const std::string& aString, InputType inputType = InputType::Normal);
 	std::string codeExpr(const Expr& aValue);
 	void codeDeclIdentifier(bool aExtern,

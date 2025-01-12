@@ -20,19 +20,17 @@ const std::float64_t tau_ = 6.283185307179586;
 const std::float64_t e_ = 2.718281828459045;
 #line 6
 #include <vector>
-#line 4
+#line 5
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\main.h"
 int main(int argc, char** argv)
 {
-  output_ = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});
-  error_ = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});
-  input_ = std::shared_ptr<std::istream>(&std::cin, [](void*) {});
-  SetConsoleOutputCP(65001);
+  initMain(argc, argv);
 #define NATE_PROGRAM_START
-#line 5
+#line 6
   string_t text_ = {};
   int32_t int32_ = {};
   std::float32_t float_ = {};
-  *output_ << "Hello" << std::endl;
+  *output_ << "Hello\n";
 }
 )__";
 
@@ -42,6 +40,7 @@ TEST_F(TestParser, Program)
 R"__(
 import Math
 import List
+import Text
 program:
   var text is text
   var int32 is int-32
@@ -53,4 +52,8 @@ program:
   compareWhole(programExp, code());
 }
 
+static std::filesystem::path in("Program_tests.txt");
+
+TEST_PIECE(Program, Arguments)
+TEST_PIECE(Program, Name)
 }

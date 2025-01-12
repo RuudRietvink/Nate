@@ -29,6 +29,9 @@
     <Text Include="testfiles\List_tests.txt">
       <Filter>TestFiles</Filter>
     </Text>
+    <Text Include="testfiles\Program_tests.txt">
+      <Filter>TestFiles</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestParser.h" />

@@ -123,3 +123,13 @@ code define 60 constructed ${result is object as out} as same:
 
 code define 60 constructed object as me:
     std::make_shared<__X__OBJECT_TYPE__.__>()
+
+///////////////////////////////////////////////
+// program
+///////////////////////////////////////////////
+
+code define 200 app's arguments is list of text as const:
+    programArguments__
+    
+code define 200 app's name is text as const:
+    programName__

@@ -10,3 +10,7 @@ import SequenceContainer
 
 code define 65 \u ${container is container as template} [ ${index is number} ] as typename, output:
     $container[$index]
+
+code define 65 \u ${container is container as template} [ ${index is number} ] as typename, const:
+    $container[$index]
+

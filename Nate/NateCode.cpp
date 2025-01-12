@@ -35,7 +35,7 @@ void NateCode::printLineNr(const Location& aLocation)
 			*mOut << " \"" << aLocation.filename << "\"";
 		}
 			
-		*mOut << std::endl;
+        *mOut << "\n";
 
 		mPrevLine = aLocation.beginLine;
 		mPrevFile = aLocation.filename;
@@ -72,13 +72,10 @@ void NateCode::visit(const StatProgram& aStat)
 {
 	printLineNr(aStat.getLocation());
 
+    *mOut << in() << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\main.h\"" << end();
 	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
 	++mIndent;
-	*mOut << in() << "output_ = std::shared_ptr<std::ostream>(&std::cout, [](void*) {});" << end();
-	*mOut << in() << "error_ = std::shared_ptr<std::ostream>(&std::cerr, [](void*) {});" << end();
-	*mOut << in() << "input_ = std::shared_ptr<std::istream>(&std::cin, [](void*) {});" << end();
-	*mOut << in() << "SetConsoleOutputCP(65001);" << end();
-	//*mOut << "std::locale::global(std::locale(\"en_US.UTF8\"));" << end();
+    *mOut << in() << "initMain(argc, argv);" << end();
     *mOut << "#define NATE_PROGRAM_START" << end();
 	
 	codeStats(aStat.getCompound());
@@ -329,7 +326,8 @@ void NateCode::visit(const StatOutput::End& aStat)
 {
 	if (aStat.getEndOfLine())
 	{
-		codeOutput("std::endl");
+		codeOutput("\"\\n\"");
+        codeOutputEnd();
 	}
 	else
 	{
@@ -395,12 +393,20 @@ char NateCode::end()
 	return '\n';
 }
 
+void NateCode::codeOutputEnd()
+{
+    if ((!mCachedOutput.empty()))
+    {
+        *mOut << " << \"" << mCachedOutput << "\"";
+        mCachedOutput.clear();
+    }
+}
+
 void NateCode::codeOutput(const std::string& aString)
 {
 	if ((!mCachedOutput.empty()) && aString[0] != '"')
 	{
-		*mOut << " << \"" << mCachedOutput << "\"";
-		mCachedOutput.clear();
+        codeOutputEnd();
 		if (!aString.empty())
 		{
 			*mOut << " << " << aString;

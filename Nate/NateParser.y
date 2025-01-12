@@ -562,9 +562,9 @@ call-return:
   ;
   
 type-flags:
-    IS type 
+    is-type 
 		{ 
-            nate.curMethod()->setType($type);
+            nate.curMethod()->setType($[is-type]);
         }
     opt-holder-flag-list
   | AS holder-flag-list

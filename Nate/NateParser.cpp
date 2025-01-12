@@ -215,8 +215,8 @@ void NateParser::endProgram(const nate::parser::location_type& aLocation)
 }
 
 void NateParser::doAssign(const std::vector<Expr>& aExpressions,
-													const Expr& aValue,
-													const nate::parser::location_type& aLocation)
+					 	  const Expr& aValue,
+						  const nate::parser::location_type& aLocation)
 {
 	Expr copy(aValue);
 	for (auto const& expr : aExpressions)
@@ -247,7 +247,7 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 		}
 	}
 	
-  addStatement(std::make_shared<StatAssign>(Location(aLocation, mLexer->currentFile()), aExpressions, aValue));
+  addStatement(std::make_shared<StatAssign>(Location(aLocation, mLexer->currentFile()), aExpressions, copy));
 }
 
 void NateParser::doIf(const Expr& aValue, const nate::parser::location_type& aLocation)

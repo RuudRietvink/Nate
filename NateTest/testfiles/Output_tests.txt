@@ -1,15 +1,21 @@
 ###Empty
   output
 ---
-  *output_ << std::endl;
+  *output_ << "\n";
+###StringVariable
+  var name := "Name AA"
+  output name
+---
+  string_t name_ = "Name AA";
+  *output_ << (name_) << "\n";
 ###String
   output "Hello"
 ---
-  *output_ << "Hello" << std::endl;
+  *output_ << "Hello\n";
 ###Multiple
   output "Hello", "Hi" & 3
 ---
-  *output_ << "Hello Hi" << 3 << std::endl;
+  *output_ << "Hello Hi" << 3 << "\n";
 ###CommaAtEnd
   output "Hello",
 ---

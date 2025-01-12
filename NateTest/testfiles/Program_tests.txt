@@ -1,0 +1,8 @@
+###Arguments
+  output app's arguments[0]
+---
+  *output_ << (((programArguments__)[0])) << "\n";
+###Name
+  output app's name
+---
+  *output_ << ((programName__)) << "\n";
