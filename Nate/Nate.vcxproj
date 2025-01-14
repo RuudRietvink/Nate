@@ -273,12 +273,14 @@
     <None Include="core\Complex.ns" />
     <None Include="core\Container.ns" />
     <None Include="core\core.ns" />
-    <None Include="core\Data-input.ns" />
+    <None Include="core\Data-Input.ns" />
     <None Include="core\File-Input.nd" />
     <None Include="core\File-Input.ns" />
     <None Include="core\File-Output.ns" />
     <None Include="core\File.nd" />
     <None Include="core\IFile.nd" />
+    <None Include="core\Nate.ns" />
+    <None Include="core\RandomContainer.ns" />
     <None Include="core\Stream-Input.nd" />
     <None Include="core\Random.ns" />
     <None Include="core\Rational.ns" />

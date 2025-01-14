@@ -261,7 +261,7 @@
     <None Include="core\File-Input.ns">
       <Filter>Source Files\Core</Filter>
     </None>
-    <None Include="core\Data-input.ns">
+    <None Include="core\Data-Input.ns">
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="input\nateSong.in">
@@ -290,6 +290,12 @@
     </None>
     <None Include="input\nate.in2">
       <Filter>Source Files\Input</Filter>
+    </None>
+    <None Include="core\RandomContainer.ns">
+      <Filter>Source Files\Core</Filter>
+    </None>
+    <None Include="core\Nate.ns">
+      <Filter>Source Files\Core</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

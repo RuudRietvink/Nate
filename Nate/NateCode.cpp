@@ -254,42 +254,34 @@ void NateCode::visit(const StatLoop::ForStep& aStat)
 void NateCode::visit(const StatLoop::ForRange& aStat)
 {
 	printLineNr(aStat.getLocation());
-
-	TypePtr rangeType = aStat.getRange().type();
-	auto range = mParser->uniqueName();
-	auto iter = mParser->uniqueName();
-	auto next = mParser->uniqueName();
-
-	std::string ref = aStat.getRange().is(Expr::Output) ? "&" : "";
-	std::string increment;
+    TypePtr rangeType = aStat.getRange().type();
 
 	if (rangeType->isOfType("text"))
 	{
+        auto range = mParser->uniqueName();
+        auto iter = mParser->uniqueName();
+        auto next = mParser->uniqueName();
+
+        std::string ref = aStat.getRange().is(Expr::Output) ? "&" : "";
+        std::string increment;
+
 		increment = iter + "=" + next;
 		*mOut << in() << "const std::string" << ref << " " << range << " = " << codeExpr(aStat.getRange()) << ";" << end(); 
 		*mOut << in() << "auto " << next << " = " << range << ".cbegin();" << end();
+        *mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
+              << iter << " != " << range << ".cend(); "
+              << increment << ")" << end();
+        *mOut << in() << "{" << end();
+        ++mIndent;
+        *mOut << in() << "uint32_t " << aStat.getId()->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << end();
 	}
 	else
 	{
-		increment = "++" + iter;
-		*mOut << in() << "auto const" << ref << " " << range << " = " << codeExpr(aStat.getRange()) << ";" << end(); 
+        *mOut << in() << "for (const auto& " << aStat.getId()->codeName() << " : " << codeExpr(aStat.getRange()) << ")" << end();
+        *mOut << in() << "{" << end();
+        ++mIndent;
 	}
-
-	*mOut << in() << "for (auto " << iter << " = " << range << ".cbegin(); "
-		  << iter << " != " << range << ".cend(); "
-		  << increment << ")" << end();
-
-	*mOut << in() << "{" << end();
-	++mIndent;
-	if (rangeType->isOfType("text"))
-	{
-		*mOut << in() << "uint32_t " << aStat.getId()->codeName() << " = utf8::next(" + next + "," + range + ".cend());" << end();
-	}
-	else
-	{
-		*mOut << in() << "auto const& " << aStat.getId()->codeName() << " = *" << iter << ";" << end();
-	}
-	
+        
 	codeStats(aStat.getCompound());
 	--mIndent;
 	*mOut << in() << "}" << end();

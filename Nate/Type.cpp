@@ -188,6 +188,9 @@ void Type::setType(const std::string& aName)
 	else if (aName == "sequence-container")
 	{
 	}
+    else if (aName == "random-container")
+    {
+    }
 	else if (aName == "list")
 	{
 		setFlag(Abstract, false);

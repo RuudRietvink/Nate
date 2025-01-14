@@ -28,26 +28,26 @@
   bool b_ = a_ || (!a_);
 ###Increments
   var a := 1
-  var b := inc#a + a#inc + ⇑#a + a#⇑ + a
-  var c := inc #a + a# inc + ⇑ #a + a# ⇑ + a
-  var d := inc # a + a # inc + ⇑ # a + a # ⇑ + a
+  var b := inc#a + a#inc + a
+  var c := inc #b + b# inc + b
+  var d := inc # c + c # inc + c
 ---
   int32_t a_ = 1;
-  int32_t b_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
-  int32_t c_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
-  int32_t d_ = ((((++a_) + (a_++)) + (++a_)) + (a_++)) + a_;
+  int32_t b_ = ((++a_) + (a_++)) + a_;
+  int32_t c_ = ((++b_) + (b_++)) + b_;
+  int32_t d_ = ((++c_) + (c_++)) + c_;
 ###Decrements
   var a-123 := 1
   var a := 1
-  var b := dec#a-123 + a-123#dec + ⇓#a-123 + a-123#⇓ + a-123
-  var c := dec #a + a# dec + ⇓ #a + a# ⇓ + a
-  var d := dec # a + a # dec + ⇓ # a + a # ⇓ + a
+  var b := dec#a-123 + a-123#dec + a-123
+  var c := dec #a + a# dec + a
+  var d := dec # a + a # dec + a
 ---
   int32_t a_123_ = 1;
   int32_t a_ = 1;
-  int32_t b_ = ((((--a_123_) + (a_123_--)) + (--a_123_)) + (a_123_--)) + a_123_;
-  int32_t c_ = ((((--a_) + (a_--)) + (--a_)) + (a_--)) + a_;
-  int32_t d_ = ((((--a_) + (a_--)) + (--a_)) + (a_--)) + a_;
+  int32_t b_ = ((--a_123_) + (a_123_--)) + a_123_;
+  int32_t c_ = ((--a_) + (a_--)) + a_;
+  int32_t d_ = ((--a_) + (a_--)) + a_;
 ###IncreaseDecrease
   var a := 1
   increase a

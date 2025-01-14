@@ -3,8 +3,8 @@
 // Container
 ///////////////////////////////////////////////
   
-code define 65 size \u of ${container is container},
-               ${container is container} 's size is int-32 as const:
+code define 65 count \u of ${container is container},
+               ${container is container} 's count is int-32 as const:
     static_cast<int32_t>($container.size())
 
 code define 65 clear ${container is container as out},

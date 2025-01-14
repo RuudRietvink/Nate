@@ -93,7 +93,8 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("record", getType("object")));
 	addType(std::make_shared<Type>("container", getType("object")));
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
-	addType(std::make_shared<Type>("list", getType("sequence-container")));
+    addType(std::make_shared<Type>("random-container", getType("sequence-container")));
+	addType(std::make_shared<Type>("list", getType("random-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
 	addType(std::make_shared<Type>("char", getType("any")));
 	getType("text")->setTypenameType(getType("char"));

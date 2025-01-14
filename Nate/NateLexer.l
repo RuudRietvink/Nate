@@ -227,7 +227,7 @@ public:
 %option namespace=nate
 %option lexer=Lexer
 %option unicode
-%option tabs=2
+%option tabs=4
 %option reentrant
 //%option debug
 %option fast

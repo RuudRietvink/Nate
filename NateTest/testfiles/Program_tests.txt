@@ -1,8 +1,17 @@
 ###Arguments
-  output app's arguments[0]
+  output application's arguments[0]
+  output application's arguments's count
+  loop for var arg in application's arguments:
+     output arg
 ---
   *output_ << (((programArguments__)[0])) << "\n";
+  *output_ << ((static_cast<int32_t>((programArguments__).size()))) << "\n";
+  for (const auto& arg_ : programArguments__)
+  {
+#line 7
+    *output_ << (arg_) << "\n";
+  }
 ###Name
-  output app's name
+  output application's name
 ---
   *output_ << ((programName__)) << "\n";

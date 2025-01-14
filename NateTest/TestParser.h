@@ -42,8 +42,8 @@ public:
     int parse(const std::string& in, NateParser::FileType fileType = NateParser::FileType::Normal)
     {
         std::string progIn = 
-R"__(import List
-import Text
+R"__(
+import Nate
 program:
 )__" + in;
         return parseProgram(progIn, fileType);

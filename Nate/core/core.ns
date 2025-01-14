@@ -6,8 +6,6 @@
 alias "÷" "/"
 alias "⁄" "/"
 alias "×" "*"
-alias "⇑" "inc"
-alias "⇓" "dec"
 
 ///////////////////////////////////////////////
 // operators
@@ -128,8 +126,8 @@ code define 60 constructed object as me:
 // program
 ///////////////////////////////////////////////
 
-code define 200 app's arguments is list of text as const:
+code define 200 application's arguments is list of text as const:
     programArguments__
     
-code define 200 app's name is text as const:
+code define 200 application's name is text as const:
     programName__
