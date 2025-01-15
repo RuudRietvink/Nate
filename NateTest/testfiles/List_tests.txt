@@ -12,19 +12,19 @@
   var vecInt is list of int-32
   var index := 1
   vecInt[0] := 42
-  vecInt[index] := inc#vecInt[0]
-  first of vecInt := 13.6
+  vecInt[+index] := inc#vecInt[0]
+  first of vecInt := 13.6 + vecInt[index]
   add 24 to vecInt
-  append vecInt[index - 1] to vecInt
+  append vecInt[+index - 1] to vecInt
   insert last of vecInt in vecInt
   last of vecInt := first of vecInt
 ---
   std::vector<int32_t> vecInt_ = {};
   int32_t index_ = 1;
   vecInt_[0] = 42;
-  vecInt_[index_] = ++vecInt_[0];
-  vecInt_.front() = static_cast<int32_t>(13.6);
+  vecInt_[(index_)] = ++vecInt_[0];
+  vecInt_.front() = static_cast<int32_t>(13.6 + (vecInt_[index_]));
   vecInt_.push_back(24);
-  vecInt_.push_back((vecInt_[(index_ - 1)]));
+  vecInt_.push_back((vecInt_[((index_) - 1)]));
   vecInt_.push_front((vecInt_.last()));
   vecInt_.last() = vecInt_.front();

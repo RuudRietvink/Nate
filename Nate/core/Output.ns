@@ -3,5 +3,5 @@
 // Output
 ///////////////////////////////////////////////
   
-code define 65 \u ${stream is Output} \is ok is boolean:
+code define 65 ${stream is Output} \is ok is boolean:
 	($stream && $stream->good())

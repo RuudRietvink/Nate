@@ -62,8 +62,31 @@
   a_ -= 3;
 ###IfElse
   var a := 3 * 4 if 5 + 6 < 5 else 5/2
-  var b := a if true else a + 1 if false else a + 2
+  var b := a if a < 3 else (a + 1 if a = 6 else a + 2)
 ---
   int32_t a_ = ((5 + 6) < 5) ? (3 * 4) : (5 / 2);
-  int32_t b_ = true ? a_ : (false ? (a_ + 1) : (a_ + 2));
-###
+  int32_t b_ = (a_ < 3) ? a_ : (((a_ == 6) ? (a_ + 1) : (a_ + 2)));
+###Math
+  var k := π
+  var x,y,x2 := 4.2 * k
+  k := 𝑒^+3 + exp(3.4)
+  k := k^(k*3)
+  k := 2kπ
+  k := 2πk
+  k := 2xykx2
+  k := sqrt 4 + √(4.0) + sqrt √5
+  k := round 4 + round(4.0) + round round 5
+---
+  std::float64_t k_ = __3c0__;
+  std::float64_t x_ = 4.2 * k_;
+#line 5
+  std::float64_t y_ = x_;
+#line 5
+  std::float64_t x2_ = x_;
+  k_ = (std::exp((3))) + (std::exp((3.4)));
+  k_ = std::pow(k_, ((k_ * 3)));
+  k_ = 2 * (k_ * __3c0__);
+  k_ = 2 * (__3c0__ * k_);
+  k_ = 2 * (x_ * (y_ * (k_ * x2_)));
+  k_ = ((std::sqrt(4)) + (std::sqrt((4.0)))) + (std::sqrt((std::sqrt(5))));
+  k_ = ((std::round(4)) + (std::round((4.0)))) + (std::round((std::round(5))));

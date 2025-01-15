@@ -7,6 +7,6 @@ import Stream-Input
 
 declare object File-Input as Stream-Input:
     declare new File-Input is File-Input
-    declare open \u ${me as out} from file \u ${file is text}
+    declare \u open ${me as out} from \u file ${file is text}
     declare ${me} \is opened is boolean
-    declare close \u ${me as out}
+    declare \u close ${me as out}

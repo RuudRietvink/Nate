@@ -3,8 +3,8 @@
 // Random Container
 ///////////////////////////////////////////////
 
-code define 65 \u ${container is random-container as template} [ ${index is number} ] as typename, output:
+code define 65 ${container is random-container as template} [ ${index is number} ] as typename, output:
     $container[$index]
 
-code define 65 \u ${container is random-container as template} [ ${index is number} ] as typename, const:
+code define 65 ${container is random-container as template} [ ${index is number} ] as typename, const:
     $container[$index]

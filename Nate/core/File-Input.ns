@@ -23,8 +23,8 @@ implement object File-Input:
     implement ${me} \is opened is boolean:
         return {{code _impl->$stream->is_open() }} is boolean
 
-    implement open \u ${me as out} from file \u ${file is text}:
+    implement \u open ${me as out} from \u file ${file is text}:
         {{code _impl->$stream.reset(new std::ifstream($file, std::ios::in)) }}
 
-    implement close \u ${me as out}:
+    implement \u close ${me as out}:
         {{code if (_impl->$stream) _impl->$stream->close() }}
