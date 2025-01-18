@@ -61,32 +61,48 @@
   --a_;
   a_ -= 3;
 ###IfElse
-  var a := 3 * 4 if 5 + 6 < 5 else 5/2
-  var b := a if a < 3 else (a + 1 if a = 6 else a + 2)
+  var a := 3 * 4 if 5 + 6 < 5 else +5/2
+  var b := a if a < 3 else -(a + 1 if a = 6 else a + 2)
 ---
-  int32_t a_ = ((5 + 6) < 5) ? (3 * 4) : (5 / 2);
-  int32_t b_ = (a_ < 3) ? a_ : (((a_ == 6) ? (a_ + 1) : (a_ + 2)));
+  int32_t a_ = ((5 + 6) < 5) ? (3 * 4) : ((5) / 2);
+  int32_t b_ = (a_ < 3) ? a_ : (-(((a_ == 6) ? (a_ + 1) : (a_ + 2))));
 ###Math
   var k := π
   var x,y,x2 := 4.2 * k
   k := 𝑒^+3 + exp(3.4)
   k := k^(k*3)
-  k := 2kπ
-  k := 2πk
-  k := 2xykx2
+  k := 2k​π + 4pi + 2tau
+  k := 2π​k
+  k := 2x​y​k​x2
   k := sqrt 4 + √(4.0) + sqrt √5
   k := round 4 + round(4.0) + round round 5
+  k := k⋅2⋅x
+  k := ₑᵏ + 𝑒⁽ˣ⁺²⁾ + x²
+  k := ⌊3.4⌋
+  k := |⌈3.4+x²⌉⏐
+  k := log⏨(k) + log₁₀ log10 log₂ log2 ln log 3
+  k := sin cos tan x
+  k := sinh cosh tanh x
+  k := acos asin atan x
+  k := x min (y max k max 3 min 5)
 ---
-  std::float64_t k_ = __3c0__;
+  std::float64_t k_ = pi_;
   std::float64_t x_ = 4.2 * k_;
-#line 5
   std::float64_t y_ = x_;
-#line 5
   std::float64_t x2_ = x_;
   k_ = (std::exp((3))) + (std::exp((3.4)));
   k_ = std::pow(k_, ((k_ * 3)));
-  k_ = 2 * (k_ * __3c0__);
-  k_ = 2 * (__3c0__ * k_);
-  k_ = 2 * (x_ * (y_ * (k_ * x2_)));
+  k_ = (((2 * k_) * pi_) + (4 * pi_)) + (2 * tau_);
+  k_ = (2 * pi_) * k_;
+  k_ = (((2 * x_) * y_) * k_) * x2_;
   k_ = ((std::sqrt(4)) + (std::sqrt((4.0)))) + (std::sqrt((std::sqrt(5))));
   k_ = ((std::round(4)) + (std::round((4.0)))) + (std::round((std::round(5))));
+  k_ = (k_ * 2) * x_;
+  k_ = ((std::exp(k_)) + (std::exp(((x_ + 2))))) + (std::pow(x_, 2));
+  k_ = std::floor(3.4);
+  k_ = std::abs((std::ceil((3.4 + (std::pow(x_, 2))))));
+  k_ = (std::log10((k_))) + (std::log10((std::log10((std::log2((std::log2((std::log((std::log(3))))))))))));
+  k_ = std::sin((std::cos((std::tan(x_)))));
+  k_ = std::sinh((std::cosh((std::tanh(x_)))));
+  k_ = std::acos((std::asin((std::atan(x_)))));
+  k_ = std::min(x_, ((std::max(y_, (std::max(k_, (static_cast<std::float64_t>(std::min(3, 5)))))))));

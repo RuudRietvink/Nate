@@ -260,6 +260,7 @@ superLastWord   {superFirstWord}|{superscriptDigit}
 superIdName     {superFirstWord}({superNextWord}*{superLastWord})?
 superscriptChar {superscriptDigit}|{superFirstWord}|{superMinus}|{superPlus}|{superOpen}|{superClose}
 
+zeroWidthSpace  [​]
 firstWord       [\p{Ll}\p{Lu}]
 wordSep         [-\p{Pc}]
 wordDigits      [\p{Nd}]
@@ -342,6 +343,7 @@ include\h*\".*\"  s(); includeFile();
 //////////////////////////
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
+{zeroWidthSpace}	return nate::parser::make_WORD("*", location());
 ":="			    return nate::parser::make_ASSIGN(location());
 ":"				    return nate::parser::make_COL(location());
 "("				    return nate::parser::make_OPENPAR(location());
@@ -356,7 +358,7 @@ include\h*\".*\"  s(); includeFile();
 {rational}	        return nate::parser::make_RATIONAL(str(), location());
 {string}    	    return nate::parser::make_STRING(str(), location());
 "true"|"false"      return nate::parser::make_BOOL(str(), location());
-<^DECL_TYPE>{word}	return makeIdOrWord(str(), str(), location());
+{word}	            return makeIdOrWord(str(), str(), location());
 [$]{idName}		    return nate::parser::make_IDENTIFIER(str(), location());
 {oper}				return nate::parser::make_WORD(str(), location());
 }

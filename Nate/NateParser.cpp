@@ -1577,12 +1577,11 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 		}
 	}
 
+    /*
 	if (!id)
 	{
 		auto iter = name.cbegin();
-		bool ok = true;
-
-		if (iter != name.cend() && ok)
+		if (iter != name.cend())
 		{
 			auto next = iter;
 			utf8::next(next, name.cend());
@@ -1593,6 +1592,7 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 			}
 		}
 	}
+    */
 
 	if (id)
 	{

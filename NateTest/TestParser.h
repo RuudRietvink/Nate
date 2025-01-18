@@ -16,14 +16,45 @@ extern const char* programExp;
 
 inline std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+    size_t startPos = 0;
+    while ((startPos = str.find(from, startPos)) != std::string::npos)
     {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+        str.replace(startPos, from.length(), to);
+        startPos += to.length();
     }
     return str;
 }
+
+inline std::string deleteLines(std::string str)
+{
+    size_t startPos = 0;
+    while ((startPos = str.find("#line", startPos)) != std::string::npos)
+    {
+        size_t endLine = str.find('\n', startPos);
+        if (endLine != std::string::npos)
+        {
+            str.replace(startPos, endLine + 1 - startPos, "");
+        }
+    }
+    return str;
+}
+
+inline std::string textAfter(std::string str, const std::string& after)
+{
+    auto startEnd = str.find(after);
+    if (startEnd != std::string::npos)
+    {
+        str = str.substr(startEnd + after.size());
+        auto afterLine = str.find("\n");
+        if (afterLine != std::string::npos)
+        {
+            str = str.substr(afterLine + 1);
+        }
+    }
+
+    return str;
+}
+
 
 class TestParser : public testing::Test
 {
@@ -69,29 +100,18 @@ program:
         return result;
     }
 
-    void compareWhole(const std::string& exp, const std::string& out)
+    void compareWhole(std::string exp, std::string out)
     {
-        EXPECT_STREQ(exp.c_str(), replaceAll(out, "\t", "  ").c_str());
+        EXPECT_STREQ(deleteLines(exp).c_str(), replaceAll(deleteLines(out), "\t", "  ").c_str());
     }
 
-    void compare(const std::string& exp, const std::string& out)
+    void compare(std::string exp, std::string out)
     {
-        std::string toTest = replaceAll(out, "\t", "  ");
-        static const std::string programStartLine = "#define NATE_PROGRAM_START\n";
-        auto startEnd = toTest.find(programStartLine);
-        if (startEnd != std::string::npos)
-        {
-            toTest = toTest.substr(startEnd + programStartLine.size());
-            auto afterLine = toTest.find("\n");
-            if (afterLine != std::string::npos)
-            {
-                toTest = toTest.substr(afterLine + 1);
-            }
-        }
+        std::string toTest = replaceAll(deleteLines(textAfter(out, "#define NATE_PROGRAM_START\n")), "\t", "  ");
 
         toTest = toTest.substr(0, toTest.size() - 3);
 
-        EXPECT_STREQ(trimEnd(exp).c_str(), toTest.c_str());
+        EXPECT_STREQ(trimEnd(deleteLines(exp)).c_str(), toTest.c_str());
     }
 
     void testCodePiece(const std::string& testName, const std::filesystem::path& filename)

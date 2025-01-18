@@ -1515,8 +1515,8 @@ expr-part-list:
 expr-part:
     math-expr
   | code-expr
-  | expr-word
   | expr-non-word
+  | expr-word
   ;
 
 expr-non-word:
@@ -1597,16 +1597,6 @@ expr-non-word:
             lexer.noSpace();
             nate.data.prevWasValue = true;
             $$ = Expr::parenthesized($expr);
-        }
-    | IF
-		{ 
-            $$ = Expr("if");
-            nate.data.prevWasValue = false;
-        }
-  | ELSE
-		{ 
-            $$ = Expr("else");
-            nate.data.prevWasValue = false;
         }
   ;
   
