@@ -343,7 +343,7 @@ include\h*\".*\"  s(); includeFile();
 //////////////////////////
 
 <EXPR,FOR_EXPR,DECL_TYPE>{
-{zeroWidthSpace}	return nate::parser::make_WORD("*", location());
+{zeroWidthSpace}	return nate::parser::make_WORD("monomial", location());
 ":="			    return nate::parser::make_ASSIGN(location());
 ":"				    return nate::parser::make_COL(location());
 "("				    return nate::parser::make_OPENPAR(location());

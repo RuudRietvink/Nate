@@ -10,25 +10,26 @@
 code:
     #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
     #include <complex>
-
-const 𝑖 is imaginary := 1
-
-code define 120 ${val-1 is number} \u monomial ${val-2 is imaginary as exact} is imaginary as const:
-	$val-1
+    
+alias "𝑖" "i"
+const i is imaginary := 1
 	
-code define 115 ${val-1 is number} \u + ${val-2 is imaginary as exact} is complex as const:
+code define 130 ${val-1 is real} \u monomial ${val-2 is imaginary as exact} is imaginary as const:
+	$val-1
+		
+code define 115 ${val-1 is real} \u + ${val-2 is imaginary as exact} is complex as const:
 	__RETURN__($val-1, $val-2)
 
-code define 115 ${val-1 is number} \u - ${val-2 is imaginary as exact} is complex as const:
+code define 115 ${val-1 is real} \u - ${val-2 is imaginary as exact} is complex as const:
 	__RETURN__($val-1, -$val-2)
 	
 code define 114 ${val is imaginary as exact} is complex as const:
 	__RETURN__(0, $val)
 	
-code define 110 \u real ${val is complex as exact} is float-64 as const:
+code define 110 \u ${val is complex as exact} 's real is float-64 as const:
 	$val.real()
   
-code define 110 \u imaginary ${val is complex as exact} is float-64 as const:
+code define 110 \u ${val is complex as exact} 's imaginary is float-64 as const:
 	$val.imag()
   
 code define 110 ${val-1 is complex as exact} \u ^ ${val-2 is number} as same, right:

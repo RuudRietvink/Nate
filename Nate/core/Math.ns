@@ -37,7 +37,7 @@ code define 130 \u \l exp ${val is real} is float-64 as right:
 code define 130 ${val-1 is number} \u ^ ${val-2 is number} is number as highest, right:
 	std::pow($val-1, $val-2)
   
-code define 130 ${val-1 is number} \u monomial ${val-2 is number} is number as highest, right, const:
+code define 130 ${val-1 is real} \u monomial ${val-2 is real} is number as highest, right, const:
 	$val-1 * $val-2
 	
 code define 110 \u \l sqrt ${val is integer} is float-64:

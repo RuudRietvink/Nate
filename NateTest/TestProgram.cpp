@@ -16,7 +16,7 @@ const std::float64_t tau_ = 6.283185307179586;
 const std::float64_t e_ = 2.718281828459045;
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Complex.h"
 #include <complex>
-const std::float64_t __1d456__ = 1;
+const std::float64_t i_ = 1;
 #include <vector>
 #include "C:\Users\ruud\source\repos\Nate\Nate\core\Rational.h"
 #include <sstream>

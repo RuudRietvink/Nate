@@ -66,12 +66,12 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("number", getType("any")));
 	addType(std::make_shared<Type>("integer", getType("number")));
     addType(std::make_shared<Type>("unsigned", getType("number")));
-	addType(std::make_shared<Type>("real", getType("number")));
 	addType(std::make_shared<Type>("int-8", getType("integer")));
 	addType(std::make_shared<Type>("int-16", getType("integer")));
 	addType(std::make_shared<Type>("int-32", getType("integer")));
 	addType(std::make_shared<Type>("int-64", getType("integer")));
 	addType(getType("int-32"), "int");
+    addType(std::make_shared<Type>("real", getType("number")));
 	addType(std::make_shared<Type>("float-32", getType("real")));
 	addType(std::make_shared<Type>("float-64", getType("real")));
 	addType(getType("float-32"), "float");
