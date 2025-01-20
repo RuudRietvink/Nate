@@ -143,6 +143,7 @@ void Type::setType(const std::string& aName)
 		setFlag(Abstract, false);
 		setFlag(Boolean, true);
 		setFlag(Scalar, true);
+        setFlag(Comparable, true);
 		mCodeType = "bool";
 		mBitSize = 232;
 	}

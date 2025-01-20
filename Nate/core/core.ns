@@ -6,6 +6,8 @@
 alias "÷" "/"
 alias "⁄" "/"
 alias "×" "*"
+alias "==" "="
+alias "≠" "!="
 
 ///////////////////////////////////////////////
 // operators
@@ -40,7 +42,7 @@ code define 62 ${val-1 is text as literal } \u + ${val-2 is text as literal } is
 
 code define 62 ${val-1 is text} \u + ${val-2 is text} is text as const:
     $val-1 + $val-2
-
+    
 code define 50 ${val-1 is any as comphigh, cmp} \u = ${val-2 is any as comphigh, cmp} is boolean as const:
     $val-1 == $val-2
 
@@ -64,6 +66,9 @@ code define 40 ${cond-1 is boolean} \u and ${cond-2 is boolean} is boolean as co
 
 code define 35 ${cond-1 is boolean} \u or ${cond-2 is boolean} is boolean as const:
     $cond-1 || $cond-2
+
+code define 30 ${cond-1 is boolean} \u xor ${cond-2 is boolean} is boolean as const:
+    ($cond-1 ? 1 : 0) + ($cond-2 ? 1 : 0) == 1
 
 ///////////////////////////////////////////////
 // face value

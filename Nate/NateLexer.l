@@ -268,19 +268,19 @@ nextWord        {firstWord}|{wordSep}|{wordDigits}|{subscript}
 lastWord        {firstWord}|{wordDigits}|{subscript}
 idName          {firstWord}({nextWord}*{lastWord})?
 word            ({firstWord}|')({nextWord}*{lastWord})?
-bitsSize        ((8)|(16)|(32)|(64)|(128))?
+bitsSize        ((8)|(16)|(32)|(64)|(128))
 numberTypeInt   ([iI]{bitsSize}_)
 numberTypeFloat ([fF]{bitsSize}_)
 numberType      {numberTypeInt}|{numberTypeFloat}
 decimal         [-]?{numberType}?[0-9]+(\.[0-9]+)?([Eю][-+]?[0-9]+)?
 smallDecimal    {subscriptDigit}+
-binary          [bB]{bitsSize}_[0-1]+
-oct             [oO]{bitsSize}_[0-7]+
-hex             [xX]{bitsSize}_[0-9a-fA-F]+
+binary          [bB]{bitsSize}?_[0-1]+
+oct             [oO]{bitsSize}?_[0-7]+
+hex             [xX]{bitsSize}?_[0-9a-fA-F]+
 number          {decimal}|{binary}|{oct}|{hex}
-oper            [^\p{Ll}\p{Lu}0-9\h\n]
+oper            [^\p{Ll}\p{Lu}0-9\h\n]|(==)|(!=)
 rational        [0-9]*([⅒⅑⅛⅐⅙⅕¼⅓½⅖⅔⅜⅗¾⅘⅝⅚⅞]|([⁰¹²³⁴⁵⁶⁷⁸⁹]+[/⁄][₀₁₂₃₄₅₆₇₈₉]+))
-string          ["][^"]*[""]
+string          ["][^"]*["]
 
 %%
  
@@ -342,6 +342,15 @@ include\h*\".*\"  s(); includeFile();
 }
 //////////////////////////
 
+<DECL_TYPE>{
+\bof\b		    return nate::parser::make_OF(location());
+\bas\b		    return nate::parser::make_AS(location());
+"{{"            return nate::parser::make_START_SPEC(location());
+"true"|"false"  return nate::parser::make_BOOL(str(), location());
+{word}	  		return nate::parser::make_WORD(str(), location());
+}
+//////////////////////////
+
 <EXPR,FOR_EXPR,DECL_TYPE>{
 {zeroWidthSpace}	return nate::parser::make_WORD("monomial", location());
 ":="			    return nate::parser::make_ASSIGN(location());
@@ -357,8 +366,8 @@ include\h*\".*\"  s(); includeFile();
 {number}			return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
 {rational}	        return nate::parser::make_RATIONAL(str(), location());
 {string}    	    return nate::parser::make_STRING(str(), location());
-"true"|"false"      return nate::parser::make_BOOL(str(), location());
-{word}	            return makeIdOrWord(str(), str(), location());
+<^DECL_TYPE>"true"|"false"      return nate::parser::make_BOOL(str(), location());
+<^DECL_TYPE>{word}	return makeIdOrWord(str(), str(), location());
 [$]{idName}		    return nate::parser::make_IDENTIFIER(str(), location());
 {oper}				return nate::parser::make_WORD(str(), location());
 }
@@ -399,13 +408,13 @@ include\h*\".*\"  s(); includeFile();
 ","			    return nate::parser::make_COMMA(location());
 "${"            return nate::parser::make_ARGSTART(location());
 "}"             return nate::parser::make_ARGEND(location());
+"{{"            return nate::parser::make_START_SPEC(location());
 [$]{idName}	    return nate::parser::make_IDENTIFIER(str(), location());
 {string}    	return nate::parser::make_STRING(str(), location());
 [\\]{word}		return nate::parser::make_WORD((str() == "\\is" ? "is" : str()), location());
 {word}		    return nate::parser::make_WORD(str(), location());
 {number}	    return nate::parser::make_NUMBER(Core::normalizeNumber(str()), location());
 {oper}		    return nate::parser::make_WORD(str(), location());
-"{{"            return nate::parser::make_START_SPEC(location());
 \h*\k?          // ignore
 }
 //////////////////////////
@@ -433,14 +442,6 @@ include\h*\".*\"  s(); includeFile();
 [^\$\h\n]+	            return nate::parser::make_WORD(str(), location());
 [$]{idName}             return nate::parser::make_IDENTIFIER(str(), location());
 \n                      return nate::parser::make_WORD(str(), location());
-}
-//////////////////////////
-
-<DECL_TYPE>{
-\bof\b		    return nate::parser::make_OF(location());
-\bas\b		    return nate::parser::make_AS(location());
-"{{"            return nate::parser::make_START_SPEC(location());
-{word}	  		return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 
