@@ -18,6 +18,19 @@
   append vecInt[+index - 1] to vecInt
   insert last of vecInt in vecInt
   last of vecInt := first of vecInt
+  vecInt's last := vecInt's last + 3;
+  vecInt's first := vecInt's first + 3;
+  clear vecInt
+  empty vecInt
+  var a := vecInt's count
+  var b:= count of vecInt
+  var c:= vecInt is empty;
+  remove vecInt[2]
+  remove vecInt at 1
+  remove first of vecInt
+  remove vecInt's first
+  remove last of vecInt
+  remove vecInt's last
 ---
   std::vector<int32_t> vecInt_ = {};
   int32_t index_ = 1;
@@ -28,3 +41,16 @@
   vecInt_.push_back((vecInt_[((index_) - 1)]));
   vecInt_.push_front((vecInt_.last()));
   vecInt_.last() = vecInt_.front();
+  vecInt_.last() = (vecInt_.last()) + 3;
+  vecInt_.front() = (vecInt_.front()) + 3;
+  vecInt_.clear();
+  vecInt_.clear();
+  int32_t a_ = static_cast<int32_t>(vecInt_.size());
+  int32_t b_ = static_cast<int32_t>(vecInt_.size());
+  bool c_ = vecInt_.empty();
+  vecInt_.erase(2);
+  vecInt_.erase(1);
+  vecInt_.erase(0);
+  vecInt_.erase(0);
+  vecInt_.pop_back();
+  vecInt_.pop_back();

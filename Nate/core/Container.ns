@@ -10,3 +10,6 @@ code define 65 count of ${container is container},
 code define 65 \u clear ${container is container as out},
                \u empty ${container is container as out}:
     $container.clear()
+    
+code define 65 ${container is container} \is empty is boolean as const:
+    $container.empty()
