@@ -5,10 +5,9 @@
      output arg
 ---
   *output_ << (((programArguments__)[0])) << "\n";
-  *output_ << ((static_cast<int32_t>((programArguments__).size()))) << "\n";
+  *output_ << ((static_cast<int64_t>((programArguments__).size()))) << "\n";
   for (const auto& arg_ : programArguments__)
   {
-#line 7
     *output_ << (arg_) << "\n";
   }
 ###Name

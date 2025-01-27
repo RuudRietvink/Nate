@@ -56,7 +56,6 @@ public:
 	Expr(const std::string& aText, const std::string& aCode, const TypePtr& aType);
 	static Expr parenthesized(const Expr& aExpr1);
 		
-	bool castToType(const TypePtr& aToType);
 	void setCode(const std::string& aText);
 	bool is(size_t aFlag) const;
 	void setFlag(size_t aFlag);
@@ -76,6 +75,7 @@ public:
 	IdentifierPtr      id()         const;
 
 	const std::vector<Node>& nodes() const;
+    std::vector<Node>& nodes();
 	
 	static const size_t Word      = 0;
 	static const size_t Output    = 1;
@@ -85,6 +85,7 @@ public:
 	static const size_t Property  = 5;
 	static const size_t Identifier= 6;
 	static const size_t ObjectImpl= 7;
+    static const size_t List      = 8;
 	
 private:
 	std::vector<Node> mNodes;

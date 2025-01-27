@@ -198,6 +198,12 @@ void Type::setType(const std::string& aName)
 		setFlag(List, true);
 		mCodeType = "std::vector";
 	}
+    else if (aName == "initializer-list")
+    {
+        setFlag(Abstract, false);
+        setFlag(InitializerList, true);
+        mCodeType = "std::initializer_list";
+        }
 	else if (aName == "Output")
 	{
 		setFlag(Abstract, false);
@@ -403,6 +409,8 @@ std::ostream& Type::print(std::ostream& aStream) const
 	if (is(Type::List)) aStream << ",List";
 	if (is(Type::Template)) aStream << ",Template";
     if (is(Type::Unsigned)) aStream << ",Unsigned";
+    if (is(Type::List)) aStream << ",List";
+    if (is(Type::InitializerList)) aStream << ",InitializerList";
 	if (mTypenameType) {
 		aStream << "TypenameType(" << *mTypenameType << "),";
 	}

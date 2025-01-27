@@ -8,6 +8,8 @@ R"__(#undef NOMINMAX
 #include <windows.h>
 #include <cmath>
 #include <stdfloat>
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#include "C:\Users\Ruud\source\repos\Nate\NateTest\created\File-Input.h"
 std::shared_ptr<std::ostream> output_ = {};
 std::shared_ptr<std::ostream> error_ = {};
 std::shared_ptr<std::istream> input_ = {};

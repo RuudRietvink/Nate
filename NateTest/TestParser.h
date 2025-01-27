@@ -66,7 +66,8 @@ public:
     int parseProgram(const std::string& in, NateParser::FileType fileType = NateParser::FileType::Normal)
     {
         std::istringstream ins(in);
-        mParser.reset(new NateParser("test.nd", ins, mOutStream, fileType));
+        mCoder = std::make_unique<NateCode>();
+        mParser = std::make_unique<NateParser>(*mCoder, "test.nd", ins, mOutStream, fileType);
         return mParser->parse();
     }
 
@@ -83,10 +84,8 @@ program:
 
     std::string code()
     {
-        std::ostringstream out;
-	    NateCode coder(out, mParser.get());
-        coder.codeStats(mParser->getStats());
-        return out.str();
+        mParser->code();
+        return mOutStream.str();
     }
 
     std::string trimEnd(const std::string& in)
@@ -148,6 +147,7 @@ program:
 
     std::stringstream mOutStream;
     std::unique_ptr<NateParser> mParser;
+    std::unique_ptr<NateCode> mCoder;
 };
 
 #define TEST_PIECE(SUBJECT, NAME) \

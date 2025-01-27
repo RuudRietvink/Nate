@@ -15,35 +15,6 @@ Define::Define()
 	setPriority(65);
 }
 
-void Define::createCodeCall()
-{
-	std::stringstream buf;
-	bool first = true;
-
-	buf << pattern() << "(";
-
-	for (auto const& arg : args())
-	{
-		if (arg.isIdentifier())
-		{
-			if (!arg.identifier()->isObjectMe())
-			{
-				if (!first)
-				{
-					buf << ", ";
-				}
-				first = false;
-
-				buf << "${" << arg.identifier()->name() << "}";
-			}
-		}
-	}
-		
-	buf << ")";
-
-	code() = buf.str(); 
-}
-
 std::ostream& operator<<(std::ostream& aStream, const Define& aValue)
 {
 	aStream << "Define(";

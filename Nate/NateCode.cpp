@@ -8,15 +8,273 @@
 
 namespace nate
 {
-NateCode::NateCode(std::ostream& aOut, NateParser* aParser)
-  : mOut(&aOut),
-	mParser(aParser)
+NateCode::NateCode()
+    : mOut(nullptr)
 {
+}
+
+void NateCode::setData(std::ostream& aOut, NateParser* aParser)
+{
+    mOut = &aOut;
+    mParser = aParser;
     *mOut << in() << "#undef NOMINMAX" << end();
     *mOut << in() << "#define NOMINMAX" << end();
     *mOut << in() << "#include <windows.h>" << end();
     *mOut << in() << "#include <cmath>" << end();
     *mOut << in() << "#include <stdfloat>" << end();
+}
+
+void NateCode::createCodeCall(Define* define)
+{
+    std::stringstream buf;
+    bool first = true;
+
+    buf << define->pattern() << "(";
+
+    for (auto const& arg : define->args())
+    {
+        if (arg.isIdentifier())
+        {
+            if (!arg.identifier()->isObjectMe())
+            {
+                if (!first)
+                {
+                    buf << ", ";
+                }
+                first = false;
+
+                buf << "${" << arg.identifier()->name() << "}";
+            }
+        }
+    }
+
+    buf << ")";
+
+    define->code() = buf.str();
+}
+
+
+Method::EvaluateResult
+NateCode::createMethodCode(const Method* aMethod, const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const
+{
+    Method::EvaluateResult result;
+    TypePtr firstType;
+    TypePtr highestType;
+    TypePtr lastType;
+    bool isConst = aMethod->is(Method::ConstExpr);
+    ExprNodesCIter ownerNode = aMethod->getOwnerNode(aBegin);
+    Record* owner = aMethod->getOwner(aBegin);
+    TypePtr templateType = aMethod->getTemplateType(aBegin);
+    std::string nodeCode;
+
+    result.code = aMethod->code();
+    result.type = aMethod->type();
+
+    aMethod->getTypes(aBegin, owner, // ->
+        firstType, highestType);
+
+    ExprNodesCIter nodeIter = aBegin;
+
+    for (auto arg = aMethod->args().cbegin(); arg != aMethod->args().cend(); ++arg, ++nodeIter)
+    {
+        if (arg->isIdentifier())
+        {
+            const TypePtr& argType = arg->identifier()->type();
+            TypePtr nodeType = nodeIter->type();
+
+            if (arg->is(Arg::Member) && owner != nullptr)
+            {
+                aMethod->handleOwnerMember(nodeIter, owner, ownerNode,	// ->
+                    result, nodeCode, nodeType);
+            }
+            else
+            {
+                nodeCode = nodeIter->code();
+            }
+
+            Expr node = createTypeCastNode(
+                nodeIter, *arg, templateType, firstType, highestType,	// ->
+                nodeCode);
+            createArgCode(aMethod, *arg, node, aCurDefine, nodeCode, (arg == aMethod->objectArg()), //-->
+                result.code);
+
+            lastType = nodeType;
+            if (!node.is(Expr::ConstExpr))
+            {
+                isConst = false;
+            }
+        }
+
+        result.origText.append(nodeIter->text());
+        result.origText.append(" ");
+    }
+
+    if (aMethod->is(Method::Same))
+    {
+        result.type = firstType;
+    }
+    else if (aMethod->is(Method::Me))
+    {
+        result.type = aCurDefine->object();
+        result.flags[Expr::Output] = true;
+    }
+    else if (aMethod->is(Method::Last))
+    {
+        result.type = lastType;
+    }
+    else if (aMethod->is(Method::Highest))
+    {
+        result.type = highestType;
+    }
+    else if (aMethod->is(Method::Typename))
+    {
+        result.type = templateType->typenameType();
+    }
+
+    if (isConst)
+    {
+        result.flags[Expr::ConstExpr] = true;
+    }
+    else if (aMethod->is(Method::Output))
+    {
+        result.flags[Expr::Output] = true;
+    }
+
+    if (aMethod->isStatic())
+    {
+        if (aMethod->is(Method::Undeclared) && aCurDefine && aMethod->object() == aCurDefine->object() &&
+            !aMethod->object()->is(Type::ObjectImpl))
+        {
+            result.code = "__impl::" + result.code;
+        }
+        else
+        {
+            result.code = toCodeName(aMethod->object()->name()) + "::" + result.code;
+        }
+    }
+
+    if (aMethod->type())
+    {
+        result.code = Core::replaceAll(result.code, "__RETURN__", result.type->codeType());
+    }
+
+    if (owner)
+    {
+        result.code = Core::replaceAll(result.code, "__ACCESS__", owner->is(Type::Object) ? "->" : ".");
+    }
+
+    return result;
+}
+
+bool NateCode::castToType(Expr* aExpr, const TypePtr& aToType) const
+{
+    return aExpr->nodes().empty() ? false : aExpr->nodes().front().castToType(aToType);
+}
+
+void NateCode::createArgCode(
+    const Method* aMethod,
+    const Arg& aArg,
+    const Expr& aNode,
+    const DefinePtr& aCurDefine,
+    const std::string& aNodeCode,
+    bool aIsObjectArg,
+    // ->
+    std::string& resultCode) const
+{
+	std::string code = (aArg.is(Arg::Member) || 
+						aArg.is(Arg::Out) ||
+						aNode.is(Expr::Literal) ||
+						aNode.is(Expr::Property) ||
+						aNode.is(Expr::Identifier))
+						? aNodeCode 
+						: "(" + aNodeCode + ")";
+			
+	if (!aIsObjectArg) 
+	{
+		if (aCurDefine && aCurDefine->isObjectMethod())
+		{
+			if (Identifier::isNameMe(aNodeCode))
+			{
+				if (aCurDefine->is(Method::Undeclared))
+				{
+					code = "me";
+				}
+				else
+				{
+					code = "this";
+				}
+			}
+			else if (aCurDefine->is(Method::Undeclared) && aNode.is(Expr::Property) &&
+					 aNode.is(Expr::Identifier) && !aArg.is(Arg::Member))
+			{
+				code = "me->" + code;
+			}
+			else if (!aCurDefine->is(Method::Undeclared) &&
+					 aNode.is(Expr::Identifier) && aNode.is(Expr::ObjectImpl))
+			{
+				code = "_impl->" + code;
+			}
+		}
+
+		resultCode = Core::replaceAll(resultCode, "${" + aArg.identifier()->name() + "}", code);
+	}
+	else
+	{				
+		if (Identifier::isNameMe(aNodeCode))
+		{
+			if (aMethod->is(Method::Undeclared))
+			{
+				resultCode = "_impl->" + resultCode;
+			}
+			else if (aCurDefine->isStatic())
+			{
+				resultCode = "me->" + resultCode;
+			}
+			else
+			{
+				resultCode = "this->" + resultCode;
+			}
+		}
+		else
+		{
+			resultCode = code + "->" + resultCode;
+		}
+	}
+}
+
+Expr NateCode::createTypeCastNode(
+    const ExprNodesCIter& aNodeIter,
+    const Arg& aArg,
+    const TypePtr& aTemplateType,
+    const TypePtr& aFirstType,
+    const TypePtr& aHighestType,
+    std::string& aNodeCode) const
+{
+    Expr::Node node = *aNodeIter;
+    if (aArg.is(Arg::Typename))
+    {
+        node.castToType(aTemplateType->typenameType());
+        aNodeCode = node.code();
+    }
+    else if (!aArg.is(Arg::Member))
+    {
+        if (aArg.is(Arg::Same))
+        {
+            node.castToType(aFirstType);
+        }
+        else if (aArg.is(Arg::CompHigh))
+        {
+            node.castToType(aHighestType);
+        }
+        else
+        {
+            node.castToType(aArg.identifier()->type());
+        }
+
+        aNodeCode = node.code();
+    }
+
+    return node;
 }
 
 std::string NateCode::in(int extra)

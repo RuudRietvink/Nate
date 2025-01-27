@@ -213,10 +213,6 @@ TypePtr            Expr::type()			const { return mNodes.empty() ? TypePtr() : mN
 bool               Expr::isEmpty()		const { return mNodes.empty(); }
 IdentifierPtr      Expr::id()	  		const { return mNodes.empty() ? IdentifierPtr() : mNodes.front().id(); }
 
-bool Expr::castToType(const TypePtr& aToType)
-{
-	return mNodes.empty() ? false : mNodes.front().castToType(aToType);
-}
 
 void Expr::setCode(const std::string& aCode)
 {
@@ -227,6 +223,7 @@ void Expr::setCode(const std::string& aCode)
 }
 
 const std::vector<Expr::Node>& Expr::nodes() const { return mNodes; }
+std::vector<Expr::Node>& Expr::nodes() { return mNodes; }
 
 std::ostream& operator<<(std::ostream& aStream, const Expr::Node& aValue)
 {
@@ -239,6 +236,7 @@ std::ostream& operator<<(std::ostream& aStream, const Expr::Node& aValue)
 	if (aValue.is(Expr::Property)) aStream << ",Property";
 	if (aValue.is(Expr::Identifier)) aStream << ",Identifier";
 	if (aValue.is(Expr::ObjectImpl)) aStream << ",ObjectImpl";
+    if (aValue.is(Expr::List)) aStream << ",List";
 		
 	aStream << aValue.text() << "," 
 		    << aValue.code() << "," 

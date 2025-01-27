@@ -10,7 +10,7 @@ code define 65 \u add ${val as typename} to ${container is sequence-container as
 code define 65 \u insert ${val as typename} in ${container is sequence-container as template, out}:
     $container.push_front($val)
 
-code define 65 first \u of ${container is sequence-container as template},
+code define 65 first \u of ${container is sequence-container as template, out},
                ${container is sequence-container as template} 's first as typename, output:
     $container.front()
 
@@ -18,7 +18,7 @@ code define 65 first \u of ${container is sequence-container as template},
                ${container is sequence-container as template} 's first as typename, const:
     $container.front()
 
-code define 65 last \u of ${container is sequence-container as template},
+code define 65 last \u of ${container is sequence-container as template, out},
                ${container is sequence-container as template} 's last as typename, output:
     $container.last()
 

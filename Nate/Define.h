@@ -35,8 +35,6 @@ class Define : public Method
 public:
 	Define();
 	virtual ~Define() = default;
-  
-	void createCodeCall();
 
 private:
 };

@@ -73,6 +73,7 @@ public:
 	static const size_t ObjectImpl =21;
 	static const size_t NoCode     =22;
 	static const size_t Unsigned   =23;
+    static const size_t InitializerList = 24;
 	
 private:
 	void setBaseType(const TypePtr& aType);

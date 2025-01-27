@@ -29,6 +29,7 @@ namespace nate
 class Expr;
 class Lexer;
 class parser;
+class NateCode;
 
 class NateParser
 {
@@ -65,8 +66,8 @@ public:
 	
 	ParseData data;
 
-	NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
-						 FileType aFileType = FileType::Normal);
+	NateParser(NateCode& aCoder, const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
+			   FileType aFileType = FileType::Normal);
 	virtual ~NateParser();
 	std::string in(int aOffset = 0) const;
 	int parseAndCode();
@@ -290,6 +291,7 @@ private:
 	Stat::SPtr addStatement(const Stat::SPtr& stat);
 		
 	
+    NateCode&                       mCoder;
 	std::unique_ptr<nate::Lexer>	mLexer;
 	std::unique_ptr<nate::parser>	mParser;
 	std::list<ObjectPtr>            mObjects;

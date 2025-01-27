@@ -3,6 +3,7 @@
 #include "NateData.h"
 #include "Object.h"
 #include "ICodeVisitor.h"
+#include "Define.h"
 
 #include <ostream>
 
@@ -13,7 +14,31 @@ class NateParser;
 class NateCode : public ICodeVisitor
 {
 public:
-	NateCode(std::ostream& aOut, NateParser* aParser);
+	NateCode();
+    void setData(std::ostream& aOut, NateParser* aParser);
+
+    void createCodeCall(Define* define);
+    Expr createTypeCastNode(
+        const ExprNodesCIter& aNodeIter,
+        const Arg& aArg,
+        const TypePtr& aTemplateType,
+        const TypePtr& aFirstType,
+        const TypePtr& aHighestType,
+        std::string& aNodeCode) const;
+    Method::EvaluateResult
+        createMethodCode(const Method* aMethod, const DefinePtr& aCurDefine, const ExprNodesCIter& aBegin, const ExprNodesCIter& aEnd, int aDebug) const;
+    void createArgCode(
+        const Method* aMethod,
+        const Arg& aArg,
+        const Expr& aNode,
+        const DefinePtr& aCurDefine,
+        const std::string& aNodeCode,
+        bool aIsObjectArg,
+        // ->
+        std::string& resultCode) const;
+
+    bool castToType(Expr* aExpr, const TypePtr& aToType) const;
+
 	void codeStats(const std::list<Stat::SPtr>& aStats);
 	void codeCompound(const Stat& aStat);
 	void codeBlock(const Stat& aStat);

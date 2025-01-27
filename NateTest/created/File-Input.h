@@ -1,12 +1,12 @@
-#pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\Ruud\source\repos\Nate\NateTest\created\Stream-Input.h"
-#include "C:\Users\Ruud\source\repos\Nate\NateTest\created\BaseObject.h"
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
 #include <cmath>
 #include <stdfloat>
+#pragma once
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#include "C:\Users\Ruud\source\repos\Nate\NateTest\created\Stream-Input.h"
+#include "C:\Users\Ruud\source\repos\Nate\NateTest\created\BaseObject.h"
 #line 8
 class File_Input_: public virtual Stream_Input_, public BaseObject_
 {

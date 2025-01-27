@@ -18,13 +18,15 @@
   append vecInt[+index - 1] to vecInt
   insert last of vecInt in vecInt
   last of vecInt := first of vecInt
-  vecInt's last := vecInt's last + 3;
-  vecInt's first := vecInt's first + 3;
+  vecInt's last := vecInt's last + 3
+  vecInt's first := vecInt's first + 3
   clear vecInt
   empty vecInt
   var a := vecInt's count
   var b:= count of vecInt
-  var c:= vecInt is empty;
+  var c:= vecInt is empty
+  var d := vecInt's capacity + capacity of vecInt
+  resize vecInt to d - 2
   remove vecInt[2]
   remove vecInt at 1
   remove first of vecInt
@@ -45,9 +47,11 @@
   vecInt_.front() = (vecInt_.front()) + 3;
   vecInt_.clear();
   vecInt_.clear();
-  int32_t a_ = static_cast<int32_t>(vecInt_.size());
-  int32_t b_ = static_cast<int32_t>(vecInt_.size());
+  int64_t a_ = static_cast<int64_t>(vecInt_.size());
+  int64_t b_ = static_cast<int64_t>(vecInt_.size());
   bool c_ = vecInt_.empty();
+  int64_t d_ = (static_cast<int64_t>(vecInt_.capacity())) + (static_cast<int64_t>(vecInt_.capacity()));
+  vecInt_.resize((d_ - 2));
   vecInt_.erase(2);
   vecInt_.erase(1);
   vecInt_.erase(0);

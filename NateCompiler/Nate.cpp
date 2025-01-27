@@ -1,5 +1,6 @@
 
 #include "NateParser.h"
+#include "NateCode.h"
 #include "core/Rational.h"
 
 #include <iostream>
@@ -10,7 +11,8 @@ int parse(const std::string& aIn, const std::string& aOut, nate::NateParser::Fil
 {
 	std::ifstream in(aIn);
 	std::ofstream out(aOut);
-	nate::NateParser nate(aIn, in, out, aFileType);
+    nate::NateCode coder;
+	nate::NateParser nate(coder, aIn, in, out, aFileType);
 	auto parseResult = nate.parseAndCode();
 	std::cerr << "Errors: " << nate.errorCount() << ", Warnings: " << nate.warningCount() << std::endl;
 	return (parseResult != 0 || nate.errorCount() != 0) ? 1 : 0;

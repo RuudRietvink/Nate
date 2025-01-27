@@ -15,9 +15,10 @@ namespace nate
 {
 int gDebug = 0;
 
-NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
+NateParser::NateParser(NateCode& aCoder, const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 					   FileType aFileType)
-  : mLexer(new nate::Lexer(aIn)),
+  : mCoder(aCoder),
+    mLexer(new nate::Lexer(aIn)),
 	mParser(new nate::parser(*mLexer, *this)),
 	mOut(&aOut),
 	mFileType(aFileType),
@@ -27,6 +28,7 @@ NateParser::NateParser(const std::string& aFilename, std::istream& aIn, std::ost
 {
 	mLexer->nate = this;
 	mLexer->pushFile(aFilename);
+    mCoder.setData(aOut, this);
 	  
 	initOutput();
 	initTypesAndObjects();
@@ -94,6 +96,7 @@ void NateParser::initTypesAndObjects()
 	addType(std::make_shared<Type>("container", getType("object")));
 	addType(std::make_shared<Type>("sequence-container", getType("container")));
     addType(std::make_shared<Type>("random-container", getType("sequence-container")));
+    addType(std::make_shared<Type>("initializer-list", getType("sequence-container")));
 	addType(std::make_shared<Type>("list", getType("random-container")));
 	addType(std::make_shared<Type>("text", getType("sequence-container")));
 	addType(std::make_shared<Type>("char", getType("any")));
@@ -168,8 +171,7 @@ int NateParser::code()
 {
 	int result = 0;
 
-	NateCode coder(*mOut, this);
-	coder.codeStats(mStats);
+	mCoder.codeStats(mStats);
 
 	if (mLexer->debug())
 	{
@@ -241,7 +243,7 @@ void NateParser::doAssign(const std::vector<Expr>& aExpressions,
 		}
 
 		const TypePtr& exprType = expr.type();
-		bool ok = copy.castToType(exprType);
+		bool ok = mCoder.castToType(&copy, exprType);
 		if (!ok)
 		{
 			error("cannot cast '" + copy.text() + "' of type " + copy.type()->name() + " to type " + exprType->name());
@@ -715,7 +717,8 @@ bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::
 		}
 		else
 		{
-			NateParser nate(path, in, out, FileType::ObjectDecl);
+            NateCode code;
+			NateParser nate(code, path, in, out, FileType::ObjectDecl);
 			if (mLexer->debug())
 			{
 				std::cerr << "Importing: " << path << std::endl;
@@ -1291,7 +1294,7 @@ void NateParser::doStartDefine(bool aIsDecl, bool aIsImpl,
 		}
 	}
 
-	curDefine()->createCodeCall();
+	mCoder.createCodeCall(curDefine().get());
 }
 
 void NateParser::doEndDeclDefine(const nate::parser::location_type& aLocation)
@@ -2073,7 +2076,7 @@ Expr NateParser::evaluate(const Expr& aExpr, int aDebug)
 
 		if (match.methodFound)
 		{
-			Method::EvaluateResult evalResult = match.methodFound->createCode(curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
+			Method::EvaluateResult evalResult = mCoder.createMethodCode(match.methodFound.get(), curDefine(), match.nodeStartIter, match.nodeEndIter, aDebug);
 			if (!evalResult.error.empty())
 			{
 				error(evalResult.error);
@@ -2287,7 +2290,7 @@ void NateParser::declareLocalIdentifiers(
 			}
 
 			initValue = Expr(*initIter++);
-			initValue.castToType(aType);
+            mCoder.castToType(&initValue, aType);
 		}
 		else 
 		{

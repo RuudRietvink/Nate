@@ -1,10 +1,10 @@
-#pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
 #include <cmath>
 #include <stdfloat>
+#pragma once
+#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
 #line 6
 class Stream_Input_
 {

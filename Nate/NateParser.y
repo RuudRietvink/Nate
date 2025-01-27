@@ -103,8 +103,9 @@
 %token CLOSEPAR ")"
 %token OPENBRACKET "["
 %token CLOSEBRACKET "]"
+%token OPENCURLY "{"
+%token CLOSECURLY "}"
 %token ARGSTART "${"
-%token ARGEND "}"
 %token BADTOKEN
 
 %type <std::string>              id;
@@ -127,6 +128,9 @@
 %type <Expr>                     step;
 %type <Expr>                     expr;
 %type <Expr>                     definitely-expr;
+%type <Expr>                     initializer-list-expr;
+%type <Expr>                     initializer-list-expr-part;
+%type <Expr>                     initializer-list-expr-part-list;
 %type <Expr>                     inline-expr;
 %type <Expr>                     math-expr;
 %type <Expr>                     code-expr;
@@ -408,7 +412,7 @@ arg:
             nate.data.flagsHolder = &nate.curMethod()->curArg();
         }
     opt-holder-flag-list
-    ARGEND
+    CLOSECURLY
   ;
     
 implement-define-statement:
@@ -545,7 +549,7 @@ code-id-with-arg-flags:
             nate.data.flagsHolder = &nate.curMethod()->curArg();
 		}
 	holder-flag-list 
-    ARGEND
+    CLOSECURLY
   ;
  
 arg-id:
@@ -1517,6 +1521,32 @@ expr-part:
   | code-expr
   | expr-non-word
   | expr-word
+  | initializer-list-expr
+  ;
+
+initializer-list-expr:
+    OPENCURLY
+    initializer-list-expr-part-list
+    CLOSECURLY
+        {
+            $$ = $[initializer-list-expr-part-list];
+        }
+  ;
+  
+initializer-list-expr-part-list:
+    %empty
+        { 
+            $$ = Expr();
+        }
+  | initializer-list-expr-part
+  | initializer-list-expr-part-list[list] COMMA initializer-list-expr-part
+		{ 
+            $$ = Expr($[list], $[initializer-list-expr-part]);
+        }
+  ;
+
+initializer-list-expr-part:
+    inline-expr
   ;
 
 expr-non-word:

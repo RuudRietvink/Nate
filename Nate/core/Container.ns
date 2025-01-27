@@ -4,8 +4,12 @@
 ///////////////////////////////////////////////
   
 code define 65 count of ${container is container},
-               ${container is container} 's count is int-32 as const:
-    static_cast<int32_t>($container.size())
+               ${container is container} 's count is int-64 as const:
+    static_cast<int64_t>($container.size())
+    
+code define 65 capacity of ${container is container},
+               ${container is container} 's capacity is int-64 as const:
+    static_cast<int64_t>($container.capacity())
 
 code define 65 \u clear ${container is container as out},
                \u empty ${container is container as out}:
@@ -13,3 +17,6 @@ code define 65 \u clear ${container is container as out},
     
 code define 65 ${container is container} \is empty is boolean as const:
     $container.empty()
+    
+code define 65 resize ${container is container as out} to ${count is int-64}:
+    $container.resize($count)
