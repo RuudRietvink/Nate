@@ -30,7 +30,6 @@ public:
 		Node(const Node& aOther) = default;
 		virtual ~Node() = default;
 
-		bool castToType(const TypePtr& aToType);
 		void setCode(const std::string& aCode);
 
 		const std::string& text()       const;

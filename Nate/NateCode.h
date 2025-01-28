@@ -38,6 +38,7 @@ public:
         std::string& resultCode) const;
 
     bool castToType(Expr* aExpr, const TypePtr& aToType) const;
+    bool castToType(Expr::Node* aNode, const TypePtr& aToType) const;
 
 	void codeStats(const std::list<Stat::SPtr>& aStats);
 	void codeCompound(const Stat& aStat);

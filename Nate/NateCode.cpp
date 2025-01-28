@@ -168,7 +168,81 @@ NateCode::createMethodCode(const Method* aMethod, const DefinePtr& aCurDefine, c
 
 bool NateCode::castToType(Expr* aExpr, const TypePtr& aToType) const
 {
-    return aExpr->nodes().empty() ? false : aExpr->nodes().front().castToType(aToType);
+    return aExpr->nodes().empty() ? false : castToType(&aExpr->nodes().front(), aToType);
+}
+
+bool NateCode::castToType(Expr::Node* aNode, const TypePtr& aToType) const
+{
+    bool ok = true;
+
+    if (aNode->type()->is(Type::Number) && aToType->is(Type::Number))
+    {
+        if (aNode->type()->is(Type::Rational) && aToType->is(Type::Real))
+        {
+            *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ".toDouble())", aToType);
+        }
+        else if (aNode->type()->is(Type::Rational) && aToType->is(Type::Integer))
+        {
+            *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ".toInt())", aToType);
+        }
+        else if (aNode->type()->is(Type::SingleNr) && aToType->is(Type::Rational))
+        {
+            *aNode = Expr::Node(aNode->text(), "Rational(" + aNode->code() + ")", aToType);
+        }
+        else if (aNode->type()->is(Type::Imaginary) && aToType->is(Type::Complex))
+        {
+            *aNode = Expr::Node(aNode->text(), aToType->codeType() + "(0, " + aNode->code() + ")", aToType);
+        }
+        else if (aNode->type()->is(Type::Number) && aToType->is(Type::Imaginary))
+        {
+            aNode->setFlag(Type::Imaginary);
+        }
+        else if (aNode->type()->is(Type::SingleNr) && aToType->is(Type::Complex))
+        {
+            *aNode = Expr::Node(aNode->text(), aToType->codeType() + "(" + aNode->code() + ", 0)", aToType);
+        }
+        else if (!aToType->is(Type::Abstract))
+        {
+            if (aNode->type()->is(Type::Real) && !aToType->is(Type::Real))
+            {
+                *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ")", aToType);
+            }
+            else if (!aNode->type()->is(Type::Real) && aToType->is(Type::Real))
+            {
+                *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ")", aToType);
+            }
+            else if (aNode->type()->isBiggerThan(aToType))
+            {
+                *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ")", aToType);
+            }
+        }
+    }
+    else if (aNode->type()->is(Type::Number) && aToType->is(Type::Text))
+    {
+        *aNode = Expr::Node(aNode->text(), "std::to_string(" + aNode->code() + ")", aToType);
+    }
+    else if (aNode->type()->is(Type::Boolean) && aToType->is(Type::Text))
+    {
+        *aNode = Expr::Node(aNode->text(), "(" + aNode->code() + "?\"true\":\"false\")", aToType);
+    }
+    else if (aNode->type()->is(Type::Char) && aToType->is(Type::Text))
+    {
+        *aNode = Expr::Node(aNode->text(), "Core::toString(" + aNode->code() + ")", aToType);
+    }
+    else if (aNode->type()->is(Type::Char) && aToType->is(Type::Integer))
+    {
+        *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ")", aToType);
+    }
+    else if (aNode->type()->is(Type::Integer) && aToType->is(Type::Char))
+    {
+        *aNode = Expr::Node(aNode->text(), "static_cast<" + aToType->codeType() + ">(" + aNode->code() + ")", aToType);
+    }
+    else if (!aNode->type()->isOfType(aToType->name()))
+    {
+        ok = false;
+    }
+
+    return ok;
 }
 
 void NateCode::createArgCode(
@@ -253,22 +327,22 @@ Expr NateCode::createTypeCastNode(
     Expr::Node node = *aNodeIter;
     if (aArg.is(Arg::Typename))
     {
-        node.castToType(aTemplateType->typenameType());
+        castToType(&node, aTemplateType->typenameType());
         aNodeCode = node.code();
     }
     else if (!aArg.is(Arg::Member))
     {
         if (aArg.is(Arg::Same))
         {
-            node.castToType(aFirstType);
+            castToType(&node, aFirstType);
         }
         else if (aArg.is(Arg::CompHigh))
         {
-            node.castToType(aHighestType);
+            castToType(&node, aHighestType);
         }
         else
         {
-            node.castToType(aArg.identifier()->type());
+            castToType(&node, aArg.identifier()->type());
         }
 
         aNodeCode = node.code();
