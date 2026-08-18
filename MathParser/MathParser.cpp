@@ -177,6 +177,7 @@ std::string MathParser::operToString(Oper aOper)
   case Oper::Parentheses: return "Parentheses";
   case Oper::Brackets: return "Brackets";
   case Oper::Matrix: return "Matrix";
+  case Oper::MatrixCell: return "MatrixCell";
   case Oper::Absolute: return "Absolute";
   case Oper::Floor: return "Floor";
   case Oper::Ceiling: return "Ceiling";
@@ -420,20 +421,20 @@ Math MathParser::getSubMath(
 }
 
 MathValue* MathParser::embedSubMath(
-				Math& aMath, 
+				Math& aMath,
+        Oper aOper,
 				const Math& aSubMath, 
-				Oper aOper,
 				const Area& aArea,
 				const Symbol& aSymbol)
 {
-	return embedSubMath(aMath, aSubMath, Math(), aOper, aArea, aSymbol);
+	return embedSubMath(aMath, aOper, aSubMath, Math(), aArea, aSymbol);
 }
 
 MathValue* MathParser::embedSubMath(
 				Math& aMath, 
+				Oper aOper,
 				const Math& aSubMath1, 
 				const Math& aSubMath2, 
-				Oper aOper,
 				const Area& aArea,
 				const Symbol& aSymbol)
 {
@@ -450,7 +451,7 @@ MathValue* MathParser::embedSubMath(
 				const std::vector<Math> aMatrixCells,
 				Size aMatrixSize)
 {
-	Area area = { Position{ 0, 0 }, Position{ aMath.width(), aMath.height() } };
+	Area area = { Position{ 1, 1 }, Position{ aMath.width() - 1, aMath.height() - 1 } };
 	auto mathValue = MathValue(aOper, aMatrixCells, aMatrixSize);
 	fillerMath(aMath, area, mathValue.mathValue);
 	aMath.matrix[area.upperLeft.y][area.upperLeft.x] = mathValue;
@@ -572,7 +573,7 @@ void MathParser::doMathParentheses(Math& aMath)
 					
 		printDebugMath(false, sub, __FUNCTION__);
 		doMathParsing(sub);
-		embedSubMath(aMath, sub, Oper::Parentheses, *area);
+		embedSubMath(aMath, Oper::Parentheses, sub, *area);
 
 		printDebugMath(false, aMath, __FUNCTION__);
 		doMathParsing(aMath);
@@ -593,10 +594,9 @@ void MathParser::doMathBrackets(Math& aMath)
 					
 		printDebugMath(true, sub, __FUNCTION__);
 		auto [cells, ver, hor ] = doMatrixCells(sub);
-		embedSubMath(aMath,  Oper::Matrix, cells, Size{ static_cast<int>(ver), static_cast<int>(hor) });
+		embedSubMath(aMath, Oper::Matrix, cells, Size{ static_cast<int>(ver), static_cast<int>(hor) });
 
 		printDebugMath(true, aMath, __FUNCTION__);
-		doMathParsing(aMath);
 	}
 }
 
@@ -633,7 +633,7 @@ void MathParser::doMathFractionBar(Math& aMath)
 				doMathParsing(subDenomenator);
 
 				Area area = join(areaNumerator, areaDenomenator);
-				embedSubMath(aMath, subNumerator, subDenomenator, Oper::Division, area);
+				embedSubMath(aMath, Oper::Division, subNumerator, subDenomenator, area);
 				
 				printDebugMath(false, aMath, __FUNCTION__);
 				doMathParsing(aMath);
@@ -673,7 +673,7 @@ void MathParser::doMathSquareRoot(Math& aMath)
 			printDebugMath(false, sub, __FUNCTION__);
 			doMathParsing(sub);
 			leftPos = Position{ squareRoot->x, rootBar->y };
-			embedSubMath(aMath, sub, Oper::SquareRoot, Area{ leftPos, rightPos });
+			embedSubMath(aMath, Oper::SquareRoot, sub, Area{ leftPos, rightPos });
 			
 			printDebugMath(false, aMath, __FUNCTION__);
 			doMathParsing(aMath);
@@ -686,7 +686,7 @@ void MathParser::doMathSquareRoot(Math& aMath)
 				Math sub = getSubMath(aMath, *rightArea);
 				printDebugMath(false, sub, __FUNCTION__);
 			  doMathParsing(sub);
-				embedSubMath(aMath, sub, Oper::SquareRoot, *rightArea);
+				embedSubMath(aMath, Oper::SquareRoot, sub, *rightArea);
 				spaceMath(aMath, Area{ *squareRoot, *squareRoot });
 				
 				printDebugMath(false, aMath, __FUNCTION__);
@@ -736,16 +736,16 @@ void MathParser::doMathPower(Math& aMath)
 			std::string text = mathString(aMath.mathValue(baseArea.upperLeft).embedded1);
 			if (text == "e") 
 		  {
-				embedSubMath(aMath, exp, Oper::Exponential, baseArea);
+				embedSubMath(aMath, Oper::Exponential, exp, baseArea);
 			}
 			else
 			{
-				embedSubMath(aMath, base, exp, Oper::Power, baseArea);
+				embedSubMath(aMath, Oper::Power, base, exp, baseArea);
 			}
 		}
 		else
 		{
-			embedSubMath(aMath, base, exp, Oper::Power, baseArea);
+			embedSubMath(aMath, Oper::Power, base, exp, baseArea);
 		}
 		
 		printDebugMath(false, aMath, "");
@@ -769,7 +769,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 					Position startPos{ x, y };
 					Position endPos{ endX, y };
 					Math nbr = getSubMath(aMath, Area{ startPos, endPos });
-					embedSubMath(aMath, nbr, Oper::Number, Area{ startPos, endPos });
+					embedSubMath(aMath, Oper::Number, nbr, Area{ startPos, endPos });
 				}
 			}
 
@@ -784,7 +784,7 @@ void MathParser::doMathVariablesNumbers(Math& aMath)
 					Oper oper = symbol.type == Symbol::Type::Function
 						          ? Oper::FunctionName
 						          : Oper::Symbol;
-					embedSubMath(aMath, var, oper, Area{ startPos, endPos }, symbol);
+					embedSubMath(aMath, oper, var, Area{ startPos, endPos }, symbol);
 				}
 			}
 		}
@@ -824,22 +824,22 @@ void MathParser::doMathMonomial(Math& aMath)
 								if (lastMathValue->type == NumberType::Imaginary && rightMathValue->type == NumberType::Imaginary)
 								{
 									Math number = createSubMath(aMath, area, "-1");
-									embedSubMath(aMath, number, Oper::Number, area);
+									embedSubMath(aMath, Oper::Number, number, area);
 								}
 								else if (lastMathValue->type == NumberType::Imaginary)
 								{
-									embedSubMath(aMath, right, Oper::Number, area)->type = NumberType::Imaginary;
+									embedSubMath(aMath, Oper::Number, right, area)->type = NumberType::Imaginary;
 								}
 								else
 								{
-									embedSubMath(aMath, left, Oper::Number, area)->type = NumberType::Imaginary;
+									embedSubMath(aMath, Oper::Number, left,area)->type = NumberType::Imaginary;
 								}
 							}
 							else
 							{
 								printDebugMath(false, left, __FUNCTION__);
 								printDebugMath(false, right, __FUNCTION__);
-								embedSubMath(aMath, left, right, Oper::Monomial, area);
+								embedSubMath(aMath, Oper::Monomial, left, right, area);
 							}
 
 							printDebugMath(false, aMath, __FUNCTION__);
@@ -886,7 +886,7 @@ void MathParser::doMathFunctionCall(Math& aMath)
 							Area area = join(*leftArea, rightArea);
 							printDebugMath(false, left, __FUNCTION__);
 							printDebugMath(false, right, __FUNCTION__);
-							embedSubMath(aMath, left, right, Oper::FunctionCall, area, aMath.matrix[y][x].mathValue->symbol);
+							embedSubMath(aMath, Oper::FunctionCall, left, right, area, aMath.matrix[y][x].mathValue->symbol);
 							printDebugMath(false, aMath, __FUNCTION__);
 						}
 					}
@@ -943,7 +943,7 @@ void MathParser::doMathUnaryLeadingOperator(Math& aMath, int aOperChar, Oper aOp
 							rightArea->upperLeft.x = x;
 							printDebugMath(false, right, __FUNCTION__);
 							doMathParsing(right);
-							embedSubMath(aMath, right, aOper, Area{ rightArea->upperLeft, rightArea->lowerRight });
+							embedSubMath(aMath, aOper, right, Area{ rightArea->upperLeft, rightArea->lowerRight });
 							printDebugMath(false, aMath, __FUNCTION__);
 						}
 					}
@@ -957,7 +957,7 @@ std::tuple<std::vector<Math>, size_t, size_t> MathParser::doMatrixCells(Math& aM
 {
 	std::vector<int> verLines = getVerticalCellLines(aMath);
 	std::vector<int> horLines = getHorizontalCellLines(aMath);	
-	std::vector<Math> cells = getMatrixCells(aMath, verLines, horLines);
+	std::vector<Math> cells = doMatrixCells(aMath, verLines, horLines);
 
 	return std::make_tuple(cells, verLines.size(), horLines.size());
 }
@@ -967,11 +967,12 @@ std::vector<int> MathParser::getVerticalCellLines(const Math& aMath)
 	std::vector<int> verLines;
 	
   int spaceCount = 0;
+  bool first = true;
   for (int x = 0; x < aMath.width(); ++x)
 	{
 		bool isBlank = true;
 
-    for (int y = 0; isBlank && y < aMath.height(); ++y)
+    for (int y = 1; isBlank && y < aMath.height() - 1; ++y)
 		{
       if (aMath(y, x) != SPACE)
 			{
@@ -981,16 +982,28 @@ std::vector<int> MathParser::getVerticalCellLines(const Math& aMath)
 
 		if (isBlank)
 		{
-			++spaceCount;
+      if (!first)
+      {
+        ++spaceCount;
+        if (spaceCount == 2)
+        {
+          verLines.push_back(x - 1);
+        }
+      }
 		}
-		else if (spaceCount >= 2)
-		{
-			verLines.push_back(x);
-			spaceCount = 0;
-		}
+    else
+    {
+      spaceCount = 0;
+      first = false;
+    }
   }
 
-	verLines.push_back(aMath.width() - 1);
+  if (spaceCount >= 2 && !verLines.empty())
+  {
+    verLines.pop_back();
+  }
+
+  verLines.push_back(aMath.width() - 1);
 
 	return verLines;
 }
@@ -1000,7 +1013,8 @@ std::vector<int> MathParser::getHorizontalCellLines(const Math& aMath)
 	std::vector<int> horLines;
 	
   int spaceCount = 0;
-  for (int y = 0; y < aMath.height(); ++y)
+  bool first = true;
+  for (int y = 1; y < aMath.height() - 1; ++y)
 	{
 		bool isBlank = true;
 
@@ -1014,39 +1028,56 @@ std::vector<int> MathParser::getHorizontalCellLines(const Math& aMath)
 		
 		if (isBlank)
 		{
-			++spaceCount;
+      if (!first)
+      {
+        ++spaceCount;
+        if (spaceCount == 1)
+        {
+          horLines.push_back(y);
+        }
+      }
 		}
-		else if (spaceCount >= 1)
-		{
-			horLines.push_back(y);
-			spaceCount = 0;
-		}
+    else
+    {
+      spaceCount = 0;
+      first = false;
+    }
   }
 
-	horLines.push_back(aMath.height() - 1);
+  if (spaceCount != 0 && !horLines.empty())
+  {
+    horLines.pop_back();
+  }
+
+  horLines.push_back(aMath.height() - 1);
 
 	return horLines;
 }
 	
-std::vector<Math> MathParser::getMatrixCells(const Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines)
+std::vector<Math> MathParser::doMatrixCells(Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines)
 {
 	std::vector<Math> cells;
-  int startRow = 0;
 	
 	std::cerr << __FUNCTION__ << " " << horLines.size() << " " << verLines.size() << std::endl;
+  int startRow = 1;
   for (int y : horLines)
 	{
-		int startCol = 0;
+		int startCol = 1;
     for (int x : verLines)
 		{
-			Area subArea{ Position{ startRow, startCol }, Position{ y, x } };
+			Area subArea{ Position{ startCol, startRow }, Position{ x - 1, y - 1 } };
 			Math sub = getSubMath(aMath, subArea);
+      printDebugMath(true, sub, __FUNCTION__);
+      doMathParsing(sub);
+      embedSubMath(aMath, Oper::MatrixCell, sub, subArea);
+      printDebugMath(true, aMath, __FUNCTION__);
 			cells.push_back(sub);
 			printDebugMath(true, sub, __FUNCTION__);
 
-      startRow = y + 1;
       startCol = x + 1;
     }
+
+    startRow = y + 1;
   }
 	
 	return cells;
@@ -1097,7 +1128,7 @@ void MathParser::doMathOperator(Math& aMath, Oper aOper, int x, int y)
 			printDebugMath(false, right, __FUNCTION__);
 			doMathParsing(right);
 			Area area = join(*leftArea, *rightArea);
-			embedSubMath(aMath, left, right, aOper, area);
+			embedSubMath(aMath, aOper, left, right, area);
 			printDebugMath(false, aMath, __FUNCTION__);
 		}
 		else
@@ -1200,7 +1231,7 @@ void MathParser::doMathSuperscript(Math& aMath)
 				Area area{ Position{ startX, y }, Position{ x, y } };
 				Math superMath = getSubMath(aMath, Area{ Position{ startX, y }, Position{ x, y } });
 				doStartMathParsing(superMath);
-				MathValue* mathValue = embedSubMath(aMath, superMath, Oper::Nested, area);
+				MathValue* mathValue = embedSubMath(aMath, Oper::Nested, superMath, area);
 				mathValue->superscript = true;
 			}
 		}
@@ -1335,12 +1366,12 @@ void MathParser::doMathSimpleMatching(Math& aMath, uint32_t left, uint32_t right
 						{
 							Math left = getSubMath(aMath, *leftArea);
 					    printDebugMath(false, left, __FUNCTION__, std::format("left {}", desc));
-							embedSubMath(aMath, left, parens, oper, leftArea->merge(parensArea));
+							embedSubMath(aMath, oper, left, parens, leftArea->merge(parensArea));
 						}
 					}
 					else
 					{
-						embedSubMath(aMath, parens, oper, parensArea);
+						embedSubMath(aMath, oper, parens, parensArea);
 					}
 
 				  printDebugMath(false, aMath, __FUNCTION__, desc);

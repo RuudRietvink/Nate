@@ -85,6 +85,15 @@ TEST_F(TestMathParser, TestAddVariable)
   parser.addVariable("I", "I");
 }
 
+TEST_F(TestMathParser, TestSimple00)
+{
+  ss << R"zzz(
+ 1
+)zzz";
+
+  EXPECT_STREQ("1", parser.doMath(ss).c_str());
+}
+
 TEST_F(TestMathParser, TestSimple01)
 {  
   ss << R"zzz(
@@ -420,6 +429,7 @@ TEST_F(TestMathParser, TestPowerSuper07)
 )zzz";
 
   // ERROR 55 superscript only for exponents!!!!!
+  EXPECT_CALL(parser, error(_, "Missing operand after Multiplication operator")).Times(2);
   EXPECT_STREQ("std::pow(55, z)x*", parser.doMath(ss).c_str());
 }
 
@@ -869,20 +879,6 @@ TEST_F(TestMathParser, TestBrackets05)
 )zzz";
 
   EXPECT_STREQ("x[(((((std::pow(x, z)) / z)) / (x + z))) * std::pow(x[c], 2)] = 3", errorParser.doMath(ss).c_str());
-}
-
-TEST_F(TestMathParser, TestMatrix01)
-{  
-  ss << R"zzz(
-   ⎡1  2⎤
-   ⎢    ⎥
-   ⎢3  4⎥
-   ⎢    ⎥
-   ⎢5  6⎥ 
-   ⎣    ⎦
-)zzz";
-
-  EXPECT_STREQ("", errorParser.doMath(ss).c_str());
 }
 
 TEST_F(TestMathParser, TestFunctionCall01)

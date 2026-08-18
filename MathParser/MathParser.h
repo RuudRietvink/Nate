@@ -57,14 +57,14 @@ private:
 	void doStartMathParsing(Math& aMath);
 	void doMathParsing(Math& aMath);
 	MathValue* embedSubMath(Math& aMath, 
+										Oper aOper,
 										const Math& aSubMath1, 
 										const Math& aSubMath2, 
-										Oper aOper,
 										const Area& aArea,
 										const Symbol& aSymbol = {});
 	MathValue* embedSubMath(Math& aMath, 
-										const Math& aSubMath, 
 										Oper aOper,
+										const Math& aSubMath, 
 										const Area& aArea,
 										const Symbol& aSymbol = {});
 	MathValue* embedSubMath(Math& aMath,
@@ -92,7 +92,7 @@ private:
 	std::tuple<std::vector<Math>, size_t, size_t> doMatrixCells(Math& aMath);	
 	std::vector<int> getVerticalCellLines(const Math& aMath);
 	std::vector<int> getHorizontalCellLines(const Math& aMath);
-  std::vector<Math> getMatrixCells(const Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines);
+  std::vector<Math> doMatrixCells(Math& aMath, const std::vector<int>& verLines, const std::vector<int>& horLines);
 	void doMathDownRightOperator(Math& aMath, int aOperChar, Oper aOper);
 	void doMathUpLeftOperator(Math& aMath, uint32_t aOperChar, Oper aOper);
 	void doMathOperator(Math& aMath, Oper aOper, int x, int y);

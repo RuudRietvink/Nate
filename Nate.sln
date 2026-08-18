@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 18
+VisualStudioVersion = 18.9.12105.275 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nate", "Nate\Nate.vcxproj", "{AAAFCC75-E0FE-4729-A707-D54EF8D3B8A4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,6 +33,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NateCompiler", "NateCompile
 	ProjectSection(ProjectDependencies) = postProject
 		{AAAFCC75-E0FE-4729-A707-D54EF8D3B8A4} = {AAAFCC75-E0FE-4729-A707-D54EF8D3B8A4}
 		{668543A2-CE69-4098-8D25-BAC059AE7BD8} = {668543A2-CE69-4098-8D25-BAC059AE7BD8}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E6A5BF18-3A72-4316-89DE-C9D1A98194A8}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.mk = build\common.mk
 	EndProjectSection
 EndProject
 Global

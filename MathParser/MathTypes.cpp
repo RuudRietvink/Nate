@@ -49,7 +49,8 @@ Area Area::merge(const Area& otherArea)
 MathValue::MathValue(uint32_t aValue)
 	: value(aValue),
 		oper(Oper::Number),
-		size{0, 0}
+		size{0, 0},
+    matrixSize{0}
 {}
 		
 MathValue::MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const Size& aSize, const Symbol& aSymbol)
@@ -58,7 +59,8 @@ MathValue::MathValue(const Math& aMath1, const Math& aMath2, Oper aOper, const S
 	  symbol(aSymbol),
 		embedded1(aMath1), 
 		embedded2(aMath2),
-		size(aSize)
+		size(aSize),
+    matrixSize{0}
 {
 	mathValue = std::make_shared<MathValue>(*this);
 }
@@ -76,6 +78,7 @@ MathValue::MathValue(Oper aOper, const std::vector<Math> aMatrixCells, Size aMat
 		matrixCells(aMatrixCells),
 		matrixSize(aMatrixSize)
 {
+  mathValue = std::make_shared<MathValue>(*this);
 }
 
 bool MathValue::isSubMatrix() const { return value == SUBMATRIX; }

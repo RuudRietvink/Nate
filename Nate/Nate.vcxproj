@@ -343,6 +343,7 @@
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
     </CustomBuild>
     <None Include="input\nate.in" />
+    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code.h" />

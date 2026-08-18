@@ -172,6 +172,9 @@
     <ClCompile Include="MathParser.cpp" />
     <ClCompile Include="MathTypes.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\googletestmock.v.141.1.0.3\build\native\googletestmock.v.141.targets" Condition="Exists('..\packages\googletestmock.v.141.1.0.3\build\native\googletestmock.v.141.targets')" />

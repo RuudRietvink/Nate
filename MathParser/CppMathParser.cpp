@@ -168,6 +168,11 @@ std::string CppMathParser::codeOperator(const MathValue& aMathValue) const
 		ss << mathString(aMathValue.embedded1);
 		break;
 	}
+  case Oper::MatrixCell:
+  {
+    ss << mathString(aMathValue.embedded1);
+    break;
+  }
 	case Oper::Matrix:
 	{
 		ss << std::format("eigen::Matrix<double, {}, {}>", aMathValue.matrixSize.height, aMathValue.matrixSize.width);
@@ -181,7 +186,7 @@ std::string CppMathParser::codeOperator(const MathValue& aMathValue) const
 
 			ss << "{ ";
 
-			for (int x = 0; y < aMathValue.matrixSize.width; ++x)
+			for (int x = 0; x < aMathValue.matrixSize.width; ++x)
 			{
 				if (x != 0)
 				{

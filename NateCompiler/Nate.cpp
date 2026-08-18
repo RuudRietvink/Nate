@@ -5,7 +5,9 @@
 
 #include <iostream>
 #include <direct.h>
+#ifdef WIN32
 #include <Windows.h>
+#endif
 
 int parse(const std::string& aIn, const std::string& aOut, nate::NateParser::FileType aFileType = nate::NateParser::FileType::Normal)
 {
@@ -20,12 +22,15 @@ int parse(const std::string& aIn, const std::string& aOut, nate::NateParser::Fil
 
 int main()
 {
+
+#ifdef WIN32
     // set code page to utf8
     SetConsoleOutputCP(CP_UTF8);                        
 
     // Enable buffering to prevent VS from chopping up UTF-8 byte sequences
     setvbuf(stdout, nullptr, _IOFBF, 1000);
     setvbuf(stderr, nullptr, _IOFBF, 1000);
+#endif
 
 	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core");
 	parse("BaseObject.ns", "created\\BaseObject.cpp", nate::NateParser::FileType::ObjectImpl);

@@ -71,6 +71,7 @@ enum class Oper
 	Parentheses,
 	Brackets,
 	Matrix,
+  MatrixCell,
 	Absolute,
 	Floor,
 	Ceiling,

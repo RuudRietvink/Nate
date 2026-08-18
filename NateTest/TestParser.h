@@ -25,6 +25,24 @@ inline std::string replaceAll(std::string str, const std::string& from, const st
     return str;
 }
 
+inline std::filesystem::path testDirectory()
+{
+    return std::filesystem::path(__FILE__).parent_path();
+}
+
+inline std::string normalizeGeneratedPaths(std::string str)
+{
+    str = replaceAll(str, "\\", "/");
+
+    const auto sourceCreatedDir = (testDirectory() / "created").generic_string();
+    const auto runtimeCreatedDir = (std::filesystem::current_path() / "created").generic_string();
+
+    str = replaceAll(str, sourceCreatedDir, "<created>");
+    str = replaceAll(str, runtimeCreatedDir, "<created>");
+
+    return str;
+}
+
 inline std::string deleteLines(std::string str)
 {
     size_t startPos = 0;
@@ -101,21 +119,21 @@ program:
 
     void compareWhole(std::string exp, std::string out)
     {
-        EXPECT_STREQ(deleteLines(exp).c_str(), replaceAll(deleteLines(out), "\t", "  ").c_str());
+        EXPECT_STREQ(normalizeGeneratedPaths(deleteLines(exp)).c_str(), normalizeGeneratedPaths(replaceAll(deleteLines(out), "\t", "  ")).c_str());
     }
 
     void compare(std::string exp, std::string out)
     {
-        std::string toTest = replaceAll(deleteLines(textAfter(out, "#define NATE_PROGRAM_START\n")), "\t", "  ");
+        std::string toTest = normalizeGeneratedPaths(replaceAll(deleteLines(textAfter(out, "#define NATE_PROGRAM_START\n")), "\t", "  "));
 
         toTest = toTest.substr(0, toTest.size() - 3);
 
-        EXPECT_STREQ(trimEnd(deleteLines(exp)).c_str(), toTest.c_str());
+        EXPECT_STREQ(trimEnd(normalizeGeneratedPaths(deleteLines(exp))).c_str(), toTest.c_str());
     }
 
     void testCodePiece(const std::string& testName, const std::filesystem::path& filename)
     {
-        std::filesystem::path cwd = std::filesystem::current_path() / "testfiles" / filename;
+        std::filesystem::path cwd = testDirectory() / "testfiles" / filename;
         std::ifstream in(cwd.string());
         std::string inString;
         std::string outString;
