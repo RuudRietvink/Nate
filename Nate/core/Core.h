@@ -2,7 +2,11 @@
 
 #include "utf8.h"
 #include <string>
-#include <codecvt>
+#if defined(__has_include)
+#  if __has_include(<stdfloat>)
+#    include <stdfloat>
+#  endif
+#endif
 #include <ios>
 #include <iomanip>
 #include <ostream>
@@ -19,6 +23,14 @@ extern std::shared_ptr<std::ostream> output;
 extern std::shared_ptr<std::ostream> error;
 
 typedef std::string string_t;
+
+#if defined(__cpp_lib_stdfloat)
+using float32_t = std::float32_t;
+using float64_t = std::float64_t;
+#else
+using float32_t = float;
+using float64_t = double;
+#endif
 
 //////////////////////////
 
@@ -96,6 +108,7 @@ namespace Core
 	std::string directorySeperator();
 	std::string currentDirectory();
 	void makeDirectory(const std::string& aDirectoryName);
+	void enableUtf8Console();
 
 	template <typename T>
 	T random(T from, T to)

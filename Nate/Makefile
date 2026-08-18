@@ -64,10 +64,16 @@ SOURCES := \
 	Method.cpp \
 	WithFlags.cpp
 
-lex.yy.cpp lex.yy.h: NateLexer.l NateParser.tab.h location.hpp NateParser.h NateFunctions.h core/Core.h core/Complex.h
-	"$(REFLEX)" --header-file "$<"
+lex.yy.cpp lex.yy.h: NateLexer.l NateParser.tab.h location.hpp
+ifeq ($(HOST_OS),windows)
+	"$(REFLEX)" --full --outfile=lex.reflex.cpp --header-file=lex.reflex.h "$<"
+	powershell -NoProfile -Command "(Get-Content 'lex.reflex.cpp' -Raw).Replace('lex.reflex.h','lex.yy.h').Replace('lex.reflex.cpp','lex.yy.cpp') | Set-Content 'lex.yy.cpp'"
+	powershell -NoProfile -Command "(Get-Content 'lex.reflex.h' -Raw).Replace('lex.reflex.h','lex.yy.h').Replace('lex.reflex.cpp','lex.yy.cpp') | Set-Content 'lex.yy.h'; Remove-Item 'lex.reflex.cpp','lex.reflex.h' -Force"
+else
+	"$(REFLEX)" --full --outfile=lex.yy.cpp --header-file=lex.yy.h "$<"
+endif
 
 parser.cpp NateParser.tab.h location.hpp: NateParser.y
-	"$(BISON)" --output="parser.cpp" --defines="NateParser.tab.h" "$<"
+	"$(BISON)" -Wno-conflicts-sr --output="parser.cpp" --defines="NateParser.tab.h" "$<"
 
 include ../build/common.mk

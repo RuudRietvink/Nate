@@ -7,6 +7,7 @@
 #include "StatAssign.h"
 #include "lex.yy.h"
 #include <algorithm>
+#include <filesystem>
 #include <inttypes.h>
 #include <cctype>
 #include <tuple>
@@ -14,6 +15,36 @@
 namespace nate
 {
 int gDebug = 0;
+
+namespace
+{
+std::string defaultLibraryPath(const std::string& aFilename)
+{
+	namespace fs = std::filesystem;
+
+	const fs::path filePath(aFilename);
+	const fs::path current = fs::current_path();
+	const fs::path parserDir = fs::path(__FILE__).parent_path();
+	const fs::path fileDir = filePath.has_parent_path() ? filePath.parent_path() : current;
+
+	for (const fs::path& candidate : {
+		current / "core",
+		current / "Nate" / "core",
+		fileDir / ".." / "core",
+		fileDir,
+		parserDir / "core"
+	})
+	{
+		std::error_code error;
+		if (fs::is_directory(candidate, error))
+		{
+			return fs::weakly_canonical(candidate, error).string();
+		}
+	}
+
+	return (current / "core").string();
+}
+}
 
 NateParser::NateParser(NateCode& aCoder, const std::string& aFilename, std::istream& aIn, std::ostream& aOut,
 					   FileType aFileType)
@@ -23,7 +54,7 @@ NateParser::NateParser(NateCode& aCoder, const std::string& aFilename, std::istr
 	mOut(&aOut),
 	mFileType(aFileType),
 	mFileName(aFilename),
-	mLibrary("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core"),
+	mLibrary(defaultLibraryPath(aFilename)),
 	mMathParser(new NateParserMath(*this))
 {
 	mLexer->nate = this;
@@ -122,7 +153,7 @@ void NateParser::initOutput()
 		*mOut << "#pragma once" << std::endl;
 	}
 
-	*mOut << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Core.h\"" << std::endl;
+	*mOut << "#include \"Core.h\"" << std::endl;
 }
 
 int NateParser::parseAndCode()
@@ -728,7 +759,7 @@ bool NateParser::importObjectDefinition(const std::string& aLibrary, const std::
 
 			mErrors += nate.errorCount();
 			mWarnings += nate.warningCount();
-			*mOut << "#include \"" << outPath << "\"" << std::endl;
+			*mOut << "#include \"" << aName << ".h\"" << std::endl;
 
 			for (auto const& object : nate.mObjects)
 			{

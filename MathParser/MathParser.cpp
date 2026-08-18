@@ -3,16 +3,33 @@
 
 #include <iostream>
 #include <sstream>
-#define NOMINMAX  
-#include <windows.h>
 #include <algorithm>
 #include <cctype>
 #include <clocale>
-#include <format>
 #include <tuple>
+#include <format>
 
 namespace nate 
 {
+namespace
+{
+std::locale makeUtf8Locale()
+{
+	for (const char* name : { "", "en_US.UTF-8", "en_US.UTF8" })
+	{
+		try
+		{
+			return std::locale(name);
+		}
+		catch (const std::runtime_error&)
+		{
+		}
+	}
+
+	return std::locale::classic();
+}
+}
+
 //   _
 // √╱  ― ⌊⌋⌈⌉|⏐⎛⎞⎝⎠⎜⎟
 // ⏨ю
@@ -166,7 +183,7 @@ bool MathParser::isNumber(const std::string& aInput) const
 
 ////////////////////////// private /////////////////////////////////
 
-std::locale MathParser::m_localeUtf8("en_US.UTF8");
+std::locale MathParser::m_localeUtf8 = makeUtf8Locale();
 
 std::string MathParser::operToString(Oper aOper)
 {
@@ -539,20 +556,17 @@ OptArea MathParser::findBigBlock(Math& aMath, const std::vector<uint32_t>& aLeft
 				}
 				else
 				{
-					error(mathPos(aMath, *rightUpper), std::format("missing matching {} or {} below {}", 
-																												 u2s(aRightCodes[2]), u2s(aRightCodes[1]), u2s(aRightCodes[0])));
+					error(mathPos(aMath, *rightUpper), std::format("missing matching {} or {} below {}", u2s(aRightCodes[2]), u2s(aRightCodes[1]), u2s(aRightCodes[0])));
 				}
 			}
 			else
 			{
-				error(mathPos(aMath, *leftUpper), std::format("missing matching {} or {} below {}", 
-																											u2s(aLeftCodes[2]), u2s(aLeftCodes[1]), u2s(aLeftCodes[0])));
+				error(mathPos(aMath, *leftUpper), std::format("missing matching {} or {} below {}", u2s(aLeftCodes[2]), u2s(aLeftCodes[1]), u2s(aLeftCodes[0])));
 			}
 		}
 		else
 		{
-			error(mathPos(aMath, *leftUpper), std::format("missing matching {} at the right of a {}", 
-																											u2s(aRightCodes[0]), u2s(aLeftCodes[0])));
+			error(mathPos(aMath, *leftUpper), std::format("missing matching {} at the right of a {}", u2s(aRightCodes[0]), u2s(aLeftCodes[0])));
 		}
 	}
 

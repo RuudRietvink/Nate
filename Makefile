@@ -84,7 +84,7 @@ ifeq ($(HOST_OS),windows)
 COMMON_DEFINES += OS_WIN WIN32
 endif
 
-CXX_STANDARD ?= c++20
+CXX_STANDARD ?= c++23
 
 REFLEX_ROOT ?= $(firstword $(wildcard $(ROOT_DIR)/../Reflex $(ROOT_DIR)/../RE-flex $(USER_HOME)/Reflex $(USER_HOME)/RE-flex))
 REFLEX_INCLUDE ?= $(if $(REFLEX_ROOT),$(REFLEX_ROOT)/include)
@@ -126,9 +126,7 @@ else
 all: $(ALL_TARGETS)
 
 libs: $(LIB_TARGETS)
-
 apps: $(APP_TARGETS)
-
 tests: $(TEST_TARGETS)
 
 MathParser Nate: utf8

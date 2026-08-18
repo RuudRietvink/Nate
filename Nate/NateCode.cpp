@@ -17,11 +17,7 @@ void NateCode::setData(std::ostream& aOut, NateParser* aParser)
 {
     mOut = &aOut;
     mParser = aParser;
-    *mOut << in() << "#undef NOMINMAX" << end();
-    *mOut << in() << "#define NOMINMAX" << end();
-    *mOut << in() << "#include <windows.h>" << end();
     *mOut << in() << "#include <cmath>" << end();
-    *mOut << in() << "#include <stdfloat>" << end();
 }
 
 void NateCode::createCodeCall(Define* define)
@@ -404,7 +400,7 @@ void NateCode::visit(const StatProgram& aStat)
 {
 	printLineNr(aStat.getLocation());
 
-    *mOut << in() << "#include \"C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\main.h\"" << end();
+    *mOut << in() << "#include \"main.h\"" << end();
 	*mOut << in() << "int main(int argc, char** argv)\n" << in() << "{" << end();
 	++mIndent;
     *mOut << in() << "initMain(argc, argv);" << end();

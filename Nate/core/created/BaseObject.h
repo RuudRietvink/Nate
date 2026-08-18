@@ -1,17 +1,18 @@
+#include <cmath>
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
+#include "Core.h"
 #line 2
-class BaseObject: public std::enable_shared_from_this<BaseObject>
+class BaseObject_: public std::enable_shared_from_this<BaseObject_>
 {
 public:
-	virtual ~BaseObject();
-	BaseObject();
+	virtual ~BaseObject_();
+	BaseObject_();
 private:
 	class __impl;
 	__impl* _impl;
 	friend class __impl;
 public:
 #line 3
-	virtual void initialize_E_O_me__();
+	virtual void initialize__E_O_me__();
 };
 

@@ -81,13 +81,13 @@ void Type::setType(const std::string& aName)
 	else if (aName == "float-32")
 	{
 		setFlag(Abstract, false);
-		mCodeType = "std::float32_t";
+		mCodeType = "float32_t";
 		mBitSize = 132;
 	}
 	else if (aName == "float-64")
 	{
 		setFlag(Abstract, false);
-		mCodeType = "std::float64_t";
+		mCodeType = "float64_t";
 		mBitSize = 164;
 	}
     else if (aName == "bits-8")

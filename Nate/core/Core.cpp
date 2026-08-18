@@ -2,33 +2,27 @@
 #include "utf8.h"
 #include "UpperLower.h"
 
-#define NOMINMAX  
-#include <windows.h>
-#include <stringapiset.h>
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <locale>
 #include <cctype>
-#include <vector>
 #include <iostream>
 #include <iterator>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <vector>
+#include <system_error>
 
 #ifdef _WIN32
-#include <direct.h>
-#define GetCurrentDir _getcwd
-#define MakeDir _mkdir
-#define RemoveFile _unlink
+#define NOMINMAX
+#include <windows.h>
 #else
-#include <unistd.h>
-#define GetCurrentDir getcwd
-#define MakeDir mkdir
-#define RemoveFile unlink
+#include <codecvt>
 #endif
 
 namespace
 {
+	namespace fs = std::filesystem;
+
 	uint32_t upcase(uint32_t aChar)
 	{
 		uint32_t result = aChar;
@@ -99,55 +93,42 @@ namespace Core
 
 	std::string directorySeperator()
 	{
-		#ifdef _WIN32
-			return "\\";
-		#else
-			return "/";
-		#endif
+		return std::string(1, fs::path::preferred_separator);
 	}
 	
 	std::string currentDirectory()
-	{  
-		char buffer[FILENAME_MAX];
-		(void) GetCurrentDir(buffer, FILENAME_MAX);
-		return buffer;
+	{
+		return fs::current_path().string();
 	}
 	
 	void makeDirectory(const std::string& aDirectoryName)
 	{
-		(void) MakeDir(aDirectoryName.c_str());
+		std::error_code error;
+		fs::create_directories(aDirectoryName, error);
 	}
 
 	bool exists(const std::string& aFileName)
 	{
-		struct stat info;
-
-		return (stat(aFileName.c_str(), &info) == 0);
+		std::error_code error;
+		return fs::exists(aFileName, error);
 	}
 	
 	bool isOrdinaryFile(const std::string& aFileName)
 	{
-		struct stat info;
-
-		return (stat(aFileName.c_str(), &info) == 0 && (info.st_mode & S_IFREG));
+		std::error_code error;
+		return fs::is_regular_file(aFileName, error);
 	}
 
 	bool isDirectory(const std::string& aDirectoryName)
 	{
-		struct stat info;
-
-		return (stat(aDirectoryName.c_str(), &info) == 0 && (info.st_mode & S_IFDIR));
+		std::error_code error;
+		return fs::is_directory(aDirectoryName, error);
 	}
 	
 	bool isReadable(const std::string& aFileName)
 	{
-		FILE *fp;
-		bool result = fopen_s(&fp, aFileName.c_str(), "r") == 0;
-		if (result && fp)
-		{
-			fclose(fp);
-		}
-		return result;
+		std::ifstream file(aFileName);
+		return file.good();
 	}
 	
 	bool isWritable(const std::string& aFileName)
@@ -156,23 +137,20 @@ namespace Core
 
 		if (isDirectory(aFileName))
 		{
-			std::string tempName = aFileName + directorySeperator() + ".___temp";
-			FILE *fp;
-			result = fopen_s(&fp, tempName.c_str(), "w") == 0;
+			fs::path tempName = fs::path(aFileName) / ".___temp";
+			std::ofstream file(tempName);
+			result = file.good();
+			file.close();
 			if (result)
 			{
-				fclose(fp);
-				RemoveFile(tempName.c_str());
+				std::error_code error;
+				fs::remove(tempName, error);
 			}
 		}
 		else
 		{
-			FILE *fp = nullptr;
-			result = fopen_s(&fp, aFileName.c_str(), "r+") == 0;
-			if (result)
-			{
-				fclose(fp);
-			}
+			std::fstream file(aFileName, std::ios::in | std::ios::out);
+			result = file.good();
 		}
 
 		return result;
@@ -237,8 +215,9 @@ namespace Core
 
 	std::wstring u16(const std::string& str)
 	{
+#ifdef _WIN32
 		std::wstring convertedString;
-		int requiredSize = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
+		int requiredSize = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
 		if (requiredSize > 0)
 		{
 			std::vector<wchar_t> buffer(requiredSize);
@@ -247,6 +226,17 @@ namespace Core
 		}
 
 		return convertedString;
+#else
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+		return converter.from_bytes(str);
+#endif
+	}
+
+	void enableUtf8Console()
+	{
+#ifdef _WIN32
+		SetConsoleOutputCP(CP_UTF8);
+#endif
 	}
 
 	std::string upperCased(const std::string& aString)

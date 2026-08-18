@@ -1,19 +1,20 @@
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\created\BaseObject.h"
+#include <cmath>
+#include "Core.h"
+#include "BaseObject.h"
 #line 3
-class BaseObject::__impl
+class BaseObject_::__impl
 {
 private:
-	friend class BaseObject;
-	BaseObject* me;
+	friend class BaseObject_;
+	BaseObject_* me;
 public:
-	__impl(BaseObject* aMe) : me(aMe) {}
+	__impl(BaseObject_* aMe) : me(aMe) {}
 };
 
-BaseObject::BaseObject()
+BaseObject_::BaseObject_()
 	: _impl(new __impl(this)) {}
-BaseObject::~BaseObject() { delete _impl; }
+BaseObject_::~BaseObject_() { delete _impl; }
 #line 4
-void BaseObject::initialize_E_O_me__()
+void BaseObject_::initialize__E_O_me__()
 {
 }

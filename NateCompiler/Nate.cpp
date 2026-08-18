@@ -3,11 +3,9 @@
 #include "NateCode.h"
 #include "core/Rational.h"
 
+#include <filesystem>
+#include <fstream>
 #include <iostream>
-#include <direct.h>
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 int parse(const std::string& aIn, const std::string& aOut, nate::NateParser::FileType aFileType = nate::NateParser::FileType::Normal)
 {
@@ -22,20 +20,20 @@ int parse(const std::string& aIn, const std::string& aOut, nate::NateParser::Fil
 
 int main()
 {
+	namespace fs = std::filesystem;
 
-#ifdef WIN32
-    // set code page to utf8
-    SetConsoleOutputCP(CP_UTF8);                        
+	Core::enableUtf8Console();
+	setvbuf(stdout, nullptr, _IOFBF, 1000);
+	setvbuf(stderr, nullptr, _IOFBF, 1000);
 
-    // Enable buffering to prevent VS from chopping up UTF-8 byte sequences
-    setvbuf(stdout, nullptr, _IOFBF, 1000);
-    setvbuf(stderr, nullptr, _IOFBF, 1000);
-#endif
+	const fs::path repoRoot = fs::current_path();
+	const fs::path nateRoot = repoRoot / "Nate";
+	const fs::path coreDir = nateRoot / "core";
+	const fs::path inputDir = nateRoot / "input";
+	const fs::path outDir = repoRoot / "Out";
 
-	(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core");
-	parse("BaseObject.ns", "created\\BaseObject.cpp", nate::NateParser::FileType::ObjectImpl);
-	parse("File-Input.ns", "created\\File-Input.cpp", nate::NateParser::FileType::ObjectImpl);
-	//(void)_chdir("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input");
-	//parse("Hello.ns", "created\\Hello.cpp", nate::NateParser::FileType::ObjectImpl);
-	return parse("C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\input\\nate.in2", "C:\\Users\\ruud\\source\\repos\\Nate\\Out\\Out.cpp");
+	fs::current_path(coreDir);
+	parse("BaseObject.ns", (coreDir / "created" / "BaseObject.cpp").string(), nate::NateParser::FileType::ObjectImpl);
+	parse("File-Input.ns", (coreDir / "created" / "File-Input.cpp").string(), nate::NateParser::FileType::ObjectImpl);
+	return parse((inputDir / "nate.in2").string(), (outDir / "Out.cpp").string());
 }
