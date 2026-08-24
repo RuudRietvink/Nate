@@ -1,5 +1,18 @@
 ROOT_DIR := $(CURDIR)
 CONFIG ?= Debug
+CONFIG_INPUT := $(strip $(CONFIG))
+
+ifneq ($(filter Debug debug DEBUG,$(CONFIG_INPUT)),)
+CONFIG_CANONICAL := Debug
+else ifneq ($(filter Release release RELEASE,$(CONFIG_INPUT)),)
+CONFIG_CANONICAL := Release
+else
+$(error Unsupported CONFIG '$(CONFIG_INPUT)'. Use Debug or Release)
+endif
+
+override CONFIG := $(CONFIG_CANONICAL)
+CONFIG_IS_DEBUG := $(if $(filter Debug,$(CONFIG)),1,)
+
 .DEFAULT_GOAL := all
 
 ifeq ($(OS),Windows_NT)
@@ -102,6 +115,7 @@ NATE_LIB := $(OUT_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
 MATHPARSER_LIB := $(OUT_DIR)/$(LIB_PREFIX)MathParser$(STATIC_LIB_EXT)
 
 export ROOT_DIR CONFIG PLATFORM HOST_OS COMPILER OUT_DIR OBJ_ROOT
+export CONFIG_IS_DEBUG
 export CXX AR EXE_EXT LIB_PREFIX STATIC_LIB_EXT CXX_STANDARD
 export COMMON_CXXFLAGS COMMON_ARFLAGS COMMON_LDFLAGS COMMON_DEFINES
 export REFLEX_ROOT REFLEX_INCLUDE REFLEX_LIB_ROOT REFLEX_UNICODE_ROOT REFLEX BISON
@@ -112,7 +126,7 @@ APP_TARGETS := Nate
 TEST_TARGETS := MathParser-Test NateTest
 ALL_TARGETS := $(LIB_TARGETS) $(APP_TARGETS) $(TEST_TARGETS)
 
-.PHONY: all libs apps tests clean env-check help $(ALL_TARGETS)
+.PHONY: all libs apps tests clean distclean env-check help $(ALL_TARGETS)
 
 ifeq ($(NEEDS_MSVC_ENV),yes)
 .PHONY: msvc-env-build
@@ -155,11 +169,29 @@ clean:
 	$(MAKE) -C NateTest clean
 ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(OBJ_ROOT))" rmdir /S /Q "$(subst /,\,$(OBJ_ROOT))"
+	if exist "$(subst /,\,$(OUT_DIR))" rmdir /S /Q "$(subst /,\,$(OUT_DIR))"
+	if exist "$(subst /,\,$(ROOT_DIR)\Out)" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\Out)"
 else
-	rm -rf "$(OBJ_ROOT)"
+	rm -rf "$(OBJ_ROOT)" "$(OUT_DIR)" "$(ROOT_DIR)/Out"
+endif
+
+distclean: clean
+ifeq ($(HOST_OS),windows)
+	if exist "$(subst /,\,$(ROOT_DIR)\.make\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\.make\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\MathParser\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\MathParser\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\NateLib\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\NateLib\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\Nate\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\Nate\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\NateCompiler\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\NateCompiler\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\NateTest\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\NateTest\$(PLATFORM))"
+	if exist "$(subst /,\,$(ROOT_DIR)\MathParser-Test\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\MathParser-Test\$(PLATFORM))"
+else
+	rm -rf "$(ROOT_DIR)/.make/$(PLATFORM)" "$(ROOT_DIR)/$(PLATFORM)" \
+		"$(ROOT_DIR)/MathParser/$(PLATFORM)" "$(ROOT_DIR)/NateLib/$(PLATFORM)" "$(ROOT_DIR)/Nate/$(PLATFORM)" \
+		"$(ROOT_DIR)/NateCompiler/$(PLATFORM)" "$(ROOT_DIR)/NateTest/$(PLATFORM)" "$(ROOT_DIR)/MathParser-Test/$(PLATFORM)"
 endif
 
 help:
-	@echo Available targets: all libs apps tests clean env-check
+	@echo Available targets: all libs apps tests clean distclean env-check
 	@echo Example: make CONFIG=Debug CXX=clang++ all
 	@echo Set REFLEX_ROOT and optionally REFLEX, BISON, GTEST_INCLUDE, and GTEST_LIBS.

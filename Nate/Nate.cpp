@@ -145,6 +145,19 @@ namespace
 		return result;
 	}
 
+	std::optional<fs::path> firstExistingPath(const std::vector<fs::path>& candidates)
+	{
+		for (const auto& candidate : candidates)
+		{
+			if (fs::exists(candidate))
+			{
+				return candidate;
+			}
+		}
+
+		return std::nullopt;
+	}
+
 	int runCommand(const std::vector<std::string>& args)
 	{
 		if (args.empty())
@@ -728,6 +741,19 @@ namespace
 		command.push_back("/nologo");
 		command.push_back("/EHsc");
 		command.push_back("/std:c++latest");
+		command.push_back("/FS");
+		command.push_back("/DOS_WIN");
+		command.push_back("/DWIN32");
+#ifdef _DEBUG
+		command.push_back("/MDd");
+		command.push_back("/Od");
+		command.push_back("/Zi");
+		command.push_back("/D_DEBUG");
+#else
+		command.push_back("/MD");
+		command.push_back("/O2");
+		command.push_back("/DNDEBUG");
+#endif
 		command.push_back("/c");
 		for (const auto& includeDir : includeDirs)
 		{
@@ -745,6 +771,14 @@ namespace
 		command.push_back(cppPath.string());
 #else
 		command.push_back("-std=c++23");
+	#ifdef _DEBUG
+		command.push_back("-O0");
+		command.push_back("-g");
+		command.push_back("-D_DEBUG");
+	#else
+		command.push_back("-O2");
+		command.push_back("-DNDEBUG");
+	#endif
 		command.push_back("-c");
 		for (const auto& includeDir : includeDirs)
 		{
@@ -778,7 +812,8 @@ namespace
 	}
 
 	int linkObjects(const fs::path& linker, const fs::path& outPath, const std::vector<fs::path>& objects,
-		const std::vector<std::string>& compileArgs, const std::vector<std::string>& linkArgs, const std::vector<fs::path>& toolchainLibDirs)
+		const std::vector<fs::path>& libraries, const std::vector<std::string>& compileArgs,
+		const std::vector<std::string>& linkArgs, const std::vector<fs::path>& toolchainLibDirs)
 	{
 		fs::create_directories(outPath.parent_path());
 
@@ -790,6 +825,10 @@ namespace
 		for (const auto& object : objects)
 		{
 			command.push_back(object.string());
+		}
+		for (const auto& library : libraries)
+		{
+			command.push_back(library.string());
 		}
 		for (const auto& libDir : toolchainLibDirs)
 		{
@@ -809,6 +848,10 @@ namespace
 		for (const auto& object : objects)
 		{
 			command.push_back(object.string());
+		}
+		for (const auto& library : libraries)
+		{
+			command.push_back(library.string());
 		}
 		for (const auto& arg : linkArgs)
 		{
@@ -845,9 +888,25 @@ int main(int argc, char* argv[])
 	const fs::path coreDir = libraryRoot / "core";
 	const fs::path coreCppDir = coreDir / "cpp";
 	const fs::path createdDir = coreDir / "created";
+	const fs::path sharedCreatedDir = repoRoot / "created";
 	const fs::path inputDir = repoRoot / "input";
 	const fs::path outDir = repoRoot / "Out";
-	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, inputDir / "created", libraryRoot / "utf8" };
+	const fs::path executableDir = fs::absolute(fs::path(argv[0])).parent_path();
+	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, sharedCreatedDir, inputDir / "created", libraryRoot / "utf8" };
+	const auto runtimeLibrary = firstExistingPath({
+#ifdef _WIN32
+		executableDir / "nated.lib",
+		executableDir / "nate.lib"
+#else
+		executableDir / "libnated.a",
+		executableDir / "libnate.a"
+#endif
+	});
+	if (!runtimeLibrary)
+	{
+		std::cerr << "unable to locate the Nate runtime library beside " << fs::absolute(fs::path(argv[0])).string() << std::endl;
+		return 1;
+	}
 
 #ifdef _WIN32
 	const auto toolchain = resolveWindowsToolchain();
@@ -948,9 +1007,6 @@ int main(int argc, char* argv[])
 		}
 		appendCppFilesFromDirectory(auxiliarySources, sourceDir / "created");
 	}
-	appendUniquePath(auxiliarySources, coreCppDir / "Core.cpp");
-	appendUniquePath(auxiliarySources, coreCppDir / "Rational.cpp");
-
 	for (const auto& auxiliarySource : auxiliarySources)
 	{
 		const auto auxiliaryIncludeDirs = includeDirsForSource(includeDirs, auxiliarySource);
@@ -964,7 +1020,7 @@ int main(int argc, char* argv[])
 	}
 
 	const fs::path executablePath = executablePathFor(outDir, *options);
-	if (linkObjects(linker, executablePath, objects, options->compileArgs, options->linkArgs, toolchainLibDirs) != 0)
+	if (linkObjects(linker, executablePath, objects, { *runtimeLibrary }, options->compileArgs, options->linkArgs, toolchainLibDirs) != 0)
 	{
 		return 1;
 	}

@@ -3,10 +3,12 @@
 PROJECT_NAME := NateLib
 TARGET_KIND := lib
 NATE_LIB ?= $(OUT_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
+NATE_RUNTIME_LIB ?= $(OUT_DIR)/$(LIB_PREFIX)$(if $(CONFIG_IS_DEBUG),nated,nate)$(STATIC_LIB_EXT)
 TARGET_PATH := $(NATE_LIB)
 
 DEFINES :=
 INCLUDE_DIRS := $(REFLEX_INCLUDE) parser src src/Stats . core/cpp ../MathParser utf8
+RUNTIME_SOURCES := core/cpp/Core.cpp core/cpp/Rational.cpp
 SOURCES := \
 	$(REFLEX_LIB_ROOT)/convert.cpp \
 	$(REFLEX_LIB_ROOT)/debug.cpp \
@@ -78,3 +80,23 @@ parser/parser.cpp parser/NateParser.tab.h parser/location.hpp: parser/NateParser
 	"$(BISON)" -Wno-conflicts-sr --output="parser/parser.cpp" --defines="parser/NateParser.tab.h" "$<"
 
 include ../build/common.mk
+
+NATE_RUNTIME_OBJECTS := $(foreach src,$(RUNTIME_SOURCES),$(call object_path,$(src)))
+
+all: $(NATE_RUNTIME_LIB)
+
+$(NATE_RUNTIME_LIB): $(NATE_RUNTIME_OBJECTS) | $(OUT_DIR)
+ifeq ($(COMPILER),msvc)
+	$(AR) $(COMMON_ARFLAGS) /OUT:"$@" $(NATE_RUNTIME_OBJECTS)
+else
+	$(AR) $(COMMON_ARFLAGS) "$@" $(NATE_RUNTIME_OBJECTS)
+endif
+
+runtime-clean:
+ifeq ($(HOST_OS),windows)
+	if exist "$(subst /,\,$(NATE_RUNTIME_LIB))" del /Q "$(subst /,\,$(NATE_RUNTIME_LIB))"
+else
+	rm -f "$(NATE_RUNTIME_LIB)"
+endif
+
+clean: runtime-clean
