@@ -1,5 +1,5 @@
 PROJECT_NAME := Nate
-TARGET_PATH := $(OUT_DIR)/Nate$(EXE_EXT)
+TARGET_PATH := $(BIN_DIR)/Nate$(EXE_EXT)
 
 DEFINES := _CONSOLE
 INCLUDE_DIRS := ../NateLib/utf8 ../NateLib ../NateLib/parser ../NateLib/src ../NateLib/src/Stats ../NateLib/core/cpp ../MathParser
@@ -7,7 +7,7 @@ SOURCES := Nate.cpp
 EXTRA_DEPS := $(NATE_LIB) $(MATHPARSER_LIB)
 LDLIBS := "$(NATE_LIB)" "$(MATHPARSER_LIB)"
 RUNTIME_IMPORT_INPUTS := $(wildcard ../NateLib/core/import/*.nd ../NateLib/core/import/*.ns)
-RUNTIME_IMPORT_STAMP := ../NateLib/core/created/runtime-imports-$(CONFIG).stamp
+RUNTIME_IMPORT_STAMP := $(GENERATED_INCLUDE_DIR)/runtime-imports-$(CONFIG).stamp
 
 include ../build/common.mk
 

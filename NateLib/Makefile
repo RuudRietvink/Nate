@@ -3,22 +3,20 @@
 PROJECT_NAME := NateLib
 TARGET_KIND := lib
 NATE_LIB ?= $(OUT_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
-NATE_RUNTIME_LIB ?= $(OUT_DIR)/$(LIB_PREFIX)$(if $(CONFIG_IS_DEBUG),nated,nate)$(STATIC_LIB_EXT)
-NATE_COMPILER_EXE ?= ../$(PLATFORM)/$(CONFIG)/Nate$(EXE_EXT)
+NATE_RUNTIME_LIB ?= $(LIB_DIR)/$(LIB_PREFIX)$(if $(CONFIG_IS_DEBUG),nated,nate)$(STATIC_LIB_EXT)
+NATE_COMPILER_EXE ?= $(BIN_DIR)/Nate$(EXE_EXT)
 TARGET_PATH := $(NATE_LIB)
 
 DEFINES :=
-INCLUDE_DIRS := $(REFLEX_INCLUDE) parser src src/Stats . core/cpp ../MathParser utf8
+INCLUDE_DIRS := $(REFLEX_INCLUDE) parser src src/Stats . core/cpp $(GENERATED_INCLUDE_DIR) ../MathParser utf8
 RUNTIME_SOURCES := core/cpp/Core.cpp core/cpp/Rational.cpp
-RUNTIME_IMPORT_NAMES := $(basename $(notdir $(filter %.ns,$(wildcard core/import/*.ns))))
-RUNTIME_IMPORT_NAMES := $(foreach name,$(RUNTIME_IMPORT_NAMES),$(if $(wildcard core/import/$(name).nd),$(name),))
-RUNTIME_IMPORT_SOURCES := $(foreach name,$(RUNTIME_IMPORT_NAMES),core/created/$(name).cpp)
-RUNTIME_IMPORT_INPUTS := $(foreach name,$(RUNTIME_IMPORT_NAMES),core/import/$(name).nd core/import/$(name).ns)
-RUNTIME_IMPORT_STAMP := core/created/runtime-imports-$(CONFIG).stamp
-NATE_RUNTIME_PREREQS = $(NATE_RUNTIME_OBJECTS)
-ifneq ($(wildcard $(NATE_COMPILER_EXE)),)
-NATE_RUNTIME_PREREQS += $(RUNTIME_IMPORT_STAMP) $(RUNTIME_IMPORT_OBJECTS)
-endif
+RUNTIME_IMPORT_DECL_NAMES := $(basename $(notdir $(wildcard core/import/*.nd)))
+RUNTIME_IMPORT_IMPL_NAMES := $(basename $(notdir $(filter %.ns,$(wildcard core/import/*.ns))))
+RUNTIME_IMPORT_IMPL_NAMES := $(foreach name,$(RUNTIME_IMPORT_IMPL_NAMES),$(if $(wildcard core/import/$(name).nd),$(name),))
+RUNTIME_IMPORT_SOURCES := $(foreach name,$(RUNTIME_IMPORT_IMPL_NAMES),$(GENERATED_INCLUDE_DIR)/$(name).cpp)
+RUNTIME_IMPORT_INPUTS := $(wildcard core/import/*.nd core/import/*.ns)
+RUNTIME_IMPORT_STAMP := $(GENERATED_INCLUDE_DIR)/runtime-imports-$(CONFIG).stamp
+RUNTIME_IMPORT_ARCHIVE_STAMP := $(GENERATED_INCLUDE_DIR)/runtime-library-$(CONFIG).stamp
 SOURCES := \
 	$(REFLEX_LIB_ROOT)/convert.cpp \
 	$(REFLEX_LIB_ROOT)/debug.cpp \
@@ -99,33 +97,44 @@ $(foreach src,$(RUNTIME_IMPORT_SOURCES),$(eval $(call compile_rule,$(src))))
 
 all: $(NATE_RUNTIME_LIB)
 
-$(NATE_RUNTIME_LIB): $(NATE_RUNTIME_PREREQS) | $(OUT_DIR)
+$(NATE_RUNTIME_LIB): $(NATE_RUNTIME_OBJECTS) | $(OUT_DIR)
 ifeq ($(COMPILER),msvc)
-	$(AR) $(COMMON_ARFLAGS) /OUT:"$@" $(if $(wildcard $(NATE_COMPILER_EXE)),$(RUNTIME_LIBRARY_OBJECTS),$(NATE_RUNTIME_OBJECTS))
+	$(AR) $(COMMON_ARFLAGS) /OUT:"$@" $(NATE_RUNTIME_OBJECTS)
 else
-	$(AR) $(COMMON_ARFLAGS) "$@" $(if $(wildcard $(NATE_COMPILER_EXE)),$(RUNTIME_LIBRARY_OBJECTS),$(NATE_RUNTIME_OBJECTS))
+	$(AR) $(COMMON_ARFLAGS) "$@" $(NATE_RUNTIME_OBJECTS)
 endif
 
 $(RUNTIME_IMPORT_STAMP): $(NATE_COMPILER_EXE) $(RUNTIME_IMPORT_INPUTS)
 ifeq ($(HOST_OS),windows)
-	pushd .. && "$(subst /,\,$(PLATFORM)/$(CONFIG)/Nate$(EXE_EXT))" --generate-runtime-imports && popd
+	"$(subst /,\,$(NATE_COMPILER_EXE))" --generate-runtime-imports
 	@echo generated>"$(subst /,\,$(RUNTIME_IMPORT_STAMP))"
 else
-	cd .. && "$(PLATFORM)/$(CONFIG)/Nate$(EXE_EXT)" --generate-runtime-imports
+	"$(NATE_COMPILER_EXE)" --generate-runtime-imports
 	@echo generated > "$(RUNTIME_IMPORT_STAMP)"
 endif
 
 $(RUNTIME_IMPORT_OBJECTS): $(RUNTIME_IMPORT_STAMP)
 
-runtime-imports-update: $(NATE_RUNTIME_LIB)
+$(RUNTIME_IMPORT_ARCHIVE_STAMP): $(NATE_RUNTIME_LIB) $(RUNTIME_IMPORT_STAMP) $(RUNTIME_IMPORT_OBJECTS)
+ifeq ($(COMPILER),msvc)
+	$(AR) $(COMMON_ARFLAGS) /OUT:"$(NATE_RUNTIME_LIB)" $(RUNTIME_LIBRARY_OBJECTS)
+	@echo generated>"$(subst /,\,$@)"
+else
+	$(AR) $(COMMON_ARFLAGS) "$(NATE_RUNTIME_LIB)" $(RUNTIME_LIBRARY_OBJECTS)
+	@echo generated > "$@"
+endif
+
+runtime-imports-update: $(RUNTIME_IMPORT_ARCHIVE_STAMP)
 
 runtime-clean:
 ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(NATE_RUNTIME_LIB))" del /Q "$(subst /,\,$(NATE_RUNTIME_LIB))"
 	if exist "$(subst /,\,$(RUNTIME_IMPORT_STAMP))" del /Q "$(subst /,\,$(RUNTIME_IMPORT_STAMP))"
+	if exist "$(subst /,\,$(RUNTIME_IMPORT_ARCHIVE_STAMP))" del /Q "$(subst /,\,$(RUNTIME_IMPORT_ARCHIVE_STAMP))"
 else
 	rm -f "$(NATE_RUNTIME_LIB)"
 	rm -f "$(RUNTIME_IMPORT_STAMP)"
+	rm -f "$(RUNTIME_IMPORT_ARCHIVE_STAMP)"
 endif
 
 clean: runtime-clean

@@ -1,5 +1,5 @@
 PROJECT_NAME := NateTest
-TARGET_PATH := $(OUT_DIR)/NateTest$(EXE_EXT)
+TARGET_PATH := $(BIN_DIR)/NateTest$(EXE_EXT)
 
 DEFINES := _CONSOLE
 SOURCES := TestComplex.cpp TestExpr.cpp TestList.cpp TestLiterals.cpp TestOutput.cpp TestProgram.cpp TestVariables.cpp

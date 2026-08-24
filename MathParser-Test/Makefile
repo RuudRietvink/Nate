@@ -1,5 +1,5 @@
 PROJECT_NAME := MathParser-Test
-TARGET_PATH := $(OUT_DIR)/MathParser-Test$(EXE_EXT)
+TARGET_PATH := $(BIN_DIR)/MathParser-Test$(EXE_EXT)
 
 DEFINES := _CONSOLE HAS_GOOGLETESTMOCK
 SOURCES := main.cpp test.cpp

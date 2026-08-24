@@ -7,6 +7,7 @@
 #include "StatAssign.h"
 #include "lex.yy.h"
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <inttypes.h>
 #include <cctype>
@@ -45,6 +46,27 @@ std::string defaultLibraryPath(const std::string& aFilename)
 	}
 
 	return (current / "core").string();
+}
+
+std::string generatedIncludeDirectory()
+{
+	#ifdef _WIN32
+	char* value = nullptr;
+	size_t length = 0;
+	if (_dupenv_s(&value, &length, "NATE_GENERATED_INCLUDE_DIR") == 0 && value != nullptr)
+	{
+		std::string result(value);
+		free(value);
+		return result;
+	}
+	#else
+	if (const char* value = std::getenv("NATE_GENERATED_INCLUDE_DIR"))
+	{
+		return value;
+	}
+	#endif
+
+	return {};
 }
 }
 
@@ -705,7 +727,11 @@ void NateParser::doEndImplObject()
 
 std::string NateParser::makeTempDir()
 {
-	std::string tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
+	std::string tempDir = generatedIncludeDirectory();
+	if (tempDir.empty())
+	{
+		tempDir = Core::currentDirectory() + Core::directorySeperator() + "created";
+	}
 	if (!Core::isDirectory(tempDir))
 	{
 		Core::makeDirectory(tempDir);

@@ -28,7 +28,12 @@ USER_HOME := $(HOME)
 endif
 
 PLATFORM ?= $(DETECTED_PLATFORM)
-OUT_DIR := $(ROOT_DIR)/$(PLATFORM)/$(CONFIG)
+ROOT_OUT_DIR := $(ROOT_DIR)/$(PLATFORM)/$(CONFIG)
+OUT_DIR := $(ROOT_OUT_DIR)
+BIN_DIR := $(ROOT_OUT_DIR)/bin
+LIB_DIR := $(ROOT_OUT_DIR)/lib
+INCLUDE_DIR := $(ROOT_OUT_DIR)/include
+GENERATED_INCLUDE_DIR := $(INCLUDE_DIR)/created
 OBJ_ROOT := $(ROOT_DIR)/.make/$(PLATFORM)/$(CONFIG)
 
 ifeq ($(origin CXX),default)
@@ -111,10 +116,10 @@ BISON ?= $(if $(BISON_EXE),$(BISON_EXE),$(if $(LOCAL_BISON),$(LOCAL_BISON),bison
 GTEST_PKG_ROOT ?= $(ROOT_DIR)/packages/Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.3
 GMOCK_PKG_ROOT ?= $(ROOT_DIR)/packages/googletestmock.v.141.1.0.3/build/native
 
-NATE_LIB := $(OUT_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
-MATHPARSER_LIB := $(OUT_DIR)/$(LIB_PREFIX)MathParser$(STATIC_LIB_EXT)
+NATE_LIB := $(LIB_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
+MATHPARSER_LIB := $(LIB_DIR)/$(LIB_PREFIX)MathParser$(STATIC_LIB_EXT)
 
-export ROOT_DIR CONFIG PLATFORM HOST_OS COMPILER OUT_DIR OBJ_ROOT
+export ROOT_DIR CONFIG PLATFORM HOST_OS COMPILER ROOT_OUT_DIR OUT_DIR BIN_DIR LIB_DIR INCLUDE_DIR GENERATED_INCLUDE_DIR OBJ_ROOT
 export CONFIG_IS_DEBUG
 export CXX AR EXE_EXT LIB_PREFIX STATIC_LIB_EXT CXX_STANDARD
 export COMMON_CXXFLAGS COMMON_ARFLAGS COMMON_LDFLAGS COMMON_DEFINES
@@ -169,10 +174,10 @@ clean:
 	$(MAKE) -C NateTest clean
 ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(OBJ_ROOT))" rmdir /S /Q "$(subst /,\,$(OBJ_ROOT))"
-	if exist "$(subst /,\,$(OUT_DIR))" rmdir /S /Q "$(subst /,\,$(OUT_DIR))"
+	if exist "$(subst /,\,$(ROOT_OUT_DIR))" rmdir /S /Q "$(subst /,\,$(ROOT_OUT_DIR))"
 	if exist "$(subst /,\,$(ROOT_DIR)\Out)" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\Out)"
 else
-	rm -rf "$(OBJ_ROOT)" "$(OUT_DIR)" "$(ROOT_DIR)/Out"
+	rm -rf "$(OBJ_ROOT)" "$(ROOT_OUT_DIR)" "$(ROOT_DIR)/Out"
 endif
 
 distclean: clean

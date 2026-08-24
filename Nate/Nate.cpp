@@ -93,6 +93,15 @@ namespace
 #endif
 	}
 
+	bool setEnvironmentValue(const char* name, const std::string& value)
+	{
+#ifdef _WIN32
+		return _putenv_s(name, value.c_str()) == 0;
+#else
+		return setenv(name, value.c_str(), 1) == 0;
+#endif
+	}
+
 	std::string quoteArgument(const std::string& value)
 	{
 		std::string escaped;
@@ -612,12 +621,7 @@ namespace
 				continue;
 			}
 
-			fs::path nsPath = entry.path();
-			nsPath.replace_extension(".ns");
-			if (fs::exists(nsPath))
-			{
-				importNames.push_back(entry.path().stem());
-			}
+			importNames.push_back(entry.path().stem());
 		}
 
 		std::sort(importNames.begin(), importNames.end());
@@ -635,6 +639,13 @@ namespace
 				return 1;
 			}
 			std::cerr << "generated " << headerPath.string() << std::endl;
+
+			fs::path nsPath = importDir / importName;
+			nsPath.replace_extension(".ns");
+			if (!fs::exists(nsPath))
+			{
+				continue;
+			}
 
 			fs::path cppPath = createdDir / importName;
 			cppPath.replace_extension(".cpp");
@@ -937,8 +948,16 @@ int main(int argc, char* argv[])
 
 	if (argc == 2 && std::string(argv[1]) == "--generate-runtime-imports")
 	{
-		const fs::path repoRoot = fs::current_path();
-		return generateRuntimeImportSources(repoRoot / "NateLib" / "core", repoRoot / "NateLib" / "core" / "created");
+		const fs::path executableDir = fs::absolute(fs::path(argv[0])).parent_path();
+		const fs::path rootOutDir = executableDir.parent_path();
+		const fs::path repoRoot = rootOutDir.parent_path().parent_path();
+		const fs::path generatedIncludeDir = rootOutDir / "include" / "created";
+		if (!setEnvironmentValue("NATE_GENERATED_INCLUDE_DIR", generatedIncludeDir.string()))
+		{
+			std::cerr << "unable to configure generated include directory" << std::endl;
+			return 1;
+		}
+		return generateRuntimeImportSources(repoRoot / "NateLib" / "core", generatedIncludeDir);
 	}
 
 	const auto options = parseArguments(argc, argv);
@@ -947,23 +966,28 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	const fs::path repoRoot = fs::current_path();
+	const fs::path executableDir = fs::absolute(fs::path(argv[0])).parent_path();
+	const fs::path rootOutDir = executableDir.parent_path();
+	const fs::path repoRoot = rootOutDir.parent_path().parent_path();
 	const fs::path libraryRoot = repoRoot / "NateLib";
 	const fs::path coreDir = libraryRoot / "core";
 	const fs::path coreCppDir = coreDir / "cpp";
-	const fs::path createdDir = coreDir / "created";
-	const fs::path sharedCreatedDir = repoRoot / "created";
+	const fs::path createdDir = rootOutDir / "include" / "created";
 	const fs::path inputDir = repoRoot / "input";
 	const fs::path outDir = repoRoot / "Out";
-	const fs::path executableDir = fs::absolute(fs::path(argv[0])).parent_path();
-	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, sharedCreatedDir, inputDir / "created", libraryRoot / "utf8" };
+	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, inputDir / "created", libraryRoot / "utf8" };
+	if (!setEnvironmentValue("NATE_GENERATED_INCLUDE_DIR", createdDir.string()))
+	{
+		std::cerr << "unable to configure generated include directory" << std::endl;
+		return 1;
+	}
 	const auto runtimeLibrary = firstExistingPath({
 #ifdef _WIN32
-		executableDir / "nated.lib",
-		executableDir / "nate.lib"
+		rootOutDir / "lib" / "nated.lib",
+		rootOutDir / "lib" / "nate.lib"
 #else
-		executableDir / "libnated.a",
-		executableDir / "libnate.a"
+		rootOutDir / "lib" / "libnated.a",
+		rootOutDir / "lib" / "libnate.a"
 #endif
 	});
 	if (!runtimeLibrary)

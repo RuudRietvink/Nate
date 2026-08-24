@@ -1,5 +1,6 @@
 PROJECT_DIR := $(CURDIR)
 PROJECT_OBJ_DIR := $(OBJ_ROOT)/$(PROJECT_NAME)
+TARGET_DIR := $(patsubst %/,%,$(dir $(TARGET_PATH)))
 
 ifeq ($(COMPILER),msvc)
 OBJ_EXT := .obj
@@ -32,17 +33,17 @@ all: $(TARGET_PATH)
 
 ifeq ($(HOST_OS),windows)
 SHELL := cmd.exe
-CMD_OUT_DIR := $(subst /,\,$(OUT_DIR))
+CMD_TARGET_DIR := $(subst /,\,$(TARGET_DIR))
 CMD_PROJECT_OBJ_DIR := $(subst /,\,$(PROJECT_OBJ_DIR))
 CMD_TARGET_PATH := $(subst /,\,$(TARGET_PATH))
 
-$(OUT_DIR):
-	if not exist "$(CMD_OUT_DIR)" mkdir "$(CMD_OUT_DIR)"
+$(TARGET_DIR):
+	if not exist "$(CMD_TARGET_DIR)" mkdir "$(CMD_TARGET_DIR)"
 
 $(PROJECT_OBJ_DIR):
 	if not exist "$(CMD_PROJECT_OBJ_DIR)" mkdir "$(CMD_PROJECT_OBJ_DIR)"
 else
-$(OUT_DIR):
+$(TARGET_DIR):
 	mkdir -p "$@"
 
 $(PROJECT_OBJ_DIR):
@@ -64,14 +65,14 @@ endif
 $(foreach src,$(SOURCES),$(eval $(call compile_rule,$(src))))
 
 ifeq ($(TARGET_KIND),lib)
-$(TARGET_PATH): $(OBJECTS) | $(OUT_DIR)
+$(TARGET_PATH): $(OBJECTS) | $(TARGET_DIR)
 ifeq ($(COMPILER),msvc)
 	$(AR) $(COMMON_ARFLAGS) /OUT:"$@" $(OBJECTS)
 else
 	$(AR) $(COMMON_ARFLAGS) "$@" $(OBJECTS)
 endif
 else
-$(TARGET_PATH): $(OBJECTS) $(EXTRA_DEPS) | $(OUT_DIR)
+$(TARGET_PATH): $(OBJECTS) $(EXTRA_DEPS) | $(TARGET_DIR)
 ifeq ($(COMPILER),msvc)
 	$(CXX) $(OBJECTS) $(LDLIBS) /Fe"$@" /link $(LDFLAGS)
 else
