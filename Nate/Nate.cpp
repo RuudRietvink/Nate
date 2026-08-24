@@ -585,11 +585,69 @@ namespace
 	void printUsage()
 	{
 		std::cerr << "usage: Nate [-c] [-o output] source.ns [source.ns ...] [native compiler options]" << std::endl;
+		std::cerr << "       Nate --generate-runtime-imports" << std::endl;
 #ifdef _WIN32
 		std::cerr << "       use /link followed by native linker options" << std::endl;
 #else
 		std::cerr << "       linker options such as -l, -L, -Wl,... are forwarded during linking" << std::endl;
 #endif
+	}
+
+	int generateRuntimeImportSources(const fs::path& coreDir, const fs::path& createdDir)
+	{
+		const fs::path importDir = coreDir / "import";
+		if (!fs::exists(importDir) || !fs::is_directory(importDir))
+		{
+			std::cerr << "unable to locate runtime import directory: " << importDir.string() << std::endl;
+			return 1;
+		}
+
+		fs::create_directories(createdDir);
+
+		std::vector<fs::path> importNames;
+		for (const auto& entry : fs::directory_iterator(importDir))
+		{
+			if (!entry.is_regular_file() || entry.path().extension() != ".nd")
+			{
+				continue;
+			}
+
+			fs::path nsPath = entry.path();
+			nsPath.replace_extension(".ns");
+			if (fs::exists(nsPath))
+			{
+				importNames.push_back(entry.path().stem());
+			}
+		}
+
+		std::sort(importNames.begin(), importNames.end());
+
+		const auto originalPath = fs::current_path();
+		fs::current_path(coreDir);
+		for (const auto& importName : importNames)
+		{
+			const fs::path importBase = fs::path("import") / importName;
+			fs::path headerPath = createdDir / importName;
+			headerPath.replace_extension(".h");
+			if (parse((importBase.string() + ".nd"), headerPath.string(), nate::NateParser::FileType::ObjectDecl) != 0)
+			{
+				fs::current_path(originalPath);
+				return 1;
+			}
+			std::cerr << "generated " << headerPath.string() << std::endl;
+
+			fs::path cppPath = createdDir / importName;
+			cppPath.replace_extension(".cpp");
+			if (parse((importBase.string() + ".ns"), cppPath.string(), nate::NateParser::FileType::ObjectImpl) != 0)
+			{
+				fs::current_path(originalPath);
+				return 1;
+			}
+			std::cerr << "generated " << cppPath.string() << std::endl;
+		}
+
+		fs::current_path(originalPath);
+		return 0;
 	}
 
 	std::optional<Options> parseArguments(int argc, char* argv[])
@@ -877,6 +935,12 @@ int main(int argc, char* argv[])
 	setvbuf(stdout, nullptr, _IOFBF, 1000);
 	setvbuf(stderr, nullptr, _IOFBF, 1000);
 
+	if (argc == 2 && std::string(argv[1]) == "--generate-runtime-imports")
+	{
+		const fs::path repoRoot = fs::current_path();
+		return generateRuntimeImportSources(repoRoot / "NateLib" / "core", repoRoot / "NateLib" / "core" / "created");
+	}
+
 	const auto options = parseArguments(argc, argv);
 	if (!options)
 	{
@@ -952,20 +1016,6 @@ int main(int argc, char* argv[])
 	fs::create_directories(outDir);
 	ensureGeneratedSupportSources(inputDir / "created");
 
-	const auto originalPath = fs::current_path();
-	fs::current_path(coreDir);
-	if (parse("import/BaseObject.ns", (createdDir / "BaseObject.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
-	{
-		return 1;
-	}
-	std::cerr << "generated " << (createdDir / "BaseObject.cpp").string() << std::endl;
-	if (parse("import/File-Input.ns", (createdDir / "File-Input.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
-	{
-		return 1;
-	}
-	std::cerr << "generated " << (createdDir / "File-Input.cpp").string() << std::endl;
-	fs::current_path(originalPath);
-
 	std::vector<fs::path> objects;
 	for (const auto& source : options->sources)
 	{
@@ -996,7 +1046,6 @@ int main(int argc, char* argv[])
 	}
 
 	std::vector<fs::path> auxiliarySources;
-	appendCppFilesFromDirectory(auxiliarySources, createdDir);
 	appendCppFilesFromDirectory(auxiliarySources, inputDir / "created");
 	for (const auto& source : options->sources)
 	{
