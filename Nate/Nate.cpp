@@ -571,7 +571,7 @@ namespace
 
 	void printUsage()
 	{
-		std::cerr << "usage: NateCompiler [-c] [-o output] source.ns [source.ns ...] [native compiler options]" << std::endl;
+		std::cerr << "usage: Nate [-c] [-o output] source.ns [source.ns ...] [native compiler options]" << std::endl;
 #ifdef _WIN32
 		std::cerr << "       use /link followed by native linker options" << std::endl;
 #else

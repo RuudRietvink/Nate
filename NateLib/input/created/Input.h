@@ -1,6 +1,6 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\Input.nd"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#line 6 "C:\\Users\\ruud\\source\\repos\\Nate\\NateLib\\core\\Input.nd"
 class Input
 {
 public:

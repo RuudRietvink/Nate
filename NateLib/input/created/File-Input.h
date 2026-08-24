@@ -1,8 +1,8 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\Input.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\BaseObject.h"
-#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\File-Input.nd"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\input\created\Input.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\input\created\BaseObject.h"
+#line 8 "C:\\Users\\ruud\\source\\repos\\Nate\\NateLib\\core\\File-Input.nd"
 class File_Input: public virtual Input, public BaseObject
 {
 public:

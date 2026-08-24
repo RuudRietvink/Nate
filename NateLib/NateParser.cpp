@@ -29,7 +29,7 @@ std::string defaultLibraryPath(const std::string& aFilename)
 
 	for (const fs::path& candidate : {
 		current / "core",
-		current / "Nate" / "core",
+		current / "NateLib" / "core",
 		fileDir / ".." / "core",
 		fileDir,
 		parserDir / "core"
@@ -189,7 +189,7 @@ int NateParser::parse()
 
 	if (mFileType != FileType::ObjectDecl)
 	{
-		for (auto file : { "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\core.ns" })
+		for (auto file : { (std::filesystem::path(mLibrary) / "core.ns").string() })
 		{
 			parseFile(file);
 		}

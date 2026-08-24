@@ -98,7 +98,7 @@ BISON ?= $(if $(BISON_EXE),$(BISON_EXE),$(if $(LOCAL_BISON),$(LOCAL_BISON),bison
 GTEST_PKG_ROOT ?= $(ROOT_DIR)/packages/Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.3
 GMOCK_PKG_ROOT ?= $(ROOT_DIR)/packages/googletestmock.v.141.1.0.3/build/native
 
-NATE_LIB := $(OUT_DIR)/$(LIB_PREFIX)Nate$(STATIC_LIB_EXT)
+NATE_LIB := $(OUT_DIR)/$(LIB_PREFIX)NateLib$(STATIC_LIB_EXT)
 MATHPARSER_LIB := $(OUT_DIR)/$(LIB_PREFIX)MathParser$(STATIC_LIB_EXT)
 
 export ROOT_DIR CONFIG PLATFORM HOST_OS COMPILER OUT_DIR OBJ_ROOT
@@ -107,8 +107,8 @@ export COMMON_CXXFLAGS COMMON_ARFLAGS COMMON_LDFLAGS COMMON_DEFINES
 export REFLEX_ROOT REFLEX_INCLUDE REFLEX_LIB_ROOT REFLEX_UNICODE_ROOT REFLEX BISON
 export GTEST_PKG_ROOT GMOCK_PKG_ROOT NATE_LIB MATHPARSER_LIB
 
-LIB_TARGETS := utf8 MathParser Nate
-APP_TARGETS := Out NateCompiler
+LIB_TARGETS := utf8 MathParser NateLib
+APP_TARGETS := Nate
 TEST_TARGETS := MathParser-Test NateTest
 ALL_TARGETS := $(LIB_TARGETS) $(APP_TARGETS) $(TEST_TARGETS)
 
@@ -129,11 +129,11 @@ libs: $(LIB_TARGETS)
 apps: $(APP_TARGETS)
 tests: $(TEST_TARGETS)
 
-MathParser Nate: utf8
-Nate: MathParser
-Out NateCompiler: Nate MathParser
+MathParser NateLib: utf8
+NateLib: MathParser
+Nate: NateLib MathParser
 MathParser-Test: MathParser
-NateTest: Nate MathParser
+NateTest: NateLib MathParser
 
 $(ALL_TARGETS):
 	$(MAKE) -C $@
@@ -151,9 +151,8 @@ endif
 clean:
 	$(MAKE) -C utf8 clean
 	$(MAKE) -C MathParser clean
+	$(MAKE) -C NateLib clean
 	$(MAKE) -C Nate clean
-	$(MAKE) -C Out clean
-	$(MAKE) -C NateCompiler clean
 	$(MAKE) -C MathParser-Test clean
 	$(MAKE) -C NateTest clean
 ifeq ($(HOST_OS),windows)

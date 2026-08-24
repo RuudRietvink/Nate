@@ -1,6 +1,6 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#include "C:\Users\ruud\source\repos\Nate\Nate\input\created\BaseObject.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\input\created\BaseObject.h"
 #line 3 ".\\Hello.nd"
 class Greetable
 {

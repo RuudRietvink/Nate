@@ -1,6 +1,6 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\Nate\core\Core.h"
-#line 1 "C:\\Users\\ruud\\source\\repos\\Nate\\Nate\\core\\IFile.nd"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#line 1 "C:\\Users\\ruud\\source\\repos\\Nate\\NateLib\\core\\IFile.nd"
 struct File_Property
 {
 	File_Property()
