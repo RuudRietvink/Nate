@@ -894,12 +894,12 @@ int main(int argc, char* argv[])
 
 	const auto originalPath = fs::current_path();
 	fs::current_path(coreDir);
-	if (parse("BaseObject.ns", (createdDir / "BaseObject.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
+	if (parse("import/BaseObject.ns", (createdDir / "BaseObject.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
 	{
 		return 1;
 	}
 	std::cerr << "generated " << (createdDir / "BaseObject.cpp").string() << std::endl;
-	if (parse("File-Input.ns", (createdDir / "File-Input.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
+	if (parse("import/File-Input.ns", (createdDir / "File-Input.cpp").string(), nate::NateParser::FileType::ObjectImpl) != 0)
 	{
 		return 1;
 	}

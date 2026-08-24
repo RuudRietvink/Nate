@@ -26,8 +26,10 @@ std::string defaultLibraryPath(const std::string& aFilename)
 	const fs::path current = fs::current_path();
 	const fs::path parserDir = fs::path(__FILE__).parent_path();
 	const fs::path fileDir = filePath.has_parent_path() ? filePath.parent_path() : current;
+	const fs::path importRoot = fileDir.filename() == "import" ? fileDir / ".." : fs::path();
 
 	for (const fs::path& candidate : {
+		importRoot,
 		current / "core",
 		current / "NateLib" / "core",
 		fileDir / ".." / "core",
@@ -189,7 +191,7 @@ int NateParser::parse()
 
 	if (mFileType != FileType::ObjectDecl)
 	{
-		for (auto file : { (std::filesystem::path(mLibrary) / "core.ns").string() })
+		for (auto file : { (std::filesystem::path(mLibrary) / "import" / "core.ns").string() })
 		{
 			parseFile(file);
 		}
@@ -794,7 +796,7 @@ void NateParser::import(const std::string& aName)
 	{
 		mImports.insert(aName);
 
-		std::string library = mLibrary;
+		std::string library = mLibrary + Core::directorySeperator() + "import";
 		std::string nsPath = library + Core::directorySeperator() + aName + ".ns";
 		std::string ndPath = library + Core::directorySeperator() + aName + ".nd";
 		if (Core::exists(nsPath) && !Core::exists(ndPath))
