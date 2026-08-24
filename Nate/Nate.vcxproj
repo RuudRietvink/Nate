@@ -279,7 +279,7 @@
     <None Include="core\File-Output.ns" />
     <None Include="core\File.nd" />
     <None Include="core\IFile.nd" />
-    <None Include="core\Nate.ns" />
+    <None Include="core\Test.ns" />
     <None Include="core\RandomContainer.ns" />
     <None Include="core\Stream-Input.nd" />
     <None Include="core\Random.ns" />
@@ -290,11 +290,8 @@
     <None Include="core\Output.ns" />
     <None Include="core\SequenceContainer.ns" />
     <None Include="core\Text.ns" />
-    <None Include="input\hello.nd" />
-    <None Include="input\Hello.ns" />
     <None Include="input\nate.define" />
     <None Include="input\nate.import" />
-    <None Include="input\nate.in2" />
     <None Include="input\nateSong.in" />
     <CustomBuild Include="NateLexer.l">
       <FileType>Document</FileType>
@@ -342,7 +339,6 @@
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
     </CustomBuild>
-    <None Include="input\nate.in" />
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>

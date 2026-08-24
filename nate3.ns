@@ -1,11 +1,11 @@
-/*
+
 import Rational
 import Complex
 import Text
 import List
 import File-Output
 import Data-input
-import IFile*/
+import IFile
 
 import Math
 import File-Input
@@ -43,7 +43,7 @@ import Hello
 
 // "C:\Users\Ruud\Reflex\bin\win64\Reflex.exe" --header-file C:\Users\ruud\source\repos\Nate\NateLexer.l
 // "c:\Users\Ruud\Bison\win_bison.exe" --output="%(Filename).tab.cpp" --defines="%(Filename).tab.h"  
-/*
+
 /*
 program:
   var cnt := 1
@@ -68,12 +68,10 @@ program:
   }}
 */
 define test:
-  
+  /*
   scope:
     var x,z,a₁ is float
     x, a₁ := 3
- 
- /*
     math:                                    
              √4x²-√(3/4)                                    1   (x/2.4)                           4
              ―――――――――――               z                 ((―――))                                3⁵⁵
@@ -82,8 +80,8 @@ define test:
              1.3 + ――――                     
                    x          
               ――――――――        
-                42E5÷a                         */
- /*
+                42E5÷a                         
+ 
     math:
       z:=                                             (x/2.4)
           ⎛              x - 3.3⎞              ⎛  1  ⎞
@@ -96,15 +94,16 @@ define test:
           ⎜⎜        x   ⎟       ⎟
           ⎜⎜            ⎟       ⎟
           ⎜⎜   ―――――――― ⎟       ⎟
-          ⎝⎝    42E5÷a  ⎠       ⎠*/
+          ⎝⎝    42E5÷a  ⎠       ⎠
               
     output z
+	*/
 
       // comment comment
   
           /* comment 
       line */
-  include "nate.import"
+  //include "nate.import"
   /*** comment /*
   */
     /* 
@@ -112,6 +111,7 @@ define test:
   */ */
     // // comment  
   
+  /*
   var temp is text
   var hello := new Hello
   output hello "World"
@@ -182,7 +182,7 @@ define test:
       output d
       output "*" & hi & "*"
       close in
-
+	  */
   scope:
     var f := 0f3.4E4 + -0F2
     var d := 3.4 + 2
@@ -293,11 +293,8 @@ define test:
   var v5 := 3.14⏨-02
   var v6 := 1.000000000000000000001
   id-7,id-4 := +3
-/* dffdfdfd */
   v3 := "hi"
   id-2 := id-7
-/* dfdffdfd
-       ddfd */
   v3 := "hello " + /* hi */ id-2 + v1 + id-6
   id-6 := id-1
   id-1 := -id-6
@@ -503,10 +500,7 @@ define test:
     var val := 6789
     var txt is text := val@"W:24.8,A:^,F:π"
     error "|"&txt&"|"& true@"W:24.8,A:^,F:π"
-    */
 
-    /*
-import Math
 program:
   var x is float-32 := 3½
   var aaa := 3.5
@@ -527,10 +521,9 @@ program:
     }} + 5
 
   output x, z, e^3, exp exp 4
-  */
 
 program:
-  /*var cnt := 1
+  var cnt := 1
   if cnt > 0:                
     output cnt              
   else:
@@ -546,9 +539,7 @@ program:
     error "Oops"
 
   var hello is Hello := new Hello;
-  */
   
-  /*
   var in is File-Input := new File-Input
   open in from file "d:\\uit"
   if in is opened:		
@@ -562,15 +553,3 @@ program:
     read: s,t
     output s
     output t
-  */
-
-  // 16 + 3
-  const cirHeight := 53
-  const xCount := 24
-  const yCount := 25 + 13
-  const lat := yCount * (90.0 / cirHeight)
-  var step := 90.0 / xCount
-  var ind := 0
-  output lat, step, xCount, yCount
-  loop for var lon := 0.0 to 360.0 step step:
-    output ind#inc, -lat&",", lon if lon <= 180.0 else -(360.0 - lon)

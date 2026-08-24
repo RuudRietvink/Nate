@@ -246,12 +246,6 @@
     <None Include="input\nate.import">
       <Filter>Source Files\Input</Filter>
     </None>
-    <None Include="input\hello.nd">
-      <Filter>Source Files\Input</Filter>
-    </None>
-    <None Include="input\Hello.ns">
-      <Filter>Source Files\Input</Filter>
-    </None>
     <None Include="core\BaseObject.nd">
       <Filter>Source Files\Core</Filter>
     </None>
@@ -265,9 +259,6 @@
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="input\nateSong.in">
-      <Filter>Source Files\Input</Filter>
-    </None>
-    <None Include="input\nate.in">
       <Filter>Source Files\Input</Filter>
     </None>
     <None Include="core\Random.ns">
@@ -288,13 +279,10 @@
     <None Include="core\BaseObject.ns">
       <Filter>Source Files\Core</Filter>
     </None>
-    <None Include="input\nate.in2">
-      <Filter>Source Files\Input</Filter>
-    </None>
     <None Include="core\RandomContainer.ns">
       <Filter>Source Files\Core</Filter>
     </None>
-    <None Include="core\Nate.ns">
+    <None Include="core\Test.ns">
       <Filter>Source Files\Core</Filter>
     </None>
     <None Include="Makefile" />

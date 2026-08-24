@@ -817,7 +817,7 @@ void NateCode::visit(const StatRead& aStat)
 
 void NateCode::visit(const StatError& aStat)
 {
-	codeOutputStart(aStat, "*error");
+	codeOutputStart(aStat, "*error_");
 }
 
 void NateCode::visit(const StatWrite& aStat)

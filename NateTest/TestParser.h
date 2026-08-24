@@ -93,7 +93,7 @@ public:
     {
         std::string progIn = 
 R"__(
-import Nate
+import Test
 program:
 )__" + in;
         return parseProgram(progIn, fileType);

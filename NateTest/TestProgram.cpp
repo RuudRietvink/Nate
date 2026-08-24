@@ -35,7 +35,7 @@ TEST_F(TestParser, Program)
 {
   std::string in =
 R"__(
-import Nate
+import Test
 program:
   var text is text
   var int32 is int-32
