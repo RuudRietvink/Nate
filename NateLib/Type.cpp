@@ -1,6 +1,6 @@
 
 #include "Type.h"
-#include "Core/Core.h"
+#include "core/cpp/Core.h"
 
 #include <iostream>
 

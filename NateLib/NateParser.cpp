@@ -1,7 +1,7 @@
 #include "NateParser.h"
 #include "NateParserMath.h"
 #include "NateCode.h"
-#include "core/Core.h"
+#include "core/cpp/Core.h"
 #include "StatProgram.h"
 #include "StatDeclareLocal.h"
 #include "StatAssign.h"

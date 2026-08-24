@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdfloat>
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\cpp\Core.h"
 #line 2
 class BaseObject_: public std::enable_shared_from_this<BaseObject_>
 {

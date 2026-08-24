@@ -1,6 +1,6 @@
 #include "NateFunctions.h"
 
-#include "core/Core.h"
+#include "core/cpp/Core.h"
 #include "utf8.h"
 
 #include <vector>

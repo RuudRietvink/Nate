@@ -11,14 +11,14 @@ GTEST_LIB_DIR ?= $(GTEST_PKG_ROOT)/lib/native/v140/windesktop/msvcstl/static/rt-
 GTEST_LIB_SUFFIX := $(if $(filter Debug,$(CONFIG)),d,)
 GTEST_LIB := $(GTEST_LIB_DIR)/gtest$(GTEST_LIB_SUFFIX).lib
 GTEST_MAIN_LIB := $(GTEST_LIB_DIR)/gtest_main$(GTEST_LIB_SUFFIX).lib
-INCLUDE_DIRS := ../NateLib ../NateLib/Stats ../utf8 ../MathParser $(GTEST_INCLUDE)
+INCLUDE_DIRS := ../NateLib ../NateLib/core/cpp ../NateLib/Stats ../utf8 ../MathParser $(GTEST_INCLUDE)
 PROJECT_LDFLAGS := /WHOLEARCHIVE:"$(GTEST_MAIN_LIB)"
 EXTRA_DEPS += $(GTEST_LIB) $(GTEST_MAIN_LIB)
 LDLIBS := "$(NATE_LIB)" "$(MATHPARSER_LIB)" "$(GTEST_LIB)"
 else
 GTEST_INCLUDE ?=
 GTEST_LIBS ?= -lgtest
-INCLUDE_DIRS := ../NateLib ../NateLib/Stats ../utf8 ../MathParser $(GTEST_INCLUDE)
+INCLUDE_DIRS := ../NateLib ../NateLib/core/cpp ../NateLib/Stats ../utf8 ../MathParser $(GTEST_INCLUDE)
 LDLIBS := "$(NATE_LIB)" "$(MATHPARSER_LIB)" $(GTEST_LIBS)
 endif
 

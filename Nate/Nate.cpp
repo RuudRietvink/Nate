@@ -1,7 +1,7 @@
 
 #include "NateParser.h"
 #include "NateCode.h"
-#include "core/Rational.h"
+#include "core/cpp/Rational.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -841,11 +841,12 @@ int main(int argc, char* argv[])
 	}
 
 	const fs::path repoRoot = fs::current_path();
-	const fs::path nateRoot = repoRoot / "Nate";
-	const fs::path coreDir = nateRoot / "core";
+	const fs::path libraryRoot = repoRoot / "NateLib";
+	const fs::path coreDir = libraryRoot / "core";
+	const fs::path coreCppDir = coreDir / "cpp";
 	const fs::path createdDir = coreDir / "created";
 	const fs::path outDir = repoRoot / "Out";
-	const std::vector<fs::path> includeDirs = { coreDir, createdDir, nateRoot / "input" / "created", repoRoot / "utf8" };
+	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, libraryRoot / "input" / "created", repoRoot / "utf8" };
 
 #ifdef _WIN32
 	const auto toolchain = resolveWindowsToolchain();
@@ -889,7 +890,7 @@ int main(int argc, char* argv[])
 
 	fs::create_directories(createdDir);
 	fs::create_directories(outDir);
-	ensureGeneratedSupportSources(nateRoot / "input" / "created");
+	ensureGeneratedSupportSources(libraryRoot / "input" / "created");
 
 	const auto originalPath = fs::current_path();
 	fs::current_path(coreDir);
@@ -936,7 +937,7 @@ int main(int argc, char* argv[])
 
 	std::vector<fs::path> auxiliarySources;
 	appendCppFilesFromDirectory(auxiliarySources, createdDir);
-	appendCppFilesFromDirectory(auxiliarySources, nateRoot / "input" / "created");
+	appendCppFilesFromDirectory(auxiliarySources, libraryRoot / "input" / "created");
 	for (const auto& source : options->sources)
 	{
 		const fs::path sourceDir = source.has_parent_path() ? source.parent_path() : repoRoot;
@@ -946,8 +947,8 @@ int main(int argc, char* argv[])
 		}
 		appendCppFilesFromDirectory(auxiliarySources, sourceDir / "created");
 	}
-	appendUniquePath(auxiliarySources, coreDir / "Core.cpp");
-	appendUniquePath(auxiliarySources, coreDir / "Rational.cpp");
+	appendUniquePath(auxiliarySources, coreCppDir / "Core.cpp");
+	appendUniquePath(auxiliarySources, coreCppDir / "Rational.cpp");
 
 	for (const auto& auxiliarySource : auxiliarySources)
 	{

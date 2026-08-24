@@ -5,7 +5,7 @@
 #include "Object.h"
 #include "Record.h"
 #include "NateFunctions.h"
-#include "core/Core.h"
+#include "core/cpp/Core.h"
 #include "NateParser.h"
 
 #include <reflex/matcher.h>

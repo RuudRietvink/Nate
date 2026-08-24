@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdfloat>
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\cpp\Core.h"
 #line 6
 class Stream_Input_
 {

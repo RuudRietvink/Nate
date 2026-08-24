@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\Users\ruud\source\repos\Nate\NateLib\core\Core.h"
+#include "C:\Users\ruud\source\repos\Nate\NateLib\core\cpp\Core.h"
 #line 2 "C:\\Users\\ruud\\source\\repos\\Nate\\NateLib\\core\\BaseObject.nd"
 class BaseObject: public std::enable_shared_from_this<BaseObject>
 {

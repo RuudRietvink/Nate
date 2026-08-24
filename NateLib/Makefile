@@ -5,7 +5,7 @@ TARGET_KIND := lib
 TARGET_PATH := $(NATE_LIB)
 
 DEFINES :=
-INCLUDE_DIRS := $(REFLEX_INCLUDE) Stats . ../MathParser ../utf8
+INCLUDE_DIRS := $(REFLEX_INCLUDE) Stats . core/cpp ../MathParser ../utf8
 SOURCES := \
 	$(REFLEX_LIB_ROOT)/convert.cpp \
 	$(REFLEX_LIB_ROOT)/debug.cpp \
@@ -21,8 +21,8 @@ SOURCES := \
 	$(REFLEX_UNICODE_ROOT)/letter_scripts.cpp \
 	Code.cpp \
 	Arg.cpp \
-	core/Core.cpp \
-	core/Rational.cpp \
+	core/cpp/Core.cpp \
+	core/cpp/Rational.cpp \
 	Define.cpp \
 	Expr.cpp \
 	Container.cpp \
