@@ -1,0 +1,19 @@
+record File-Property:
+	var readable is bool
+	var writable is bool
+	var size is int-64
+	var creation-time is int-64
+	var path is text
+
+record File-Filter:
+	var filter-value is File-Property
+	var filter-index is int-32
+
+role IFile:
+	property name is text
+	property path is text
+	property suffix is text
+  
+	declare ${me} \is readable is bool
+	declare ${me} \is writeable is bool
+

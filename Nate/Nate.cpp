@@ -845,8 +845,9 @@ int main(int argc, char* argv[])
 	const fs::path coreDir = libraryRoot / "core";
 	const fs::path coreCppDir = coreDir / "cpp";
 	const fs::path createdDir = coreDir / "created";
+	const fs::path inputDir = repoRoot / "input";
 	const fs::path outDir = repoRoot / "Out";
-	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, libraryRoot / "input" / "created", repoRoot / "utf8" };
+	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, inputDir / "created", libraryRoot / "utf8" };
 
 #ifdef _WIN32
 	const auto toolchain = resolveWindowsToolchain();
@@ -890,7 +891,7 @@ int main(int argc, char* argv[])
 
 	fs::create_directories(createdDir);
 	fs::create_directories(outDir);
-	ensureGeneratedSupportSources(libraryRoot / "input" / "created");
+	ensureGeneratedSupportSources(inputDir / "created");
 
 	const auto originalPath = fs::current_path();
 	fs::current_path(coreDir);
@@ -937,7 +938,7 @@ int main(int argc, char* argv[])
 
 	std::vector<fs::path> auxiliarySources;
 	appendCppFilesFromDirectory(auxiliarySources, createdDir);
-	appendCppFilesFromDirectory(auxiliarySources, libraryRoot / "input" / "created");
+	appendCppFilesFromDirectory(auxiliarySources, inputDir / "created");
 	for (const auto& source : options->sources)
 	{
 		const fs::path sourceDir = source.has_parent_path() ? source.parent_path() : repoRoot;

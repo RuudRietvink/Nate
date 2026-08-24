@@ -1,0 +1,25 @@
+
+///////////////////////////////////////////////
+// Random Container
+///////////////////////////////////////////////
+
+code define 65 remove ${container is random-container as out} [ ${index is number} ]:
+    $container.erase($index)
+    
+code define 65 remove ${container is random-container as out} at ${index is number}:
+    $container.erase($index)
+    
+code define 65 remove first of ${container is random-container},
+               remove ${container is random-container as out} 's first:
+    $container.erase(0)
+    
+code define 65 remove last of ${container is random-container},
+               remove ${container is random-container as out} 's last:
+    $container.pop_back()
+
+code define 65 ${container is random-container as template, out} [ ${index is number} ] as typename, output:
+    $container[$index]
+
+code define 65 ${container is random-container as template} [ ${index is number} ] as typename, const:
+    $container[$index]
+    

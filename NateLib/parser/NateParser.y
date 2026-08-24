@@ -6,7 +6,7 @@
 %define api.token.constructor
 %define parse.error verbose
 %defines
-%output "parser.cpp"
+%output "parser/parser.cpp"
 %locations
 %define api.location.file "location.hpp"
 %code requires{
@@ -17,7 +17,7 @@
     class NateParser;
     #include "Expr.h"
     #include "Type.h"
-    #include "core/Rational.h"
+    #include "Rational.h"
     #include "NateData.h"
 }
 %parse-param { nate::Lexer& lexer } { NateParser& nate }

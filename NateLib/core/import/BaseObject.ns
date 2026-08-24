@@ -1,0 +1,5 @@
+import BaseObject
+
+implement object BaseObject:
+  implement initialize ${me is BaseObject as inout}:
+    ;

@@ -1,0 +1,19 @@
+
+///////////////////////////////////////////////
+// File-Input
+///////////////////////////////////////////////
+  
+import Output
+
+code:
+    #include <fstream>
+
+code define 65 \u open ${stream is File-Output as out} to write to \u file ${file is text},
+               \u open ${stream is File-Output as out} for writing to \u file ${file is text}:
+    $stream.reset(new std::ofstream($file, std::ios::out))
+  
+code define 65 ${stream is Output} \is opened is boolean:
+    ($stream && $stream->is_open())
+
+code define 65 \u close ${stream is File-Output as out}:
+    if ($stream) $stream->close()

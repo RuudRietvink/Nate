@@ -1,0 +1,3 @@
+
+declare object BaseObject:
+  declare initialize ${me is BaseObject as inout}

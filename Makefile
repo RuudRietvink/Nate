@@ -107,7 +107,7 @@ export COMMON_CXXFLAGS COMMON_ARFLAGS COMMON_LDFLAGS COMMON_DEFINES
 export REFLEX_ROOT REFLEX_INCLUDE REFLEX_LIB_ROOT REFLEX_UNICODE_ROOT REFLEX BISON
 export GTEST_PKG_ROOT GMOCK_PKG_ROOT NATE_LIB MATHPARSER_LIB
 
-LIB_TARGETS := utf8 MathParser NateLib
+LIB_TARGETS := MathParser NateLib
 APP_TARGETS := Nate
 TEST_TARGETS := MathParser-Test NateTest
 ALL_TARGETS := $(LIB_TARGETS) $(APP_TARGETS) $(TEST_TARGETS)
@@ -129,7 +129,6 @@ libs: $(LIB_TARGETS)
 apps: $(APP_TARGETS)
 tests: $(TEST_TARGETS)
 
-MathParser NateLib: utf8
 NateLib: MathParser
 Nate: NateLib MathParser
 MathParser-Test: MathParser
@@ -149,7 +148,6 @@ endif
 endif
 
 clean:
-	$(MAKE) -C utf8 clean
 	$(MAKE) -C MathParser clean
 	$(MAKE) -C NateLib clean
 	$(MAKE) -C Nate clean
