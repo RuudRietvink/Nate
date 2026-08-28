@@ -157,7 +157,8 @@ public:
             "DECL_TYPE",
             "FOR_EXPR",
             "SUPERSCRIPT_EXPR",
-            "COMMENT"
+            "COMMENT",
+            "NAME"
         };
         return strs[aState];
     }
@@ -245,6 +246,7 @@ public:
 %x FOR_EXPR
 %x SUPERSCRIPT_EXPR
 %x COMMENT
+%x NAME
 
 subscriptDigit  [₀₁₂₃₄₅₆₇₈₉]
 subscript       {subscriptDigit}|[⏨₊₋₌₍₎ₐₑₒₓₔₕₖₗₘₙₚₛₜ]
@@ -334,6 +336,11 @@ include\h*\".*\"  s(); includeFile();
 \bin\b 	            return nate::parser::make_IN(location());
 \bwhile\b        |
 (?^^\h+/while\b)	return nate::parser::make_WHILE(location());
+}
+//////////////////////////
+
+<NAME>{
+{word}	  		return nate::parser::make_WORD(str(), location());
 }
 //////////////////////////
 

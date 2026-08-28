@@ -1628,33 +1628,27 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 	IdentifierPtr id = getIdentifier(alias(name));
 	size_t pos = 0;
 	
-	while (!id && pos != std::string::npos)
-	{
-		pos = name.find_last_of("-");
-		if (pos != std::string::npos)
-		{
-			name = name.substr(0, pos);
-			IdentifierPtr newId = getIdentifier(alias(name)); // temp needed otherwise it crashes on NULL struct
-			id = newId;
-		}
-	}
-
-    /*
 	if (!id)
 	{
-		auto iter = name.cbegin();
-		if (iter != name.cend())
+		auto start = name.cbegin();
+		auto end = name.cend();
+		auto iter = end;
+		while (iter != start && !id)
 		{
-			auto next = iter;
-			utf8::next(next, name.cend());
-			pos = utf8::distance(iter, next);
-			if (pos != 1 || *iter != 'i' || next == name.cend())
+			std::cerr << "M: "  << std::string(start, iter) << std::endl;
+			utf8::prior(iter, start);
+			std::cerr << "N: "  << std::string(start, iter) << std::endl;
+			pos = utf8::distance(start, iter);
+			auto aliasName = alias(std::string(start, iter));
+			id = getIdentifier(aliasName);
+			if (id && aliasName == "i")
 			{
-				id = getIdentifier(alias(std::string(iter, next)));
+				id.reset();
 			}
+			std::cerr << "ID: " << pos << " " << std::string(start, iter) << std::endl;
 		}
+			std::cerr << "IDx: " << pos << " " << std::string(start, iter) << std::endl;
 	}
-    */
 
 	if (id)
 	{
@@ -1666,9 +1660,9 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 			utf8::advance(iter, pos, aString.cend());
 			name = std::string(aString.cbegin(), iter);
 			unput(iterOrig, aOrig.cend());
-			//std::cerr << "Orig: " << aOrig << std::endl;
-			//std::cerr << "Pos: " << pos << std::endl;
-			//std::cerr << "Name: " << name << std::endl;
+			std::cerr << "Orig: " << aOrig << std::endl;
+		    std::cerr << "Pos: " << pos << std::endl;
+			std::cerr << "Name: " << name << std::endl;
 			//std::cerr << "Unput: " << std::string(iter, aOrig.cend()) << std::endl;
 		}
 	}

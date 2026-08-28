@@ -15,17 +15,11 @@ CONFIG_IS_DEBUG := $(if $(filter Debug,$(CONFIG)),1,)
 
 .DEFAULT_GOAL := all
 
-ifeq ($(OS),Windows_NT)
 HOST_OS := windows
 SHELL := cmd.exe
 WINDOWS_ARCH := $(if $(PROCESSOR_ARCHITEW6432),$(PROCESSOR_ARCHITEW6432),$(PROCESSOR_ARCHITECTURE))
 DETECTED_PLATFORM := $(if $(filter AMD64,$(WINDOWS_ARCH)),x64,$(if $(filter ARM64,$(WINDOWS_ARCH)),arm64,x86))
 USER_HOME := $(subst \,/,$(USERPROFILE))
-else
-HOST_OS := $(shell uname -s | tr A-Z a-z)
-DETECTED_PLATFORM := $(shell uname -m)
-USER_HOME := $(HOME)
-endif
 
 PLATFORM ?= $(DETECTED_PLATFORM)
 ROOT_OUT_DIR := $(ROOT_DIR)/$(PLATFORM)/$(CONFIG)
@@ -157,13 +151,8 @@ $(ALL_TARGETS):
 	$(MAKE) -C $@
 
 env-check:
-ifeq ($(HOST_OS),windows)
 	@$(CXX) --version 2>NUL || $(CXX) /? >NUL
 	@$(AR) --version 2>NUL || $(AR) /? >NUL
-else
-	@command -v $(firstword $(CXX))
-	@command -v $(firstword $(AR))
-endif
 endif
 
 clean:
@@ -172,16 +161,11 @@ clean:
 	$(MAKE) -C Nate clean
 	$(MAKE) -C MathParser-Test clean
 	$(MAKE) -C NateTest clean
-ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(OBJ_ROOT))" rmdir /S /Q "$(subst /,\,$(OBJ_ROOT))"
 	if exist "$(subst /,\,$(ROOT_OUT_DIR))" rmdir /S /Q "$(subst /,\,$(ROOT_OUT_DIR))"
 	if exist "$(subst /,\,$(ROOT_DIR)\Out)" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\Out)"
-else
-	rm -rf "$(OBJ_ROOT)" "$(ROOT_OUT_DIR)" "$(ROOT_DIR)/Out"
-endif
 
 distclean: clean
-ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(ROOT_DIR)\.make\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\.make\$(PLATFORM))"
 	if exist "$(subst /,\,$(ROOT_DIR)\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\$(PLATFORM))"
 	if exist "$(subst /,\,$(ROOT_DIR)\MathParser\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\MathParser\$(PLATFORM))"
@@ -190,13 +174,8 @@ ifeq ($(HOST_OS),windows)
 	if exist "$(subst /,\,$(ROOT_DIR)\NateCompiler\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\NateCompiler\$(PLATFORM))"
 	if exist "$(subst /,\,$(ROOT_DIR)\NateTest\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\NateTest\$(PLATFORM))"
 	if exist "$(subst /,\,$(ROOT_DIR)\MathParser-Test\$(PLATFORM))" rmdir /S /Q "$(subst /,\,$(ROOT_DIR)\MathParser-Test\$(PLATFORM))"
-else
-	rm -rf "$(ROOT_DIR)/.make/$(PLATFORM)" "$(ROOT_DIR)/$(PLATFORM)" \
-		"$(ROOT_DIR)/MathParser/$(PLATFORM)" "$(ROOT_DIR)/NateLib/$(PLATFORM)" "$(ROOT_DIR)/Nate/$(PLATFORM)" \
-		"$(ROOT_DIR)/NateCompiler/$(PLATFORM)" "$(ROOT_DIR)/NateTest/$(PLATFORM)" "$(ROOT_DIR)/MathParser-Test/$(PLATFORM)"
-endif
 
 help:
 	@echo Available targets: all libs apps tests clean distclean env-check
-	@echo Example: make CONFIG=Debug CXX=clang++ all
+	@echo Example: make CONFIG=Debug all
 	@echo Set REFLEX_ROOT and optionally REFLEX, BISON, GTEST_INCLUDE, and GTEST_LIBS.

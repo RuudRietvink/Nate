@@ -31,6 +31,12 @@ public:
 		: mComplex(aReal, aImaginary)
 	{
 	}
+
+	template<typename OTHER>
+	constexpr Complex(const Complex<OTHER>& aReal, TYPE aImaginary)
+		: mComplex(static_cast<TYPE>(aReal.real()), static_cast<TYPE>(aReal.imaginary()) + aImaginary)
+	{
+	}
 	
 	virtual ~Complex() = default;
 	

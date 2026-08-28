@@ -185,8 +185,14 @@ alias-statement:
   ;
 
 import-statement:
-    IMPORT WORD
-        { nate.import($WORD); }
+    IMPORT
+    {
+        lexer.pushState(Lexer::NAME);
+    } WORD
+    { 
+        lexer.popState();
+        nate.import($WORD);
+    }
   ;
 
 col:

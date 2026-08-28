@@ -881,8 +881,8 @@ namespace
 	}
 
 	int linkObjects(const fs::path& linker, const fs::path& outPath, const std::vector<fs::path>& objects,
-		const std::vector<fs::path>& libraries, const std::vector<std::string>& compileArgs,
-		const std::vector<std::string>& linkArgs, const std::vector<fs::path>& toolchainLibDirs)
+		const std::vector<fs::path>& libraries, const std::vector<std::string>& linkArgs,
+		const std::vector<fs::path>& toolchainLibDirs)
 	{
 		fs::create_directories(outPath.parent_path());
 
@@ -910,10 +910,6 @@ namespace
 		}
 #else
 		command.push_back(linker.string());
-		for (const auto& arg : compileArgs)
-		{
-			command.push_back(arg);
-		}
 		for (const auto& object : objects)
 		{
 			command.push_back(object.string());
@@ -973,9 +969,10 @@ int main(int argc, char* argv[])
 	const fs::path coreDir = libraryRoot / "core";
 	const fs::path coreCppDir = coreDir / "cpp";
 	const fs::path createdDir = rootOutDir / "include" / "created";
+	const fs::path stagedIncludeDir = rootOutDir / "include";
 	const fs::path inputDir = repoRoot / "input";
 	const fs::path outDir = repoRoot / "Out";
-	const std::vector<fs::path> includeDirs = { coreCppDir, createdDir, inputDir / "created", libraryRoot / "utf8" };
+	const std::vector<fs::path> includeDirs = { stagedIncludeDir, coreCppDir, createdDir, inputDir / "created", libraryRoot / "utf8" };
 	if (!setEnvironmentValue("NATE_GENERATED_INCLUDE_DIR", createdDir.string()))
 	{
 		std::cerr << "unable to configure generated include directory" << std::endl;
@@ -1093,7 +1090,7 @@ int main(int argc, char* argv[])
 	}
 
 	const fs::path executablePath = executablePathFor(outDir, *options);
-	if (linkObjects(linker, executablePath, objects, { *runtimeLibrary }, options->compileArgs, options->linkArgs, toolchainLibDirs) != 0)
+	if (linkObjects(linker, executablePath, objects, { *runtimeLibrary }, options->linkArgs, toolchainLibDirs) != 0)
 	{
 		return 1;
 	}
