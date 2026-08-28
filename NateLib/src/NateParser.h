@@ -82,8 +82,8 @@ public:
 	bool isReservedName(const std::string& aString) const;
 	void addLeftMonomial(const std::string& aWord);
 	bool isLeftMonomial(const std::string& aWord) const;
-	void addWantsUnary(const std::string& aWord);
-	bool wantsUnary(const std::string& aWord) const;
+	void addWantsExpressionAfterNextWord(const std::string& aWord);
+	bool wantsExpressionAfterNextWord(const std::string& aWord) const;
 	void popStatsHolder();
 	
 	nate::Lexer* getLexer();
@@ -309,7 +309,7 @@ private:
 	std::list<Stat::SPtr>           mStatHolders;                 
 	bool						    mDefineDecl = false;
 	std::list<int>                  mLoopWhileCounts;
-	std::set<std::string>           mWantsUnary;
+	std::set<std::string>           mWantsExpressionAfterNextWord;
 	std::set<std::string>           mLeftMonomial;
 	mutable int	                    mErrors = 0;
 	mutable int				        mWarnings = 0;
@@ -348,7 +348,7 @@ private:
 	enum class SpecialWord
 	{
 		None		    = 0x0,
-		WantsUnary		= 0x01,
+		AfterNextWordStartsExpression		= 0x01,
 		IsAlias		    = 0x02,
 		LeftMonomial	= 0x04,
 	};

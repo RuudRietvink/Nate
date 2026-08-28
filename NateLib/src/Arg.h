@@ -31,7 +31,7 @@ public:
 	static const size_t Template	= 9;
 	static const size_t Typename	= 10;
 	static const size_t Literal 	= 11;
-	static const size_t WantsUnary  = 12;
+	static const size_t AfterNextWordStartsExpression  = 12;
 
 private:
 	IdentifierPtr   mIdentifier;

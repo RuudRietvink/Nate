@@ -1656,12 +1656,12 @@ expr-word:
                 }    
                 else
                 {
-                    //std::cerr << "monomial " << value << std::endl;
+                    std::cerr << "monomial " << value << std::endl;
                     $$ = Expr("monomial");
 			        $$.addNode(value);
                 }
 
-                nate.data.prevWasValue = !nate.wantsUnary(value);
+                nate.data.prevWasValue = !nate.wantsExpressionAfterNextWord(value);
                 lexer.noSpace();
             }
         }

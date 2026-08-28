@@ -25,5 +25,5 @@ program:
   const c-2 is int-32 := 5c-1
   const c := c-1^c-2
   const d is float := √c-2
-  const f := 2c​d + 3½
+  const f := 2cd + 3½
   output c-1,c-2,c,d,f

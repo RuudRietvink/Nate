@@ -857,14 +857,14 @@ bool NateParser::isLeftMonomial(const std::string& aWord) const
 	return mLeftMonomial.find(aWord) != mLeftMonomial.cend();
 }
 
-void NateParser::addWantsUnary(const std::string& aWord)
+void NateParser::addWantsExpressionAfterNextWord(const std::string& aWord)
 {
-	mWantsUnary.insert(aWord);
+	mWantsExpressionAfterNextWord.insert(aWord);
 }
 
-bool NateParser::wantsUnary(const std::string& aWord) const
+bool NateParser::wantsExpressionAfterNextWord(const std::string& aWord) const
 {
-	return mWantsUnary.find(aWord) != mWantsUnary.cend();
+	return mWantsExpressionAfterNextWord.find(aWord) != mWantsExpressionAfterNextWord.cend();
 }
 
 std::string NateParser::uniqueName() const
@@ -1487,7 +1487,7 @@ void NateParser::addArgWord(const std::string& aWord)
 {
 	if (aWord == "\\u")
 	{
-		mSpecialWord |= static_cast<int32_t>(SpecialWord::WantsUnary);
+		mSpecialWord |= static_cast<int32_t>(SpecialWord::AfterNextWordStartsExpression);
 	}
 	else if (aWord == "\\a")
 	{
@@ -1499,9 +1499,9 @@ void NateParser::addArgWord(const std::string& aWord)
 	}
 	else
 	{
-		if (mSpecialWord & static_cast<int32_t>(SpecialWord::WantsUnary))
+		if (mSpecialWord & static_cast<int32_t>(SpecialWord::AfterNextWordStartsExpression))
 		{
-			addWantsUnary(aWord);
+			addWantsExpressionAfterNextWord(aWord);
 		}
 		if (mSpecialWord & static_cast<int32_t>(SpecialWord::LeftMonomial))
 		{

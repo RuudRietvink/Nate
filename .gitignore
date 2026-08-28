@@ -31,7 +31,7 @@
 *.out
 *.app
 *.pdb
-
+Out
 x64
 .vs
 *.stamp
