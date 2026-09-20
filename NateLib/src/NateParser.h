@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <map>
 #include <list>
 #include <stack>
@@ -180,6 +181,7 @@ public:
 	IdentifierPtr getOrFakeIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder = nullptr);
 	void addIdentifier(const IdentifierPtr& aIdentifier);
 	std::tuple<bool, std::string> makeIdOrWord(const std::string& aOrig, const std::string& aString);
+	std::tuple<size_t, std::string> findMonomialId(const std::string& aString);
 	std::string uniqueName() const;
 	TypePtr getNumberType(std::string& aString);
 	

@@ -9,12 +9,12 @@ R"__(#include <cmath>
 std::shared_ptr<std::ostream> output_ = {};
 std::shared_ptr<std::ostream> error_ = {};
 std::shared_ptr<std::istream> input_ = {};
-const float64_t pi_ = 3.14159265358979323;
-const float64_t tau_ = 6.283185307179586;
-const float64_t e_ = 2.718281828459045;
+const std::float64_t pi_ = 3.14159265358979323;
+const std::float64_t tau_ = 6.283185307179586;
+const std::float64_t e_ = 2.718281828459045;
 #include "Complex.h"
 #include <complex>
-const float64_t i_ = 1;
+const std::float64_t i_ = 1;
 #include <vector>
 #include "Rational.h"
 #include <sstream>
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 #define NATE_PROGRAM_START
   string_t text_ = {};
   int32_t int32_ = {};
-  float32_t float_ = {};
+  std::float32_t float_ = {};
   *output_ << "Hello\n";
 }
 )__";

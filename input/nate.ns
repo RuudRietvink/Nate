@@ -24,7 +24,8 @@ program:
   const c-1 := 1 + 2 - 3 * 4 / 5 
   const c-2 is int-32 := 5c-1
   const c := c-1^c-2
-  const h₂o := e*2πi
+  const h₂o := e*c
   const d is float := √c-2
-  const f := 2πi + 2ci + 2i + πi;// + 2cch₂occd + 2c-1c-2ccccd
+  //const f := 2ci + 2ci + 2i + ci
+  const f := cc//h₂occd + c-1c-2ccccd
   output c-1,c-2,c,d,f

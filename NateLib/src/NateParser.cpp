@@ -1622,56 +1622,63 @@ bool NateParser::isReservedName(const std::string& aString) const
 					   { return pair.first == aString || pair.second == aString; });
 }
 
-std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
-{	
+std::tuple<size_t, std::string> NateParser::findMonomialId(const std::string& aString)
+{
 	std::string name = aString;
-	IdentifierPtr id = getIdentifier(alias(name));
-	size_t pos = 0;
-	
-	if (!id)
-	{
-		auto start = name.cbegin();
-		auto end = name.cend();
-		auto iter = end;
-		while (iter != start && !id)
-		{
-			std::cerr << "M: "  << std::string(start, iter) << std::endl;
-			utf8::prior(iter, start);
-			std::cerr << "N: "  << std::string(start, iter) << std::endl;
-			pos = utf8::distance(start, iter);
-			auto aliasName = alias(std::string(start, iter));
-			id = getIdentifier(aliasName);
-			if (id && aliasName == "i")
-			{
-				id.reset();
-			}
-			std::cerr << "ID: " << pos << " " << std::string(start, iter) << std::endl;
-		}
-			std::cerr << "IDx: " << pos << " " << std::string(start, iter) << std::endl;
-	}
+	auto start = name.cbegin();
+	auto end = name.cend();
+	auto iter = end;
+	IdentifierPtr id;
 
-	if (id)
+	while (iter != start)
 	{
+		utf8::prior(iter, start);
+		size_t pos = std::distance(start, iter);
+		auto aliasName = alias(std::string(start, iter));
+		id = getIdentifier(aliasName);
+		if (id) 
+		{
+			if (std::get<size_t>(findMonomialId(aString.substr(pos))) != 0)
+			{
+				return std::make_tuple(pos, aliasName);
+			}
+			else
+			{
+				return std::make_tuple(0, aliasName);
+			}
+		}
+	}
+	
+	return std::make_tuple(0, alias(name));
+}
+
+std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
+{		
+	if (getIdentifier(alias(aString)))
+	{
+		return std::make_tuple(true, alias(aString));
+	}
+	else
+	{
+		auto [pos, name] = findMonomialId(aString);
 		if (pos != 0)
 		{
 			auto iterOrig = aOrig.cbegin();
 			auto iter = aString.cbegin();
-			utf8::advance(iterOrig, pos, aOrig.cend());
-			utf8::advance(iter, pos, aString.cend());
-			name = std::string(aString.cbegin(), iter);
+			std::advance(iterOrig, pos);
+			std::advance(iter, pos);
 			unput(iterOrig, aOrig.cend());
-			std::cerr << "Orig: " << aOrig << std::endl;
-		    std::cerr << "Pos: " << pos << std::endl;
-			std::cerr << "Name: " << name << std::endl;
+			//std::cerr << "Orig: " << aOrig << std::endl;
+			//std::cerr << "Pos: " << pos << std::endl;
+			//std::cerr << "Name: " << name << std::endl;
 			//std::cerr << "Unput: " << std::string(iter, aOrig.cend()) << std::endl;
+			return std::make_tuple(true, name);
+		}
+		else
+		{
+			return std::make_tuple(false, alias(aString));
 		}
 	}
-	else
-	{
-		name = aString;
-	}
-	
-	return std::make_tuple(!!id, alias(name));
 }
 
 IdentifierPtr NateParser::getIdentifier(const std::string& aName, IIdentifiersHolder* aIdentifiersHolder)

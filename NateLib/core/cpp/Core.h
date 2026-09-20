@@ -24,14 +24,6 @@ extern std::shared_ptr<std::ostream> error;
 
 typedef std::string string_t;
 
-#if defined(__cpp_lib_stdfloat)
-using float32_t = std::float32_t;
-using float64_t = std::float64_t;
-#else
-using float32_t = float;
-using float64_t = double;
-#endif
-
 //////////////////////////
 
 namespace Core

@@ -1662,7 +1662,7 @@ expr-word:
                 }    
                 else
                 {
-                    std::cerr << "monomial " << value << std::endl;
+                    //std::cerr << "monomial " << value << std::endl;
                     $$ = Expr("monomial");
 			        $$.addNode(value);
                 }
