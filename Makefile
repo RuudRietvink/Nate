@@ -3,11 +3,11 @@ CONFIG ?= Debug
 CONFIG_INPUT := $(strip $(CONFIG))
 
 ifneq ($(filter Debug debug DEBUG,$(CONFIG_INPUT)),)
-CONFIG_CANONICAL := Debug
+   CONFIG_CANONICAL := Debug
 else ifneq ($(filter Release release RELEASE,$(CONFIG_INPUT)),)
-CONFIG_CANONICAL := Release
+   CONFIG_CANONICAL := Release
 else
-$(error Unsupported CONFIG '$(CONFIG_INPUT)'. Use Debug or Release)
+   $(error Unsupported CONFIG '$(CONFIG_INPUT)'. Use Debug or Release)
 endif
 
 override CONFIG := $(CONFIG_CANONICAL)
@@ -31,69 +31,51 @@ GENERATED_INCLUDE_DIR := $(INCLUDE_DIR)/created
 OBJ_ROOT := $(ROOT_DIR)/.make/$(PLATFORM)/$(CONFIG)
 
 ifeq ($(origin CXX),default)
-ifeq ($(HOST_OS),windows)
-CXX := cl
-else
-CXX := c++
-endif
+   ifeq ($(HOST_OS),windows)
+      CXX := cl
+   endif
 endif
 
 CXX_NAME := $(notdir $(firstword $(CXX)))
 ifneq ($(filter cl cl.exe clang-cl clang-cl.exe,$(CXX_NAME)),)
-COMPILER := msvc
-else
-COMPILER := gnu
+   COMPILER := msvc
 endif
 
 ifeq ($(HOST_OS),windows)
-ifeq ($(COMPILER),msvc)
-MSVC_COMPILER_AVAILABLE := $(shell where $(CXX_NAME) >NUL 2>&1 && echo yes)
-ifeq ($(MSVC_COMPILER_AVAILABLE),)
-ifeq ($(MSVC_ENV_READY),)
-NEEDS_MSVC_ENV := yes
-VSWHERE_DIR := C:/Program Files (x86)/Microsoft Visual Studio/Installer
-VSWHERE ?= $(VSWHERE_DIR)/vswhere.exe
-VCVARS_ARCH := $(if $(filter arm64,$(PLATFORM)),amd64_arm64,$(PLATFORM))
-endif
-endif
-endif
+   ifeq ($(COMPILER),msvc)
+      MSVC_COMPILER_AVAILABLE := $(shell where $(CXX_NAME) >NUL 2>&1 && echo yes)
+      ifeq ($(MSVC_COMPILER_AVAILABLE),)
+         ifeq ($(MSVC_ENV_READY),)
+            NEEDS_MSVC_ENV := yes
+            VSWHERE_DIR := C:/Program Files (x86)/Microsoft Visual Studio/Installer
+            VSWHERE ?= $(VSWHERE_DIR)/vswhere.exe
+            VCVARS_ARCH := $(if $(filter arm64,$(PLATFORM)),amd64_arm64,$(PLATFORM))
+         endif
+      endif
+   endif
 endif
 
 ifeq ($(COMPILER),msvc)
-ifeq ($(origin AR),default)
-AR := lib
-endif
-EXE_EXT := .exe
-LIB_PREFIX :=
-STATIC_LIB_EXT := .lib
-COMMON_CXXFLAGS := /nologo /EHsc /W3 /permissive- /FS
-COMMON_ARFLAGS := /nologo
-COMMON_LDFLAGS := /nologo
-ifeq ($(CONFIG),Debug)
-COMMON_CXXFLAGS += /MDd /Od /Zi
-COMMON_DEFINES := _DEBUG
-else
-COMMON_CXXFLAGS += /MD /O2
-COMMON_DEFINES := NDEBUG
-endif
-else
-EXE_EXT := $(if $(filter windows,$(HOST_OS)),.exe,)
-LIB_PREFIX := lib
-STATIC_LIB_EXT := .a
-COMMON_CXXFLAGS := -Wall -Wextra
-COMMON_ARFLAGS := rcs
-COMMON_LDFLAGS :=
-ifeq ($(CONFIG),Debug)
-COMMON_CXXFLAGS += -O0 -g
-COMMON_DEFINES := _DEBUG
-else
-COMMON_CXXFLAGS += -O2
-COMMON_DEFINES := NDEBUG
-endif
+   ifeq ($(origin AR),default)
+      AR := lib
+   endif
+   EXE_EXT := .exe
+   LIB_PREFIX :=
+   STATIC_LIB_EXT := .lib
+   COMMON_CXXFLAGS := /nologo /EHsc /W3 /permissive- /FS
+   COMMON_ARFLAGS := /nologo
+   COMMON_LDFLAGS := /nologo
+   ifeq ($(CONFIG),Debug)
+      COMMON_CXXFLAGS += /MDd /Od /Zi
+      COMMON_DEFINES := _DEBUG
+   else
+      COMMON_CXXFLAGS += /MD /O2
+      COMMON_DEFINES := NDEBUG
+   endif
 endif
 
 ifeq ($(HOST_OS),windows)
-COMMON_DEFINES += OS_WIN WIN32
+   COMMON_DEFINES += OS_WIN WIN32
 endif
 
 CXX_STANDARD ?= c++23
@@ -130,7 +112,7 @@ ALL_TARGETS := $(LIB_TARGETS) $(APP_TARGETS) $(TEST_TARGETS)
 ifeq ($(NEEDS_MSVC_ENV),yes)
 .PHONY: msvc-env-build
 
-all libs apps tests env-check $(ALL_TARGETS): msvc-env-build
+all libs apps tests test env-check $(ALL_TARGETS): msvc-env-build
 
 msvc-env-build:
 	@if not exist "$(subst /,\,$(VSWHERE))" (echo Visual Studio locator not found. Set CXX or VSWHERE. & exit /B 1)
@@ -141,6 +123,10 @@ all: $(ALL_TARGETS)
 libs: $(LIB_TARGETS)
 apps: $(APP_TARGETS)
 tests: $(TEST_TARGETS)
+test: tests
+	$(BIN_DIR)/MathParser-Test${EXE_EXT}
+	$(BIN_DIR)/NateTest${EXE_EXT}
+
 
 NateLib: MathParser
 Nate: NateLib MathParser

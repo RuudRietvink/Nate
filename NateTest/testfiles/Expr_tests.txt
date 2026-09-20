@@ -79,11 +79,15 @@
 ###Math
   var k := π
   var x,y,x2 := 4.2 * k
+  var vr := 3
   k := 𝑒^+3 + exp(3.4)
   k := k^(k*3)
-  k := 2k​π + 4pi + 2tau
-  k := 2π​k
-  k := 2x​y​k​x2
+  k := 2kπ + 4pi + 2tau
+  k := 2πk
+  k := 2xykx2
+  k := xy
+  k := vrx
+  k := vrx​y​k​x2
   k := √ sqrt 2π​k * 4
   k := 2​(3 + 4)
   k := sqrt 4 + √(4.0) + sqrt √5
@@ -102,11 +106,15 @@
   std::float64_t x_ = 4.2 * k_;
   std::float64_t y_ = x_;
   std::float64_t x2_ = x_;
+  int32_t vr_ = 3;
   k_ = (std::exp((3))) + (std::exp((3.4)));
   k_ = std::pow(k_, ((k_ * 3)));
   k_ = ((2 * (k_ * pi_)) + (4 * pi_)) + (2 * tau_);
   k_ = 2 * (pi_ * k_);
   k_ = 2 * (x_ * (y_ * (k_ * x2_)));
+  k_ = x_ * y_;
+  k_ = vr_ * x_;
+  k_ = vr_ * (x_ * (y_ * (k_ * x2_)));
   k_ = (std::sqrt((std::sqrt((2 * (pi_ * k_)))))) * 4;
   k_ = static_cast<std::float64_t>(2 * ((3 + 4)));
   k_ = ((std::sqrt(4)) + (std::sqrt((4.0)))) + (std::sqrt((std::sqrt(5))));

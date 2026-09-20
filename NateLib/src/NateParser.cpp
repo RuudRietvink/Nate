@@ -1638,18 +1638,19 @@ std::tuple<size_t, std::string> NateParser::findMonomialId(const std::string& aS
 		id = getIdentifier(aliasName);
 		if (id) 
 		{
-			if (std::get<size_t>(findMonomialId(aString.substr(pos))) != 0)
+			auto nextName = aString.substr(pos);
+			if (getIdentifier(alias(nextName)) || std::get<size_t>(findMonomialId(nextName)) != 999999)
 			{
 				return std::make_tuple(pos, aliasName);
 			}
 			else
 			{
-				return std::make_tuple(0, aliasName);
+				return std::make_tuple(999999, aliasName);
 			}
 		}
 	}
 	
-	return std::make_tuple(0, alias(name));
+	return std::make_tuple(999999, alias(name));
 }
 
 std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig, const std::string& aString)
@@ -1661,13 +1662,16 @@ std::tuple<bool, std::string> NateParser::makeIdOrWord(const std::string& aOrig,
 	else
 	{
 		auto [pos, name] = findMonomialId(aString);
-		if (pos != 0)
+		if (pos != 999999)
 		{
-			auto iterOrig = aOrig.cbegin();
-			auto iter = aString.cbegin();
-			std::advance(iterOrig, pos);
-			std::advance(iter, pos);
-			unput(iterOrig, aOrig.cend());
+			if (pos != 0)
+			{
+				auto iterOrig = aOrig.cbegin();
+				auto iter = aString.cbegin();
+				std::advance(iterOrig, pos);
+				std::advance(iter, pos);
+				unput(iterOrig, aOrig.cend());
+			}
 			//std::cerr << "Orig: " << aOrig << std::endl;
 			//std::cerr << "Pos: " << pos << std::endl;
 			//std::cerr << "Name: " << name << std::endl;
