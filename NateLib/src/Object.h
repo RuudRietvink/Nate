@@ -76,6 +76,7 @@ public:
 	PropState	getPropState(const IdentifierPtr& anId, Property::PropType aPropType) const;
 	void		setPropState(const IdentifierPtr& anId, Property::PropType aPropType, PropState aPropState);
 	bool		isPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
+	bool		isPropDeclaredRecursive(const IdentifierPtr& anId, Property::PropType aPropType) const;
 	bool		isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const;
 	bool		basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const;
 

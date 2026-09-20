@@ -102,10 +102,10 @@
   k := acos asin atan x
   k := x min (y max k max 3 min 5)
 ---
-  std::float64_t k_ = pi_;
-  std::float64_t x_ = 4.2 * k_;
-  std::float64_t y_ = x_;
-  std::float64_t x2_ = x_;
+  double k_ = pi_;
+  double x_ = 4.2 * k_;
+  double y_ = x_;
+  double x2_ = x_;
   int32_t vr_ = 3;
   k_ = (std::exp((3))) + (std::exp((3.4)));
   k_ = std::pow(k_, ((k_ * 3)));
@@ -116,7 +116,7 @@
   k_ = vr_ * x_;
   k_ = vr_ * (x_ * (y_ * (k_ * x2_)));
   k_ = (std::sqrt((std::sqrt((2 * (pi_ * k_)))))) * 4;
-  k_ = static_cast<std::float64_t>(2 * ((3 + 4)));
+  k_ = static_cast<double>(2 * ((3 + 4)));
   k_ = ((std::sqrt(4)) + (std::sqrt((4.0)))) + (std::sqrt((std::sqrt(5))));
   k_ = ((std::round(4)) + (std::round((4.0)))) + (std::round((std::round(5))));
   k_ = (k_ * 2) * x_;
@@ -127,4 +127,4 @@
   k_ = std::sin((std::cos((std::tan(x_)))));
   k_ = std::sinh((std::cosh((std::tanh(x_)))));
   k_ = std::acos((std::asin((std::atan(x_)))));
-  k_ = std::min(x_, ((std::max(y_, (std::max(k_, (static_cast<std::float64_t>(std::min(3, 5)))))))));
+  k_ = std::min(x_, ((std::max(y_, (std::max(k_, (static_cast<double>(std::min(3, 5)))))))));

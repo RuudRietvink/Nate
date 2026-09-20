@@ -2,8 +2,8 @@
   var a := 3 + 4i
   var b := 3 + 4​i * i
 ---
-  Complex<std::float64_t> a_ = Complex<std::float64_t>(3, (4));
-  Complex<std::float64_t> b_ = (Complex<std::float64_t>(3, (4))) * (Complex<std::float64_t>(0, i_));
+  Complex<double> a_ = Complex<double>(3, (4));
+  Complex<double> b_ = (Complex<double>(3, (4))) * (Complex<double>(0, i_));
 ###NormalOperators
   var a := 1 + 2i + 4 + i
   var b := -1 - 2i * -4 - i
@@ -14,11 +14,11 @@
   var h := d's imaginary
   var j := 1 + 4i's imaginary
 ---
-  Complex<std::float64_t> a_ = (Complex<std::float64_t>(1, (2))) + (Complex<std::float64_t>(4, i_));
-  Complex<std::float64_t> b_ = (Complex<std::float64_t>(-1, -(2))) * (Complex<std::float64_t>(-4, -i_));
-  Complex<std::float64_t> c_ = 2 * (a_ * b_);
-  Complex<std::float64_t> d_ = (c_ * a_) / b_;
-  Complex<std::float64_t> f_ = ((std::sqrt((2 * c_))) + (std::pow(d_, 2))) - (std::abs((3.4 + (std::pow(a_, 2)))));
-  std::float64_t g_ = c_.real();
-  std::float64_t h_ = d_.imag();
-  std::float64_t j_ = (Complex<std::float64_t>(1, (4))).imag();
+  Complex<double> a_ = (Complex<double>(1, (2))) + (Complex<double>(4, i_));
+  Complex<double> b_ = (Complex<double>(-1, -(2))) * (Complex<double>(-4, -i_));
+  Complex<double> c_ = 2 * (a_ * b_);
+  Complex<double> d_ = (c_ * a_) / b_;
+  Complex<double> f_ = ((std::sqrt((2 * c_))) + (std::pow(d_, 2))) - (std::abs((3.4 + (std::pow(a_, 2)))));
+  double g_ = c_.real();
+  double h_ = d_.imag();
+  double j_ = (Complex<double>(1, (4))).imag();

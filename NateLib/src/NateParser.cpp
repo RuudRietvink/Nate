@@ -1435,7 +1435,7 @@ void NateParser::doPropDefine(const IdentifierPtr& aIdentifier, Property::PropTy
 {
 	const std::string method = aPropType == Property::PropType::Get ? "get" : "set";
 
-	bool isDeclared = curObject()->isPropDeclared(aIdentifier, aPropType);
+	bool isDeclared = curObject()->isPropDeclaredRecursive(aIdentifier, aPropType);
 	if (!isDeclared && !aIdentifier->is(Identifier::Undeclared))
 	{
 	    error("Undeclared " + method + " method for property: " + aIdentifier->name());

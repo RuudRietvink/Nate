@@ -26,6 +26,6 @@ program:
   const c := c-1^c-2
   const h₂o := e*c
   const d is float := √c-2
-  //const f := 2ci + 2ci + 2i + ci
-  const f := cc//h₂occd + c-1c-2ccccd
-  output c-1,c-2,c,d,f
+  const f := 2ci + 2ci + 2i + ci
+  const f2 := h₂occd + c-1c-2ccccd
+  output c-1,c-2,c,d,f,f2

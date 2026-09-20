@@ -112,6 +112,7 @@ private:
 							 const IdentifierPtr& aId,
 							 const Location& aLocation);
 	void codeImplObjectVariables(const StatObject& aStat);
+	void codeImplObjectStats(const std::list<Stat::SPtr>& aStats);
 	void codeImplObjectNested(const StatObject& aStat, bool inImpl);
   
 	void codeDefine(const StatDefine& aStat, const ObjectPtr& aObject = ObjectPtr());

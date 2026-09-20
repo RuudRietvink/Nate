@@ -6,8 +6,8 @@
 ---
   std::vector<int32_t> vecInt_ = {};
   std::vector<string_t> vecText_ = {};
-  std::vector<Complex<std::float32_t>> vecComplex_ = {};
-  std::vector<std::vector<Complex<std::float32_t>>> vecListComplex_ = {};
+  std::vector<Complex<float>> vecComplex_ = {};
+  std::vector<std::vector<Complex<float>>> vecListComplex_ = {};
 ###Access
   var vecInt is list of int-32
   var index := 1

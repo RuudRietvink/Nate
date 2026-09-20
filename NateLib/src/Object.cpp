@@ -115,6 +115,12 @@ void Object::setPropState(const IdentifierPtr& anId, Property::PropType aPropTyp
 	mPropertyMethods[anId].states[(int)aPropType] = aPropState;
 }
 
+bool Object::isPropDeclaredRecursive(const IdentifierPtr& anId, Property::PropType aPropType) const
+{
+	return getPropState(anId, aPropType).state != PropState::State::Unknown ||
+		   basesIsPropDeclared(anId, aPropType);
+}
+
 bool Object::isPropDeclared(const IdentifierPtr& anId, Property::PropType aPropType) const
 {
 	return getPropState(anId, aPropType).state != PropState::State::Unknown;
@@ -124,8 +130,7 @@ bool Object::basesIsPropDeclared(const IdentifierPtr& anId, Property::PropType a
 {
 	return std::any_of(mBases.begin(), mBases.end(), 
 	                   [&](const ObjectPtr& aBase) 
-					   { return aBase->isPropDeclared(anId, aPropType) || 
-								aBase->basesIsPropDeclared(anId, aPropType); } );
+					   { return aBase->isPropDeclaredRecursive(anId, aPropType); } );
 }
 
 bool Object::isPropDefined(const IdentifierPtr& anId, Property::PropType aPropType) const

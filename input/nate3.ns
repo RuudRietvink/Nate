@@ -11,7 +11,7 @@ import Math
 import File-Input
 //import Array
 
-import Hello
+//import Hello
 
 //include "nate.define"
 
@@ -184,11 +184,11 @@ define test:
       close in
 	  */
   scope:
-    var f := 0f3.4E4 + -0F2
+    var f := 3.4E4_f32 + -2_f32
     var d := 3.4 + 2
-    var x := -0xDD01 + 0X02
-    var o := 0o701 + -0O02
-    var b := 0b0100 + 0B010
+    var x := -DD01_x + 02_x
+    var o := 701_o + -02_o
+    var b := 0100_b + 010_b
 
     output f, 3f, f⋅3
 

@@ -370,6 +370,17 @@ void NateCode::printLineNr(const Location& aLocation)
 	}
 }
 
+void NateCode::codeImplObjectStats(const std::list<Stat::SPtr>& aStats)
+{
+    for (auto& stat : aStats)
+    {
+		if (dynamic_cast<StatDeclareLocal*>(stat.get()) == nullptr)
+		{
+			stat->accept(this);
+		}
+	}
+}
+
 void NateCode::codeStats(const std::list<Stat::SPtr>& aStats)
 {
     for (auto& stat : aStats)
@@ -1367,7 +1378,7 @@ void NateCode::visit(const StatObject& aStat)
 	
 	ObjectPtr object = aStat.getObject();
 
-  if (aStat.isDecl())
+    if (aStat.isDecl())
 	{
 		codeObjectBases(object);
 
@@ -1408,7 +1419,7 @@ void NateCode::visit(const StatObject& aStat)
 			*mOut << in() << "{" << end();
 			*mOut << in() << "public:" << end();
 			++mIndent;
-			codeStats(aStat.getCompound());
+			codeImplObjectStats(aStat.getCompound());
 			*mOut << in(-1) << "private:" << end();
 			codeImplObjectVariables(aStat);
 
